@@ -1,6 +1,5 @@
 <!DOCTYPE html>
-<html lang="ko">
-<head>
+<html lang="ko"><head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>설비관리 | YURA HARNESS MÉXICO</title>
@@ -218,6 +217,63 @@ body{font-family:var(--sans);background:var(--bg);color:var(--t1);min-height:100
 .dash-monthly-grid{padding:14px 16px 10px!important}.dash-monthly-wrap{height:405px!important;min-height:405px!important}.dash-hero{padding:20px 22px 18px!important;border-color:#2d3650!important;background:linear-gradient(180deg,rgba(20,25,38,.98),rgba(15,19,30,.98))!important;box-shadow:0 12px 34px rgba(0,0,0,.18)}.dash-main-grid{grid-template-columns:1fr 1fr!important;padding-top:10px!important}.dash-cause-grid{padding-top:0!important}.dash-scards .scard{min-height:116px}.dash-hero .ctitle{font-size:14px;color:#b8c7f0;margin-bottom:8px}.dash-hero .ctitle em{font-size:10px;color:#7e89a6}
 @media(max-width:980px){.dash-main-grid{grid-template-columns:1fr!important}.dash-monthly-wrap{height:360px!important}}
 </style>
+
+<script>
+// ══════════════════════════════
+// Supabase 연동 설정
+// ══════════════════════════════
+const SB_URL = 'https://lrjurjhavlalhlwaplxd.supabase.co';
+const SB_KEY = 'sb_publishable_8arNtNo-c73EO0xrauAhtA_JPeLk4QZ';
+
+async function sbFetch(path, opts={}) {
+  const res = await fetch(`${SB_URL}/rest/v1/${path}`, {
+    ...opts,
+    headers: {
+      'apikey': SB_KEY,
+      'Authorization': `Bearer ${SB_KEY}`,
+      'Content-Type': 'application/json',
+      'Prefer': 'return=representation',
+      ...(opts.headers||{})
+    }
+  });
+  const text = await res.text();
+  return text ? JSON.parse(text) : [];
+}
+
+// DB → Supabase 필드명 변환
+function recToSb(r) {
+  return {
+    id: r.id, machine: r.machine||'', equip_code: r.equipCode||'',
+    fail_part: r.failPart||'', fail_cause: r.failCause||'', action: r.action||'',
+    worker_id: r.workerId||'', report_date: r.reportDate||'', report_time: r.reportTime||'',
+    proc_date: r.procDate||'', proc_time: r.procTime||'',
+    downtime: r.downtime||0, reporter: r.reporter||'', processor: r.processor||'', notes: r.notes||''
+  };
+}
+function sbToRec(r) {
+  return {
+    id: r.id, machine: r.machine, equipCode: r.equip_code||'',
+    failPart: r.fail_part||'', failCause: r.fail_cause||'', action: r.action||'',
+    workerId: r.worker_id||'', reportDate: r.report_date||'', reportTime: r.report_time||'',
+    procDate: r.proc_date||'', procTime: r.proc_time||'',
+    downtime: r.downtime||0, reporter: r.reporter||'', processor: r.processor||'', notes: r.notes||'', photos:[]
+  };
+}
+function moldRecToSb(r) {
+  return {
+    id: r.id, mold: r.mold||'', fail_cause: r.failCause||'', action: r.action||'',
+    worker_id: r.workerId||'', report_date: r.reportDate||'', report_time: r.reportTime||'',
+    proc_date: r.procDate||'', downtime: r.downtime||0, notes: r.notes||''
+  };
+}
+function sbToMoldRec(r) {
+  return {
+    id: r.id, mold: r.mold, failCause: r.fail_cause||'', action: r.action||'',
+    workerId: r.worker_id||'', reportDate: r.report_date||'', reportTime: r.report_time||'',
+    procDate: r.proc_date||'', downtime: r.downtime||0, notes: r.notes||'', photos:[]
+  };
+}
+</script>
 </head>
 <body>
 
@@ -245,12 +301,12 @@ body{font-family:var(--sans);background:var(--bg);color:var(--t1);min-height:100
       <button class="lbtn on" id="lbKo" onclick="setLang('ko')">KO</button>
       <button class="lbtn" id="lbEs" onclick="setLang('es')">ES</button>
     </div>
-    <button class="hbtn mobile" onclick="openMobile()" id="btnMobile">📱 모바일</button>
+    <button class="hbtn mobile" onclick="openMobile()" id="btnMobile">📱 모바일</button><button class="hbtn" id="btnSharePcData" type="button" title="모바일용이 아니라, 현재 PC 화면 파일 자체에 입력된 정보를 포함해서 HTML로 배포합니다.">📦 HTML배포</button>
     <button class="hbtn" onclick="exportData()" id="btnExport">📤 내보내기</button>
     <button class="hbtn" onclick="document.getElementById('importFile').click()" id="btnImport">📥 가져오기</button>
     <input type="file" id="importFile" accept=".json" onchange="importData(event)">
-    <div style="position:relative" id="addRecDropWrap">
-      <button class="hbtn gold" onclick="toggleAddRecDrop()" id="btnAddRec">＋ 고장등록 ▾</button>
+    <button class="hbtn" style="background: rgba(88, 101, 242, 0.15); border-color: rgb(88, 101, 242); color: rgb(155, 168, 255); font-weight: 700;">📖 설명서</button><div style="position:relative" id="addRecDropWrap">
+      <button class="hbtn gold" onclick="toggleAddRecDrop()" id="btnAddRec">＋ 고장등록</button>
       <div id="addRecDrop" style="display:none;position:absolute;right:0;top:36px;background:var(--bg2);border:1px solid var(--border2);border-radius:8px;min-width:172px;z-index:300;box-shadow:0 8px 24px rgba(0,0,0,.5);overflow:hidden">
         <button onclick="openRecModal();closeAddRecDrop()" style="width:100%;padding:11px 16px;text-align:left;background:transparent;border:none;color:var(--t1);font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px;font-family:var(--sans)" onmouseover="this.style.background='rgba(240,165,0,.1)'" onmouseout="this.style.background='transparent'">⚙️ 설비고장 등록</button>
         <div style="height:1px;background:var(--border);margin:0 10px"></div>
@@ -263,7 +319,7 @@ body{font-family:var(--sans);background:var(--bg);color:var(--t1);min-height:100
 <!-- LAYOUT -->
 <div class="layout">
   <div class="sidebar">
-    <div class="sb-sect" id="sbsAnalysis"><span class="sb-sect-label">분 석</span></div>
+    <div class="sb-sect" id="sbsAnalysis">분  석</div>
     <div class="sb-item on" onclick="nav(this,'dash')">
       <span class="sb-icon">📊</span><span class="sb-name" id="sb_dash">대시보드</span>
     </div>
@@ -279,42 +335,42 @@ body{font-family:var(--sans);background:var(--bg);color:var(--t1);min-height:100
     <div class="sb-item" onclick="nav(this,'moldAnalysis')">
       <span class="sb-icon">🔬</span><span class="sb-name" id="sb_moldAnalysis">금형고장분석</span>
     </div>
-    <div class="sb-sect" id="sbsData"><span class="sb-sect-label">데이터 관리</span></div>
+    <div class="sb-sect" id="sbsData">데이터 관리</div>
     <div class="sb-item" onclick="nav(this,'records')">
       <span class="sb-icon">📋</span><span class="sb-name" id="sb_records">고장이력</span>
-      <span class="sb-cnt" id="cntRec">0</span>
+      <span class="sb-cnt" id="cntRec">45</span>
     </div>
     <div class="sb-item" onclick="nav(this,'moldRecords')">
       <span class="sb-icon">🔲</span><span class="sb-name" id="sb_moldRecords">금형고장이력</span>
-      <span class="sb-cnt" id="cntMoldRec">0</span>
+      <span class="sb-cnt" id="cntMoldRec">1</span>
     </div>
-    <div class="sb-sect" id="sbsMaster"><span class="sb-sect-label">마스터 관리</span></div>
+    <div class="sb-sect" id="sbsMaster">마스터 관리</div>
     <div class="sb-item" onclick="nav(this,'mWorker')">
       <span class="sb-icon">👷</span><span class="sb-name" id="sb_mWorker">보전자 관리</span>
-      <span class="sb-cnt" id="cntWorker">0</span>
+      <span class="sb-cnt" id="cntWorker">4</span>
     </div>
     <div class="sb-item" onclick="nav(this,'mMachine')">
       <span class="sb-icon">⚙️</span><span class="sb-name" id="sb_mMachine">호기 관리</span>
-      <span class="sb-cnt" id="cntMac">0</span>
+      <span class="sb-cnt" id="cntMac">48</span>
     </div>
     <div class="sb-item" onclick="nav(this,'mPart')">
       <span class="sb-icon">🔩</span><span class="sb-name" id="sb_mPart">고장부위 관리</span>
-      <span class="sb-cnt" id="cntPart">0</span>
+      <span class="sb-cnt" id="cntPart">13</span>
     </div>
     <div class="sb-item" onclick="nav(this,'mCause')">
       <span class="sb-icon">❗</span><span class="sb-name" id="sb_mCause">고장원인 관리</span>
-      <span class="sb-cnt" id="cntCause">0</span>
+      <span class="sb-cnt" id="cntCause">20</span>
     </div>
     <div class="sb-item" onclick="nav(this,'mAction')">
       <span class="sb-icon">✅</span><span class="sb-name" id="sb_mAction">조치내용 관리</span>
-      <span class="sb-cnt" id="cntAction">0</span>
+      <span class="sb-cnt" id="cntAction">18</span>
     </div>
     <div class="sb-item" onclick="nav(this,'mMold')">
-      <span class="sb-icon">🔲</span><span class="sb-name" id="sb_mMold">금형 관리</span>
-      <span class="sb-cnt" id="cntMold">0</span>
+      <span class="sb-icon">🔲</span><span class="sb-name" id="sb_mMold">금형관리</span>
+      <span class="sb-cnt" id="cntMold">9</span>
     </div>
   </div>
-  <div class="content" id="mainContent"></div>
+  <div class="content" id="mainContent"><div class="scard-row"><div class="scard" style="--sc-color:var(--gold)"><div class="scard-lbl">총 고장건수</div><div class="scard-val">45</div><div class="scard-sub">건 (필터 적용 기간)</div></div><div class="scard" style="--sc-color:var(--red)"><div class="scard-lbl">총 비가동시간</div><div class="scard-val">2,129</div><div class="scard-sub">분 · 35h 29m</div></div><div class="scard" style="--sc-color:var(--blue)"><div class="scard-lbl">평균 비가동</div><div class="scard-val">47</div><div class="scard-sub">분/건 · 평균 처리시간</div></div><div class="scard" style="--sc-color:var(--cyan)"><div class="scard-lbl">최다 고장부위</div><div class="scard-val" style="font-size:13px;line-height:1.4;margin-top:2px">Seal station부</div><div class="scard-sub">9건 발생</div></div><div class="scard" style="--sc-color:var(--green)"><div class="scard-lbl">최다 고장원인</div><div class="scard-val" style="font-size:13px;line-height:1.4;margin-top:2px">기타</div><div class="scard-sub">13건 발생</div></div></div><div class="dash-grid-final"><div class="cbox"><div class="ctitle">월별 비가동 추이 <em>분/건</em></div><div class="cwrap"><canvas id="chM" width="757" height="387" style="display: block; box-sizing: border-box; height: 310px; width: 606px;"></canvas></div></div><div class="cbox"><div class="ctitle">호기별 비가동 TOP8 <em>Polar · 분</em></div><div class="cwrap"><canvas id="chMD" width="757" height="387" style="display: block; box-sizing: border-box; height: 310px; width: 606px;"></canvas></div></div><div class="cbox"><div class="ctitle">고장부위 분포 <em>가로 막대 · 건수</em></div><div class="cwrap"><canvas id="chP" width="757" height="387" style="display: block; box-sizing: border-box; height: 310px; width: 606px;"></canvas></div></div><div class="cbox"><div class="ctitle">고장원인 분포 <em>가로 막대 · 건수</em></div><div class="cwrap"><canvas id="chC" width="757" height="387" style="display: block; box-sizing: border-box; height: 310px; width: 606px;"></canvas></div></div></div></div>
 </div>
 
 <!-- RECORD MODAL -->
@@ -383,7 +439,7 @@ body{font-family:var(--sans);background:var(--bg);color:var(--t1);min-height:100
       <div class="fgrp">
         <label class="flbl" id="fl_photos">사진 첨부 / Fotos (최대 3장)</label>
         <div class="photo-row" id="photoRow"></div>
-        <input type="file" id="photoInput" accept="image/*" multiple style="display:none" onchange="handlePhotoUpload(event)">
+        <input type="file" id="photoInput" accept="image/*" multiple="" style="display:none" onchange="handlePhotoUpload(event)">
       </div>
     </div>
     <div class="modal-foot">
@@ -417,13 +473,13 @@ body{font-family:var(--sans);background:var(--bg);color:var(--t1);min-height:100
         </div>
         <div class="fgrp">
           <label class="flbl" id="wfl_phone">연락처</label>
-          <input type="text" id="wf_phone" class="finp" placeholder="813-XXX-XXXX">
+          <input type="text" id="wf_phone" class="finp" placeholder="813-XXX-XXXX" inputmode="numeric" maxlength="12" data-phone-mask-installed="1">
         </div>
       </div>
       <div class="fgrp">
         <label class="flbl" id="wfl_photo">사진</label>
         <div style="display:flex;gap:12px;align-items:center">
-          <img id="wPhotoPreview" class="avatar avatar-lg" src="" alt="👤" onerror="this.src='';this.style.display='none';document.getElementById('wPhotoPlaceholder').style.display='flex'">
+          <img id="wPhotoPreview" class="avatar avatar-lg" src="" alt="👤" onerror="this.src='';this.style.display='none';document.getElementById('wPhotoPlaceholder').style.display='flex'" style="display: none;">
           <div id="wPhotoPlaceholder" class="avatar avatar-lg" style="display:flex">👤</div>
           <div style="display:flex;flex-direction:column;gap:6px">
             <button class="abtn" onclick="document.getElementById('wPhotoInput').click()">📷 사진 선택</button>
@@ -467,7 +523,7 @@ body{font-family:var(--sans);background:var(--bg);color:var(--t1);min-height:100
 </div>
 
 <!-- MOBILE OVERLAY -->
-<div class="mob-overlay" id="mobOverlay" onclick="e=>{if(e.target===this)closeMobile()}">
+<div class="mob-overlay" id="mobOverlay" onclick="e=&gt;{if(e.target===this)closeMobile()}">
   <div class="mob-panel" id="mobPanel">
     <div class="mob-hdr">
       <div style="display:flex;flex-direction:column;gap:2px">
@@ -845,21 +901,72 @@ let recPhotos=[]; // temp photos during edit
 let viewerImgs=[],viewerIdx=0;
 let charts={};
 
-// ── STORAGE ───────────────────────────────────────────────
-function loadDB(){
-  try{
-    const s=localStorage.getItem('yura_db_v3');
-    if(s){DB=JSON.parse(s);return;}
-  }catch(e){}
-  DB={records:[...INIT_RECORDS.map(r=>({...r,photos:r.photos||[]}))],
-      machines:[...INIT_MACHINES],parts:[...INIT_PARTS],causes:[...INIT_CAUSES],
-      actions:[...INIT_ACTIONS],workers:[...INIT_WORKERS],
-      molds:[...INIT_MOLDS],moldRecords:[...INIT_MOLDS_RECORDS]};
-  saveDB();
+// ── STORAGE (Supabase 연동) ───────────────────────────────
+async function loadDB(){
+  toast('📡 서버에서 데이터 로딩 중...','info');
+  try {
+    const [records, machines, parts, causes, actions, workers, molds, moldRecords] = await Promise.all([
+      sbFetch('equipment_records?select=*&order=report_date.desc'),
+      sbFetch('machines?select=*&order=id.asc'),
+      sbFetch('parts?select=*&order=code.asc'),
+      sbFetch('causes?select=*&order=code.asc'),
+      sbFetch('actions?select=*&order=code.asc'),
+      sbFetch('workers?select=*&order=id.asc'),
+      sbFetch('molds?select=*&order=barcode.asc'),
+      sbFetch('mold_records?select=*&order=report_date.desc'),
+    ]);
+    DB = {
+      records: records.map(sbToRec),
+      machines: machines.map(m=>({id:m.id,maker:m.maker||'',nameEs:m.name_es||'',makerEs:m.maker_es||''})),
+      parts: parts.map(p=>({code:p.code,name:p.name,nameEs:p.name_es||'',moldApp:p.mold_app})),
+      causes: causes.map(c=>({code:c.code,name:c.name,nameEs:c.name_es||'',moldApp:c.mold_app})),
+      actions: actions.map(a=>({code:a.code,name:a.name,nameEs:a.name_es||'',moldApp:a.mold_app})),
+      workers: workers.map(w=>({id:w.id,name:w.name,role:w.role||'',phone:w.phone||'',photo:null})),
+      molds: molds.map(m=>({barcode:m.barcode,code:m.code||'',mgmt:m.mgmt||'',name:m.name||'',storage:m.storage||'',pos:m.pos||''})),
+      moldRecords: moldRecords.map(sbToMoldRec),
+    };
+    toast('✅ 데이터 로드 완료','ok');
+    renderPage();
+  } catch(e) {
+    toast('❌ 서버 연결 실패: '+e.message,'err');
+    // 폴백: localStorage
+    try{const s=localStorage.getItem('yura_db_v3');if(s)DB=JSON.parse(s);}catch(e2){}
+    renderPage();
+  }
 }
-function saveDB(){
-  try{localStorage.setItem('yura_db_v3',JSON.stringify(DB));}
-  catch(e){toast('저장 용량 초과! 사진을 일부 삭제하세요','err');}
+async function saveDB(){
+  // 로컬 캐시도 저장
+  try{localStorage.setItem('yura_db_v3',JSON.stringify(DB));}catch(e){}
+}
+// 고장이력 저장 (Supabase)
+async function saveRecord(r, isNew=true) {
+  const data = recToSb(r);
+  try {
+    if(isNew) {
+      await sbFetch('equipment_records', {method:'POST', body:JSON.stringify(data)});
+    } else {
+      await sbFetch(`equipment_records?id=eq.${encodeURIComponent(r.id)}`, {method:'PATCH', body:JSON.stringify(data)});
+    }
+    toast('✅ 저장됨','ok');
+  } catch(e) { toast('❌ 저장 실패: '+e.message,'err'); }
+}
+async function deleteRecord(id) {
+  try {
+    await sbFetch(`equipment_records?id=eq.${encodeURIComponent(id)}`, {method:'DELETE', headers:{'Prefer':''}});
+    toast('🗑 삭제됨','ok');
+  } catch(e) { toast('❌ 삭제 실패: '+e.message,'err'); }
+}
+// 금형이력 저장
+async function saveMoldRecord(r, isNew=true) {
+  const data = moldRecToSb(r);
+  try {
+    if(isNew) {
+      await sbFetch('mold_records', {method:'POST', body:JSON.stringify(data)});
+    } else {
+      await sbFetch(`mold_records?id=eq.${encodeURIComponent(r.id)}`, {method:'PATCH', body:JSON.stringify(data)});
+    }
+    toast('✅ 저장됨','ok');
+  } catch(e) { toast('❌ 저장 실패: '+e.message,'err'); }
 }
 
 // ── HELPERS ───────────────────────────────────────────────
@@ -1370,9 +1477,16 @@ function saveRec(){
   if(!rec.machine||!rec.failPart||!rec.reportDate){toast('필수 항목 입력 필요','err');return;}
   if(id){const idx=DB.records.findIndex(x=>x.id===id);if(idx>=0)DB.records[idx]=rec;else DB.records.push(rec);}
   else{if(DB.records.find(x=>x.id===rec.id)){toast('이미 존재하는 신고번호','err');return;}DB.records.push(rec);}
+  // Supabase 저장
+  saveRecord(rec, !id).catch(()=>{});
   saveDB();closeRecModal();renderPage();toast(id?'수정 완료':'등록 완료','ok');
 }
-function delRec(id){if(!confirm(t('confirm')))return;DB.records=DB.records.filter(r=>r.id!==id);saveDB();renderPage();toast('삭제 완료','ok');}
+function delRec(id){
+  if(!confirm(t('confirm')))return;
+  DB.records=DB.records.filter(r=>r.id!==id);
+  deleteRecord(id).catch(()=>{});
+  saveDB();renderPage();toast('삭제 완료','ok');
+}
 
 // ── WORKERS ───────────────────────────────────────────────
 function rWorkers(c){
@@ -1456,9 +1570,24 @@ function saveWorker(){
     wk.photo=wPhotoData||null;
     DB.workers.push(wk);
   }
+  // Supabase 저장
+  const data={id:wk.id,name:wk.name,role:wk.role||'',phone:wk.phone||''};
+  if(id){
+    sbFetch(`workers?id=eq.${encodeURIComponent(id)}`,{method:'PATCH',body:JSON.stringify(data)})
+      .then(()=>toast('✅ 서버 저장 완료','ok')).catch(e=>toast('❌ 서버 저장 실패: '+e.message,'err'));
+  } else {
+    sbFetch('workers',{method:'POST',body:JSON.stringify(data)})
+      .then(()=>toast('✅ 서버 저장 완료','ok')).catch(e=>toast('❌ 서버 저장 실패: '+e.message,'err'));
+  }
   saveDB();closeWorkerModal();renderPage();toast(id?'수정 완료':'추가 완료','ok');
 }
-function delWorker(id){if(!confirm(t('confirm')))return;DB.workers=DB.workers.filter(w=>w.id!==id);saveDB();renderPage();toast('삭제 완료','ok');}
+function delWorker(id){
+  if(!confirm(t('confirm')))return;
+  DB.workers=DB.workers.filter(w=>w.id!==id);
+  sbFetch(`workers?id=eq.${encodeURIComponent(id)}`,{method:'DELETE',headers:{'Prefer':''}})
+    .then(()=>toast('🗑 서버에서 삭제됨','ok')).catch(e=>toast('❌ 삭제 실패: '+e.message,'err'));
+  saveDB();renderPage();toast('삭제 완료','ok');
+}
 
 // ── MASTER ────────────────────────────────────────────────
 function mCfg(type){
@@ -1519,12 +1648,27 @@ function saveMasterItem(){
   }
   if(id){const idx=cfg.list.findIndex(x=>x[cfg.key]===id);if(idx>=0)cfg.list[idx]={...cfg.list[idx],...item};}
   else{if(cfg.list.find(x=>x[cfg.key]===item[cfg.key])){toast('이미 존재하는 코드','err');return;}cfg.list.push(item);}
+  // Supabase 마스터 저장
+  const sbTable = {parts:'parts', causes:'causes', actions:'actions'}[type];
+  if(sbTable && item){
+    const sbData = {code:item.code||item.kv, name:item.name, name_es:item.nameEs||'', mold_app:item.moldApp||false};
+    if(id){
+      sbFetch(`${sbTable}?code=eq.${encodeURIComponent(sbData.code)}`,{method:'PATCH',body:JSON.stringify(sbData)}).catch(e=>toast('❌ 서버 오류: '+e.message,'err'));
+    } else {
+      sbFetch(sbTable,{method:'POST',body:JSON.stringify(sbData)}).catch(e=>toast('❌ 서버 오류: '+e.message,'err'));
+    }
+  }
   saveDB();closeMasterModal();renderPage();toast(id?'수정 완료':'추가 완료','ok');
 }
 function delMaster(type,kv){
   if(!confirm(t('confirm')))return;
   const cfg=mCfg(type);const idx=cfg.list.findIndex(x=>x[cfg.key]===kv);
-  if(idx>=0){cfg.list.splice(idx,1);saveDB();renderPage();toast('삭제 완료','ok');}
+  if(idx>=0){
+    cfg.list.splice(idx,1);
+    const sbTable = {parts:'parts', causes:'causes', actions:'actions'}[type];
+    if(sbTable) sbFetch(`${sbTable}?code=eq.${encodeURIComponent(kv)}`,{method:'DELETE',headers:{'Prefer':''}}).catch(e=>toast('❌ 서버 오류: '+e.message,'err'));
+    saveDB();renderPage();toast('삭제 완료','ok');
+  }
 }
 
 // ── IMAGE VIEWER ──────────────────────────────────────────
@@ -1759,6 +1903,10 @@ render();
 })();
 
 <\/script>
+
+<script id="embedded-current-pc-data">
+(function(){try{localStorage.setItem("yura_db_v3", "{\"records\":[{\"id\":\"B26204004\",\"machine\":\"A06\",\"failPart\":\"1007.Seal station부\",\"failCause\":\"E3002.부품 파손\",\"action\":\"E4001.부품교체\",\"workerId\":\"W001\",\"reportDate\":\"2026-02-04\",\"reportTime\":\"12:03:09\",\"procDate\":\"2026-02-04\",\"downtime\":65,\"reporter\":\"김은영\",\"processor\":\"박창식\",\"notes\":\"씰 스테이션부 배터리 교체(X3 에러)\",\"equipCode\":\"\",\"photos\":[]},{\"id\":\"B26204007\",\"machine\":\"A10\",\"equipCode\":\"YF02206080000002\",\"failPart\":\"1013.기타\",\"reportDate\":\"2026-02-04\",\"reportTime\":\"15:50:16\",\"reporter\":\"임정순\",\"procDate\":\"2026-02-04\",\"procTime\":\"16:31:00\",\"downtime\":41,\"workerId\":\"W002\",\"processor\":\"김한국\",\"failCause\":\"E3029.기타\",\"action\":\"E4010.프로그램 재설치\",\"notes\":\"프로그램 재설정\",\"photos\":[]},{\"id\":\"B26205003\",\"machine\":\"A01\",\"equipCode\":\"A10-1004-003-004\",\"failPart\":\"1007.Seal station부\",\"reportDate\":\"2026-02-05\",\"reportTime\":\"08:57:13\",\"reporter\":\"권진숙\",\"procDate\":\"2026-02-05\",\"procTime\":\"09:37:00\",\"downtime\":40,\"workerId\":\"W003\",\"processor\":\"유선미\",\"failCause\":\"E3005.Air량 부적합\",\"action\":\"E4006.Air량 조정 및 설치\",\"notes\":\"\",\"photos\":[]},{\"id\":\"B26205005\",\"machine\":\"A10\",\"equipCode\":\"YF02206080000002\",\"failPart\":\"1001.Belt Drive부 (전선이송)\",\"reportDate\":\"2026-02-05\",\"reportTime\":\"09:10:36\",\"reporter\":\"임정순\",\"procDate\":\"2026-02-05\",\"procTime\":\"10:56:00\",\"downtime\":96,\"workerId\":\"W001\",\"processor\":\"박창식\",\"failCause\":\"E3029.기타\",\"action\":\"E4020.외부업체 수리\",\"notes\":\"피딩 모터 에러발생 외부업체 방문점검\",\"photos\":[]},{\"id\":\"B26206004\",\"machine\":\"A10\",\"equipCode\":\"YF02206080000002\",\"failPart\":\"1007.Seal station부\",\"reportDate\":\"2026-02-06\",\"reportTime\":\"10:51:39\",\"reporter\":\"임정순\",\"procDate\":\"2026-02-06\",\"procTime\":\"11:03:00\",\"downtime\":12,\"workerId\":\"W002\",\"processor\":\"김한국\",\"failCause\":\"E3007.이물질낌\",\"action\":\"E4007.이물질 제거\",\"notes\":\"튜브 이물질 제거\",\"photos\":[]},{\"id\":\"B26206007\",\"machine\":\"A04\",\"equipCode\":\"A10-1004-003-003\",\"failPart\":\"1003.Conveyor Belt부\",\"reportDate\":\"2026-02-06\",\"reportTime\":\"11:17:54\",\"reporter\":\"이미옥\",\"procDate\":\"2026-02-06\",\"procTime\":\"11:34:00\",\"downtime\":17,\"workerId\":\"W001\",\"processor\":\"박창식\",\"failCause\":\"E3001.부품 마모\",\"action\":\"E4020.외부업체 수리\",\"notes\":\"콘베이어 밸트 중간실린더 핀고정장치마모\",\"photos\":[]},{\"id\":\"B26206010\",\"machine\":\"A05\",\"equipCode\":\"A10-1111-002-001\",\"failPart\":\"1007.Seal station부\",\"reportDate\":\"2026-02-06\",\"reportTime\":\"13:19:38\",\"reporter\":\"이은하\",\"procDate\":\"2026-02-06\",\"procTime\":\"13:44:00\",\"downtime\":25,\"workerId\":\"W002\",\"processor\":\"김한국\",\"failCause\":\"E3007.이물질낌\",\"action\":\"E4007.이물질 제거\",\"notes\":\"이물질 제거\",\"photos\":[]},{\"id\":\"B26209012\",\"machine\":\"A03\",\"equipCode\":\"A10-1004-003-007\",\"failPart\":\"1004.Cutting Head부\",\"reportDate\":\"2026-02-09\",\"reportTime\":\"11:35:00\",\"reporter\":\"신상우\",\"procDate\":\"2026-02-09\",\"procTime\":\"11:55:00\",\"downtime\":20,\"workerId\":\"W002\",\"processor\":\"김한국\",\"failCause\":\"E3001.부품 마모\",\"action\":\"E4001.부품교체\",\"notes\":\"전단부 스트립 칼날 상/하 교체\",\"photos\":[]},{\"id\":\"B26209025\",\"machine\":\"A05\",\"equipCode\":\"A10-1111-002-001\",\"failPart\":\"1007.Seal station부\",\"reportDate\":\"2026-02-09\",\"reportTime\":\"17:39:09\",\"reporter\":\"이은하\",\"procDate\":\"2026-02-09\",\"procTime\":\"17:44:00\",\"downtime\":5,\"workerId\":\"W002\",\"processor\":\"김한국\",\"failCause\":\"E3016.실린더 작동 불량\",\"action\":\"E4021.점검 완료\",\"notes\":\"에어 연결 호스 절단 및 재부착\",\"photos\":[]},{\"id\":\"B26210018\",\"machine\":\"A06\",\"equipCode\":\"A10-1111-002-004\",\"failPart\":\"1002.Control Box부\",\"reportDate\":\"2026-02-10\",\"reportTime\":\"16:21:58\",\"reporter\":\"김은영\",\"procDate\":\"2026-02-10\",\"procTime\":\"16:36:00\",\"downtime\":15,\"workerId\":\"W002\",\"processor\":\"김한국\",\"failCause\":\"E3006.진동 부적합\",\"action\":\"E4004.위치조정\",\"notes\":\"컨베이어 단자 낌 및 이물질 제거\",\"photos\":[]},{\"id\":\"B26223001\",\"machine\":\"A05\",\"equipCode\":\"A10-1111-002-001\",\"failPart\":\"1003.Conveyor Belt부\",\"reportDate\":\"2026-02-23\",\"reportTime\":\"09:24:25\",\"reporter\":\"이은하\",\"procDate\":\"2026-02-23\",\"procTime\":\"10:16:00\",\"downtime\":52,\"workerId\":\"W001\",\"processor\":\"박창식\",\"failCause\":\"E3002.부품 파손\",\"action\":\"E4001.부품교체\",\"notes\":\"부품 교체\",\"photos\":[]},{\"id\":\"B26226014\",\"machine\":\"A09\",\"equipCode\":\"YF02206080000001\",\"failPart\":\"1008.Press부\",\"reportDate\":\"2026-02-26\",\"reportTime\":\"13:40:53\",\"reporter\":\"목정숙\",\"procDate\":\"2026-02-26\",\"procTime\":\"14:14:00\",\"downtime\":34,\"workerId\":\"W001\",\"processor\":\"박창식\",\"failCause\":\"E3007.이물질낌\",\"action\":\"E4007.이물질 제거\",\"notes\":\"칩커터 이물질제거\",\"photos\":[]},{\"id\":\"B26304002\",\"machine\":\"A09\",\"equipCode\":\"YF02206080000001\",\"failPart\":\"1010.Swivel부\",\"reportDate\":\"2026-03-04\",\"reportTime\":\"08:34:59\",\"reporter\":\"목정숙\",\"procDate\":\"2026-03-04\",\"procTime\":\"09:47:00\",\"downtime\":73,\"workerId\":\"W001\",\"processor\":\"박창식\",\"failCause\":\"E3029.기타\",\"action\":\"E4020.외부업체 수리\",\"notes\":\"스위블 1번 소음발생 업체 점검의뢰요청\",\"photos\":[]},{\"id\":\"B26309008\",\"machine\":\"A06\",\"equipCode\":\"A10-1111-002-004\",\"failPart\":\"1001.Belt Drive부 (전선이송)\",\"reportDate\":\"2026-03-09\",\"reportTime\":\"11:51:55\",\"reporter\":\"김은영\",\"procDate\":\"2026-03-09\",\"procTime\":\"12:00:00\",\"downtime\":9,\"workerId\":\"W002\",\"processor\":\"김한국\",\"failCause\":\"E3007.이물질낌\",\"action\":\"E4005.설정값 재설정\",\"notes\":\"엔코더 롤러 이물질 제거 및 재설정\",\"photos\":[]},{\"id\":\"B26311005\",\"machine\":\"A05\",\"equipCode\":\"A10-1111-002-001\",\"failPart\":\"1004.Cutting Head부\",\"reportDate\":\"2026-03-11\",\"reportTime\":\"10:42:16\",\"reporter\":\"이은하\",\"procDate\":\"2026-03-11\",\"procTime\":\"10:47:00\",\"downtime\":5,\"workerId\":\"W001\",\"processor\":\"박창식\",\"failCause\":\"E3029.기타\",\"action\":\"E4026.기타\",\"notes\":\"칼날 예지점검 부품교체처리완료\",\"photos\":[]},{\"id\":\"B26312002\",\"machine\":\"A05\",\"equipCode\":\"A10-1111-002-001\",\"failPart\":\"1010.Swivel부\",\"reportDate\":\"2026-03-12\",\"reportTime\":\"08:26:54\",\"reporter\":\"이은하\",\"procDate\":\"2026-03-12\",\"procTime\":\"08:50:00\",\"downtime\":24,\"workerId\":\"W001\",\"processor\":\"박창식\",\"failCause\":\"E3029.기타\",\"action\":\"E4026.기타\",\"notes\":\"스위블2번 센서부 에어선정리\",\"photos\":[]},{\"id\":\"B26312006\",\"machine\":\"A01\",\"equipCode\":\"A10-1004-003-004\",\"failPart\":\"1010.Swivel부\",\"reportDate\":\"2026-03-12\",\"reportTime\":\"10:40:55\",\"reporter\":\"권진숙\",\"procDate\":\"2026-03-12\",\"procTime\":\"13:32:00\",\"downtime\":132,\"workerId\":\"W003\",\"processor\":\"유선미\",\"failCause\":\"E3022.부위 작동 불량\",\"action\":\"E4009.프로그램 재부팅\",\"notes\":\"\",\"photos\":[]},{\"id\":\"B26312008\",\"machine\":\"A05\",\"equipCode\":\"A10-1111-002-001\",\"failPart\":\"1013.기타\",\"reportDate\":\"2026-03-12\",\"reportTime\":\"11:27:17\",\"reporter\":\"이은하\",\"procDate\":\"2026-03-12\",\"procTime\":\"11:58:00\",\"downtime\":31,\"workerId\":\"W004\",\"processor\":\"박상훈\",\"failCause\":\"E3013.센서 작동 불량\",\"action\":\"E4004.위치조정\",\"notes\":\"\",\"photos\":[]},{\"id\":\"B26312011\",\"machine\":\"A01\",\"equipCode\":\"A10-1004-003-004\",\"failPart\":\"1010.Swivel부\",\"reportDate\":\"2026-03-12\",\"reportTime\":\"14:04:44\",\"reporter\":\"권진숙\",\"procDate\":\"2026-03-12\",\"procTime\":\"15:54:00\",\"downtime\":100,\"workerId\":\"W003\",\"processor\":\"유선미\",\"failCause\":\"E3003.위치상이\",\"action\":\"E4004.위치조정\",\"notes\":\"\",\"photos\":[]},{\"id\":\"B26312017\",\"machine\":\"SB01\",\"equipCode\":\"A10-0601-003-001\",\"failPart\":\"1013.기타\",\"reportDate\":\"2026-03-12\",\"reportTime\":\"15:47:25\",\"reporter\":\"한상균\",\"procDate\":\"2026-03-12\",\"procTime\":\"18:00:00\",\"downtime\":133,\"workerId\":\"W001\",\"processor\":\"박창식\",\"failCause\":\"E3029.기타\",\"action\":\"E4026.기타\",\"notes\":\"소음발생 업체방문점검\",\"photos\":[]},{\"id\":\"B26313002\",\"machine\":\"A01\",\"equipCode\":\"A10-1004-003-004\",\"failPart\":\"1013.기타\",\"reportDate\":\"2026-03-13\",\"reportTime\":\"08:25:23\",\"reporter\":\"권진숙\",\"procDate\":\"2026-03-13\",\"procTime\":\"08:50:00\",\"downtime\":25,\"workerId\":\"W001\",\"processor\":\"박창식\",\"failCause\":\"E3029.기타\",\"action\":\"E4026.기타\",\"notes\":\"\",\"photos\":[]},{\"id\":\"B26313004\",\"machine\":\"A01\",\"equipCode\":\"A10-1004-003-004\",\"failPart\":\"1013.기타\",\"reportDate\":\"2026-03-13\",\"reportTime\":\"11:16:13\",\"reporter\":\"권진숙\",\"procDate\":\"2026-03-13\",\"procTime\":\"14:11:00\",\"downtime\":135,\"workerId\":\"W001\",\"processor\":\"박창식\",\"failCause\":\"E3029.기타\",\"action\":\"E4026.기타\",\"notes\":\"\",\"photos\":[]},{\"id\":\"B26316004\",\"machine\":\"A07\",\"equipCode\":\"A10-0205-027-004\",\"failPart\":\"1007.Seal station부\",\"reportDate\":\"2026-03-16\",\"reportTime\":\"09:25:07\",\"reporter\":\"강현주\",\"procDate\":\"2026-03-16\",\"procTime\":\"09:44:00\",\"downtime\":19,\"workerId\":\"W001\",\"processor\":\"박창식\",\"failCause\":\"E3013.센서 작동 불량\",\"action\":\"E4004.위치조정\",\"notes\":\"센서위치조정 완료\",\"photos\":[]},{\"id\":\"B26316006\",\"machine\":\"A01\",\"equipCode\":\"A10-1004-003-004\",\"failPart\":\"1004.Cutting Head부\",\"reportDate\":\"2026-03-16\",\"reportTime\":\"10:21:41\",\"reporter\":\"권진숙\",\"procDate\":\"2026-03-16\",\"procTime\":\"11:21:00\",\"downtime\":50,\"workerId\":\"W001\",\"processor\":\"박창식\",\"failCause\":\"E3002.부품 파손\",\"action\":\"E4001.부품교체\",\"notes\":\"\",\"photos\":[]},{\"id\":\"B26316012\",\"machine\":\"A01\",\"equipCode\":\"A10-1004-003-004\",\"failPart\":\"1004.Cutting Head부\",\"reportDate\":\"2026-03-16\",\"reportTime\":\"13:19:33\",\"reporter\":\"권진숙\",\"procDate\":\"2026-03-16\",\"procTime\":\"14:18:00\",\"downtime\":59,\"workerId\":\"W001\",\"processor\":\"박창식\",\"failCause\":\"E3001.부품 마모\",\"action\":\"E4001.부품교체\",\"notes\":\"\",\"photos\":[]},{\"id\":\"B26317007\",\"machine\":\"A01\",\"equipCode\":\"A10-1004-003-004\",\"failPart\":\"1010.Swivel부\",\"reportDate\":\"2026-03-17\",\"reportTime\":\"13:06:00\",\"reporter\":\"권진숙\",\"procDate\":\"2026-03-17\",\"procTime\":\"15:34:00\",\"downtime\":138,\"workerId\":\"W001\",\"processor\":\"박창식\",\"failCause\":\"E3029.기타\",\"action\":\"E4001.부품교체\",\"notes\":\"\",\"photos\":[]},{\"id\":\"B26317011\",\"machine\":\"A07\",\"equipCode\":\"A10-0205-027-004\",\"failPart\":\"1007.Seal station부\",\"reportDate\":\"2026-03-17\",\"reportTime\":\"14:53:54\",\"reporter\":\"강현주\",\"procDate\":\"2026-03-17\",\"procTime\":\"15:27:00\",\"downtime\":24,\"workerId\":\"W003\",\"processor\":\"유선미\",\"failCause\":\"E3016.실린더 작동 불량\",\"action\":\"E4007.이물질 제거\",\"notes\":\"\",\"photos\":[]},{\"id\":\"B26331005\",\"machine\":\"A05\",\"equipCode\":\"A10-1111-002-001\",\"failPart\":\"1004.Cutting Head부\",\"reportDate\":\"2026-03-31\",\"reportTime\":\"13:40:09\",\"reporter\":\"이은하\",\"procDate\":\"2026-03-31\",\"procTime\":\"13:48:00\",\"downtime\":8,\"workerId\":\"W002\",\"processor\":\"김한국\",\"failCause\":\"E3007.이물질낌\",\"action\":\"E4007.이물질 제거\",\"notes\":\"칼날 이물질 제거\",\"photos\":[]},{\"id\":\"B26401016\",\"machine\":\"A03\",\"equipCode\":\"A10-1004-003-007\",\"failPart\":\"1013.기타\",\"reportDate\":\"2026-04-01\",\"reportTime\":\"11:50:36\",\"reporter\":\"신상우\",\"procDate\":\"2026-04-01\",\"procTime\":\"11:51:00\",\"downtime\":1,\"workerId\":\"W001\",\"processor\":\"박창식\",\"failCause\":\"E3029.기타\",\"action\":\"E4026.기타\",\"notes\":\"점검\",\"photos\":[]},{\"id\":\"B26403005\",\"machine\":\"A05\",\"equipCode\":\"A10-1111-002-001\",\"failPart\":\"1003.Conveyor Belt부\",\"reportDate\":\"2026-04-03\",\"reportTime\":\"11:10:09\",\"reporter\":\"이은하\",\"procDate\":\"2026-04-03\",\"procTime\":\"12:30:00\",\"downtime\":80,\"workerId\":\"W002\",\"processor\":\"김한국\",\"failCause\":\"E3007.이물질낌\",\"action\":\"E4007.이물질 제거\",\"notes\":\"와이어 단자 이물질 제거 및 벨트 탠션 재설정\",\"photos\":[]},{\"id\":\"B26407001\",\"machine\":\"A07\",\"equipCode\":\"A10-0205-027-004\",\"failPart\":\"1002.Control Box부\",\"reportDate\":\"2026-04-07\",\"reportTime\":\"09:36:46\",\"reporter\":\"강현주\",\"procDate\":\"2026-04-07\",\"procTime\":\"12:21:00\",\"downtime\":155,\"workerId\":\"W001\",\"processor\":\"박창식\",\"failCause\":\"E3002.부품 파손\",\"action\":\"E4001.부품교체\",\"notes\":\"부품교체 점검완료\",\"photos\":[]},{\"id\":\"B26409011\",\"machine\":\"A04\",\"equipCode\":\"A10-1004-003-003\",\"failPart\":\"1013.기타\",\"reportDate\":\"2026-04-09\",\"reportTime\":\"15:46:16\",\"reporter\":\"이미옥\",\"procDate\":\"2026-04-09\",\"procTime\":\"16:09:00\",\"downtime\":23,\"workerId\":\"W004\",\"processor\":\"박상훈\",\"failCause\":\"E3002.부품 파손\",\"action\":\"E4001.부품교체\",\"notes\":\"\",\"photos\":[]},{\"id\":\"B26409014\",\"machine\":\"A04\",\"equipCode\":\"A10-1004-003-003\",\"failPart\":\"1010.Swivel부\",\"reportDate\":\"2026-04-09\",\"reportTime\":\"17:17:48\",\"reporter\":\"이미옥\",\"procDate\":\"2026-04-09\",\"procTime\":\"17:43:00\",\"downtime\":26,\"workerId\":\"W002\",\"processor\":\"김한국\",\"failCause\":\"E3019.스위치 고장\",\"action\":\"E4004.위치조정\",\"notes\":\"영점 셋팅 지그를 이용하여 영점 위치 재설정\",\"photos\":[]},{\"id\":\"B26410011\",\"machine\":\"A05\",\"equipCode\":\"A10-1111-002-001\",\"failPart\":\"1007.Seal station부\",\"reportDate\":\"2026-04-10\",\"reportTime\":\"13:13:15\",\"reporter\":\"이은하\",\"procDate\":\"2026-04-10\",\"procTime\":\"13:50:00\",\"downtime\":37,\"workerId\":\"W002\",\"processor\":\"김한국\",\"failCause\":\"E3003.위치상이\",\"action\":\"E4004.위치조정\",\"notes\":\"1번 씰 스테이션 핀 위치 재설정\",\"photos\":[]},{\"id\":\"B26415013\",\"machine\":\"A05\",\"equipCode\":\"A10-1111-002-001\",\"failPart\":\"1007.Seal station부\",\"reportDate\":\"2026-04-15\",\"reportTime\":\"16:24:30\",\"reporter\":\"이은하\",\"procDate\":\"2026-04-15\",\"procTime\":\"16:45:00\",\"downtime\":21,\"workerId\":\"W002\",\"processor\":\"김한국\",\"failCause\":\"E3001.부품 마모\",\"action\":\"E4001.부품교체\",\"notes\":\"PIN TT 17 마모로 인한 교체\",\"photos\":[]},{\"id\":\"B26416002\",\"machine\":\"A05\",\"equipCode\":\"A10-1111-002-001\",\"failPart\":\"1013.기타\",\"reportDate\":\"2026-04-16\",\"reportTime\":\"08:16:58\",\"reporter\":\"이은하\",\"procDate\":\"2026-04-16\",\"procTime\":\"12:29:00\",\"downtime\":243,\"workerId\":\"W001\",\"processor\":\"박창식\",\"failCause\":\"E3029.기타\",\"action\":\"E4026.기타\",\"notes\":\"\",\"photos\":[]},{\"id\":\"B26416026\",\"machine\":\"A06\",\"equipCode\":\"A10-1111-002-004\",\"failPart\":\"1010.Swivel부\",\"reportDate\":\"2026-04-16\",\"reportTime\":\"11:37:45\",\"reporter\":\"김은영\",\"procDate\":\"2026-04-16\",\"procTime\":\"12:26:00\",\"downtime\":49,\"workerId\":\"W001\",\"processor\":\"박창식\",\"failCause\":\"E3002.부품 파손\",\"action\":\"E4001.부품교체\",\"notes\":\"부품파손 교체\",\"photos\":[]},{\"id\":\"B26416028\",\"machine\":\"A06\",\"equipCode\":\"A10-1111-002-004\",\"failPart\":\"1010.Swivel부\",\"reportDate\":\"2026-04-16\",\"reportTime\":\"13:24:35\",\"reporter\":\"김은영\",\"procDate\":\"2026-04-16\",\"procTime\":\"13:30:00\",\"downtime\":6,\"workerId\":\"W002\",\"processor\":\"김한국\",\"failCause\":\"E3003.위치상이\",\"action\":\"E4004.위치조정\",\"notes\":\"2번 스위블 압착위치 재설정\",\"photos\":[]},{\"id\":\"B26420009\",\"machine\":\"A05\",\"equipCode\":\"A10-1111-002-001\",\"failPart\":\"1013.기타\",\"reportDate\":\"2026-04-20\",\"reportTime\":\"11:19:04\",\"reporter\":\"이은하\",\"procDate\":\"2026-04-20\",\"procTime\":\"11:31:00\",\"downtime\":12,\"workerId\":\"W001\",\"processor\":\"박창식\",\"failCause\":\"E3029.기타\",\"action\":\"E4026.기타\",\"notes\":\"씰 스테이션 3호기 교체 및 점검\",\"photos\":[]},{\"id\":\"B26423022\",\"machine\":\"A06\",\"equipCode\":\"A10-1111-002-004\",\"failPart\":\"1010.Swivel부\",\"reportDate\":\"2026-04-23\",\"reportTime\":\"14:53:42\",\"reporter\":\"김은영\",\"procDate\":\"2026-04-23\",\"procTime\":\"15:09:00\",\"downtime\":16,\"workerId\":\"W001\",\"processor\":\"박창식\",\"failCause\":\"E3002.부품 파손\",\"action\":\"E4001.부품교체\",\"notes\":\"2번 그리퍼 센서케이블파손 교체\",\"photos\":[]},{\"id\":\"B26511008\",\"machine\":\"A09\",\"equipCode\":\"YF02206080000001\",\"failPart\":\"1001.Belt Drive부 (전선이송)\",\"reportDate\":\"2026-05-11\",\"reportTime\":\"10:04:18\",\"reporter\":\"목정숙\",\"procDate\":\"2026-05-11\",\"procTime\":\"10:19:00\",\"downtime\":15,\"workerId\":\"W002\",\"processor\":\"김한국\",\"failCause\":\"E3026.개선 및 개량보전(TEST포함)\",\"action\":\"E4022.개선 및 개량보전(TEST포함)\",\"notes\":\"KM사 점검\",\"photos\":[]},{\"id\":\"B26512004\",\"machine\":\"A06\",\"equipCode\":\"A10-1111-002-004\",\"failPart\":\"1003.Conveyor Belt부\",\"reportDate\":\"2026-05-12\",\"reportTime\":\"09:18:48\",\"reporter\":\"김은영\",\"procDate\":\"2026-05-12\",\"procTime\":\"10:05:00\",\"downtime\":47,\"workerId\":\"W001\",\"processor\":\"박창식\",\"failCause\":\"E3029.기타\",\"action\":\"E4021.점검 완료\",\"notes\":\"컨베이어 밸트부 이물질제거 및 점검실시\",\"photos\":[]},{\"id\":\"B26515004\",\"machine\":\"A06\",\"equipCode\":\"A10-1111-002-004\",\"failPart\":\"1004.Cutting Head부\",\"reportDate\":\"2026-05-15\",\"reportTime\":\"14:43:15\",\"reporter\":\"김은영\",\"procDate\":\"2026-05-15\",\"procTime\":\"14:54:00\",\"downtime\":11,\"workerId\":\"W002\",\"processor\":\"김한국\",\"failCause\":\"E3025.교체 타수 도래\",\"action\":\"E4001.부품교체\",\"notes\":\"교체 타수 도래에 따른 칼날 교체\",\"photos\":[]},{\"id\":\"M1779047705756\",\"machine\":\"A06\",\"failPart\":\"1001.Belt Drive부 (전선이송)\",\"failCause\":\"E3007.이물질낌\",\"action\":\"E4007.이물질 제거\",\"workerId\":\"W003\",\"reportDate\":\"2026-05-17\",\"reportTime\":\"13:55:05\",\"procDate\":\"\",\"downtime\":0,\"reporter\":\"모바일\",\"processor\":\"\",\"notes\":\"이물질을 에어로 불어줬음\",\"equipCode\":\"\",\"photos\":[]},{\"id\":\"M1779048779773\",\"machine\":\"A06\",\"failPart\":\"1001.Belt Drive부 (전선이송)\",\"failCause\":\"E3001.부품 마모\",\"action\":\"E4001.부품교체\",\"downtime\":0,\"notes\":\"TEST\",\"reporter\":\"모바일\",\"reportDate\":\"2026-05-17\",\"reportTime\":\"14:12:59\",\"procDate\":\"\",\"workerId\":\"W002\",\"processor\":\"김한국\",\"equipCode\":\"\",\"photos\":[]}],\"machines\":[{\"id\":\"A01\",\"maker\":\"KM-DIGITECH\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A02\",\"maker\":\"KM-DIGITECH\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A03\",\"maker\":\"KM-DIGITECH\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A04\",\"maker\":\"KM-DIGITECH\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A05\",\"maker\":\"KM-DIGITECH\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A06\",\"maker\":\"KM-DIGITECH\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A07\",\"maker\":\"KM-DIGITECH\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A08\",\"maker\":\"KM-DIGITECH\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A09\",\"maker\":\"KM-DIGITECH\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A10\",\"maker\":\"KM-DIGITECH\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A11\",\"maker\":\"KM-DIGITECH\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A12\",\"maker\":\"KM-DIGITECH\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A13\",\"maker\":\"KM-DIGITECH\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A14\",\"maker\":\"KM-DIGITECH\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A15\",\"maker\":\"KM-DIGITECH\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A16\",\"maker\":\"KM-DIGITECH\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A17\",\"maker\":\"KM-DIGITECH\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A18\",\"maker\":\"KM-DIGITECH\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A19\",\"maker\":\"KM-DIGITECH\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A20\",\"maker\":\"KM-DIGITECH\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A21\",\"maker\":\"KM-DIGITECH\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A22\",\"maker\":\"KM-DIGITECH\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A23\",\"maker\":\"KM-DIGITECH\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A24\",\"maker\":\"KM-DIGITECH\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A25\",\"maker\":\"KM-DIGITECH\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A26\",\"maker\":\"KM-DIGITECH\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A27\",\"maker\":\"KM-DIGITECH\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A28\",\"maker\":\"KM-DIGITECH\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A29\",\"maker\":\"SCHLEUNINGER\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A30\",\"maker\":\"SCHLEUNINGER\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A31\",\"maker\":\"SCHLEUNINGER\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A32\",\"maker\":\"SCHLEUNINGER\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A33\",\"maker\":\"SCHLEUNINGER\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A34\",\"maker\":\"SCHLEUNINGER\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A35\",\"maker\":\"SCHLEUNINGER\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A36\",\"maker\":\"SCHLEUNINGER\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A37\",\"maker\":\"SCHLEUNINGER\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A38\",\"maker\":\"SCHLEUNINGER\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A39\",\"maker\":\"KM-DIGITECH\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A40\",\"maker\":\"KM-DIGITECH\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A41\",\"maker\":\"KM-DIGITECH\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A42\",\"maker\":\"KM-DIGITECH\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A43\",\"maker\":\"KM-DIGITECH\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A44\",\"maker\":\"KM-DIGITECH\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A45\",\"maker\":\"KM-DIGITECH\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A46\",\"maker\":\"KM-DIGITECH\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"AA01\",\"maker\":\"KM-DIGITECH\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"SB01\",\"maker\":\"기타\",\"nameEs\":\"\",\"makerEs\":\"\"}],\"parts\":[{\"code\":\"1001\",\"name\":\"Belt Drive부 (전선이송)\",\"nameEs\":\"ㅁㄴㄴ\"},{\"code\":\"1002\",\"name\":\"Control Box부\",\"nameEs\":\"ㄹㄷ33\"},{\"code\":\"1003\",\"name\":\"Conveyor Belt부\",\"nameEs\":\"ㅇㅇㅇHTTTTT\"},{\"code\":\"1004\",\"name\":\"Cutting Head부\",\"nameEs\":\"T5T5\"},{\"code\":\"1005\",\"name\":\"Double 압착부\",\"nameEs\":\"FTG5\"},{\"code\":\"1006\",\"name\":\"K106(프리피더)부\",\"nameEs\":\"ERG4\"},{\"code\":\"1007\",\"name\":\"Seal station부\",\"nameEs\":\"Y6Y6Y6Y\"},{\"code\":\"1008\",\"name\":\"Press부\",\"nameEs\":\"ED3\"},{\"code\":\"1009\",\"name\":\"Program P/C부\",\"nameEs\":\"Y6Y6Y\"},{\"code\":\"1010\",\"name\":\"Swivel부\",\"nameEs\":\"DSSgggg\"},{\"code\":\"1011\",\"name\":\"중간스트립부\",\"nameEs\":\"t6y6y6\"},{\"code\":\"1012\",\"name\":\"기타설비\",\"nameEs\":\"j7u\"},{\"code\":\"1013\",\"name\":\"기타\",\"nameEs\":\"juiii\"}],\"causes\":[{\"code\":\"E3001\",\"name\":\"부품 마모\",\"nameEs\":\"ABD\",\"moldApp\":false},{\"code\":\"E3002\",\"name\":\"부품 파손\",\"nameEs\":\"ED\",\"moldApp\":false},{\"code\":\"E3003\",\"name\":\"위치상이\",\"nameEs\":\"A\",\"moldApp\":false},{\"code\":\"E3005\",\"name\":\"Air량 부적합\",\"nameEs\":\"B\",\"moldApp\":false},{\"code\":\"E3006\",\"name\":\"진동 부적합\",\"nameEs\":\"EE\",\"moldApp\":false},{\"code\":\"E3007\",\"name\":\"이물질낌\",\"nameEs\":\"ASDFA\",\"moldApp\":false},{\"code\":\"E3013\",\"name\":\"센서 작동 불량\",\"nameEs\":\"DHG\",\"moldApp\":false},{\"code\":\"E3016\",\"name\":\"실린더 작동 불량\",\"nameEs\":\"KYUK\",\"moldApp\":false},{\"code\":\"E3019\",\"name\":\"스위치 고장\",\"nameEs\":\"O;O\",\"moldApp\":false},{\"code\":\"E3022\",\"name\":\"부위 작동 불량\",\"nameEs\":\"YYR\",\"moldApp\":false},{\"code\":\"E3025\",\"name\":\"교체 타수 도래\",\"nameEs\":\"7UJH\",\"moldApp\":false},{\"code\":\"E3026\",\"name\":\"개선 및 개량보전(TEST포함)\",\"nameEs\":\"WG\",\"moldApp\":false},{\"code\":\"E3029\",\"name\":\"기타\",\"nameEs\":\"KU\",\"moldApp\":false},{\"code\":\"M3001\",\"name\":\"[금형]마모/손상\",\"nameEs\":\"[Molde] Desgaste/Daño\",\"moldApp\":true},{\"code\":\"M3002\",\"name\":\"[금형]이물질낌/막힘\",\"nameEs\":\"[Molde] Atasco/Obstrucción\",\"moldApp\":true},{\"code\":\"M3003\",\"name\":\"[금형]치수불량\",\"nameEs\":\"[Molde] Dimensión incorrecta\",\"moldApp\":true},{\"code\":\"M3004\",\"name\":\"[금형]파손/균열\",\"nameEs\":\"[Molde] Rotura/Fisura\",\"moldApp\":true},{\"code\":\"M3005\",\"name\":\"[금형]교체주기도래\",\"nameEs\":\"[Molde] Ciclo de reemplazo\",\"moldApp\":true},{\"code\":\"M3006\",\"name\":\"[금형]조정불량\",\"nameEs\":\"[Molde] Mal ajuste\",\"moldApp\":true},{\"code\":\"M3009\",\"name\":\"[금형]기타\",\"nameEs\":\"[Molde] Otros\",\"moldApp\":true}],\"actions\":[{\"code\":\"E4001\",\"name\":\"부품교체\",\"nameEs\":\"ASDFA\",\"moldApp\":false},{\"code\":\"E4004\",\"name\":\"위치조정\",\"nameEs\":\"DDD\",\"moldApp\":false},{\"code\":\"E4005\",\"name\":\"설정값 재설정\",\"nameEs\":\"3E\",\"moldApp\":false},{\"code\":\"E4006\",\"name\":\"Air량 조정 및 설치\",\"nameEs\":\"AG\",\"moldApp\":false},{\"code\":\"E4007\",\"name\":\"이물질 제거\",\"nameEs\":\"AGSS\",\"moldApp\":false},{\"code\":\"E4009\",\"name\":\"프로그램 재부팅\",\"nameEs\":\"KUI\",\"moldApp\":false},{\"code\":\"E4010\",\"name\":\"프로그램 재설치\",\"nameEs\":\"FKUUK\",\"moldApp\":false},{\"code\":\"E4020\",\"name\":\"외부업체 수리\",\"nameEs\":\"FDR\",\"moldApp\":false},{\"code\":\"E4021\",\"name\":\"점검 완료\",\"nameEs\":\"JYYY\",\"moldApp\":false},{\"code\":\"E4022\",\"name\":\"개선 및 개량보전(TEST포함)\",\"nameEs\":\"DRT\",\"moldApp\":false},{\"code\":\"E4026\",\"name\":\"기타\",\"nameEs\":\"6Y5\",\"moldApp\":false},{\"code\":\"M4001\",\"name\":\"[금형]금형교체\",\"nameEs\":\"[Molde] Reemplazo de molde\",\"moldApp\":true},{\"code\":\"M4002\",\"name\":\"[금형]세척/이물제거\",\"nameEs\":\"[Molde] Limpieza/Extracción\",\"moldApp\":true},{\"code\":\"M4003\",\"name\":\"[금형]연마/수정\",\"nameEs\":\"[Molde] Pulido/Corrección\",\"moldApp\":true},{\"code\":\"M4004\",\"name\":\"[금형]치수조정\",\"nameEs\":\"[Molde] Ajuste dimensional\",\"moldApp\":true},{\"code\":\"M4005\",\"name\":\"[금형]외부업체수리\",\"nameEs\":\"[Molde] Reparación externa\",\"moldApp\":true},{\"code\":\"M4006\",\"name\":\"[금형]점검완료\",\"nameEs\":\"[Molde] Inspección completada\",\"moldApp\":true},{\"code\":\"M4009\",\"name\":\"[금형]기타\",\"nameEs\":\"[Molde] Otros\",\"moldApp\":true}],\"workers\":[{\"id\":\"W001\",\"name\":\"박창식\",\"role\":\"자동기\",\"phone\":\"\",\"photo\":null},{\"id\":\"W002\",\"name\":\"김한국\",\"role\":\"자동기\",\"phone\":\"\",\"photo\":null},{\"id\":\"W003\",\"name\":\"유선미\",\"role\":\"부품관리\",\"phone\":\"\",\"photo\":null},{\"id\":\"W004\",\"name\":\"박상훈\",\"role\":\"자동기\",\"phone\":\"8225455555\",\"photo\":null}],\"_newCount\":1,\"molds\":[{\"barcode\":\"$244260001\",\"code\":\"TKT1206C22SN-19\",\"mgmt\":\"P01\",\"name\":\"TKT1206C22SN\",\"storage\":\"A04\",\"pos\":\"332\"},{\"barcode\":\"$244260002\",\"code\":\"TKT4406C22SN-19\",\"mgmt\":\"P01\",\"name\":\"TKT4406C22SN\",\"storage\":\"A06\",\"pos\":\"345\"},{\"barcode\":\"$244260003\",\"code\":\"TUJMM02522SN-19\",\"mgmt\":\"P01\",\"name\":\"TUJMM02522SN\",\"storage\":\"A09\",\"pos\":\"397\"},{\"barcode\":\"$244260004\",\"code\":\"TUJ12020D2SN-19\",\"mgmt\":\"P01\",\"name\":\"TUJ12020D2SN\",\"storage\":\"IF01\",\"pos\":\"548\"},{\"barcode\":\"$244290001\",\"code\":\"TAP1106002SN\",\"mgmt\":\"P03\",\"name\":\"TAP1106002SN\",\"storage\":\"A09\",\"pos\":\"14\"},{\"barcode\":\"$244290002\",\"code\":\"TAP1106002SN\",\"mgmt\":\"P04\",\"name\":\"TAP1106002SN\",\"storage\":\"A07\",\"pos\":\"13\"},{\"barcode\":\"$244290003\",\"code\":\"TKT11020L2SN-19\",\"mgmt\":\"P03\",\"name\":\"TKT11020L2SN\",\"storage\":\"A02\",\"pos\":\"146\"},{\"barcode\":\"$244290004\",\"code\":\"TKT1205002SN\",\"mgmt\":\"P06\",\"name\":\"TKT1205002SN\",\"storage\":\"A02\",\"pos\":\"446\"},{\"barcode\":\"$244290005\",\"code\":\"TKY12025N2SN-19\",\"mgmt\":\"P02\",\"name\":\"TKY12025N2SN\",\"storage\":\"A06\",\"pos\":\"128\"}],\"moldRecords\":[{\"id\":\"MR1779578540168\",\"mold\":\"$244260002\",\"failPart\":\"\",\"failCause\":\"M3001.[금형]마모/손상\",\"action\":\"M4002.[금형]세척/이물제거\",\"workerId\":\"W002\",\"reportDate\":\"2026-05-23\",\"reportTime\":\"\",\"procDate\":\"\",\"downtime\":20,\"reporter\":\"\",\"processor\":\"\",\"notes\":\"\",\"photos\":[]}]}");if(window.DB){window.DB=JSON.parse("{\"records\":[{\"id\":\"B26204004\",\"machine\":\"A06\",\"failPart\":\"1007.Seal station부\",\"failCause\":\"E3002.부품 파손\",\"action\":\"E4001.부품교체\",\"workerId\":\"W001\",\"reportDate\":\"2026-02-04\",\"reportTime\":\"12:03:09\",\"procDate\":\"2026-02-04\",\"downtime\":65,\"reporter\":\"김은영\",\"processor\":\"박창식\",\"notes\":\"씰 스테이션부 배터리 교체(X3 에러)\",\"equipCode\":\"\",\"photos\":[]},{\"id\":\"B26204007\",\"machine\":\"A10\",\"equipCode\":\"YF02206080000002\",\"failPart\":\"1013.기타\",\"reportDate\":\"2026-02-04\",\"reportTime\":\"15:50:16\",\"reporter\":\"임정순\",\"procDate\":\"2026-02-04\",\"procTime\":\"16:31:00\",\"downtime\":41,\"workerId\":\"W002\",\"processor\":\"김한국\",\"failCause\":\"E3029.기타\",\"action\":\"E4010.프로그램 재설치\",\"notes\":\"프로그램 재설정\",\"photos\":[]},{\"id\":\"B26205003\",\"machine\":\"A01\",\"equipCode\":\"A10-1004-003-004\",\"failPart\":\"1007.Seal station부\",\"reportDate\":\"2026-02-05\",\"reportTime\":\"08:57:13\",\"reporter\":\"권진숙\",\"procDate\":\"2026-02-05\",\"procTime\":\"09:37:00\",\"downtime\":40,\"workerId\":\"W003\",\"processor\":\"유선미\",\"failCause\":\"E3005.Air량 부적합\",\"action\":\"E4006.Air량 조정 및 설치\",\"notes\":\"\",\"photos\":[]},{\"id\":\"B26205005\",\"machine\":\"A10\",\"equipCode\":\"YF02206080000002\",\"failPart\":\"1001.Belt Drive부 (전선이송)\",\"reportDate\":\"2026-02-05\",\"reportTime\":\"09:10:36\",\"reporter\":\"임정순\",\"procDate\":\"2026-02-05\",\"procTime\":\"10:56:00\",\"downtime\":96,\"workerId\":\"W001\",\"processor\":\"박창식\",\"failCause\":\"E3029.기타\",\"action\":\"E4020.외부업체 수리\",\"notes\":\"피딩 모터 에러발생 외부업체 방문점검\",\"photos\":[]},{\"id\":\"B26206004\",\"machine\":\"A10\",\"equipCode\":\"YF02206080000002\",\"failPart\":\"1007.Seal station부\",\"reportDate\":\"2026-02-06\",\"reportTime\":\"10:51:39\",\"reporter\":\"임정순\",\"procDate\":\"2026-02-06\",\"procTime\":\"11:03:00\",\"downtime\":12,\"workerId\":\"W002\",\"processor\":\"김한국\",\"failCause\":\"E3007.이물질낌\",\"action\":\"E4007.이물질 제거\",\"notes\":\"튜브 이물질 제거\",\"photos\":[]},{\"id\":\"B26206007\",\"machine\":\"A04\",\"equipCode\":\"A10-1004-003-003\",\"failPart\":\"1003.Conveyor Belt부\",\"reportDate\":\"2026-02-06\",\"reportTime\":\"11:17:54\",\"reporter\":\"이미옥\",\"procDate\":\"2026-02-06\",\"procTime\":\"11:34:00\",\"downtime\":17,\"workerId\":\"W001\",\"processor\":\"박창식\",\"failCause\":\"E3001.부품 마모\",\"action\":\"E4020.외부업체 수리\",\"notes\":\"콘베이어 밸트 중간실린더 핀고정장치마모\",\"photos\":[]},{\"id\":\"B26206010\",\"machine\":\"A05\",\"equipCode\":\"A10-1111-002-001\",\"failPart\":\"1007.Seal station부\",\"reportDate\":\"2026-02-06\",\"reportTime\":\"13:19:38\",\"reporter\":\"이은하\",\"procDate\":\"2026-02-06\",\"procTime\":\"13:44:00\",\"downtime\":25,\"workerId\":\"W002\",\"processor\":\"김한국\",\"failCause\":\"E3007.이물질낌\",\"action\":\"E4007.이물질 제거\",\"notes\":\"이물질 제거\",\"photos\":[]},{\"id\":\"B26209012\",\"machine\":\"A03\",\"equipCode\":\"A10-1004-003-007\",\"failPart\":\"1004.Cutting Head부\",\"reportDate\":\"2026-02-09\",\"reportTime\":\"11:35:00\",\"reporter\":\"신상우\",\"procDate\":\"2026-02-09\",\"procTime\":\"11:55:00\",\"downtime\":20,\"workerId\":\"W002\",\"processor\":\"김한국\",\"failCause\":\"E3001.부품 마모\",\"action\":\"E4001.부품교체\",\"notes\":\"전단부 스트립 칼날 상/하 교체\",\"photos\":[]},{\"id\":\"B26209025\",\"machine\":\"A05\",\"equipCode\":\"A10-1111-002-001\",\"failPart\":\"1007.Seal station부\",\"reportDate\":\"2026-02-09\",\"reportTime\":\"17:39:09\",\"reporter\":\"이은하\",\"procDate\":\"2026-02-09\",\"procTime\":\"17:44:00\",\"downtime\":5,\"workerId\":\"W002\",\"processor\":\"김한국\",\"failCause\":\"E3016.실린더 작동 불량\",\"action\":\"E4021.점검 완료\",\"notes\":\"에어 연결 호스 절단 및 재부착\",\"photos\":[]},{\"id\":\"B26210018\",\"machine\":\"A06\",\"equipCode\":\"A10-1111-002-004\",\"failPart\":\"1002.Control Box부\",\"reportDate\":\"2026-02-10\",\"reportTime\":\"16:21:58\",\"reporter\":\"김은영\",\"procDate\":\"2026-02-10\",\"procTime\":\"16:36:00\",\"downtime\":15,\"workerId\":\"W002\",\"processor\":\"김한국\",\"failCause\":\"E3006.진동 부적합\",\"action\":\"E4004.위치조정\",\"notes\":\"컨베이어 단자 낌 및 이물질 제거\",\"photos\":[]},{\"id\":\"B26223001\",\"machine\":\"A05\",\"equipCode\":\"A10-1111-002-001\",\"failPart\":\"1003.Conveyor Belt부\",\"reportDate\":\"2026-02-23\",\"reportTime\":\"09:24:25\",\"reporter\":\"이은하\",\"procDate\":\"2026-02-23\",\"procTime\":\"10:16:00\",\"downtime\":52,\"workerId\":\"W001\",\"processor\":\"박창식\",\"failCause\":\"E3002.부품 파손\",\"action\":\"E4001.부품교체\",\"notes\":\"부품 교체\",\"photos\":[]},{\"id\":\"B26226014\",\"machine\":\"A09\",\"equipCode\":\"YF02206080000001\",\"failPart\":\"1008.Press부\",\"reportDate\":\"2026-02-26\",\"reportTime\":\"13:40:53\",\"reporter\":\"목정숙\",\"procDate\":\"2026-02-26\",\"procTime\":\"14:14:00\",\"downtime\":34,\"workerId\":\"W001\",\"processor\":\"박창식\",\"failCause\":\"E3007.이물질낌\",\"action\":\"E4007.이물질 제거\",\"notes\":\"칩커터 이물질제거\",\"photos\":[]},{\"id\":\"B26304002\",\"machine\":\"A09\",\"equipCode\":\"YF02206080000001\",\"failPart\":\"1010.Swivel부\",\"reportDate\":\"2026-03-04\",\"reportTime\":\"08:34:59\",\"reporter\":\"목정숙\",\"procDate\":\"2026-03-04\",\"procTime\":\"09:47:00\",\"downtime\":73,\"workerId\":\"W001\",\"processor\":\"박창식\",\"failCause\":\"E3029.기타\",\"action\":\"E4020.외부업체 수리\",\"notes\":\"스위블 1번 소음발생 업체 점검의뢰요청\",\"photos\":[]},{\"id\":\"B26309008\",\"machine\":\"A06\",\"equipCode\":\"A10-1111-002-004\",\"failPart\":\"1001.Belt Drive부 (전선이송)\",\"reportDate\":\"2026-03-09\",\"reportTime\":\"11:51:55\",\"reporter\":\"김은영\",\"procDate\":\"2026-03-09\",\"procTime\":\"12:00:00\",\"downtime\":9,\"workerId\":\"W002\",\"processor\":\"김한국\",\"failCause\":\"E3007.이물질낌\",\"action\":\"E4005.설정값 재설정\",\"notes\":\"엔코더 롤러 이물질 제거 및 재설정\",\"photos\":[]},{\"id\":\"B26311005\",\"machine\":\"A05\",\"equipCode\":\"A10-1111-002-001\",\"failPart\":\"1004.Cutting Head부\",\"reportDate\":\"2026-03-11\",\"reportTime\":\"10:42:16\",\"reporter\":\"이은하\",\"procDate\":\"2026-03-11\",\"procTime\":\"10:47:00\",\"downtime\":5,\"workerId\":\"W001\",\"processor\":\"박창식\",\"failCause\":\"E3029.기타\",\"action\":\"E4026.기타\",\"notes\":\"칼날 예지점검 부품교체처리완료\",\"photos\":[]},{\"id\":\"B26312002\",\"machine\":\"A05\",\"equipCode\":\"A10-1111-002-001\",\"failPart\":\"1010.Swivel부\",\"reportDate\":\"2026-03-12\",\"reportTime\":\"08:26:54\",\"reporter\":\"이은하\",\"procDate\":\"2026-03-12\",\"procTime\":\"08:50:00\",\"downtime\":24,\"workerId\":\"W001\",\"processor\":\"박창식\",\"failCause\":\"E3029.기타\",\"action\":\"E4026.기타\",\"notes\":\"스위블2번 센서부 에어선정리\",\"photos\":[]},{\"id\":\"B26312006\",\"machine\":\"A01\",\"equipCode\":\"A10-1004-003-004\",\"failPart\":\"1010.Swivel부\",\"reportDate\":\"2026-03-12\",\"reportTime\":\"10:40:55\",\"reporter\":\"권진숙\",\"procDate\":\"2026-03-12\",\"procTime\":\"13:32:00\",\"downtime\":132,\"workerId\":\"W003\",\"processor\":\"유선미\",\"failCause\":\"E3022.부위 작동 불량\",\"action\":\"E4009.프로그램 재부팅\",\"notes\":\"\",\"photos\":[]},{\"id\":\"B26312008\",\"machine\":\"A05\",\"equipCode\":\"A10-1111-002-001\",\"failPart\":\"1013.기타\",\"reportDate\":\"2026-03-12\",\"reportTime\":\"11:27:17\",\"reporter\":\"이은하\",\"procDate\":\"2026-03-12\",\"procTime\":\"11:58:00\",\"downtime\":31,\"workerId\":\"W004\",\"processor\":\"박상훈\",\"failCause\":\"E3013.센서 작동 불량\",\"action\":\"E4004.위치조정\",\"notes\":\"\",\"photos\":[]},{\"id\":\"B26312011\",\"machine\":\"A01\",\"equipCode\":\"A10-1004-003-004\",\"failPart\":\"1010.Swivel부\",\"reportDate\":\"2026-03-12\",\"reportTime\":\"14:04:44\",\"reporter\":\"권진숙\",\"procDate\":\"2026-03-12\",\"procTime\":\"15:54:00\",\"downtime\":100,\"workerId\":\"W003\",\"processor\":\"유선미\",\"failCause\":\"E3003.위치상이\",\"action\":\"E4004.위치조정\",\"notes\":\"\",\"photos\":[]},{\"id\":\"B26312017\",\"machine\":\"SB01\",\"equipCode\":\"A10-0601-003-001\",\"failPart\":\"1013.기타\",\"reportDate\":\"2026-03-12\",\"reportTime\":\"15:47:25\",\"reporter\":\"한상균\",\"procDate\":\"2026-03-12\",\"procTime\":\"18:00:00\",\"downtime\":133,\"workerId\":\"W001\",\"processor\":\"박창식\",\"failCause\":\"E3029.기타\",\"action\":\"E4026.기타\",\"notes\":\"소음발생 업체방문점검\",\"photos\":[]},{\"id\":\"B26313002\",\"machine\":\"A01\",\"equipCode\":\"A10-1004-003-004\",\"failPart\":\"1013.기타\",\"reportDate\":\"2026-03-13\",\"reportTime\":\"08:25:23\",\"reporter\":\"권진숙\",\"procDate\":\"2026-03-13\",\"procTime\":\"08:50:00\",\"downtime\":25,\"workerId\":\"W001\",\"processor\":\"박창식\",\"failCause\":\"E3029.기타\",\"action\":\"E4026.기타\",\"notes\":\"\",\"photos\":[]},{\"id\":\"B26313004\",\"machine\":\"A01\",\"equipCode\":\"A10-1004-003-004\",\"failPart\":\"1013.기타\",\"reportDate\":\"2026-03-13\",\"reportTime\":\"11:16:13\",\"reporter\":\"권진숙\",\"procDate\":\"2026-03-13\",\"procTime\":\"14:11:00\",\"downtime\":135,\"workerId\":\"W001\",\"processor\":\"박창식\",\"failCause\":\"E3029.기타\",\"action\":\"E4026.기타\",\"notes\":\"\",\"photos\":[]},{\"id\":\"B26316004\",\"machine\":\"A07\",\"equipCode\":\"A10-0205-027-004\",\"failPart\":\"1007.Seal station부\",\"reportDate\":\"2026-03-16\",\"reportTime\":\"09:25:07\",\"reporter\":\"강현주\",\"procDate\":\"2026-03-16\",\"procTime\":\"09:44:00\",\"downtime\":19,\"workerId\":\"W001\",\"processor\":\"박창식\",\"failCause\":\"E3013.센서 작동 불량\",\"action\":\"E4004.위치조정\",\"notes\":\"센서위치조정 완료\",\"photos\":[]},{\"id\":\"B26316006\",\"machine\":\"A01\",\"equipCode\":\"A10-1004-003-004\",\"failPart\":\"1004.Cutting Head부\",\"reportDate\":\"2026-03-16\",\"reportTime\":\"10:21:41\",\"reporter\":\"권진숙\",\"procDate\":\"2026-03-16\",\"procTime\":\"11:21:00\",\"downtime\":50,\"workerId\":\"W001\",\"processor\":\"박창식\",\"failCause\":\"E3002.부품 파손\",\"action\":\"E4001.부품교체\",\"notes\":\"\",\"photos\":[]},{\"id\":\"B26316012\",\"machine\":\"A01\",\"equipCode\":\"A10-1004-003-004\",\"failPart\":\"1004.Cutting Head부\",\"reportDate\":\"2026-03-16\",\"reportTime\":\"13:19:33\",\"reporter\":\"권진숙\",\"procDate\":\"2026-03-16\",\"procTime\":\"14:18:00\",\"downtime\":59,\"workerId\":\"W001\",\"processor\":\"박창식\",\"failCause\":\"E3001.부품 마모\",\"action\":\"E4001.부품교체\",\"notes\":\"\",\"photos\":[]},{\"id\":\"B26317007\",\"machine\":\"A01\",\"equipCode\":\"A10-1004-003-004\",\"failPart\":\"1010.Swivel부\",\"reportDate\":\"2026-03-17\",\"reportTime\":\"13:06:00\",\"reporter\":\"권진숙\",\"procDate\":\"2026-03-17\",\"procTime\":\"15:34:00\",\"downtime\":138,\"workerId\":\"W001\",\"processor\":\"박창식\",\"failCause\":\"E3029.기타\",\"action\":\"E4001.부품교체\",\"notes\":\"\",\"photos\":[]},{\"id\":\"B26317011\",\"machine\":\"A07\",\"equipCode\":\"A10-0205-027-004\",\"failPart\":\"1007.Seal station부\",\"reportDate\":\"2026-03-17\",\"reportTime\":\"14:53:54\",\"reporter\":\"강현주\",\"procDate\":\"2026-03-17\",\"procTime\":\"15:27:00\",\"downtime\":24,\"workerId\":\"W003\",\"processor\":\"유선미\",\"failCause\":\"E3016.실린더 작동 불량\",\"action\":\"E4007.이물질 제거\",\"notes\":\"\",\"photos\":[]},{\"id\":\"B26331005\",\"machine\":\"A05\",\"equipCode\":\"A10-1111-002-001\",\"failPart\":\"1004.Cutting Head부\",\"reportDate\":\"2026-03-31\",\"reportTime\":\"13:40:09\",\"reporter\":\"이은하\",\"procDate\":\"2026-03-31\",\"procTime\":\"13:48:00\",\"downtime\":8,\"workerId\":\"W002\",\"processor\":\"김한국\",\"failCause\":\"E3007.이물질낌\",\"action\":\"E4007.이물질 제거\",\"notes\":\"칼날 이물질 제거\",\"photos\":[]},{\"id\":\"B26401016\",\"machine\":\"A03\",\"equipCode\":\"A10-1004-003-007\",\"failPart\":\"1013.기타\",\"reportDate\":\"2026-04-01\",\"reportTime\":\"11:50:36\",\"reporter\":\"신상우\",\"procDate\":\"2026-04-01\",\"procTime\":\"11:51:00\",\"downtime\":1,\"workerId\":\"W001\",\"processor\":\"박창식\",\"failCause\":\"E3029.기타\",\"action\":\"E4026.기타\",\"notes\":\"점검\",\"photos\":[]},{\"id\":\"B26403005\",\"machine\":\"A05\",\"equipCode\":\"A10-1111-002-001\",\"failPart\":\"1003.Conveyor Belt부\",\"reportDate\":\"2026-04-03\",\"reportTime\":\"11:10:09\",\"reporter\":\"이은하\",\"procDate\":\"2026-04-03\",\"procTime\":\"12:30:00\",\"downtime\":80,\"workerId\":\"W002\",\"processor\":\"김한국\",\"failCause\":\"E3007.이물질낌\",\"action\":\"E4007.이물질 제거\",\"notes\":\"와이어 단자 이물질 제거 및 벨트 탠션 재설정\",\"photos\":[]},{\"id\":\"B26407001\",\"machine\":\"A07\",\"equipCode\":\"A10-0205-027-004\",\"failPart\":\"1002.Control Box부\",\"reportDate\":\"2026-04-07\",\"reportTime\":\"09:36:46\",\"reporter\":\"강현주\",\"procDate\":\"2026-04-07\",\"procTime\":\"12:21:00\",\"downtime\":155,\"workerId\":\"W001\",\"processor\":\"박창식\",\"failCause\":\"E3002.부품 파손\",\"action\":\"E4001.부품교체\",\"notes\":\"부품교체 점검완료\",\"photos\":[]},{\"id\":\"B26409011\",\"machine\":\"A04\",\"equipCode\":\"A10-1004-003-003\",\"failPart\":\"1013.기타\",\"reportDate\":\"2026-04-09\",\"reportTime\":\"15:46:16\",\"reporter\":\"이미옥\",\"procDate\":\"2026-04-09\",\"procTime\":\"16:09:00\",\"downtime\":23,\"workerId\":\"W004\",\"processor\":\"박상훈\",\"failCause\":\"E3002.부품 파손\",\"action\":\"E4001.부품교체\",\"notes\":\"\",\"photos\":[]},{\"id\":\"B26409014\",\"machine\":\"A04\",\"equipCode\":\"A10-1004-003-003\",\"failPart\":\"1010.Swivel부\",\"reportDate\":\"2026-04-09\",\"reportTime\":\"17:17:48\",\"reporter\":\"이미옥\",\"procDate\":\"2026-04-09\",\"procTime\":\"17:43:00\",\"downtime\":26,\"workerId\":\"W002\",\"processor\":\"김한국\",\"failCause\":\"E3019.스위치 고장\",\"action\":\"E4004.위치조정\",\"notes\":\"영점 셋팅 지그를 이용하여 영점 위치 재설정\",\"photos\":[]},{\"id\":\"B26410011\",\"machine\":\"A05\",\"equipCode\":\"A10-1111-002-001\",\"failPart\":\"1007.Seal station부\",\"reportDate\":\"2026-04-10\",\"reportTime\":\"13:13:15\",\"reporter\":\"이은하\",\"procDate\":\"2026-04-10\",\"procTime\":\"13:50:00\",\"downtime\":37,\"workerId\":\"W002\",\"processor\":\"김한국\",\"failCause\":\"E3003.위치상이\",\"action\":\"E4004.위치조정\",\"notes\":\"1번 씰 스테이션 핀 위치 재설정\",\"photos\":[]},{\"id\":\"B26415013\",\"machine\":\"A05\",\"equipCode\":\"A10-1111-002-001\",\"failPart\":\"1007.Seal station부\",\"reportDate\":\"2026-04-15\",\"reportTime\":\"16:24:30\",\"reporter\":\"이은하\",\"procDate\":\"2026-04-15\",\"procTime\":\"16:45:00\",\"downtime\":21,\"workerId\":\"W002\",\"processor\":\"김한국\",\"failCause\":\"E3001.부품 마모\",\"action\":\"E4001.부품교체\",\"notes\":\"PIN TT 17 마모로 인한 교체\",\"photos\":[]},{\"id\":\"B26416002\",\"machine\":\"A05\",\"equipCode\":\"A10-1111-002-001\",\"failPart\":\"1013.기타\",\"reportDate\":\"2026-04-16\",\"reportTime\":\"08:16:58\",\"reporter\":\"이은하\",\"procDate\":\"2026-04-16\",\"procTime\":\"12:29:00\",\"downtime\":243,\"workerId\":\"W001\",\"processor\":\"박창식\",\"failCause\":\"E3029.기타\",\"action\":\"E4026.기타\",\"notes\":\"\",\"photos\":[]},{\"id\":\"B26416026\",\"machine\":\"A06\",\"equipCode\":\"A10-1111-002-004\",\"failPart\":\"1010.Swivel부\",\"reportDate\":\"2026-04-16\",\"reportTime\":\"11:37:45\",\"reporter\":\"김은영\",\"procDate\":\"2026-04-16\",\"procTime\":\"12:26:00\",\"downtime\":49,\"workerId\":\"W001\",\"processor\":\"박창식\",\"failCause\":\"E3002.부품 파손\",\"action\":\"E4001.부품교체\",\"notes\":\"부품파손 교체\",\"photos\":[]},{\"id\":\"B26416028\",\"machine\":\"A06\",\"equipCode\":\"A10-1111-002-004\",\"failPart\":\"1010.Swivel부\",\"reportDate\":\"2026-04-16\",\"reportTime\":\"13:24:35\",\"reporter\":\"김은영\",\"procDate\":\"2026-04-16\",\"procTime\":\"13:30:00\",\"downtime\":6,\"workerId\":\"W002\",\"processor\":\"김한국\",\"failCause\":\"E3003.위치상이\",\"action\":\"E4004.위치조정\",\"notes\":\"2번 스위블 압착위치 재설정\",\"photos\":[]},{\"id\":\"B26420009\",\"machine\":\"A05\",\"equipCode\":\"A10-1111-002-001\",\"failPart\":\"1013.기타\",\"reportDate\":\"2026-04-20\",\"reportTime\":\"11:19:04\",\"reporter\":\"이은하\",\"procDate\":\"2026-04-20\",\"procTime\":\"11:31:00\",\"downtime\":12,\"workerId\":\"W001\",\"processor\":\"박창식\",\"failCause\":\"E3029.기타\",\"action\":\"E4026.기타\",\"notes\":\"씰 스테이션 3호기 교체 및 점검\",\"photos\":[]},{\"id\":\"B26423022\",\"machine\":\"A06\",\"equipCode\":\"A10-1111-002-004\",\"failPart\":\"1010.Swivel부\",\"reportDate\":\"2026-04-23\",\"reportTime\":\"14:53:42\",\"reporter\":\"김은영\",\"procDate\":\"2026-04-23\",\"procTime\":\"15:09:00\",\"downtime\":16,\"workerId\":\"W001\",\"processor\":\"박창식\",\"failCause\":\"E3002.부품 파손\",\"action\":\"E4001.부품교체\",\"notes\":\"2번 그리퍼 센서케이블파손 교체\",\"photos\":[]},{\"id\":\"B26511008\",\"machine\":\"A09\",\"equipCode\":\"YF02206080000001\",\"failPart\":\"1001.Belt Drive부 (전선이송)\",\"reportDate\":\"2026-05-11\",\"reportTime\":\"10:04:18\",\"reporter\":\"목정숙\",\"procDate\":\"2026-05-11\",\"procTime\":\"10:19:00\",\"downtime\":15,\"workerId\":\"W002\",\"processor\":\"김한국\",\"failCause\":\"E3026.개선 및 개량보전(TEST포함)\",\"action\":\"E4022.개선 및 개량보전(TEST포함)\",\"notes\":\"KM사 점검\",\"photos\":[]},{\"id\":\"B26512004\",\"machine\":\"A06\",\"equipCode\":\"A10-1111-002-004\",\"failPart\":\"1003.Conveyor Belt부\",\"reportDate\":\"2026-05-12\",\"reportTime\":\"09:18:48\",\"reporter\":\"김은영\",\"procDate\":\"2026-05-12\",\"procTime\":\"10:05:00\",\"downtime\":47,\"workerId\":\"W001\",\"processor\":\"박창식\",\"failCause\":\"E3029.기타\",\"action\":\"E4021.점검 완료\",\"notes\":\"컨베이어 밸트부 이물질제거 및 점검실시\",\"photos\":[]},{\"id\":\"B26515004\",\"machine\":\"A06\",\"equipCode\":\"A10-1111-002-004\",\"failPart\":\"1004.Cutting Head부\",\"reportDate\":\"2026-05-15\",\"reportTime\":\"14:43:15\",\"reporter\":\"김은영\",\"procDate\":\"2026-05-15\",\"procTime\":\"14:54:00\",\"downtime\":11,\"workerId\":\"W002\",\"processor\":\"김한국\",\"failCause\":\"E3025.교체 타수 도래\",\"action\":\"E4001.부품교체\",\"notes\":\"교체 타수 도래에 따른 칼날 교체\",\"photos\":[]},{\"id\":\"M1779047705756\",\"machine\":\"A06\",\"failPart\":\"1001.Belt Drive부 (전선이송)\",\"failCause\":\"E3007.이물질낌\",\"action\":\"E4007.이물질 제거\",\"workerId\":\"W003\",\"reportDate\":\"2026-05-17\",\"reportTime\":\"13:55:05\",\"procDate\":\"\",\"downtime\":0,\"reporter\":\"모바일\",\"processor\":\"\",\"notes\":\"이물질을 에어로 불어줬음\",\"equipCode\":\"\",\"photos\":[]},{\"id\":\"M1779048779773\",\"machine\":\"A06\",\"failPart\":\"1001.Belt Drive부 (전선이송)\",\"failCause\":\"E3001.부품 마모\",\"action\":\"E4001.부품교체\",\"downtime\":0,\"notes\":\"TEST\",\"reporter\":\"모바일\",\"reportDate\":\"2026-05-17\",\"reportTime\":\"14:12:59\",\"procDate\":\"\",\"workerId\":\"W002\",\"processor\":\"김한국\",\"equipCode\":\"\",\"photos\":[]}],\"machines\":[{\"id\":\"A01\",\"maker\":\"KM-DIGITECH\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A02\",\"maker\":\"KM-DIGITECH\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A03\",\"maker\":\"KM-DIGITECH\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A04\",\"maker\":\"KM-DIGITECH\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A05\",\"maker\":\"KM-DIGITECH\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A06\",\"maker\":\"KM-DIGITECH\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A07\",\"maker\":\"KM-DIGITECH\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A08\",\"maker\":\"KM-DIGITECH\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A09\",\"maker\":\"KM-DIGITECH\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A10\",\"maker\":\"KM-DIGITECH\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A11\",\"maker\":\"KM-DIGITECH\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A12\",\"maker\":\"KM-DIGITECH\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A13\",\"maker\":\"KM-DIGITECH\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A14\",\"maker\":\"KM-DIGITECH\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A15\",\"maker\":\"KM-DIGITECH\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A16\",\"maker\":\"KM-DIGITECH\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A17\",\"maker\":\"KM-DIGITECH\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A18\",\"maker\":\"KM-DIGITECH\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A19\",\"maker\":\"KM-DIGITECH\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A20\",\"maker\":\"KM-DIGITECH\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A21\",\"maker\":\"KM-DIGITECH\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A22\",\"maker\":\"KM-DIGITECH\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A23\",\"maker\":\"KM-DIGITECH\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A24\",\"maker\":\"KM-DIGITECH\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A25\",\"maker\":\"KM-DIGITECH\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A26\",\"maker\":\"KM-DIGITECH\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A27\",\"maker\":\"KM-DIGITECH\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A28\",\"maker\":\"KM-DIGITECH\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A29\",\"maker\":\"SCHLEUNINGER\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A30\",\"maker\":\"SCHLEUNINGER\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A31\",\"maker\":\"SCHLEUNINGER\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A32\",\"maker\":\"SCHLEUNINGER\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A33\",\"maker\":\"SCHLEUNINGER\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A34\",\"maker\":\"SCHLEUNINGER\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A35\",\"maker\":\"SCHLEUNINGER\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A36\",\"maker\":\"SCHLEUNINGER\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A37\",\"maker\":\"SCHLEUNINGER\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A38\",\"maker\":\"SCHLEUNINGER\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A39\",\"maker\":\"KM-DIGITECH\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A40\",\"maker\":\"KM-DIGITECH\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A41\",\"maker\":\"KM-DIGITECH\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A42\",\"maker\":\"KM-DIGITECH\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A43\",\"maker\":\"KM-DIGITECH\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A44\",\"maker\":\"KM-DIGITECH\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A45\",\"maker\":\"KM-DIGITECH\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"A46\",\"maker\":\"KM-DIGITECH\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"AA01\",\"maker\":\"KM-DIGITECH\",\"nameEs\":\"\",\"makerEs\":\"\"},{\"id\":\"SB01\",\"maker\":\"기타\",\"nameEs\":\"\",\"makerEs\":\"\"}],\"parts\":[{\"code\":\"1001\",\"name\":\"Belt Drive부 (전선이송)\",\"nameEs\":\"ㅁㄴㄴ\"},{\"code\":\"1002\",\"name\":\"Control Box부\",\"nameEs\":\"ㄹㄷ33\"},{\"code\":\"1003\",\"name\":\"Conveyor Belt부\",\"nameEs\":\"ㅇㅇㅇHTTTTT\"},{\"code\":\"1004\",\"name\":\"Cutting Head부\",\"nameEs\":\"T5T5\"},{\"code\":\"1005\",\"name\":\"Double 압착부\",\"nameEs\":\"FTG5\"},{\"code\":\"1006\",\"name\":\"K106(프리피더)부\",\"nameEs\":\"ERG4\"},{\"code\":\"1007\",\"name\":\"Seal station부\",\"nameEs\":\"Y6Y6Y6Y\"},{\"code\":\"1008\",\"name\":\"Press부\",\"nameEs\":\"ED3\"},{\"code\":\"1009\",\"name\":\"Program P/C부\",\"nameEs\":\"Y6Y6Y\"},{\"code\":\"1010\",\"name\":\"Swivel부\",\"nameEs\":\"DSSgggg\"},{\"code\":\"1011\",\"name\":\"중간스트립부\",\"nameEs\":\"t6y6y6\"},{\"code\":\"1012\",\"name\":\"기타설비\",\"nameEs\":\"j7u\"},{\"code\":\"1013\",\"name\":\"기타\",\"nameEs\":\"juiii\"}],\"causes\":[{\"code\":\"E3001\",\"name\":\"부품 마모\",\"nameEs\":\"ABD\",\"moldApp\":false},{\"code\":\"E3002\",\"name\":\"부품 파손\",\"nameEs\":\"ED\",\"moldApp\":false},{\"code\":\"E3003\",\"name\":\"위치상이\",\"nameEs\":\"A\",\"moldApp\":false},{\"code\":\"E3005\",\"name\":\"Air량 부적합\",\"nameEs\":\"B\",\"moldApp\":false},{\"code\":\"E3006\",\"name\":\"진동 부적합\",\"nameEs\":\"EE\",\"moldApp\":false},{\"code\":\"E3007\",\"name\":\"이물질낌\",\"nameEs\":\"ASDFA\",\"moldApp\":false},{\"code\":\"E3013\",\"name\":\"센서 작동 불량\",\"nameEs\":\"DHG\",\"moldApp\":false},{\"code\":\"E3016\",\"name\":\"실린더 작동 불량\",\"nameEs\":\"KYUK\",\"moldApp\":false},{\"code\":\"E3019\",\"name\":\"스위치 고장\",\"nameEs\":\"O;O\",\"moldApp\":false},{\"code\":\"E3022\",\"name\":\"부위 작동 불량\",\"nameEs\":\"YYR\",\"moldApp\":false},{\"code\":\"E3025\",\"name\":\"교체 타수 도래\",\"nameEs\":\"7UJH\",\"moldApp\":false},{\"code\":\"E3026\",\"name\":\"개선 및 개량보전(TEST포함)\",\"nameEs\":\"WG\",\"moldApp\":false},{\"code\":\"E3029\",\"name\":\"기타\",\"nameEs\":\"KU\",\"moldApp\":false},{\"code\":\"M3001\",\"name\":\"[금형]마모/손상\",\"nameEs\":\"[Molde] Desgaste/Daño\",\"moldApp\":true},{\"code\":\"M3002\",\"name\":\"[금형]이물질낌/막힘\",\"nameEs\":\"[Molde] Atasco/Obstrucción\",\"moldApp\":true},{\"code\":\"M3003\",\"name\":\"[금형]치수불량\",\"nameEs\":\"[Molde] Dimensión incorrecta\",\"moldApp\":true},{\"code\":\"M3004\",\"name\":\"[금형]파손/균열\",\"nameEs\":\"[Molde] Rotura/Fisura\",\"moldApp\":true},{\"code\":\"M3005\",\"name\":\"[금형]교체주기도래\",\"nameEs\":\"[Molde] Ciclo de reemplazo\",\"moldApp\":true},{\"code\":\"M3006\",\"name\":\"[금형]조정불량\",\"nameEs\":\"[Molde] Mal ajuste\",\"moldApp\":true},{\"code\":\"M3009\",\"name\":\"[금형]기타\",\"nameEs\":\"[Molde] Otros\",\"moldApp\":true}],\"actions\":[{\"code\":\"E4001\",\"name\":\"부품교체\",\"nameEs\":\"ASDFA\",\"moldApp\":false},{\"code\":\"E4004\",\"name\":\"위치조정\",\"nameEs\":\"DDD\",\"moldApp\":false},{\"code\":\"E4005\",\"name\":\"설정값 재설정\",\"nameEs\":\"3E\",\"moldApp\":false},{\"code\":\"E4006\",\"name\":\"Air량 조정 및 설치\",\"nameEs\":\"AG\",\"moldApp\":false},{\"code\":\"E4007\",\"name\":\"이물질 제거\",\"nameEs\":\"AGSS\",\"moldApp\":false},{\"code\":\"E4009\",\"name\":\"프로그램 재부팅\",\"nameEs\":\"KUI\",\"moldApp\":false},{\"code\":\"E4010\",\"name\":\"프로그램 재설치\",\"nameEs\":\"FKUUK\",\"moldApp\":false},{\"code\":\"E4020\",\"name\":\"외부업체 수리\",\"nameEs\":\"FDR\",\"moldApp\":false},{\"code\":\"E4021\",\"name\":\"점검 완료\",\"nameEs\":\"JYYY\",\"moldApp\":false},{\"code\":\"E4022\",\"name\":\"개선 및 개량보전(TEST포함)\",\"nameEs\":\"DRT\",\"moldApp\":false},{\"code\":\"E4026\",\"name\":\"기타\",\"nameEs\":\"6Y5\",\"moldApp\":false},{\"code\":\"M4001\",\"name\":\"[금형]금형교체\",\"nameEs\":\"[Molde] Reemplazo de molde\",\"moldApp\":true},{\"code\":\"M4002\",\"name\":\"[금형]세척/이물제거\",\"nameEs\":\"[Molde] Limpieza/Extracción\",\"moldApp\":true},{\"code\":\"M4003\",\"name\":\"[금형]연마/수정\",\"nameEs\":\"[Molde] Pulido/Corrección\",\"moldApp\":true},{\"code\":\"M4004\",\"name\":\"[금형]치수조정\",\"nameEs\":\"[Molde] Ajuste dimensional\",\"moldApp\":true},{\"code\":\"M4005\",\"name\":\"[금형]외부업체수리\",\"nameEs\":\"[Molde] Reparación externa\",\"moldApp\":true},{\"code\":\"M4006\",\"name\":\"[금형]점검완료\",\"nameEs\":\"[Molde] Inspección completada\",\"moldApp\":true},{\"code\":\"M4009\",\"name\":\"[금형]기타\",\"nameEs\":\"[Molde] Otros\",\"moldApp\":true}],\"workers\":[{\"id\":\"W001\",\"name\":\"박창식\",\"role\":\"자동기\",\"phone\":\"\",\"photo\":null},{\"id\":\"W002\",\"name\":\"김한국\",\"role\":\"자동기\",\"phone\":\"\",\"photo\":null},{\"id\":\"W003\",\"name\":\"유선미\",\"role\":\"부품관리\",\"phone\":\"\",\"photo\":null},{\"id\":\"W004\",\"name\":\"박상훈\",\"role\":\"자동기\",\"phone\":\"8225455555\",\"photo\":null}],\"_newCount\":1,\"molds\":[{\"barcode\":\"$244260001\",\"code\":\"TKT1206C22SN-19\",\"mgmt\":\"P01\",\"name\":\"TKT1206C22SN\",\"storage\":\"A04\",\"pos\":\"332\"},{\"barcode\":\"$244260002\",\"code\":\"TKT4406C22SN-19\",\"mgmt\":\"P01\",\"name\":\"TKT4406C22SN\",\"storage\":\"A06\",\"pos\":\"345\"},{\"barcode\":\"$244260003\",\"code\":\"TUJMM02522SN-19\",\"mgmt\":\"P01\",\"name\":\"TUJMM02522SN\",\"storage\":\"A09\",\"pos\":\"397\"},{\"barcode\":\"$244260004\",\"code\":\"TUJ12020D2SN-19\",\"mgmt\":\"P01\",\"name\":\"TUJ12020D2SN\",\"storage\":\"IF01\",\"pos\":\"548\"},{\"barcode\":\"$244290001\",\"code\":\"TAP1106002SN\",\"mgmt\":\"P03\",\"name\":\"TAP1106002SN\",\"storage\":\"A09\",\"pos\":\"14\"},{\"barcode\":\"$244290002\",\"code\":\"TAP1106002SN\",\"mgmt\":\"P04\",\"name\":\"TAP1106002SN\",\"storage\":\"A07\",\"pos\":\"13\"},{\"barcode\":\"$244290003\",\"code\":\"TKT11020L2SN-19\",\"mgmt\":\"P03\",\"name\":\"TKT11020L2SN\",\"storage\":\"A02\",\"pos\":\"146\"},{\"barcode\":\"$244290004\",\"code\":\"TKT1205002SN\",\"mgmt\":\"P06\",\"name\":\"TKT1205002SN\",\"storage\":\"A02\",\"pos\":\"446\"},{\"barcode\":\"$244290005\",\"code\":\"TKY12025N2SN-19\",\"mgmt\":\"P02\",\"name\":\"TKY12025N2SN\",\"storage\":\"A06\",\"pos\":\"128\"}],\"moldRecords\":[{\"id\":\"MR1779578540168\",\"mold\":\"$244260002\",\"failPart\":\"\",\"failCause\":\"M3001.[금형]마모/손상\",\"action\":\"M4002.[금형]세척/이물제거\",\"workerId\":\"W002\",\"reportDate\":\"2026-05-23\",\"reportTime\":\"\",\"procDate\":\"\",\"downtime\":20,\"reporter\":\"\",\"processor\":\"\",\"notes\":\"\",\"photos\":[]}]}");}if(typeof loadDB==="function"){loadDB();}else{if(typeof applyI18N==="function")applyI18N();if(typeof renderPage==="function")renderPage();}}catch(e){console.error("embedded data load failed",e);}})();
+<\/script>
 </body></html>`;
   const b=new Blob([html],{type:'text/html;charset=utf-8'});
   const a=document.createElement('a');
@@ -1844,7 +1992,9 @@ renderPage();
   function mobHistHtml(mid,from,to){var rows=(DB.records||[]).filter(function(r){return (!mid||r.machine===mid)&&(!from||String(r.reportDate||'')>=from)&&(!to||String(r.reportDate||'')<=to)}).sort(function(a,b){return String(b.reportDate||'').localeCompare(String(a.reportDate||''))||String(b.reportTime||'').localeCompare(String(a.reportTime||''))}).slice(0,80);if(!rows.length)return '<div class="mob-history-card"><div class="mob-empty">조회된 고장이력이 없습니다.</div></div>';return '<div class="mob-history-card"><div style="font-size:11px;font-weight:800;color:#f0a500">고장이력 / Historial ('+rows.length+'건)</div>'+rows.map(function(r){var ph=recPhotos(r);return '<div class="mob-history-item"><div class="mob-history-top"><span>'+esc(r.reportDate||'')+' '+esc(r.reportTime||'')+'</span><b style="color:#f87171">'+esc(r.downtime||0)+'분</b></div><div class="mob-history-main">'+esc(typeof pName==='function'?pName(r.failPart):r.failPart)+'</div><div class="mob-history-sub">원인: '+esc(typeof cName==='function'?cName(r.failCause):r.failCause)+'</div><div class="mob-history-sub">조치: '+esc(typeof aName==='function'?aName(r.action):r.action)+'</div>'+(r.notes?'<div class="mob-history-sub">비고: '+esc(r.notes)+'</div>':'')+(ph.length?'<div class="mob-photo-row" style="margin-top:7px">'+ph.map(function(p,i){return '<img src="'+p+'" class="mob-photo-thumb" onclick="showViewer('+JSON.stringify(ph).replace(/"/g,'&quot;')+','+i+')">'}).join('')+'</div>':'')+'</div>'}).join('')+'</div>'}
   window.updateMobMachineHistory=function(){var el=$('mobSelectedHistory');if(el)el.innerHTML=mobHistHtml(($('mob_machine')||{}).value||'',($('mobFrom')||{}).value||'',($('mobTo')||{}).value||'')};
   window.renderMobile=function(){var recs=DB.records||[],totalDt=recs.reduce(function(s,r){return s+(+r.downtime||0)},0),mids=uniq(recs.map(function(r){return r.machine}).concat((DB.machines||[]).map(function(m){return m.id})));if(!window.mobMachine&&mids.length)window.mobMachine=mids[0];$('mobBody').innerHTML='<div class="mob-sect">📝 고장 빠른등록 · Registro Rápido</div><div class="mob-form"><label class="mob-flbl">보전자 이름 / Nombre técnico</label><select class="mob-fsel" id="mob_worker"><option value="">— 선택 —</option>'+(DB.workers||[]).map(function(w){return '<option value="'+esc(w.id)+'">'+esc(w.name)+' ('+esc(w.id)+')</option>'}).join('')+'</select><div class="mob-worker-select-note">마스터 보전자 관리에 등록된 이름만 선택됩니다.</div><label class="mob-flbl">호기 / Máquina *</label><select class="mob-fsel" id="mob_machine" onchange="mobMachine=this.value;updateMobMachineHistory()">'+mids.map(function(m){return '<option value="'+esc(m)+'" '+(window.mobMachine===m?'selected':'')+'>'+esc(m)+'</option>'}).join('')+'</select><label class="mob-flbl">고장부위 / Parte Fallada *</label><select class="mob-fsel" id="mob_part">'+(DB.parts||[]).map(function(p){return '<option value="'+esc(p.code+'.'+p.name)+'">'+esc(p.code+'. '+p.name)+'</option>'}).join('')+'</select><label class="mob-flbl">고장원인 / Causa *</label><select class="mob-fsel" id="mob_cause">'+(DB.causes||[]).map(function(x){return '<option value="'+esc(x.code+'.'+x.name)+'">'+esc(x.code+'. '+x.name)+'</option>'}).join('')+'</select><label class="mob-flbl">조치내용 / Acción *</label><select class="mob-fsel" id="mob_action">'+(DB.actions||[]).map(function(x){return '<option value="'+esc(x.code+'.'+x.name)+'">'+esc(x.code+'. '+x.name)+'</option>'}).join('')+'</select><label class="mob-flbl">비가동시간(분) / T.Muerto *</label><input type="number" class="mob-finp" id="mob_dt" min="0" placeholder="0"><label class="mob-flbl">비고 / Observaciones</label><input type="text" class="mob-finp" id="mob_notes" placeholder="처리 내용..."><label class="mob-flbl">📷 사진</label><div class="mob-photo-row" id="mobPhotoRow">'+((window.mobPhotos||[]).map(function(p){return '<img src="'+p+'" class="mob-photo-thumb">'}).join(''))+'</div><input type="file" id="mobPhotoInput" accept="image/*" capture="camera" multiple style="display:none" onchange="handleMobPhoto(event)"><button class="mob-fbtn sec" style="margin-bottom:8px" onclick="document.getElementById(\'mobPhotoInput\').click()">📷 사진 촬영</button><button class="mob-fbtn" onclick="saveMobRecord()">✅ 등록 / Registrar</button></div><div class="mob-stat-grid"><div class="mob-stat"><div class="mob-stat-v">'+recs.length+'</div><div class="mob-stat-l">총 고장건수</div></div><div class="mob-stat"><div class="mob-stat-v">'+totalDt.toLocaleString()+'</div><div class="mob-stat-l">총 비가동(분)</div></div></div><div class="mob-sect mob-history-bottom">🕐 기간별 고장이력 조회</div><div class="mob-form"><label class="mob-flbl">조회 기간</label><div class="mob-date-grid"><input type="date" id="mobFrom" class="mob-finp" onchange="updateMobMachineHistory()"><input type="date" id="mobTo" class="mob-finp" onchange="updateMobMachineHistory()"></div><button class="mob-fbtn sec" onclick="updateMobMachineHistory()">🔍 조회</button></div><div id="mobSelectedHistory">'+mobHistHtml(window.mobMachine,'','')+'</div>'};
-  window.saveMobRecord=function(){var wid=($('mob_worker')||{}).value||'';var rec={id:'M'+Date.now(),machine:$('mob_machine').value,failPart:$('mob_part').value,failCause:$('mob_cause').value,action:$('mob_action').value,downtime:parseInt($('mob_dt').value)||0,workerId:wid,processor:workerName(wid),reporter:'모바일등록',reportDate:new Date().toISOString().slice(0,10),reportTime:new Date().toTimeString().slice(0,8),procDate:'',notes:$('mob_notes').value.trim(),equipCode:'',photos:[...(window.mobPhotos||[])]};if(!rec.machine||!rec.failPart){alert('호기와 고장부위는 필수입니다');return;}DB.records.push(rec);saveDB();window.mobPhotos=[];alert('✅ 등록 완료!');renderMobile()};
+  window.saveMobRecord=function(){var wid=($('mob_worker')||{}).value||'';var rec={id:'M'+Date.now(),machine:$('mob_machine').value,failPart:$('mob_part').value,failCause:$('mob_cause').value,action:$('mob_action').value,downtime:parseInt($('mob_dt').value)||0,workerId:wid,processor:workerName(wid),reporter:'모바일등록',reportDate:new Date().toISOString().slice(0,10),reportTime:new Date().toTimeString().slice(0,8),procDate:'',notes:$('mob_notes').value.trim(),equipCode:'',photos:[...(window.mobPhotos||[])]};if(!rec.machine||!rec.failPart){alert('호기와 고장부위는 필수입니다');return;}DB.records.push(rec);
+  saveRecord(rec, true).catch(()=>{});
+  saveDB();window.mobPhotos=[];alert('✅ 등록 완료!');renderMobile()};
 })();
 </script>
 
@@ -2256,7 +2406,7 @@ renderPage();
       <div class="fgrp">
         <label class="flbl">사진 첨부 / Fotos (최대 3장)</label>
         <div class="photo-row" id="moldPhotoRow"></div>
-        <input type="file" id="moldPhotoInput" accept="image/*" multiple style="display:none" onchange="handleMoldPhotoUpload(event)">
+        <input type="file" id="moldPhotoInput" accept="image/*" multiple="" style="display:none" onchange="handleMoldPhotoUpload(event)">
       </div>
     </div>
     <div class="modal-foot">
@@ -2383,11 +2533,20 @@ function saveMoldItem(){
     if(DB.molds.find(x=>(x.barcode||x.code+x.mgmt)===newKey)){toast('이미 존재하는 금형','err');return;}
     DB.molds.push(item);
   }
+  // Supabase 금형 저장
+  const moldData = {barcode:mold.barcode, code:mold.code||'', mgmt:mold.mgmt||'', name:mold.name||'', storage:mold.storage||'', pos:mold.pos||''};
+  if(editMoldKey){
+    sbFetch(`molds?barcode=eq.${encodeURIComponent(mold.barcode)}`,{method:'PATCH',body:JSON.stringify(moldData)}).catch(e=>toast('❌ 서버 오류: '+e.message,'err'));
+  } else {
+    sbFetch('molds',{method:'POST',body:JSON.stringify(moldData)}).catch(e=>toast('❌ 서버 오류: '+e.message,'err'));
+  }
   saveDB();closeMoldItemModal();renderPage();toast(editMoldKey?'수정 완료':'추가 완료','ok');
 }
 function delMoldItem(key){
   if(!confirm('삭제하시겠습니까?'))return;
+  const mold = DB.molds.find(m=>(m.barcode||m.code+m.mgmt)===key);
   DB.molds=DB.molds.filter(m=>(m.barcode||m.code+m.mgmt)!==key);
+  if(mold && mold.barcode) sbFetch(`molds?barcode=eq.${encodeURIComponent(mold.barcode)}`,{method:'DELETE',headers:{'Prefer':''}}).catch(e=>toast('❌ 서버 오류: '+e.message,'err'));
   saveDB();renderPage();toast('삭제 완료','ok');
 }
 function exportMoldExcel(){
@@ -2631,9 +2790,16 @@ function saveMoldRec(){
   if(!DB.moldRecords)DB.moldRecords=[];
   if(id){const idx=DB.moldRecords.findIndex(x=>x.id===id);if(idx>=0)DB.moldRecords[idx]=rec;else DB.moldRecords.push(rec);}
   else{if(DB.moldRecords.find(x=>x.id===rec.id)){toast('이미 존재하는 신고번호','err');return;}DB.moldRecords.push(rec);}
+  // Supabase 금형이력 저장
+  saveMoldRecord(rec, !id).catch(()=>{});
   saveDB();closeMoldRecModal();renderPage();toast(id?'수정 완료':'등록 완료','ok');
 }
-function delMoldRec(id){if(!confirm('삭제하시겠습니까?'))return;DB.moldRecords=DB.moldRecords.filter(r=>r.id!==id);saveDB();renderPage();toast('삭제 완료','ok');}
+function delMoldRec(id){
+  if(!confirm('삭제하시겠습니까?'))return;
+  DB.moldRecords=DB.moldRecords.filter(r=>r.id!==id);
+  sbFetch(`mold_records?id=eq.${encodeURIComponent(id)}`,{method:'DELETE',headers:{'Prefer':''}}).catch(e=>toast('❌ 삭제 실패: '+e.message,'err'));
+  saveDB();renderPage();toast('삭제 완료','ok');
+}
 
 // ── 금형고장 분석 페이지
 let moldAnalysisFilter='';
@@ -4132,12 +4298,12 @@ try{if(typeof curPage!=='undefined'&&curPage==='moldRecords')renderPage();}catch
       <button onclick="closeManual()" style="background:rgba(255,255,255,.05);border:1px solid #2e3751;border-radius:6px;color:#9aa0b8;font-size:18px;width:36px;height:36px;cursor:pointer;line-height:1">✕</button>
     </div>
     <div style="display:flex;border-bottom:1px solid #2e3751;overflow-x:auto">
-      <button class="mn-tab on"  onclick="mnTab(0,this)">🏠 시작하기</button>
-      <button class="mn-tab"     onclick="mnTab(1,this)">📋 고장이력</button>
-      <button class="mn-tab"     onclick="mnTab(2,this)">🔲 금형관리</button>
-      <button class="mn-tab"     onclick="mnTab(3,this)">📊 분석</button>
-      <button class="mn-tab"     onclick="mnTab(4,this)">⚙️ 마스터관리</button>
-      <button class="mn-tab"     onclick="mnTab(5,this)">💾 데이터관리</button>
+      <button class="mn-tab on" onclick="mnTab(0,this)">🏠 시작하기</button>
+      <button class="mn-tab" onclick="mnTab(1,this)">📋 고장이력</button>
+      <button class="mn-tab" onclick="mnTab(2,this)">🔲 금형관리</button>
+      <button class="mn-tab" onclick="mnTab(3,this)">📊 분석</button>
+      <button class="mn-tab" onclick="mnTab(4,this)">⚙️ 마스터관리</button>
+      <button class="mn-tab" onclick="mnTab(5,this)">💾 데이터관리</button>
     </div>
     <div id="mnBody" style="padding:24px 28px;max-height:70vh;overflow-y:auto"></div>
   </div>
@@ -4320,5 +4486,6 @@ document.getElementById('manualOverlay').addEventListener('click',function(e){
   target.parentNode.insertBefore(btn,target);
 })();
 </script>
-</body>
-</html>
+
+
+</body></html>
