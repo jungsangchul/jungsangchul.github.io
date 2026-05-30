@@ -1300,7 +1300,25 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(70%) sepia(50%
 var SUPA_URL='https://lrjurjhavlalhlwaplxd.supabase.co';
 var SUPA_KEY='sb_publishable_8arNtNo-c73EO0xrauAhtA_JPeLk4QZ';
 var _sb=null;
-function getSB(){if(!_sb&&window.supabase){try{_sb=window.supabase.createClient(SUPA_URL,SUPA_KEY);}catch(e){}}return _sb;}
+function getSB(){
+  if(!_sb&&window.supabase){
+    try{
+      _sb=window.supabase.createClient(SUPA_URL,SUPA_KEY,{
+        auth:{
+          persistSession:false,
+          autoRefreshToken:false,
+          detectSessionInUrl:false,
+          storage:{
+            getItem:function(){return null;},
+            setItem:function(){},
+            removeItem:function(){}
+          }
+        }
+      });
+    }catch(e){}
+  }
+  return _sb;
+}
 function updateSaveStatus(s){
   var ic=document.getElementById('save-status-icon'),tx=document.getElementById('save-status-txt');
   if(!ic||!tx)return;
