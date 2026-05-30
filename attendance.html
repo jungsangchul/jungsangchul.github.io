@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>YURA HARNESS MÉXICO · 1공장 근태관리 · 가공생산팀 v13</title>
+<title>YURA HARNESS MÉXICO · 근태관리 · 가공생산팀</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
@@ -48,9 +48,8 @@ header{background:linear-gradient(180deg,#091828 0%,#0d2040 100%);border-bottom:
   .tabs-right::before{display:none;}
 }
 /* 조회메뉴 상단 직원 추가 버튼 - 항상 잘보이도록 강조 (Floating Action Button) */
-.qadd-btn{position:fixed;bottom:24px;right:24px;z-index:300;background:linear-gradient(135deg,#0a7058,#18a882);border:2px solid #2ecba4;border-radius:50px;padding:14px 24px;color:#fff;font-size:14px;font-weight:900;cursor:grab;font-family:inherit;box-shadow:0 8px 28px rgba(46,203,164,.55),0 0 0 4px rgba(46,203,164,.15);transition:box-shadow .2s;letter-spacing:.5px;display:flex;align-items:center;gap:6px;animation:pulseQadd 2.4s ease-in-out infinite;user-select:none;touch-action:none;}
-.qadd-btn:hover{box-shadow:0 12px 36px rgba(46,203,164,.7),0 0 0 6px rgba(46,203,164,.2);animation:none;}
-.qadd-btn.dragging{cursor:grabbing;animation:none;box-shadow:0 16px 48px rgba(46,203,164,.8),0 0 0 6px rgba(46,203,164,.25);transform:scale(1.06);transition:none;}
+.qadd-btn{position:fixed;bottom:24px;right:24px;z-index:300;background:linear-gradient(135deg,#0a7058,#18a882);border:2px solid #2ecba4;border-radius:50px;padding:14px 24px;color:#fff;font-size:14px;font-weight:900;cursor:pointer;font-family:inherit;box-shadow:0 8px 28px rgba(46,203,164,.55),0 0 0 4px rgba(46,203,164,.15);transition:all .2s;letter-spacing:.5px;display:flex;align-items:center;gap:6px;animation:pulseQadd 2.4s ease-in-out infinite;}
+.qadd-btn:hover{box-shadow:0 12px 36px rgba(46,203,164,.7),0 0 0 6px rgba(46,203,164,.2);transform:translateY(-2px) scale(1.04);animation:none;}
 @keyframes pulseQadd{0%,100%{box-shadow:0 8px 28px rgba(46,203,164,.55),0 0 0 4px rgba(46,203,164,.15);}50%{box-shadow:0 10px 36px rgba(46,203,164,.75),0 0 0 8px rgba(46,203,164,.08);}}
 /* ── LAYOUT ── */
 .con{max-width:1600px;margin:0 auto;padding:20px 24px;}
@@ -275,17 +274,15 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(70%) sepia(50%
 <header>
 <div class="hdr">
   <div class="logo">
-    <div class="logo-ico">🏭</div>
+    <a href="javascript:void(0)" onclick="goMain()" title="MAIN으로 이동" style="text-decoration:none;cursor:pointer;display:flex;align-items:center;justify-content:center;background:rgba(10,22,40,.85);border:1.5px solid #3a7bd5;border-radius:10px;padding:9px 18px;transition:all .2s;flex-shrink:0;min-width:72px;" onmouseover="this.style.borderColor='#5aa0f0';this.style.background='rgba(30,60,120,.7)'" onmouseout="this.style.borderColor='#3a7bd5';this.style.background='rgba(10,22,40,.85)'">
+      <span style="font-size:14px;font-weight:900;color:#fff;letter-spacing:1.5px;line-height:1">MAIN</span>
+    </a>
     <div>
-      <div class="logo-n">YURA HARNESS MÉXICO &nbsp;·&nbsp; 1공장 근태관리 시스템</div>
+      <div class="logo-n">YURA HARNESS MÉXICO &nbsp;·&nbsp; 근태관리 시스템</div>
       <div class="logo-s" id="logo-sub">가공생산팀 · Equipo de Procesamiento · No Sindicalizado</div>
     </div>
   </div>
   <div class="hdr-r">
-    <div id="save-status-badge" onclick="quickSave()" title="클릭하여 저장 / Click to save" style="cursor:pointer;background:rgba(10,22,40,.8);border:1.5px solid #567b9a;border-radius:9px;padding:6px 13px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:90px;transition:all .2s">
-      <span id="save-status-icon" style="font-size:14px">💾</span>
-      <span id="save-status-txt" style="font-size:9px;color:#567b9a;font-weight:700;letter-spacing:.3px;white-space:nowrap">저장 대기</span>
-    </div>
     <button id="lang-btn" onclick="toggleLang()" title="Cambiar idioma / 언어 전환" style="background:linear-gradient(135deg,#1a4068,#2a5a90);border:1.5px solid #3a9fd8;border-radius:8px;padding:8px 16px;color:#a8c4e0;font-size:13px;font-weight:900;cursor:pointer;font-family:inherit;transition:all .2s;letter-spacing:.5px;box-shadow:0 2px 10px rgba(58,159,216,.25)">🌐 ES</button>
     <div class="clk"><span>🇲🇽 MONTERREY</span><b id="clk-m">--:--</b></div>
     <div class="clk"><span>🇰🇷 SEOUL</span><b id="clk-k">--:--</b></div>
@@ -314,7 +311,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(70%) sepia(50%
 </header>
 
 <!-- 조회 메뉴 상단 떠있는 직원 추가 버튼 (Floating Action Button) -->
-<button id="qadd-btn" class="qadd-btn" onclick="openEmpModal()" title="신규 직원 등록 / Registrar Empleado">
+<button id="qadd-btn" class="qadd-btn" title="신규 직원 등록 / Registrar Empleado" style="cursor:grab;">
   <span style="font-size:18px">➕</span>
   <span id="qadd-text">신규 직원 등록</span>
 </button>
@@ -1015,50 +1012,25 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(70%) sepia(50%
 <!-- ═══ 파일관리 (PC간 데이터 공유 핵심 메뉴) ═══ -->
 <div class="tp" id="tab-file">
   <!-- 핵심 안내 박스 (request #10: 다른 PC에서도 동일한 데이터 확인 가능) -->
-  <!-- ═══ 저장 버튼 카드 ═══ -->
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
-
-    <!-- ① 저장 위치 지정 버튼 -->
-    <div style="background:linear-gradient(180deg,#0d2848,#0a1e3c);border:2px solid #3a9fd8;border-radius:14px;padding:18px 16px;display:flex;flex-direction:column;gap:10px">
-      <div style="font-size:13px;font-weight:900;color:#7ec8ff">📂 저장 위치 지정</div>
-      <div style="font-size:11px;color:#a8c4e0;line-height:1.8">
-        <b style="color:#fff">처음 한 번만</b> 클릭하여 저장할 파일 위치를 선택합니다.<br>
-        이후에는 <b style="color:#2ecba4">💾 저장(Ctrl+S)</b>으로 그 파일에 바로 덮어씁니다.<br>
-        <span style="color:#567b9a">※ 공유 폴더에 저장하면 동료가 항상 최신 내용을 열람 가능</span>
+  <div class="card" style="margin-bottom:14px;border-color:#2ecba4;border-width:2px;background:linear-gradient(180deg,rgba(46,203,164,.1) 0%,#0b1a35 100%)">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+      <div style="flex:1;min-width:280px">
+        <div style="font-weight:900;font-size:15px;color:#2ecba4;margin-bottom:8px" data-ko="🔥 다른 PC에서도 모든 정보 그대로 이어서 작업하는 방법" data-es="🔥 Cómo compartir los mismos datos entre PCs">🔥 다른 PC에서도 모든 정보 그대로 이어서 작업하는 방법</div>
+        <div style="font-size:12px;color:#dde8f5;line-height:1.9" data-ko="① 본 PC에서 직원·결근·공휴일·마스터 등 모든 정보를 입력합니다. ② 우측 [전체 데이터 포함 HTML 저장] 버튼을 클릭하면 현재 데이터가 HTML 안에 함께 저장됩니다. ③ 새로 저장된 HTML 파일을 다른 PC로 전송 후 열면 동일한 데이터로 계속 작업할 수 있습니다. ④ 다른 PC에서 수정한 뒤에도 다시 [전체 데이터 포함 HTML 저장]을 눌러야 그 PC의 최신 내용이 파일에 반영됩니다." data-es="① Ingrese datos en esta PC. ② Haga clic en [Guardar HTML]. Se descarga un archivo HTML con todos los datos incrustados. ③ Envíe este archivo a otra PC y ábralo con doble clic — verá los mismos datos. ※ Use email / USB / Drive compartido — cualquier método.">
+          ① 본 PC에서 직원·결근·공휴일·마스터 등 모든 정보를 입력합니다.<br>
+          ② 우측 <b style="color:#2ecba4">[💾 전체 데이터 포함 HTML 저장]</b> 버튼을 클릭하면 <b>현재 데이터가 HTML 파일 안에 함께 저장</b>됩니다.<br>
+          ③ 새로 저장된 HTML 파일을 다른 PC로 전송 후 열면 <b style="color:#2ecba4">동일한 데이터로 계속 작업</b>할 수 있습니다.<br>
+          ④ 수정 후 닫았다 다시 열어도 유지하려면 <b style="color:#7ec8ff">[현재 내용 파일저장]</b>을 눌러 데이터가 포함된 HTML로 저장하세요. 다른 PC로 보낼 때도 같은 HTML을 보내면 됩니다.<br>
+          <span style="color:#7aa8d4">※ 직원등록 배포용 파일은 입력 전용입니다. PC 간 이어작업은 반드시 이 버튼으로 저장한 파일을 보내세요.</span>
+        </div>
       </div>
-      <button onclick="linkSaveFile()" style="background:linear-gradient(135deg,#1a5fa8,#3a9fd8);border:none;border-radius:9px;padding:11px 14px;color:#fff;font-size:13px;font-weight:900;cursor:pointer;font-family:inherit;box-shadow:0 4px 14px rgba(58,159,216,.4);letter-spacing:.3px">
-        📂 저장 위치 지정하기
-      </button>
-      <div id="fsa-link-status" style="font-size:10px;color:#567b9a;text-align:center">─ 아직 위치 미지정 ─</div>
-    </div>
-
-    <!-- ② 저장(Ctrl+S) 버튼 -->
-    <div style="background:linear-gradient(180deg,#0a2a1e,#081a14);border:2px solid #2ecba4;border-radius:14px;padding:18px 16px;display:flex;flex-direction:column;gap:10px">
-      <div style="font-size:13px;font-weight:900;color:#2ecba4">💾 저장 (Ctrl+S)</div>
-      <div style="font-size:11px;color:#a8c4e0;line-height:1.8">
-        <b style="color:#fff">변경사항을 파일에 즉시 저장</b>합니다.<br>
-        저장 위치가 지정된 경우 → <b style="color:#2ecba4">같은 파일에 바로 덮어쓰기</b><br>
-        위치 미지정 시 → 저장 위치 선택 화면이 열립니다.<br>
-        <span style="color:#567b9a">※ Ctrl+S 단축키로도 언제든 저장 가능</span>
+      <div style="display:flex;flex-direction:column;gap:10px;min-width:260px">
+        <button onclick="saveCurrentWorkspaceFile()" style="background:linear-gradient(135deg,#1a5fa8,#3a9fd8);border:2px solid #7ec8ff;border-radius:12px;padding:15px 24px;color:#fff;font-size:14px;font-weight:900;cursor:pointer;font-family:inherit;white-space:nowrap;box-shadow:0 6px 18px rgba(58,159,216,.35);letter-spacing:.4px" data-ko="💾 현재 내용 파일저장" data-es="💾 Guardar archivo actual">💾 현재 내용 파일저장</button>
+        <button onclick="saveAsHTML()" style="background:linear-gradient(135deg,#0a7058,#18a882);border:2px solid #2ecba4;border-radius:12px;padding:15px 24px;color:#fff;font-size:14px;font-weight:900;cursor:pointer;font-family:inherit;white-space:nowrap;box-shadow:0 6px 20px rgba(46,203,164,.4);letter-spacing:.4px;animation:pulseQadd 2.4s ease-in-out infinite" data-ko="💾 전체 데이터 포함 HTML 저장" data-es="💾 Guardar HTML completo">💾 전체 데이터 포함 HTML 저장</button>
       </div>
-      <button onclick="quickSave()" style="background:linear-gradient(135deg,#0a7058,#18a882);border:2px solid #2ecba4;border-radius:9px;padding:11px 14px;color:#fff;font-size:13px;font-weight:900;cursor:pointer;font-family:inherit;box-shadow:0 4px 16px rgba(46,203,164,.4);letter-spacing:.3px;animation:pulseQadd 2.4s ease-in-out infinite">
-        💾 저장 (Ctrl+S)
-      </button>
-      <div id="last-save-info" style="font-size:10px;color:#567b9a;text-align:center">─ 아직 저장 안 됨 ─</div>
     </div>
-
+    <div id="last-save-info" style="margin-top:12px;padding-top:10px;border-top:1px solid rgba(46,203,164,.2);font-size:11px;color:#7aa8d4"></div>
   </div>
-
-  <!-- 기타 안내 박스 -->
-  <div class="info-box" style="margin-bottom:14px;border-color:rgba(58,159,216,.25)">
-    <b style="color:#3a9fd8">📌 PC 간 이어작업 방법</b><br>
-    ① <b>저장 위치 지정</b> → 공유 폴더(USB·네트워크 드라이브)에 파일 저장<br>
-    ② 작업 중 <b>Ctrl+S</b> 로 수시 저장<br>
-    ③ 다른 PC에서 그 파일을 열면 → <b style="color:#2ecba4">항상 최신 내용</b> 확인 가능<br>
-    <span style="color:#7aa8d4">※ Chrome / Edge 전용 기능 (직접 덮어쓰기). 그 외 브라우저는 다운로드 방식으로 저장됩니다.</span>
-  </div>
-
-  <div id="file-id-badge" style="display:none;margin-top:6px;font-size:10px;color:#2a5a90;font-family:monospace;letter-spacing:.3px"></div>
   <div class="g2 g3" style="margin-bottom:14px">
     <div class="card">
       <div class="ct" data-ko="📥 JSON 다운로드 (백업)" data-es="📥 Descargar JSON (Respaldo)">📥 JSON 다운로드 (백업)</div>
@@ -1447,7 +1419,7 @@ var currentLang='ko';
 function toggleLang(){
   currentLang=currentLang==='ko'?'es':'ko';
   if(DB&&DB.settings) DB.settings.lang=currentLang;
-  scheduleAutoSave();if(typeof scheduleFileSave==="function")scheduleFileSave();
+  scheduleAutoSave();
   applyLang();
   // 헤더 시계의 요일 라벨도 즉시 갱신
   var now=new Date(),mex=new Date(now.toLocaleString('en-US',{timeZone:'America/Monterrey'}));
@@ -1492,321 +1464,6 @@ function getDataStamp(d){
   var n = Date.parse(t);
   return isNaN(n) ? 0 : n;
 }
-// ── 파일ID 유틸 ──
-function genFileId(){
-  return 'f'+Date.now().toString(36)+(Math.random()*0x100000|0).toString(36);
-}
-function getLocalStorageKey(fileId){
-  return fileId ? 'yura_ht_'+fileId : 'yura_ht_v1';
-}
-
-// ════════════════════════════════════════════════════════════
-// ★ v13 FILE SYSTEM ACCESS API - 엑셀식 자동저장 시스템
-// ════════════════════════════════════════════════════════════
-var _fsa_handle = null;      // 현재 연결된 파일 핸들
-var _fsa_writing = false;    // 쓰기 중 플래그
-var _fsa_pending = false;    // 대기 중인 쓰기 있음
-var _fsa_dirty = false;      // 미저장 변경사항 있음
-var _fsa_saveTimer = null;
-
-// ── IndexedDB: 파일 핸들 영구 저장 ──
-function idbRequest(mode, fn){
-  return new Promise(function(resolve){
-    try{
-      var req = indexedDB.open('yura_fsa_v1', 1);
-      req.onupgradeneeded = function(e){ e.target.result.createObjectStore('handles'); };
-      req.onsuccess = function(e){
-        try{
-          var db = e.target.result;
-          var tx = db.transaction('handles', mode);
-          fn(tx.objectStore('handles'), resolve);
-          tx.onerror = function(){ resolve(null); };
-        }catch(e2){ resolve(null); }
-      };
-      req.onerror = function(){ resolve(null); };
-    }catch(e){ resolve(null); }
-  });
-}
-function idbSaveHandle(handle){
-  return idbRequest('readwrite', function(store, resolve){
-    var r = store.put(handle, 'currentFile');
-    r.onsuccess = function(){ resolve(true); };
-    r.onerror = function(){ resolve(false); };
-  });
-}
-function idbLoadHandle(){
-  return idbRequest('readonly', function(store, resolve){
-    var r = store.get('currentFile');
-    r.onsuccess = function(e){ resolve(e.target.result || null); };
-    r.onerror = function(){ resolve(null); };
-  });
-}
-function idbClearHandle(){
-  return idbRequest('readwrite', function(store, resolve){
-    var r = store.delete('currentFile');
-    r.onsuccess = function(){ resolve(true); };
-    r.onerror = function(){ resolve(false); };
-  });
-}
-
-// ── 저장 상태 UI 업데이트 ──
-function updateSaveBadge(state, extra){
-  var badge = document.getElementById('save-status-badge');
-  var icon  = document.getElementById('save-status-icon');
-  var txt   = document.getElementById('save-status-txt');
-  if(!badge) return;
-  if(state === 'saved'){
-    badge.style.borderColor='#2ecba4'; icon.textContent='✅'; txt.textContent='저장됨'; txt.style.color='#2ecba4';
-  } else if(state === 'saving'){
-    badge.style.borderColor='#e8a020'; icon.textContent='⏳'; txt.textContent='저장 중'; txt.style.color='#e8a020';
-  } else if(state === 'dirty'){
-    badge.style.borderColor='#e8a020'; icon.textContent='💾'; txt.textContent='변경됨*'; txt.style.color='#e8a020';
-  } else if(state === 'linked'){
-    badge.style.borderColor='#3a9fd8'; icon.textContent='🔗'; txt.textContent='연결됨'; txt.style.color='#3a9fd8';
-  } else if(state === 'error'){
-    badge.style.borderColor='#d85050'; icon.textContent='⚠️'; txt.textContent='저장오류'; txt.style.color='#d85050';
-  } else {
-    badge.style.borderColor='#567b9a'; icon.textContent='💾'; txt.textContent='저장 대기'; txt.style.color='#567b9a';
-  }
-}
-
-// ── 파일에 쓰기 ──
-async function writeToHandle(htmlText){
-  if(!_fsa_handle) return false;
-  try{
-    var perm = await _fsa_handle.queryPermission({mode:'readwrite'});
-    if(perm !== 'granted'){
-      perm = await _fsa_handle.requestPermission({mode:'readwrite'});
-    }
-    if(perm !== 'granted'){ updateSaveBadge('error'); return false; }
-    updateSaveBadge('saving');
-    var writable = await _fsa_handle.createWritable();
-    await writable.write(htmlText);
-    await writable.close();
-    updateSaveBadge('saved');
-    return true;
-  }catch(e){
-    console.error('File write error:', e);
-    if(e.name === 'NotAllowedError' || e.name === 'SecurityError'){
-      // 권한 만료 → 핸들은 유지하고 사용자 제스처(Ctrl+S) 때 재시도
-      updateSaveBadge('dirty');
-      console.warn('File write permission denied - will retry on next user gesture');
-    } else {
-      updateSaveBadge('error');
-    }
-    return false;
-  }
-}
-
-// ── DOM 마스터 입력값을 DB에 즉시 반영 (저장 전 필수 호출) ──
-function collectMasterInputsToDB(){
-  try{
-    // 버스 목록
-    if(Array.isArray(DB.buses)){
-      DB.buses.forEach(function(b,i){
-        var numEl=document.getElementById('mbus-num-'+i);
-        var rutaEl=document.getElementById('mbus-ruta-'+i);
-        var plEl=document.getElementById('mbus-pl-'+i);
-        if(numEl && numEl.value.trim()) b.num=numEl.value.trim();
-        if(rutaEl) b.ruta=rutaEl.value.trim();
-        if(plEl) b.placas=plEl.value.trim();
-      });
-    }
-    // 거주지 목록
-    if(Array.isArray(DB.addresses)){
-      DB.addresses.forEach(function(a,i){
-        var muniEl=document.getElementById('maddr-muni-'+i);
-        var colEl=document.getElementById('maddr-col-'+i);
-        if(muniEl && muniEl.value.trim()) a.muni=muniEl.value.trim();
-        if(colEl && colEl.value.trim()) a.col=colEl.value.trim();
-      });
-    }
-    // 결근코드
-    if(Array.isArray(DB.absCodes)){
-      DB.absCodes.forEach(function(c,i){
-        var esEl=document.getElementById('mabs-es-'+i);
-        var koEl=document.getElementById('mabs-ko-'+i);
-        if(esEl && esEl.value.trim()) c.es=esEl.value.trim();
-        if(koEl && koEl.value.trim()) c.ko=koEl.value.trim();
-      });
-    }
-    // 퇴직사유코드
-    if(Array.isArray(DB.resCodes)){
-      DB.resCodes.forEach(function(c,i){
-        var esEl=document.getElementById('mres-es-'+i);
-        var koEl=document.getElementById('mres-ko-'+i);
-        if(esEl && esEl.value.trim()) c.es=esEl.value.trim();
-        if(koEl && koEl.value.trim()) c.ko=koEl.value.trim();
-      });
-    }
-    // 공정명
-    if(Array.isArray(DB.processes)){
-      DB.processes.forEach(function(p,i){
-        var typeEl=document.getElementById('mproc-type-'+i);
-        var koEl=document.getElementById('mproc-ko-'+i);
-        var esEl=document.getElementById('mproc-es-'+i);
-        if(typeEl) p.type=typeEl.value;
-        if(koEl && koEl.value.trim()) p.ko=koEl.value.trim();
-        if(esEl && esEl.value.trim()) p.es=esEl.value.trim();
-      });
-    }
-  }catch(e){ console.warn('collectMasterInputsToDB error:', e); }
-}
-
-// ── 저장 위치 지정 (처음 한 번만) ──
-async function linkSaveFile(){
-  if(!window.showSaveFilePicker){
-    toast('이 브라우저는 파일 직접 저장을 지원하지 않습니다. Chrome 또는 Edge를 사용해주세요.','#8a2020');
-    return;
-  }
-  try{
-    var handle = await window.showSaveFilePicker({
-      suggestedName: '근태관리_1공장_가공생산팀.html',
-      types:[{description:'HTML 파일', accept:{'text/html':['.html']}}]
-    });
-    // 파일 위치만 지정하고 즉시 현재 내용 저장
-    collectMasterInputsToDB();
-    var htmlText = buildFullWorkspaceHTML();
-    var writable = await handle.createWritable();
-    await writable.write(htmlText);
-    await writable.close();
-    _fsa_handle = handle;
-    await idbSaveHandle(handle);
-    if(typeof setLastSavedName==='function') setLastSavedName(handle.name);
-    autoSave();
-    updateSaveBadge('saved');
-    updateLinkStatus(handle.name || '파일 연결됨');
-    updateFileStats();
-    toast('✅ 저장 완료! 이제 Ctrl+S를 누르면 같은 파일에 바로 저장됩니다.','#0d8a6e');
-  }catch(e){
-    if(e && e.name==='AbortError') return;
-    toast('오류: '+(e.message||e),'#8a2020');
-  }
-}
-
-function updateLinkStatus(name){
-  var el = document.getElementById('fsa-link-status');
-  if(!el) return;
-  if(name){
-    el.style.color='#2ecba4';
-    el.textContent = '🔗 연결됨: '+name;
-  } else {
-    el.style.color='#567b9a';
-    el.textContent = '─ 아직 위치 미지정 ─';
-  }
-}
-
-// ── 마지막 저장 파일명 기억 ──
-function getLastSavedName(){
-  // 1순위: DB settings에 저장된 파일명
-  if(DB.settings && DB.settings.lastSavedFileName) return DB.settings.lastSavedFileName;
-  // 2순위: 현재 열린 파일명 (file:// URL에서 추출)
-  try{
-    var url = window.location.href;
-    if(url.startsWith('file://')){
-      var parts = decodeURIComponent(url).split('/');
-      var fname = parts[parts.length-1];
-      if(fname && fname.endsWith('.html')) return fname;
-    }
-  }catch(e){}
-  return '근태관리_1공장_가공생산팀.html';
-}
-function setLastSavedName(name){
-  if(!DB.settings) DB.settings={};
-  DB.settings.lastSavedFileName = name;
-}
-
-// ── 빠른 저장 (헤더 버튼 / Ctrl+S) ──
-async function quickSave(){
-  try{
-    collectMasterInputsToDB();
-    var htmlText = buildFullWorkspaceHTML();
-
-    // ① 핸들이 연결되어 있으면 권한 확인 후 바로 저장
-    if(_fsa_handle){
-      var ok = await writeToHandle(htmlText);
-      if(ok){
-        setLastSavedName(_fsa_handle.name);
-        autoSave();
-        updateFileStats();
-        toast('✅ 저장 완료! ('+(_fsa_handle.name||'파일')+')', '#0d8a6e');
-        return;
-      }
-      // writeToHandle 실패 → 아래 showSaveFilePicker로 fallthrough (핸들은 유지)
-    }
-
-    // ② showSaveFilePicker: suggestedName을 마지막 파일명으로 미리 채움
-    if(window.showSaveFilePicker){
-      try{
-        var sugName = getLastSavedName();
-        var handle = await window.showSaveFilePicker({
-          suggestedName: sugName,
-          types:[{description:'HTML 파일', accept:{'text/html':['.html']}}]
-        });
-        var writable = await handle.createWritable();
-        await writable.write(htmlText);
-        await writable.close();
-        _fsa_handle = handle;
-        await idbSaveHandle(handle);
-        setLastSavedName(handle.name);
-        autoSave();
-        updateSaveBadge('saved');
-        if(typeof updateLinkStatus==='function') updateLinkStatus(handle.name||'파일 연결됨');
-        updateFileStats();
-        toast('✅ 저장 완료! 다음 Ctrl+S부터는 이 파일에 바로 저장됩니다.', '#0d8a6e');
-        return;
-      }catch(e){
-        if(e && e.name==='AbortError') return;
-        throw e;
-      }
-    }
-
-    // ③ Fallback: 다운로드
-    downloadWorkspaceHTML(htmlText, getLastSavedName().replace('.html','_'));
-    updateFileStats();
-    toast('✅ 파일 다운로드 완료', '#0d8a6e');
-  }catch(e){
-    console.error('quickSave error:', e);
-    toast('저장 오류: '+(e.message||e), '#8a2020');
-    updateSaveBadge('error');
-  }
-}
-
-// ── 변경 감지 시 dirty 플래그만 세팅 (파일 저장은 사용자 제스처 필요) ──
-// 브라우저 보안 정책: 백그라운드 타이머에서 File System Access API 사용 시 권한 초기화됨
-// → Ctrl+S / 저장 버튼 클릭 시에만 파일에 실제 저장
-function scheduleFileSave(){
-  _fsa_dirty = true;
-  updateSaveBadge('dirty');
-  // ★ 백그라운드 파일 자동저장 제거 - Ctrl+S 또는 버튼으로만 저장
-}
-
-// ── 앱 시작 시 저장된 핸들 복원 ──
-async function initFSA(){
-  if(!window.showSaveFilePicker){ updateSaveBadge('idle'); return; }
-  var handle = await idbLoadHandle();
-  if(!handle){ updateSaveBadge('idle'); return; }
-  try{
-    var perm = await handle.queryPermission({mode:'readwrite'});
-    // 권한 granted 여부와 무관하게 핸들 복원 (Ctrl+S 시 사용자 제스처로 권한 재요청됨)
-    _fsa_handle = handle;
-    var statusTxt = (perm === 'granted') ? '연결됨' : '연결됨 (Ctrl+S로 저장 시 확인)';
-    updateSaveBadge('linked');
-    if(typeof updateLinkStatus==='function') updateLinkStatus(handle.name||statusTxt);
-    if(typeof setLastSavedName==='function' && handle.name) setLastSavedName(handle.name);
-  }catch(e){
-    console.warn('FSA handle restore failed:', e);
-    updateSaveBadge('idle');
-  }
-}
-
-// ── Ctrl+S 단축키 ──
-document.addEventListener('keydown', function(e){
-  if((e.ctrlKey || e.metaKey) && e.key === 's'){
-    e.preventDefault();
-    quickSave();
-  }
-});
 function normalizeWorkspaceDB(d){
   if(!d||typeof d!=='object') return null;
   if(!d.settings) d.settings={lang:'ko'};
@@ -1825,36 +1482,28 @@ function normalizeWorkspaceDB(d){
 function autoSave(){
   try{
     if(!DB.settings) DB.settings={};
-    // 파일ID가 없으면 새로 발급 (최초 실행 시)
-    if(!DB.settings.fileId) DB.settings.fileId = genFileId();
+    // 닫았다 다시 열었을 때도 최신 작업본을 찾을 수 있도록 저장 시각을 남김
     DB.settings.__localSavedAt = new Date().toISOString();
     DB.settings.lastModifiedAt = DB.settings.__localSavedAt;
     var payload = JSON.stringify(DB);
-    // ★ 핵심: fileId별 독립 키로 저장 → 다른 HTML 파일의 localStorage와 절대 충돌하지 않음
-    var fKey = getLocalStorageKey(DB.settings.fileId);
-    localStorage.setItem(fKey, payload);
-    // 마지막 작업 파일ID 기록 (빠른 조회용)
-    localStorage.setItem('yura_last_fileId', DB.settings.fileId);
-    // 하위 호환 키 (v10~v12 파일을 열었을 때 참고용)
+    // 기존 키 + 고정 백업 키 2개에 동시에 저장하여 file:// 환경의 저장 누락을 최소화
     localStorage.setItem('yura_ht_v1', payload);
     localStorage.setItem('yura_ht_v1_latest', payload);
     localStorage.setItem('YURA_ATTENDANCE_WORKSPACE_LATEST', payload);
-    // 파일이 연결되어 있으면 변경 플래그 설정 (scheduleFileSave는 UI 이벤트에서만 호출)
-    if(typeof _fsa_dirty !== 'undefined') _fsa_dirty = true;
   }catch(e){console.error('Save failed:',e);}
 }
 function autoLoad(){
-  // ★ v13 핵심 개선:
-  // fileId 기반 저장소 분리 → 다른 HTML 파일의 localStorage가 절대 간섭하지 않음
-  // 우선순위: 동일 fileId localStorage(최신) > embedded(HTML 내장) > 구버전 fallback
+  // 최종 수정 v12:
+  // 저장된 HTML 자체 안의 <script id="YURA_EMBEDDED_DB" type="application/json"> 데이터를 읽는다.
+  // localStorage는 보조 백업으로만 사용하며, embedded/local 중 저장시각이 더 최신인 데이터를 사용한다.
+  // 이렇게 해야 JSON 업로드 후 [현재 내용 파일저장]으로 만든 HTML을 다시 열 때 데이터가 유지된다.
   var embedded=null, local=null;
 
-  // 1) v12/v13 방식: application/json 스크립트 태그에서 직접 읽기
+  // 1) v12 방식: application/json 스크립트 태그에서 직접 읽기
   try{
     var ds=document.getElementById('YURA_EMBEDDED_DB');
     if(ds && ds.textContent && ds.textContent.trim()){
-      var rawTxt = ds.textContent.trim();
-      embedded = normalizeWorkspaceDB(JSON.parse(rawTxt));
+      embedded = normalizeWorkspaceDB(JSON.parse(ds.textContent));
     }
   }catch(e){ console.error('Embedded JSON tag load failed:', e); }
 
@@ -1864,44 +1513,21 @@ function autoLoad(){
     catch(e){ console.error('Embedded var load failed:', e); }
   }
 
-  // 3) fileId 기반 localStorage 조회 (★ 핵심: 동일 fileId만 불러옴)
+  // 3) 보조 저장소: 같은 PC에서 저장한 localStorage
   try{
-    if(embedded && embedded.settings && embedded.settings.fileId){
-      // 이 HTML 파일 전용 키로 저장된 데이터가 있으면 우선 사용
-      var fKey = getLocalStorageKey(embedded.settings.fileId);
-      var fSaved = localStorage.getItem(fKey);
-      if(fSaved){
-        var fCand = normalizeWorkspaceDB(JSON.parse(fSaved));
-        if(fCand) local = fCand;
+    var keys=['YURA_ATTENDANCE_WORKSPACE_LATEST','yura_ht_v1_latest','yura_ht_v1'];
+    keys.forEach(function(k){
+      var saved=localStorage.getItem(k);
+      if(saved){
+        var cand=normalizeWorkspaceDB(JSON.parse(saved));
+        if(cand && (!local || getDataStamp(cand) >= getDataStamp(local))) local=cand;
       }
-    }
-    // fileId 전용 키에 없으면 하위 호환 키에서 fallback 조회
-    if(!local){
-      var legacyKeys=['YURA_ATTENDANCE_WORKSPACE_LATEST','yura_ht_v1_latest','yura_ht_v1'];
-      legacyKeys.forEach(function(k){
-        try{
-          var saved=localStorage.getItem(k);
-          if(saved){
-            var cand=normalizeWorkspaceDB(JSON.parse(saved));
-            // ★ 단, embedded의 fileId와 다른 fileId 데이터는 완전히 무시
-            //    (다른 HTML 파일 세션 데이터가 유입되는 버그 방지)
-            if(cand && embedded && embedded.settings && embedded.settings.fileId
-               && cand.settings && cand.settings.fileId
-               && cand.settings.fileId !== embedded.settings.fileId){
-              return; // skip - 다른 파일 ID의 데이터
-            }
-            if(cand && (!local || getDataStamp(cand) >= getDataStamp(local))) local=cand;
-          }
-        }catch(e2){}
-      });
-    }
+    });
   }catch(e){ console.error('Local data load failed:', e); }
 
-  // ── 우선순위 결정 ──
+  // 저장시각이 더 최신인 데이터 우선. 단, embedded에 exportCounts가 있으면 같은 시각일 때 embedded 우선.
   if(embedded && local){
     var es=getDataStamp(embedded), ls=getDataStamp(local);
-    // 같은 fileId의 localStorage가 더 최신이면 우선 (같은 PC에서 계속 작업한 경우)
-    // 그렇지 않으면 embedded 우선 (다른 PC에서 가져온 HTML을 열었을 때)
     DB = (ls>es) ? local : embedded;
     autoSave();
     return true;
@@ -1913,7 +1539,6 @@ function autoLoad(){
   }
   if(local){
     DB = local;
-    autoSave();
     return true;
   }
   return false;
@@ -2010,113 +1635,59 @@ function init(){
     jd.addEventListener('dragover',function(e){e.preventDefault();});
     jd.addEventListener('drop',function(e){e.preventDefault();var f=e.dataTransfer.files[0];if(f)importJSONFile(f);});
   }
-  // FSA 파일 핸들 복원 (비동기, 파일 연결 상태 복구)
-  if(typeof initFSA === 'function') initFSA();
-  // 신규직원 버튼 드래그 이동
   initQaddDrag();
+}
+
+// ════ MAIN 이동 ════
+function goMain(){
+  window.location.href = 'index.html';
 }
 
 // ════ DRAGGABLE QADD BUTTON ════
 function initQaddDrag(){
   var btn = document.getElementById('qadd-btn');
   if(!btn) return;
-
   // 저장된 위치 복원
   try{
     var saved = localStorage.getItem('yura_qadd_pos');
     if(saved){
       var pos = JSON.parse(saved);
-      btn.style.right = 'auto';
-      btn.style.bottom = 'auto';
-      btn.style.left = pos.x + 'px';
-      btn.style.top  = pos.y + 'px';
+      btn.style.right = 'auto'; btn.style.bottom = 'auto';
+      btn.style.left = pos.x + 'px'; btn.style.top = pos.y + 'px';
     }
   }catch(e){}
-
-  var isDragging = false;
-  var startX, startY, startLeft, startTop;
-  var moved = false;
-
-  function getPos(){
-    var r = btn.getBoundingClientRect();
-    return { left: r.left, top: r.top };
+  var isDragging = false, startX, startY, startLeft, startTop, moved = false;
+  function getPos(){ var r=btn.getBoundingClientRect(); return {left:r.left,top:r.top}; }
+  function onStart(cx,cy){
+    isDragging=true; moved=false;
+    var pos=getPos();
+    btn.style.right='auto'; btn.style.bottom='auto';
+    btn.style.left=pos.left+'px'; btn.style.top=pos.top+'px';
+    startX=cx; startY=cy; startLeft=pos.left; startTop=pos.top;
+    btn.style.cursor='grabbing'; btn.style.animation='none';
   }
-
-  function onStart(clientX, clientY){
-    isDragging = true;
-    moved = false;
-    var pos = getPos();
-    // fixed 위치로 전환
-    btn.style.right  = 'auto';
-    btn.style.bottom = 'auto';
-    btn.style.left   = pos.left + 'px';
-    btn.style.top    = pos.top  + 'px';
-    startX    = clientX;
-    startY    = clientY;
-    startLeft = pos.left;
-    startTop  = pos.top;
-    btn.classList.add('dragging');
-  }
-
-  function onMove(clientX, clientY){
+  function onMove(cx,cy){
     if(!isDragging) return;
-    var dx = clientX - startX;
-    var dy = clientY - startY;
-    if(Math.abs(dx) > 3 || Math.abs(dy) > 3) moved = true;
-    var newLeft = startLeft + dx;
-    var newTop  = startTop  + dy;
-    // 화면 경계 제한
-    newLeft = Math.max(0, Math.min(window.innerWidth  - btn.offsetWidth,  newLeft));
-    newTop  = Math.max(0, Math.min(window.innerHeight - btn.offsetHeight, newTop));
-    btn.style.left = newLeft + 'px';
-    btn.style.top  = newTop  + 'px';
+    var dx=cx-startX, dy=cy-startY;
+    if(Math.abs(dx)>3||Math.abs(dy)>3) moved=true;
+    var nl=Math.max(0,Math.min(window.innerWidth-btn.offsetWidth, startLeft+dx));
+    var nt=Math.max(0,Math.min(window.innerHeight-btn.offsetHeight, startTop+dy));
+    btn.style.left=nl+'px'; btn.style.top=nt+'px';
   }
-
   function onEnd(){
     if(!isDragging) return;
-    isDragging = false;
-    btn.classList.remove('dragging');
-    // 위치 저장
-    try{
-      localStorage.setItem('yura_qadd_pos', JSON.stringify({
-        x: parseFloat(btn.style.left),
-        y: parseFloat(btn.style.top)
-      }));
-    }catch(e){}
-    // 드래그가 아닌 단순 클릭이면 모달 열기
+    isDragging=false;
+    btn.style.cursor='grab'; btn.style.animation='';
+    try{ localStorage.setItem('yura_qadd_pos',JSON.stringify({x:parseFloat(btn.style.left),y:parseFloat(btn.style.top)})); }catch(e){}
     if(!moved) openEmpModal();
   }
-
-  // 마우스
-  btn.addEventListener('mousedown', function(e){
-    if(e.button !== 0) return;
-    e.preventDefault();
-    onStart(e.clientX, e.clientY);
-  });
-  document.addEventListener('mousemove', function(e){
-    if(isDragging) onMove(e.clientX, e.clientY);
-  });
-  document.addEventListener('mouseup', function(e){
-    if(isDragging) onEnd();
-  });
-
-  // 터치
-  btn.addEventListener('touchstart', function(e){
-    var t = e.touches[0];
-    onStart(t.clientX, t.clientY);
-  }, {passive:true});
-  document.addEventListener('touchmove', function(e){
-    if(!isDragging) return;
-    e.preventDefault();
-    var t = e.touches[0];
-    onMove(t.clientX, t.clientY);
-  }, {passive:false});
-  document.addEventListener('touchend', function(){
-    if(isDragging) onEnd();
-  });
-
-  // 기존 onclick 제거 (드래그 판별 후 onEnd에서 처리)
-  btn.onclick = null;
+  btn.addEventListener('mousedown',function(e){ if(e.button!==0)return; e.preventDefault(); onStart(e.clientX,e.clientY); });
+  document.addEventListener('mousemove',function(e){ if(isDragging) onMove(e.clientX,e.clientY); });
+  document.addEventListener('mouseup',function(e){ if(isDragging) onEnd(); });
+  btn.addEventListener('touchstart',function(e){ var t=e.touches[0]; onStart(t.clientX,t.clientY); },{passive:true});
+  document.addEventListener('touchmove',function(e){ if(!isDragging)return; e.preventDefault(); var t=e.touches[0]; onMove(t.clientX,t.clientY); },{passive:false});
+  document.addEventListener('touchend',function(){ if(isDragging) onEnd(); });
+  btn.onclick=null;
 }
 
 // ════ BIRTHDAY ALERTS ════
@@ -3183,18 +2754,6 @@ function renderEFShiftHistory(hist){
       <button class="sh-del" onclick="delShiftHistRow(${i})">✕</button>
     </div>`).join('');
 }
-function delShiftHistRow(i){
-  var el = document.getElementById('shr-'+i);
-  if(el) el.remove();
-  // 나머지 행 id 재번호 (gap 없이)
-  var container = document.getElementById('ef-shift-hist-rows');
-  if(!container) return;
-  Array.from(container.children).forEach(function(row, newIdx){
-    row.id = 'shr-'+newIdx;
-    var btn = row.querySelector('.sh-del');
-    if(btn) btn.setAttribute('onclick','delShiftHistRow('+newIdx+')');
-  });
-}
 function addShiftHistoryRow(){
   // Add row with form inputs
   const container = document.getElementById('ef-shift-hist-rows');
@@ -3407,7 +2966,7 @@ function confirmDelEmp(id){
     DB.employees = (DB.employees||[]).filter(function(e){return e.id!==id;});
     DB.absences = (DB.absences||[]).filter(function(a){return a.empId!==id;});
     if(selIndEmpId===id) selIndEmpId=null;
-    scheduleAutoSave();if(typeof scheduleFileSave==="function")scheduleFileSave();
+    scheduleAutoSave();
     renderEmpList();
     renderDash();
     renderAtt();
@@ -3541,14 +3100,14 @@ function saveAbs(){
       DB.absences[idx] = {id:editAbsId, empId:empId, date:date, days:days, code:code,
         codeLabel:codeObj?codeObj.ko:'', note:document.getElementById('abm-note').value.trim()};
       closeAbsModal(); renderAbsReport(); renderDash();
-      scheduleAutoSave();if(typeof scheduleFileSave==="function")scheduleFileSave();
+      scheduleAutoSave();
       toast('결근 기록 수정 완료','#0d8a6e');
     }
   } else {
     DB.absences.push({id:DB.meta.nextAbsId++, empId:empId, date:date, days:days, code:code,
       codeLabel:codeObj?codeObj.ko:'', note:document.getElementById('abm-note').value.trim()});
     closeAbsModal(); renderAbsReport(); renderDash();
-    scheduleAutoSave();if(typeof scheduleFileSave==="function")scheduleFileSave();
+    scheduleAutoSave();
     toast('결근 등록 완료','#0d8a6e');
   }
 }
@@ -4692,7 +4251,7 @@ function initDefaultHolidays(){
     }
   });
   DB.holidays.sort(function(a,b){return a.date.localeCompare(b.date);});
-  renderHolList(); initHolYearFilter(); scheduleAutoSave();if(typeof scheduleFileSave==="function")scheduleFileSave();
+  renderHolList(); initHolYearFilter(); scheduleAutoSave();
   toast(year+'년 멕시코 공휴일 '+added+'개 추가됨','#0d8a6e');
 }
 
@@ -4796,7 +4355,7 @@ function importMasterExcel(event){
       }
       if(!changed.length){toast('인식 가능한 시트가 없습니다. 양식 다운로드 후 시트명/헤더를 확인하세요.','#8a2020');return;}
       initDBDefaults();
-      renderAllMasters();populateEFAddresses();populateEFTransports();populateEFResignCodes();updateEFProcess();buildAbmCodeGrid();initAbsCodeFilter();renderEmpList();renderDash();updateFileStats();scheduleAutoSave();if(typeof scheduleFileSave==="function")scheduleFileSave();
+      renderAllMasters();populateEFAddresses();populateEFTransports();populateEFResignCodes();updateEFProcess();buildAbmCodeGrid();initAbsCodeFilter();renderEmpList();renderDash();updateFileStats();scheduleAutoSave();
       toast('마스터 엑셀 업로드 완료: '+changed.join(', '),'#0d8a6e');
     }catch(err){toast('엑셀 업로드 오류: '+err.message,'#8a2020');}
   };
@@ -4824,7 +4383,7 @@ function saveMasterAddr(i){
   var col=document.getElementById('maddr-col-'+i).value.trim();
   if(!muni||!col){toast('Municipio와 Colonia를 입력하세요.','#8a2020');return;}
   DB.addresses[i]={muni:muni,col:col};
-  populateEFAddresses();scheduleAutoSave();if(typeof scheduleFileSave==="function")scheduleFileSave();toast('수정됨','#0d8a6e');
+  populateEFAddresses();scheduleAutoSave();toast('수정됨','#0d8a6e');
 }
 function mAddAddress(){
   var muni=document.getElementById('m-addr-muni').value.trim(),col=document.getElementById('m-addr-col').value.trim();
@@ -4832,9 +4391,9 @@ function mAddAddress(){
   if(DB.addresses.find(function(a){return a.muni===muni&&a.col===col;})){toast('이미 존재합니다.','#8a2020');return;}
   DB.addresses.push({muni:muni,col:col});
   document.getElementById('m-addr-muni').value='';document.getElementById('m-addr-col').value='';
-  renderMasterAddr();populateEFAddresses();scheduleAutoSave();if(typeof scheduleFileSave==="function")scheduleFileSave();toast(muni+' - '+col+' 추가됨','#0d8a6e');
+  renderMasterAddr();populateEFAddresses();scheduleAutoSave();toast(muni+' - '+col+' 추가됨','#0d8a6e');
 }
-function delMasterAddr(i){if(!confirm('삭제?'))return;DB.addresses.splice(i,1);renderMasterAddr();populateEFAddresses();scheduleAutoSave();if(typeof scheduleFileSave==="function")scheduleFileSave();}
+function delMasterAddr(i){if(!confirm('삭제?'))return;DB.addresses.splice(i,1);renderMasterAddr();populateEFAddresses();scheduleAutoSave();}
 
 function renderMasterBus(){
   var tb=document.getElementById('m-bus-tbody');if(!tb)return;
@@ -4852,7 +4411,7 @@ function saveMasterBus(i){
   var num=document.getElementById('mbus-num-'+i).value.trim();
   if(!num){toast('호차 번호를 입력하세요.','#8a2020');return;}
   DB.buses[i]={num:num,ruta:document.getElementById('mbus-ruta-'+i).value.trim(),placas:document.getElementById('mbus-pl-'+i).value.trim()};
-  populateEFTransports();scheduleAutoSave();if(typeof scheduleFileSave==="function")scheduleFileSave();toast('수정됨','#0d8a6e');
+  populateEFTransports();scheduleAutoSave();toast('수정됨','#0d8a6e');
 }
 function mAddBus(){
   var num=document.getElementById('m-bus-num').value.trim(),ruta=document.getElementById('m-bus-ruta').value.trim(),placas=document.getElementById('m-bus-placas').value.trim();
@@ -4861,9 +4420,9 @@ function mAddBus(){
   if(DB.buses.find(function(b){return b.num===num;})){toast('이미 존재합니다.','#8a2020');return;}
   DB.buses.push({num:num,ruta:ruta,placas:placas});
   document.getElementById('m-bus-num').value='';document.getElementById('m-bus-ruta').value='';document.getElementById('m-bus-placas').value='';
-  renderMasterBus();populateEFTransports();scheduleAutoSave();if(typeof scheduleFileSave==="function")scheduleFileSave();toast(num+'호차 추가됨','#0d8a6e');
+  renderMasterBus();populateEFTransports();scheduleAutoSave();toast(num+'호차 추가됨','#0d8a6e');
 }
-function delMasterBus(i){if(!confirm('삭제?'))return;DB.buses.splice(i,1);renderMasterBus();populateEFTransports();scheduleAutoSave();if(typeof scheduleFileSave==="function")scheduleFileSave();}
+function delMasterBus(i){if(!confirm('삭제?'))return;DB.buses.splice(i,1);renderMasterBus();populateEFTransports();scheduleAutoSave();}
 
 function renderMasterAbsCode(){
   var tb=document.getElementById('m-abs-tbody');if(!tb)return;
@@ -4882,7 +4441,7 @@ function saveMasterAbsCode(i){
   var ko=document.getElementById('mabs-ko-'+i).value.trim();
   if(!es||!ko){toast('명칭을 입력하세요.','#8a2020');return;}
   DB.absCodes[i].es=es;DB.absCodes[i].ko=ko;
-  buildAbmCodeGrid();scheduleAutoSave();if(typeof scheduleFileSave==="function")scheduleFileSave();toast('수정됨','#0d8a6e');
+  buildAbmCodeGrid();scheduleAutoSave();toast('수정됨','#0d8a6e');
 }
 function mAddAbsCode(){
   var es=document.getElementById('m-abs-es').value.trim(),ko=document.getElementById('m-abs-ko').value.trim();
@@ -4890,9 +4449,9 @@ function mAddAbsCode(){
   var maxNo=Math.max(0,Math.max.apply(null,DB.absCodes.map(function(c){return c.no;})));
   DB.absCodes.push({no:maxNo+1,es:es,ko:ko});
   document.getElementById('m-abs-es').value='';document.getElementById('m-abs-ko').value='';
-  renderMasterAbsCode();buildAbmCodeGrid();initAbsCodeFilter();scheduleAutoSave();if(typeof scheduleFileSave==="function")scheduleFileSave();toast('No.'+(maxNo+1)+' 추가됨','#0d8a6e');
+  renderMasterAbsCode();buildAbmCodeGrid();initAbsCodeFilter();scheduleAutoSave();toast('No.'+(maxNo+1)+' 추가됨','#0d8a6e');
 }
-function delMasterAbsCode(i){if(!confirm('삭제?'))return;DB.absCodes.splice(i,1);renderMasterAbsCode();buildAbmCodeGrid();scheduleAutoSave();if(typeof scheduleFileSave==="function")scheduleFileSave();}
+function delMasterAbsCode(i){if(!confirm('삭제?'))return;DB.absCodes.splice(i,1);renderMasterAbsCode();buildAbmCodeGrid();scheduleAutoSave();}
 
 function renderMasterResCode(){
   var tb=document.getElementById('m-res-tbody');if(!tb)return;
@@ -4911,7 +4470,7 @@ function saveMasterResCode(i){
   var ko=document.getElementById('mres-ko-'+i).value.trim();
   if(!es||!ko){toast('명칭을 입력하세요.','#8a2020');return;}
   DB.resCodes[i].es=es;DB.resCodes[i].ko=ko;
-  populateEFResignCodes();scheduleAutoSave();if(typeof scheduleFileSave==="function")scheduleFileSave();toast('수정됨','#0d8a6e');
+  populateEFResignCodes();scheduleAutoSave();toast('수정됨','#0d8a6e');
 }
 function mAddResCode(){
   var es=document.getElementById('m-res-es').value.trim(),ko=document.getElementById('m-res-ko').value.trim();
@@ -4919,9 +4478,9 @@ function mAddResCode(){
   var maxNo=Math.max(0,Math.max.apply(null,DB.resCodes.map(function(c){return c.no;})));
   DB.resCodes.push({no:maxNo+1,es:es,ko:ko});
   document.getElementById('m-res-es').value='';document.getElementById('m-res-ko').value='';
-  renderMasterResCode();populateEFResignCodes();scheduleAutoSave();if(typeof scheduleFileSave==="function")scheduleFileSave();toast('No.'+(maxNo+1)+' 추가됨','#0d8a6e');
+  renderMasterResCode();populateEFResignCodes();scheduleAutoSave();toast('No.'+(maxNo+1)+' 추가됨','#0d8a6e');
 }
-function delMasterResCode(i){if(!confirm('삭제?'))return;DB.resCodes.splice(i,1);renderMasterResCode();populateEFResignCodes();scheduleAutoSave();if(typeof scheduleFileSave==="function")scheduleFileSave();}
+function delMasterResCode(i){if(!confirm('삭제?'))return;DB.resCodes.splice(i,1);renderMasterResCode();populateEFResignCodes();scheduleAutoSave();}
 
 function renderMasterProcess(){
   var tb=document.getElementById('m-proc-tbody');if(!tb)return;
@@ -4948,7 +4507,7 @@ function saveMasterProcess(i){
   var es=document.getElementById('mproc-es-'+i).value.trim();
   if(!ko||!es){toast('공정명을 입력하세요.','#8a2020');return;}
   DB.processes[i]={type:type,ko:ko,es:es};
-  updateEFProcess();scheduleAutoSave();if(typeof scheduleFileSave==="function")scheduleFileSave();toast('수정됨','#0d8a6e');
+  updateEFProcess();scheduleAutoSave();toast('수정됨','#0d8a6e');
 }
 function mAddProcess(){
   var type=document.getElementById('m-proc-type').value;
@@ -4957,9 +4516,9 @@ function mAddProcess(){
   if(!ko||!es){toast('공정명을 입력하세요.','#8a2020');return;}
   DB.processes.push({type:type,ko:ko,es:es});
   document.getElementById('m-proc-ko').value='';document.getElementById('m-proc-es').value='';
-  renderMasterProcess();updateEFProcess();scheduleAutoSave();if(typeof scheduleFileSave==="function")scheduleFileSave();toast(ko+' 추가됨','#0d8a6e');
+  renderMasterProcess();updateEFProcess();scheduleAutoSave();toast(ko+' 추가됨','#0d8a6e');
 }
-function delMasterProcess(i){if(!confirm('삭제?'))return;DB.processes.splice(i,1);renderMasterProcess();updateEFProcess();scheduleAutoSave();if(typeof scheduleFileSave==="function")scheduleFileSave();}
+function delMasterProcess(i){if(!confirm('삭제?'))return;DB.processes.splice(i,1);renderMasterProcess();updateEFProcess();scheduleAutoSave();}
 
 // 기존 호환용
 function renderAddrList(){renderMasterAddr();}
@@ -5015,80 +4574,6 @@ function extractWorkspaceDataFromText(txt){
 function applyImportedDB(d){
   if(!d || typeof d!=='object') throw new Error('데이터 형식이 올바르지 않습니다.');
 
-  // ★★★ 배포용 직원등록 폼 JSON 감지 → 병합(Merge) 처리
-  // 배포용 폼은 {name, empno, hireDate, ...} 형태의 단일 직원 객체를 저장함.
-  // 기존 전체 DB 교체가 아니라, 해당 직원만 추가/업데이트해야 함.
-  var isSingleEmpForm = !!(
-    d.name && d.hireDate &&
-    !Array.isArray(d.employees) &&
-    !d.settings && !d.meta
-  );
-  if(isSingleEmpForm){
-    var newEmp = {
-      name:       d.name        || '',
-      empno:      d.empno       || '',
-      nationality:d.nationality || '멕시코인',
-      gender:     d.gender      || '남',
-      processType:d.processType || '직접인원',
-      processName:d.processName || '',
-      processNameEs: d.processNameEs || '',
-      jobType:    d.jobType     || '생산직',
-      jobGrade:   d.jobGrade    || 'Operador',
-      jobGradeKo: d.jobGradeKo  || '작업자',
-      shift:      d.shift       || '주간',
-      phone:      d.phone       || '',
-      hireDate:   d.hireDate,
-      birthDate:  d.birthDate   || '',
-      spouseBirth:d.spouseBirth || '',
-      childBirths:Array.isArray(d.childBirths)?d.childBirths:[],
-      municipio:  d.municipio   || '',
-      colonia:    d.colonia     || '',
-      transport:  d.transport   || '',
-      photo:      d.photo       || '',
-      resigned:   false
-    };
-
-    // 사번 또는 이름+입사일로 기존 직원 검색
-    var existIdx = -1;
-    if(newEmp.empno){
-      existIdx = DB.employees.findIndex(function(e){ return e.empno === newEmp.empno; });
-    }
-    if(existIdx < 0 && newEmp.name){
-      existIdx = DB.employees.findIndex(function(e){
-        return e.name === newEmp.name && e.hireDate === newEmp.hireDate;
-      });
-    }
-
-    var actionMsg;
-    if(existIdx >= 0){
-      // 기존 직원 업데이트 (id 유지)
-      newEmp.id = DB.employees[existIdx].id;
-      DB.employees[existIdx] = Object.assign({}, DB.employees[existIdx], newEmp);
-      actionMsg = '✅ 기존 직원 정보 업데이트: ' + newEmp.name;
-    } else {
-      // 신규 직원 추가
-      if(!DB.meta) DB.meta = {nextEmpId:1, nextAbsId:1};
-      newEmp.id = DB.meta.nextEmpId;
-      DB.meta.nextEmpId++;
-      DB.employees.push(newEmp);
-      actionMsg = '✅ 신규 직원 등록 완료: ' + newEmp.name + ' (총 '+DB.employees.length+'명)';
-    }
-
-    if(!DB.settings) DB.settings = {lang:'ko'};
-    var now = new Date().toISOString();
-    DB.settings.lastImportedAt = now;
-    DB.settings.lastModifiedAt = now;
-    DB.settings.__localSavedAt = now;
-    if(!DB.settings.fileId) DB.settings.fileId = genFileId();
-    autoSave();
-    if(typeof scheduleFileSave==='function') scheduleFileSave();
-    try{renderDash();}catch(e){}
-    try{renderEmpList();}catch(e){}
-    try{updateFileStats();}catch(e){}
-    toast(actionMsg, '#0d8a6e');
-    return; // ← 여기서 종료. 기존 교체 로직 실행 안 함
-  }
-
   // 현재 PC에서 사용 중인 마스터를 먼저 보관한다.
   // 직원등록용/일부 백업 JSON은 employees만 들어있는 경우가 많기 때문에,
   // 이때 기존 마스터를 덮어쓰면 HTML 재저장 시 마스터 변경내용이 빠진다.
@@ -5140,8 +4625,6 @@ function applyImportedDB(d){
   DB.settings.__preferLocalAfterJsonImport = true;
   DB.settings.masterSourceAfterImport = isFullWorkspace ? 'uploaded_full_workspace' : 'kept_current_master';
   if(DB.settings&&DB.settings.lang) currentLang=DB.settings.lang;
-  // ★ JSON 업로드 시: 이미 fileId가 있으면 유지(같은 파일 계속 작업), 없으면 신규 발급
-  if(!DB.settings.fileId) DB.settings.fileId = genFileId();
   autoSave();
   // 화면 갱신은 각각 안전하게 수행: 한 메뉴 오류가 전체 복원을 막지 않도록 함
   [
@@ -5155,39 +4638,31 @@ function applyImportedDB(d){
 
 function importJSONFile(f){
   var fileName = (f && f.name) ? f.name : '';
-  // 파일 내용을 먼저 읽어서 배포용 단일직원 폼인지 확인 후 확인창 메시지 결정
-  var r0 = new FileReader();
-  r0.onload = function(ev0){
-    var txt = ev0.target.result || '';
-    var isSingle = false;
+  var msg = fileName.toLowerCase().endsWith('.html')
+    ? '전체 데이터 포함 HTML에서 데이터를 불러옵니다. 현재 데이터가 교체됩니다. 계속하시겠습니까?'
+    : '현재 데이터가 업로드한 파일의 데이터로 교체됩니다. 계속하시겠습니까?';
+  if(!confirm(msg))return;
+  var r=new FileReader();
+  r.onload=function(ev){
+    var d;
     try{
-      if(txt.trim().charAt(0)==='{'){
-        var peek = JSON.parse(txt);
-        isSingle = !!(peek.name && peek.hireDate && !peek.employees && !peek.settings);
-      }
-    }catch(e){}
-    var msg;
-    if(isSingle){
-      msg = '직원 정보 등록 파일을 업로드합니다.\n기존 직원 목록은 유지되고, 이 직원만 추가(또는 업데이트)됩니다.\n계속하시겠습니까?';
-    } else if(fileName.toLowerCase().endsWith('.html')){
-      msg = '전체 데이터 포함 HTML에서 데이터를 불러옵니다. 현재 데이터가 교체됩니다. 계속하시겠습니까?';
-    } else {
-      msg = '현재 데이터가 업로드한 파일의 데이터로 교체됩니다. 계속하시겠습니까?';
+      d = extractWorkspaceDataFromText(ev.target.result);
+    }catch(parseErr){
+      toast('파일 읽기 오류: '+parseErr.message,'#8a2020');
+      return;
     }
-    if(!confirm(msg)) return;
-    var r = new FileReader();
-    r.onload = function(ev){
-      var d;
-      try{ d = extractWorkspaceDataFromText(ev.target.result); }
-      catch(parseErr){ toast('파일 읽기 오류: '+parseErr.message,'#8a2020'); return; }
-      try{ applyImportedDB(d); }
-      catch(applyErr){ console.error('Data restore failed:', applyErr); toast('데이터 적용 오류: '+applyErr.message,'#8a2020'); }
-    };
-    r.onerror = function(){ toast('파일을 읽을 수 없습니다.','#8a2020'); };
-    r.readAsText(f);
+    try{
+      applyImportedDB(d);
+      toast('✅ JSON 업로드 완료. 닫았다 다시 열어도 유지하려면 [현재 내용 파일저장]을 눌러 HTML로 저장하세요.','#0d8a6e');
+    }catch(applyErr){
+      console.error('Data restore failed:', applyErr);
+      toast('데이터 적용 오류: '+applyErr.message,'#8a2020');
+    }
   };
-  r0.readAsText(f);
+  r.onerror=function(){toast('파일을 읽을 수 없습니다.','#8a2020');};
+  r.readAsText(f);
 }
+
 // JSON Export (백업용)
 function exportJSON(){
   var dataStr = JSON.stringify(DB, null, 2);
@@ -5220,8 +4695,6 @@ function markWorkspaceModified(reason){
 }
 function prepareWorkspaceForExport(mode){
   if(!DB.settings) DB.settings={};
-  // ★ fileId가 없으면 새로 발급 (배포용 HTML 최초 저장 시)
-  if(!DB.settings.fileId) DB.settings.fileId = genFileId();
   if(typeof normalizeDBIds==='function') normalizeDBIds();
   var now = new Date().toISOString();
   DB.settings.lastSavedAt = now;
@@ -5243,8 +4716,6 @@ function prepareWorkspaceForExport(mode){
   autoSave();
 }
 function buildFullWorkspaceHTML(){
-  // ★ 저장 전: DOM 마스터 입력창 → DB 즉시 반영 (클릭 누락 방지)
-  if(typeof collectMasterInputsToDB === 'function') collectMasterInputsToDB();
   prepareWorkspaceForExport('FULL_WORKSPACE_HTML');
   // 저장 전 DOM 정리: 저장 파일을 다시 열 때 첫 화면이 깨끗하게 보이도록 함
   document.querySelectorAll('.mo.open').forEach(function(m){m.classList.remove('open');});
@@ -5287,37 +4758,11 @@ function buildFullWorkspaceHTML(){
     if(mainScript && mainScript.parentNode) mainScript.parentNode.insertBefore(dataTag, mainScript);
     else document.body.appendChild(dataTag);
   }
-  // DOM 텍스트 업데이트 (일부 브라우저 대비 선조치)
   dataTag.textContent=JSON.stringify(DB).replace(/<\/script/gi,'<\\/script');
 
   var src='<!DOCTYPE html>\n'+document.documentElement.outerHTML;
 
-  // ★★★ 핵심 수정 (v13): outerHTML이 script 태그 textContent를 올바르게 직렬화하지 않는
-  //     브라우저(Chrome 일부 버전, Edge 등)의 버그를 방지하기 위해,
-  //     outerHTML 결과에서 YURA_EMBEDDED_DB 구간을 텍스트 레벨로 직접 교체한다.
-  //     이 방식이면 DB 내용이 반드시 파일에 포함된다.
-  try{
-    var STAG_END = '<'+'/script>';
-    var embJson = JSON.stringify(DB).replace(/<\/script/gi,'<\\/script');
-    // YURA_EMBEDDED_DB 블록을 텍스트에서 직접 교체 (outerHTML 직렬화 버그 방지)
-    var dbMarker = '<script id="YURA_EMBEDDED_DB"';
-    var tagStart = src.indexOf(dbMarker);
-    if(tagStart >= 0){
-      var afterOpen = src.indexOf('>',tagStart)+1;
-      var tagEnd = src.indexOf(STAG_END, afterOpen);
-      if(tagEnd >= 0){
-        src = src.substring(0, tagStart)
-          + '<script id="YURA_EMBEDDED_DB" type="application/json">'+embJson+STAG_END
-          + src.substring(tagEnd + STAG_END.length);
-      }
-    } else {
-      var headClose = '<'+'/head>';
-      src = src.replace(headClose,
-        '<script id="YURA_EMBEDDED_DB" type="application/json">'+embJson+STAG_END+'\n'+headClose);
-    }
-  }catch(embedErr){ console.error('Embed JSON error:', embedErr); }
-
-  // 구버전 base64 주입 코드 제거
+  // 혹시 구버전 base64 주입 코드가 남아 있으면 제거한다.
   src = src.replace(/var __APP_DATA__ = null;\ntry \{\n  __APP_DATA__ = JSON\.parse\(decodeURIComponent\(escape\(atob\("[A-Za-z0-9+/=]+"\)\)\)\);\n\} catch\(e\) \{\n  console\.error\("Failed to load embedded data:", e\);\n\}\n\n/g,'');
   return src;
 }
@@ -5363,12 +4808,11 @@ function manualSaveNow(){
   try{
     if(typeof normalizeDBIds==='function') normalizeDBIds();
     if(!DB.settings) DB.settings={};
-    // fileId가 없으면 새로 발급
-    if(!DB.settings.fileId) DB.settings.fileId = genFileId();
     var now = new Date().toISOString();
     DB.settings.lastManualSavedAt = now;
     DB.settings.lastModifiedAt = now;
     DB.settings.__localSavedAt = now;
+    // 현재 열려 있는 HTML의 내장 데이터보다 사용자가 방금 저장한 브라우저 저장소 데이터를 우선 사용
     DB.settings.__preferLocalAfterJsonImport = true;
     autoSave();
     updateLastSaveInfo();
@@ -5402,16 +4846,17 @@ function updateLastSaveInfo(){
   if(DB.settings && (DB.settings.lastSavedAt || DB.settings.lastManualSavedAt || DB.settings.__localSavedAt)){
     var mainStamp = DB.settings.lastSavedAt || DB.settings.lastManualSavedAt || DB.settings.__localSavedAt;
     var d = new Date(mainStamp);
-    var ds = fmt2(d.getHours())+':'+fmt2(d.getMinutes())+' ('+d.getMonth()+1+'/'+d.getDate()+')';
-    el.innerHTML = '🕐 마지막 저장: <b style="color:#2ecba4">'+ds+'</b>';
-    el.style.color = '#2ecba4';
+    var ds = d.getFullYear()+'-'+fmt2(d.getMonth()+1)+'-'+fmt2(d.getDate())+' '+fmt2(d.getHours())+':'+fmt2(d.getMinutes());
+    var label = DB.settings.lastSavedAt ? (currentLang==='es' ? 'Última exportación HTML' : '마지막 HTML 내보내기') : (currentLang==='es' ? 'Último guardado en esta PC' : '마지막 현재 PC 저장');
+    var c=DB.settings.exportCounts||{};
+    var cntTxt='';
+    if(c.employees!==undefined){
+      cntTxt=' <span style="color:#7aa8d4">· 직원 '+(c.employees||0)+' · 결근 '+(c.absences||0)+' · 마스터 '+((c.addresses||0)+(c.buses||0)+(c.absCodes||0)+(c.resCodes||0)+(c.processes||0))+'</span>';
+    }
+    el.innerHTML = '🕐 '+label+': <b style="color:#2ecba4">'+ds+'</b>'+cntTxt;
   } else {
-    el.innerHTML = '⚠️ 아직 저장 안 됨 — 💾 저장 버튼을 눌러주세요';
-    el.style.color = '#e8a020';
-  }
-  // 파일 연결 상태도 갱신
-  if(_fsa_handle && typeof updateLinkStatus==='function'){
-    updateLinkStatus(_fsa_handle.name||'파일 연결됨');
+    var notSaved = currentLang==='es' ? '⚠️ Aún no exportado a HTML con datos — Use el botón verde para guardar.' : '⚠️ 아직 전체 데이터 포함 HTML로 저장한 기록이 없습니다 — 녹색 버튼으로 저장하세요.';
+    el.innerHTML = '<span style="color:#e8a020">'+notSaved+'</span>';
   }
 }
 
@@ -5425,12 +4870,6 @@ function updateFileStats(){
     {label:'공휴일',val:DB.holidays.length,icon:'📆',color:'#2ecba4'},
   ];
   el.innerHTML=stats.map(function(s){return '<div style="background:#0a1628;border-radius:9px;padding:12px;border:1px solid #1e4a80;text-align:center"><div style="font-size:22px;font-weight:900;color:'+s.color+'">'+s.val+'</div><div style="font-size:10px;color:#a8c4e0;margin-top:3px">'+s.icon+' '+s.label+'</div></div>';}).join('');
-  // ★ v13: 파일ID 표시 (PC 간 동기화 디버깅용)
-  var fIdEl = document.getElementById('file-id-badge');
-  if(fIdEl && DB.settings && DB.settings.fileId){
-    fIdEl.textContent = '🔑 파일ID: '+DB.settings.fileId;
-    fIdEl.style.display='block';
-  }
   updateLastSaveInfo();
 }
 
@@ -5528,7 +4967,7 @@ function genDistFile(){
   distHTML += 'function setGen(v){gen=v;document.getElementById("d-male").className=v==="남"?"on":"";document.getElementById("d-female").className=v==="여"?"on":"";}\n';
   distHTML += 'function setSft(v){sft=v;document.getElementById("d-day").className=v==="주간"?"on":"";document.getElementById("d-night").className=v==="야간"?"on":"";}\n';
   distHTML += 'function setTr(v){tr=v;document.getElementById("d-tc").className=v==="자차"?"on":"";document.getElementById("d-tb").className=v==="버스"?"on":"";document.getElementById("d-bus").style.display=v==="버스"?"":"none";}\n';
-  distHTML += 'function updProc(){var t=document.getElementById("d-ptype").value,ps=PROCS[t]||[];document.getElementById("d-proc").innerHTML="<option value=\\"\\">(공정 선택 / Seleccione)</option>"+ps.map(function(p){return"<option value=\\""+p.ko+"\\">"+p.ko+(p.es?" / "+p.es:"")+"</option>";}).join("");}\n';
+  distHTML += 'function updProc(){var t=document.getElementById("d-ptype").value,ps=PROCS[t]||[];document.getElementById("d-proc").innerHTML="<option value=\\"\\">(공정 선택)</option>"+ps.map(function(p){return"<option value=\\""+p.ko+"\\">"+p.ko+"</option>";}).join("");}\n';
   distHTML += 'function updCol(){var m=document.getElementById("d-muni").value,c=ADDR[m]||[];document.getElementById("d-colonia").innerHTML="<option value=\\"\\">-- 선택 --</option>"+c.map(function(x){return"<option value=\\""+x+"\\">"+x+"</option>";}).join("");}\n';
   distHTML += 'function prevPh(e){var f=e.target.files[0];if(!f)return;if(f.size>8*1024*1024){showMsg("사진이 8MB를 초과합니다.","#d85050");return;}var r=new FileReader();r.onload=function(ev){ph=ev.target.result;document.getElementById("pbox").innerHTML="<img src=\\""+ph+"\\">\\n";};r.readAsDataURL(f);}\n';
   distHTML += 'function showMsg(t,c){var m=document.getElementById("msg");m.textContent=t;m.style.color=c;m.style.background=c+"22";m.style.border="1px solid "+c+"55";m.style.display="block";}\n';
