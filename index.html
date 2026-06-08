@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>YURA HARNESS MÉXICO – 생산관리 시스템</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Noto+Sans+KR:wght@300;400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --surface: #111111;
+    --card: #161616;
+    --border: #2a2a2a;
+    --divider: #1e1e1e;
+    --text-primary: #f0f0f0;
+    --text-secondary: #888;
+    --text-muted: #555;
+    --accent-gold: #c9a84c;
+    --accent-orange: #d4651a;
+    --accent-purple: #7c5cbf;
+    --accent-green: #2a6644;
+    --plant1-line: #d4651a;
+    --plant2-line: #7c5cbf;
+    --badge-qual: rgba(201,168,76,0.15);
+    --badge-qual-text: #c9a84c;
+    --badge-hr: rgba(42,102,68,0.2);
+    --badge-hr-text: #4caf7d;
+    --badge-inv: rgba(124,92,191,0.15);
+    --badge-inv-text: #a98af0;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text-primary);
+    font-family: 'Noto Sans KR', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── Header ── */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 32px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .logo-block {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+
+  .logo-main {
+    font-family: 'Space Mono', monospace;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: var(--text-primary);
+  }
+
+  .logo-sub {
+    font-size: 10px;
+    color: var(--text-muted);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+  }
+
+  .header-right {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
+    text-align: right;
+    line-height: 1.8;
+  }
+
+  /* ── System subtitle ── */
+  .system-bar {
+    padding: 10px 32px;
+    background: #0d0d0d;
+    border-bottom: 1px solid var(--border);
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--text-muted);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+
+  /* ── Main grid ── */
+  .grid-wrapper {
+    display: grid;
+    grid-template-columns: 1fr 1px 1fr;
+    min-height: calc(100vh - 90px);
+  }
+
+  .divider-v {
+    background: var(--border);
+    width: 1px;
+  }
+
+  /* ── Column ── */
+  .plant-col {
+    padding: 0;
+  }
+
+  .plant-header {
+    padding: 20px 28px 18px;
+    border-bottom: 3px solid var(--plant1-line);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: #0e0e0e;
+  }
+
+  .plant-col:last-child .plant-header {
+    border-bottom-color: var(--plant2-line);
+  }
+
+  .plant-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: var(--text-primary);
+  }
+
+  .plant-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--plant1-line);
+    animation: pulse 2.4s ease-in-out infinite;
+  }
+
+  .plant-col:last-child .plant-dot {
+    background: var(--plant2-line);
+    animation-delay: 1.2s;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.7); }
+  }
+
+  /* ── Module cards ── */
+  .modules {
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px 18px 12px;
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s, background 0.2s, transform 0.15s;
+    cursor: pointer;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: currentColor;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .card:hover {
+    background: #1a1a1a;
+    transform: translateX(3px);
+  }
+
+  .card:hover::before { opacity: 1; }
+
+  .card.qual { --c: var(--accent-gold); }
+  .card.qual::before { background: var(--accent-gold); }
+  .card.qual:hover { border-color: rgba(201,168,76,0.4); }
+
+  .card.hr { --c: var(--accent-green); }
+  .card.hr::before { background: #4caf7d; }
+  .card.hr:hover { border-color: rgba(76,175,125,0.4); }
+
+  .card.inv { --c: var(--accent-purple); }
+  .card.inv::before { background: #a98af0; }
+  .card.inv:hover { border-color: rgba(169,138,240,0.4); }
+
+  .card-icon {
+    font-size: 20px;
+    margin-bottom: 6px;
+    display: block;
+  }
+
+  .card-module-no {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.22em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .card-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.2;
+    margin-bottom: 2px;
+  }
+
+  .card-title-en {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.18em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  .card-desc {
+    font-size: 11.5px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    margin-bottom: 8px;
+  }
+
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 3px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+  }
+
+  .badge-qual { background: var(--badge-qual); color: var(--badge-qual-text); }
+  .badge-hr   { background: var(--badge-hr);   color: var(--badge-hr-text);   }
+  .badge-inv  { background: var(--badge-inv);   color: var(--badge-inv-text);  }
+
+  /* ── Card hover arrow ── */
+  .card-arrow {
+    position: absolute;
+    right: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 16px;
+    color: var(--text-muted);
+    opacity: 0;
+    transition: opacity 0.2s, right 0.2s;
+  }
+
+  .card:hover .card-arrow {
+    opacity: 0.6;
+    right: 14px;
+  }
+
+  /* ── Footer ── */
+  footer {
+    padding: 14px 32px;
+    border-top: 1px solid var(--border);
+    background: var(--surface);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .footer-links {
+    display: flex;
+    gap: 24px;
+  }
+
+  .footer-link {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
+    text-decoration: none;
+    transition: color 0.15s;
+  }
+  .footer-link:hover { color: var(--text-secondary); }
+
+  .footer-copy {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
+  }
+
+  /* ── Stagger animation ── */
+  .card {
+    opacity: 0;
+    animation: fadeUp 0.4s ease forwards;
+  }
+
+  #p1 .card:nth-child(1) { animation-delay: 0.05s; }
+  #p1 .card:nth-child(2) { animation-delay: 0.12s; }
+  #p1 .card:nth-child(3) { animation-delay: 0.19s; }
+  #p2 .card:nth-child(1) { animation-delay: 0.08s; }
+  #p2 .card:nth-child(2) { animation-delay: 0.15s; }
+  #p2 .card:nth-child(3) { animation-delay: 0.22s; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+
+  /* ── QR code ── */
+  .card-body {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  .card-content { flex: 1; min-width: 0; }
+  .qr-wrap {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+  .qr-box {
+    width: 72px; height: 72px;
+    background: #fff;
+    border-radius: 4px;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+  .qr-box canvas,
+  .qr-box img { width: 64px !important; height: 64px !important; }
+  .qr-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 8px;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
+    text-align: center;
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 760px) {
+    .grid-wrapper { grid-template-columns: 1fr; }
+    .divider-v { display: none; }
+    header { padding: 14px 18px; }
+    .system-bar { padding: 8px 18px; }
+    .modules { padding: 14px 14px; }
+    .plant-header { padding: 16px 18px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-block">
+    <span class="logo-main">YURA HARNESS MÉXICO</span>
+    <span class="logo-sub">Sistema de Gestión de Producción</span>
+  </div>
+  <div class="header-right">
+    <span id="clock">--:--:--</span><br>
+    가공생산팀 관리 포탈
+  </div>
+</header>
+
+<div class="system-bar">메뉴를 선택하세요 &nbsp;/&nbsp; Seleccione un módulo</div>
+
+<div class="grid-wrapper">
+
+  <!-- PLANT 1 -->
+  <div class="plant-col">
+    <div class="plant-header">
+      <span class="plant-dot"></span>
+      <span class="plant-label">PLANT 1</span>
+    </div>
+    <div class="modules" id="p1">
+
+      <a class="card qual" href="https://jungsangchul.github.io/qualification.html" target="_blank">
+        <div class="card-body">
+          <div class="card-content">
+            <span class="card-icon">🏅</span>
+            <div class="card-module-no">Module 02</div>
+            <div class="card-title">자격인증 관리</div>
+            <div class="card-title-en">Qualification MGMT</div>
+            <div class="card-desc">시험 문제 등록, 모바일 시험 배포, 자동 채점, 자격인증 현황 관리</div>
+            <span class="badge badge-qual">시험·인증 통합</span>
+          </div>
+          <div class="qr-wrap">
+            <div class="qr-box" id="qr-p1"></div>
+            <div class="qr-label">시험 바로가기</div>
+          </div>
+        </div>
+        <span class="card-arrow">›</span>
+      </a>
+
+      <a class="card hr" href="https://junqsangchul.github.io/attendance.html" target="_blank">
+        <span class="card-icon">👥</span>
+        <div class="card-module-no">Module 04</div>
+        <div class="card-title">근태 관리</div>
+        <div class="card-title-en">Attendance MGMT</div>
+        <div class="card-desc">팀원 출결 현황, 생일 알림, 근태 통계, 한국어·스페인어 지원</div>
+        <span class="badge badge-hr">HR 인사관리</span>
+        <span class="card-arrow">›</span>
+      </a>
+
+      <a class="card inv" href="https://junqsangchul.github.io/consumables.html" target="_blank">
+        <span class="card-icon">🧴</span>
+        <div class="card-module-no">Module 05</div>
+        <div class="card-title">소모품 관리</div>
+        <div class="card-title-en">Consumables MGMT</div>
+        <div class="card-desc">소모품 입출고 현황, 재고 관리, 사용 이력 및 발주 현황 통계 조회</div>
+        <span class="badge badge-inv">재고·발주 관리</span>
+        <span class="card-arrow">›</span>
+      </a>
+
+    </div>
+  </div>
+
+  <div class="divider-v"></div>
+
+  <!-- PLANT 2 -->
+  <div class="plant-col">
+    <div class="plant-header">
+      <span class="plant-dot"></span>
+      <span class="plant-label">PLANT 2</span>
+    </div>
+    <div class="modules" id="p2">
+
+      <a class="card qual" href="https://jungsangchul.github.io/qualification2.html" target="_blank">
+        <div class="card-body">
+          <div class="card-content">
+            <span class="card-icon">🏅</span>
+            <div class="card-module-no">Module 02</div>
+            <div class="card-title">자격인증 관리</div>
+            <div class="card-title-en">Qualification MGMT</div>
+            <div class="card-desc">시험 문제 등록, 모바일 시험 배포, 자동 채점, 자격인증 현황 관리</div>
+            <span class="badge badge-qual">시험·인증 통합</span>
+          </div>
+          <div class="qr-wrap">
+            <div class="qr-box" id="qr-p2"></div>
+            <div class="qr-label">시험 바로가기</div>
+          </div>
+        </div>
+        <span class="card-arrow">›</span>
+      </a>
+
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <div class="footer-links">
+    <span class="footer-copy">YURA HARNESS MÉXICO &nbsp;|&nbsp; 가공생산팀</span>
+  </div>
+  <div class="footer-copy" id="date-display"></div>
+</footer>
+
+<script>
+  // Clock
+  function tick() {
+    const now = new Date();
+    document.getElementById('clock').textContent =
+      now.toLocaleTimeString('ko-KR', { hour12: false });
+    const days = ['일','월','화','수','목','금','토'];
+    document.getElementById('date-display').textContent =
+      `${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')} (${days[now.getDay()]})`;
+  }
+  tick();
+  setInterval(tick, 1000);
+
+  // Fix URLs (GitHub username correction)
+  document.querySelectorAll('a.card').forEach(a => {
+    a.href = a.href.replace('junqsangchul', 'jungsangchul');
+  });
+</script>
+
+
+<script>
+  // QR codes
+  window.addEventListener('load', function() {
+    new QRCode(document.getElementById('qr-p1'), {
+      text: 'https://jungsangchul.github.io/exam.html',
+      width: 64, height: 64,
+      colorDark: '#000000',
+      colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.M
+    });
+    new QRCode(document.getElementById('qr-p2'), {
+      text: 'https://jungsangchul.github.io/exam2.html',
+      width: 64, height: 64,
+      colorDark: '#000000',
+      colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.M
+    });
+  });
+</script>
+</body>
+</html>
