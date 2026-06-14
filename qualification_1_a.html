@@ -2,7 +2,7 @@
 <html lang="ko"><head>
 <script>
 (function(){
-  var VERSION='20260614_a1_fix';
+  var VERSION='20260614_a1_fix2';
   var KEY='yura_page_ver_'+location.pathname;
   var stored=sessionStorage.getItem(KEY);
   if(stored!==VERSION){
@@ -402,7 +402,7 @@ async function sbDeleteQuestion(q) {
 }
 
 // 응시자 저장/삭제
-async function sbSaveStudent(s, idx) {
+async async function sbSaveStudent(s, idx) {
   const data = {name:s.name, emp_id:s.empId||'', process:s.process||'', process_es:s.processEs||'', hire_date:s.hireDate||null, sort_order:idx};
   if(s._sbId) {
     await sbFetch(`exam_students_a1?id=eq.${s._sbId}`,{method:'PATCH',body:JSON.stringify(data)});
@@ -419,7 +419,12 @@ async function sbSaveStudent(s, idx) {
       if(students[idx]) students[idx]._sbId = existId;
       await sbFetch(`exam_students_a1?id=eq.${existId}`,{method:'PATCH',body:JSON.stringify(data)});
     } else {
-      const res = await sbFetch('exam_students_a1',{method:'POST',body:JSON.stringify(data)});
+      // POST with Prefer: resolution=merge-duplicates 대신 중복체크 후 INSERT
+      const res = await sbFetch('exam_students_a1',{
+        method:'POST',
+        headers:{'Prefer':'return=representation'},
+        body:JSON.stringify(data)
+      });
       if(res && res[0]) {
         s._sbId = res[0].id;
         if(students[idx]) students[idx]._sbId = res[0].id;
@@ -2647,8 +2652,7 @@ async function flushAllStudentSync(){
 }
 function addStudentRow(){
   students.push({name:'',empId:'',process:'',processEs:'',hireDate:''});
-  save();
-  renderStudentTable();
+  renderStudentTable(); // save() 제거: 빈행은 저장 안 함, 입력 후 saveAndSyncStudent가 처리
   // 마지막 행의 첫 번째 input에 포커스
   setTimeout(()=>{
     const rows=document.querySelectorAll('#studentBody tr');
