@@ -2,7 +2,7 @@
 <html lang="ko"><head>
 <script>
 (function(){
-  var VERSION='20260530153447';
+  var VERSION='20260619-SAFEPATCH-v2';
   var KEY='yura_page_ver_'+location.pathname;
   var stored=sessionStorage.getItem(KEY);
   if(stored!==VERSION){
@@ -6920,6 +6920,257 @@ function exportAnalyticsExcel(){
   XLSX.writeFile(wb, fname);
   toast('✅ 인원분석 엑셀 다운로드 완료 (8개 시트)', '#0d8a6e');
 }
+
+/* ===== [데이터 손실 방지 패치 v2 · 2026-06-19] =====
+   FIX 1) 내용이 실제로 바뀐 경우에만 저장시각 갱신 (오래된 탭이 최신을 덮어쓰는 것 방지)
+   FIX 2) DB 레벨 조건부 저장(낙관적 동시성):
+          "서버가 내가 본 그 시각 그대로일 때만" 덮어쓴다 → 동시 저장 경합도 0
+   FIX 3) 자동 스냅샷 백업(사진 제외, 최근 12개) + 복원 UI('🛟 백업' 버튼)
+          → 만에 하나 덮어써져도 직전 상태를 즉시 되돌릴 수 있는 안전망
+   (egress 절약: 내용 변경 없으면 서버 업로드 건너뜀)
+*/
+(function(){
+  if(window.__YURA_SAFE_PATCH2__) return; window.__YURA_SAFE_PATCH2__=true;
+  var SNAP_KEY='yura_ht_snapshots', SNAP_MAX=12;
+
+  // ── 공통: 내용 서명(휘발성 시각필드 제외) ──
+  function contentSig(db){
+    try{
+      if(!db) return '';
+      var s=db.settings||{}, vol=['__localSavedAt','lastModifiedAt','lastSavedAt','lastImportedAt'], sc={};
+      for(var k in s){ if(vol.indexOf(k)===-1) sc[k]=s[k]; }
+      return JSON.stringify({
+        employees:db.employees||[], absences:db.absences||[], holidays:db.holidays||[],
+        extraWorkDays:db.extraWorkDays||[], buses:db.buses||[], addresses:db.addresses||[],
+        absCodes:db.absCodes||[], resCodes:db.resCodes||[], processes:db.processes||[],
+        meta:db.meta||{}, settings:sc
+      });
+    }catch(e){ return 'SIG_ERR_'+Math.random(); }
+  }
+  // 사진 제외 기록 사본(백업용 — 용량 작게)
+  function recordsClone(db){
+    function strip(arr){ return (arr||[]).map(function(e){ var c=Object.assign({},e); delete c.photo; return c; }); }
+    return {
+      meta:db.meta||{}, settings:db.settings||{}, employees:strip(db.employees),
+      absences:db.absences||[], holidays:db.holidays||[], extraWorkDays:db.extraWorkDays||[],
+      buses:db.buses||[], addresses:db.addresses||[], absCodes:db.absCodes||[],
+      resCodes:db.resCodes||[], processes:db.processes||[]
+    };
+  }
+
+  var _lastContentSig = contentSig(typeof DB!=='undefined'?DB:null);
+  window.__serverSeenStamp = null; // 마지막으로 본/쓴 서버 updated_at (조건부 저장 기준)
+
+  // ───────────────── 스냅샷 백업 ─────────────────
+  function loadSnaps(){ try{ return JSON.parse(localStorage.getItem(SNAP_KEY))||[]; }catch(e){ return []; } }
+  function saveSnaps(arr){
+    try{ localStorage.setItem(SNAP_KEY, JSON.stringify(arr)); return true; }
+    catch(e){ // 용량 초과 → 오래된 것부터 버리고 재시도
+      while(arr.length>1){ arr.pop(); try{ localStorage.setItem(SNAP_KEY,JSON.stringify(arr)); return true; }catch(_){ } }
+      return false;
+    }
+  }
+  function makeBackup(srcDb, tag){
+    try{
+      if(!srcDb) return;
+      var sig=contentSig(srcDb), arr=loadSnaps();
+      if(arr.length && arr[0].sig===sig) return; // 직전과 동일하면 스킵(중복 방지)
+      arr.unshift({
+        ts:new Date().toISOString(), tag:tag||'',
+        c:{ e:(srcDb.employees||[]).length, a:(srcDb.absences||[]).length,
+            h:(srcDb.holidays||[]).length, x:(srcDb.extraWorkDays||[]).length },
+        sig:sig, d:recordsClone(srcDb)
+      });
+      while(arr.length>SNAP_MAX) arr.pop();
+      saveSnaps(arr);
+    }catch(e){ console.warn('[백업] 실패', e); }
+  }
+  function fmtTs(iso){ try{ var d=new Date(iso); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); }catch(e){ return iso; } }
+
+  // 복원: 선택 스냅샷을 현재 데이터로 적용하고 서버로 강제 푸시
+  async function restoreSnapshot(idx){
+    var arr=loadSnaps(); var s=arr[idx]; if(!s){ alert('백업을 찾을 수 없습니다.'); return; }
+    if(!confirm('['+fmtTs(s.ts)+'] 상태로 되돌립니다.\n직원 '+s.c.e+' · 결근 '+s.c.a+' · 공휴일 '+s.c.h+' · 특근 '+s.c.x+
+                '\n\n현재 데이터를 이 백업으로 교체하고 서버에도 반영합니다. 진행할까요?')) return;
+    try{
+      // 복원 직전, 지금 상태도 백업으로 남겨 둠(되돌리기 취소 대비)
+      makeBackup(DB, '복원전-자동백업');
+      var restored = (typeof normalizeWorkspaceDB==='function')
+        ? normalizeWorkspaceDB(JSON.parse(JSON.stringify(s.d)))
+        : JSON.parse(JSON.stringify(s.d));
+      restored.settings = restored.settings||{};
+      var now=new Date().toISOString();
+      restored.settings.lastModifiedAt=now; restored.settings.__localSavedAt=now;
+      DB = restored;
+      try{ if(typeof hydratePhotos==='function') hydratePhotos(); }catch(e){} // 사진 재부착(별도 저장분)
+      try{ if(typeof _doRender==='function') _doRender(); }catch(e){}
+      try{ lsSave(JSON.stringify(DB)); }catch(e){}
+      _lastContentSig = '';                 // 다음 저장이 반드시 업로드되도록
+      await _forcePush();                    // 서버에 강제 반영(모든 기기 동기화)
+      try{ toast('🛟 ['+fmtTs(s.ts)+'] 백업으로 복원 완료','#0d8a6e'); }catch(e){}
+      closeModal();
+    }catch(e){ console.error('[복원] 오류', e); alert('복원 중 오류: '+(e&&e.message||e)); }
+  }
+
+  // ───────────────── 서버 저장(조건부) ─────────────────
+  function _warnFail(err){
+    console.error('[Supabase] 저장 실패:', err);
+    try{ toast('⚠️ 서버 저장 실패: '+(((err&&(err.message||err.code)))||'권한/용량 확인'),'#8a2020'); }catch(_){}
+    try{ updateSaveStatus('error'); }catch(_){}
+  }
+  // 무조건 upsert (최초 기준 확보 / 복원 시 강제 푸시)
+  async function _forcePush(){
+    var sb=(typeof getSB==='function')?getSB():null; if(!sb) return false;
+    try{
+      var _clone=persistedClone(), nowIso=new Date().toISOString();
+      var r=await sb.from('employees').upsert({id:1,data:_clone,updated_at:nowIso},{onConflict:'id'}).select('updated_at').maybeSingle();
+      if(r.error){ _warnFail(r.error); return false; }
+      window.__serverSeenStamp=(r.data&&r.data.updated_at)||nowIso;
+      _lastContentSig=contentSig(DB);
+      try{ if(typeof savePhotosSupa==='function') savePhotosSupa(); }catch(e){}
+      try{ updateSaveStatus('saved'); }catch(_){}
+      makeBackup(DB,'저장');
+      return true;
+    }catch(e){ _warnFail(e); return false; }
+  }
+
+  var _origSupaSave = supaSave;
+  supaSave = async function(){
+    try{
+      var sb=(typeof getSB==='function')?getSB():null; if(!sb) return false;
+      var localSig=contentSig(DB);
+
+      // (a) 변경 없음 → 업로드 스킵(egress 절약)
+      if(localSig===_lastContentSig){ try{ if(typeof savePhotosSupa==='function') savePhotosSupa(); }catch(e){} return true; }
+
+      // (b) 최초(기준 시각 없음) → upsert로 기준 확보
+      if(!window.__serverSeenStamp){ return await _forcePush(); }
+
+      // (c) 조건부 저장: 서버가 '내가 본 그 시각' 그대로일 때만 덮어쓴다
+      var _clone=persistedClone(), nowIso=new Date().toISOString();
+      var r=await sb.from('employees')
+              .update({data:_clone, updated_at:nowIso})
+              .eq('id',1).eq('updated_at', window.__serverSeenStamp)
+              .select('updated_at').maybeSingle();
+      if(r.error){ _warnFail(r.error); return false; }
+
+      if(r.data){ // 성공(아무도 안 끼어듦)
+        window.__serverSeenStamp = r.data.updated_at || nowIso;
+        _lastContentSig = localSig;
+        try{ if(typeof savePhotosSupa==='function') savePhotosSupa(); }catch(e){}
+        try{ updateSaveStatus('saved'); }catch(_){}
+        makeBackup(DB,'저장');
+        return true;
+      }
+
+      // (d) 0건 매칭 = 그 사이 서버가 바뀜 → 충돌 검증
+      var sd=await sb.from('employees').select('data,updated_at').eq('id',1).maybeSingle();
+      if(sd.error || !sd.data){ // 행이 없거나 조회 실패 → 안전하게 초기화 upsert
+        return await _forcePush();
+      }
+      var serverSig=contentSig(sd.data.data);
+      window.__serverSeenStamp = sd.data.updated_at || window.__serverSeenStamp;
+      if(serverSig===localSig){ // 사실 내용 동일 → 동기화만 맞추고 성공 처리
+        _lastContentSig=localSig;
+        try{ if(typeof savePhotosSupa==='function') savePhotosSupa(); }catch(e){}
+        return true;
+      }
+      // 진짜 충돌 → 서버본을 백업으로 보관하고 덮어쓰기 차단 + 경고
+      makeBackup(sd.data.data,'서버최신(충돌)');
+      console.warn('[안전저장] 서버가 더 최신 → 덮어쓰기 차단', {server:sd.data.updated_at, seen:window.__serverSeenStamp});
+      try{ toast('⚠️ 다른 기기에서 먼저 저장되었습니다. F5 새로고침 후 다시 입력하세요. (이번 변경은 서버에 저장하지 않음)','#c0392b'); }catch(_){}
+      try{ updateSaveStatus('error'); }catch(_){}
+      return false;
+    }catch(e){
+      console.error('[Supabase] 저장 예외:', e);
+      try{ return await _origSupaSave.apply(this, arguments); }catch(_){ return false; }
+    }
+  };
+
+  // ── supaLoad 래퍼: 서버 updated_at 기록 + 서버상태 백업 ──
+  var _origSupaLoad = supaLoad;
+  supaLoad = async function(){
+    try{
+      var sb=(typeof getSB==='function')?getSB():null;
+      if(sb){
+        var r=await sb.from('employees').select('data,updated_at').eq('id',1).maybeSingle();
+        if(!r.error && r.data){
+          if(r.data.updated_at) window.__serverSeenStamp=r.data.updated_at;
+          try{ makeBackup(r.data.data,'서버로드'); }catch(e){}
+          return r.data.data||null;
+        }
+      }
+    }catch(e){}
+    try{ return await _origSupaLoad.apply(this, arguments); }catch(e){ return null; }
+  };
+
+  // ── FIX 1: autoSave 시각 스탬프를 '내용 변경 시에만' ──
+  var _prevAutoSave = autoSave; // (이미 _dbDirty 래퍼가 씌워진 상태)
+  autoSave = function(){
+    var before=(DB.settings&&DB.settings.lastModifiedAt)||'';
+    var sigNow=contentSig(DB);
+    var changed=(sigNow!==_lastContentSig);
+    _prevAutoSave.apply(this, arguments); // 내부에서 now 스탬프 + lsSave
+    if(!changed && before){
+      try{ DB.settings.lastModifiedAt=before; DB.settings.__localSavedAt=before; lsSave(JSON.stringify(DB)); }catch(e){}
+    }
+  };
+
+  // ───────────────── 복원 UI ─────────────────
+  var _overlay=null;
+  function closeModal(){ if(_overlay){ _overlay.remove(); _overlay=null; } }
+  function openModal(){
+    closeModal();
+    var arr=loadSnaps();
+    _overlay=document.createElement('div');
+    _overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:100000;display:flex;align-items:center;justify-content:center;font-family:inherit;';
+    var box=document.createElement('div');
+    box.style.cssText='background:#161b27;color:#e8edf5;border:1px solid #2a3346;border-radius:14px;max-width:520px;width:92%;max-height:80vh;overflow:auto;box-shadow:0 18px 50px rgba(0,0,0,.5);';
+    var rows = arr.length? arr.map(function(s,i){
+      return '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 14px;border-top:1px solid #232b3c;">'
+        +'<div style="line-height:1.5;"><div style="font-weight:600;">'+fmtTs(s.ts)+(s.tag?' <span style="color:#7b8aa6;font-weight:400;">· '+s.tag+'</span>':'')+'</div>'
+        +'<div style="font-size:12px;color:#9aa7bd;">직원 '+s.c.e+' · 결근 '+s.c.a+' · 공휴일 '+s.c.h+' · 특근 '+s.c.x+'</div></div>'
+        +'<button data-i="'+i+'" class="yura-restore-btn" style="flex:0 0 auto;background:#1f7a5e;color:#fff;border:0;border-radius:8px;padding:8px 14px;cursor:pointer;font-size:13px;">복원</button></div>';
+    }).join('') : '<div style="padding:24px 14px;color:#9aa7bd;text-align:center;">아직 저장된 백업이 없습니다.<br>데이터를 한 번 수정·저장하면 자동으로 쌓입니다.</div>';
+    box.innerHTML='<div style="padding:15px 16px;border-bottom:1px solid #2a3346;display:flex;align-items:center;justify-content:space-between;">'
+      +'<div style="font-size:15px;font-weight:700;">🛟 자동 백업 / 복원</div>'
+      +'<div><button id="yura-bk-now" style="background:#2d3850;color:#cfe;border:0;border-radius:8px;padding:7px 12px;cursor:pointer;font-size:12px;margin-right:6px;">지금 백업</button>'
+      +'<button id="yura-bk-close" style="background:#3a2530;color:#ffd;border:0;border-radius:8px;padding:7px 12px;cursor:pointer;font-size:12px;">닫기</button></div></div>'
+      +'<div style="font-size:12px;color:#8290a8;padding:8px 16px 2px;">최근 '+SNAP_MAX+'개까지 자동 보관(사진 제외). 위쪽이 최신입니다.</div>'
+      +'<div>'+rows+'</div>';
+    _overlay.appendChild(box);
+    document.body.appendChild(_overlay);
+    _overlay.addEventListener('click', function(e){ if(e.target===_overlay) closeModal(); });
+    box.querySelector('#yura-bk-close').onclick=closeModal;
+    box.querySelector('#yura-bk-now').onclick=function(){ makeBackup(DB,'수동백업'); openModal(); };
+    Array.prototype.forEach.call(box.querySelectorAll('.yura-restore-btn'), function(b){
+      b.onclick=function(){ restoreSnapshot(parseInt(b.getAttribute('data-i'),10)); };
+    });
+  }
+  function mountButton(){
+    if(document.getElementById('yura-backup-fab')) return;
+    var fab=document.createElement('div');
+    fab.id='yura-backup-fab';
+    fab.textContent='🛟 백업';
+    fab.title='자동 백업 / 복원';
+    fab.style.cssText='position:fixed;left:14px;bottom:14px;z-index:99990;background:#1f7a5e;color:#fff;font-size:13px;font-weight:600;padding:9px 13px;border-radius:22px;box-shadow:0 6px 18px rgba(0,0,0,.35);cursor:pointer;user-select:none;font-family:inherit;opacity:.92;';
+    fab.onmouseenter=function(){ fab.style.opacity='1'; };
+    fab.onmouseleave=function(){ fab.style.opacity='.92'; };
+    fab.onclick=openModal;
+    document.body.appendChild(fab);
+  }
+  if(document.body) mountButton(); else document.addEventListener('DOMContentLoaded', mountButton);
+
+  // 콘솔용 단축 API
+  window.yuraBackups=function(){ var a=loadSnaps(); console.table(a.map(function(s){return {시각:fmtTs(s.ts),태그:s.tag,직원:s.c.e,결근:s.c.a,공휴일:s.c.h,특근:s.c.x};})); return a.length+'개'; };
+  window.yuraRestore=function(i){ return restoreSnapshot(i|0); };
+  window.yuraBackupNow=function(){ makeBackup(DB,'수동백업'); return '백업 완료'; };
+
+  // 첫 진입 시 현재 상태 1회 백업(서버로드 전 상태 보존)
+  try{ makeBackup(DB,'초기'); }catch(e){}
+  console.log('%c[YURA] 손실방지 패치 v2 적용 — 조건부저장 + 자동백업(🛟 버튼)','color:#2ecba4;font-weight:bold');
+})();
+
 
 // 전체 스크립트/번역 데이터 로드 완료 후 초기화
 if (document.readyState === 'loading') {
