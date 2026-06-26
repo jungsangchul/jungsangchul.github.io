@@ -132,6 +132,70 @@
   @media (max-width:560px){ .brand-name{font-size:16px} .kpi .v{font-size:28px} .wrap{padding:12px 11px 32px} }
   @media print{ .filters,.xbtn,.tab,.rbtn,.photo-btn,.lang,.toggle{display:none!important}
     body{background:#fff} header{box-shadow:none} .kpi,.card{box-shadow:none;border:1px solid #e2e8f0} }
+
+  /* ===================== DARK THEME ===================== */
+  body{background:radial-gradient(1100px 620px at 50% -180px,#13294a,transparent),linear-gradient(180deg,#0a1726,#0b1d34);color:#e9eef7}
+  .kpi{background:#15243f;border-color:rgba(255,255,255,.07);box-shadow:0 1px 2px rgba(0,0,0,.35),0 18px 34px -20px rgba(0,0,0,.7)}
+  .kpi .v{color:#f1f5fb}
+  .kpi .l{color:#9fb0c8}
+  .kpi .unit{color:#7e90ab}
+  .kpi-ic{background:rgba(255,255,255,.08);color:#a9c0e0}
+  .kpi.green .kpi-ic{background:rgba(34,197,94,.16);color:#4ade80}
+  .kpi.amber .kpi-ic{background:rgba(251,191,36,.16);color:#fbbf24}
+  .kpi.slate .kpi-ic{background:rgba(148,163,184,.20);color:#cbd5e1}
+  .kpi.red   .kpi-ic{background:rgba(248,113,113,.16);color:#f87171}
+  .kpi.teal  .kpi-ic{background:rgba(45,212,191,.16);color:#2dd4bf}
+  .tabs{background:#13223c;box-shadow:0 1px 2px rgba(0,0,0,.35),0 12px 26px -16px rgba(0,0,0,.7)}
+  .tab{color:#9fb0c8}
+  .tab:hover{color:#e9eef7;background:rgba(255,255,255,.06)}
+  .card{background:#15243f;border-color:rgba(255,255,255,.07);box-shadow:0 1px 2px rgba(0,0,0,.35),0 20px 38px -22px rgba(0,0,0,.75)}
+  .card .head h3{color:#eaf0f8}
+  .bar-track{background:rgba(255,255,255,.07);box-shadow:inset 0 1px 2px rgba(0,0,0,.35)}
+  .bar-row .lab{color:#c3d0e2}
+  .bar-row .num{color:#f1f5fb}
+  thead th{color:#8294ad;border-bottom-color:rgba(255,255,255,.12)}
+  thead th:hover{color:#eaf0f8}
+  tbody td{border-bottom-color:rgba(255,255,255,.06);color:#dde6f2}
+  tbody tr:hover{background:rgba(255,255,255,.04)}
+  .photo-btn{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.12);color:#cfe0f5}
+  .photo-btn:hover{background:#1d3a66;border-color:#1d3a66;color:#fff}
+  .empty{color:#8294ad}
+  .foot{color:#8294ad}.foot b{color:#e3c878}
+  /* 직원 추가 버튼/폼 */
+  .addbtn{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.28);color:#fff;font-weight:800;font-size:13px;padding:9px 14px;border-radius:10px;cursor:pointer;transition:.15s;position:relative;z-index:1}
+  .addbtn:hover{background:rgba(255,255,255,.22)}
+  .addbox{max-width:400px!important;text-align:left!important}
+  .addform{display:flex;flex-direction:column;gap:9px;margin-top:8px}
+  .addform label{font-size:11.5px;font-weight:800;color:#475569;margin-bottom:-4px}
+  .addform input,.addform select{border:1px solid #d8e0ea;border-radius:9px;padding:10px 12px;font-size:14px;color:#0c2444;background:#f8fafc;outline:none}
+  .addform input:focus,.addform select:focus{border-color:#163a66;background:#fff}
+  .amsg{font-size:12.5px;min-height:18px;font-weight:700;color:#dc2626;text-align:center}
+  .addbtns{display:flex;gap:8px;margin-top:4px}
+  .addbtns button{flex:1;border:none;border-radius:10px;padding:11px;font-weight:800;cursor:pointer}
+  .abtn-cancel{background:#eef2f6;color:#475569}
+  .abtn-ok{background:linear-gradient(135deg,#13335c,#0c2444);color:#fff}
+
+  /* 직원 관리(퇴사/복직) */
+  .mqbox{max-width:460px!important;text-align:left!important}
+  .mqsearch{width:100%;border:1px solid #d8e0ea;border-radius:9px;padding:10px 12px;font-size:14px;margin:10px 0;outline:none;color:#0c2444;background:#f8fafc}
+  .mqsearch:focus{border-color:#163a66;background:#fff}
+  .mqlist{max-height:52vh;overflow-y:auto;display:flex;flex-direction:column;gap:6px;padding-right:2px}
+  .mqrow{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 11px;border:1px solid #eef1f5;border-radius:10px;background:#fff}
+  .mqrow .info{min-width:0;overflow:hidden}
+  .mqrow .nm{font-weight:700;color:#0c2444;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .mqrow .id{font-size:11.5px;color:#8294ad;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .mqrow.off{opacity:.5;background:#f8fafc}
+  .mqbtn{border:none;border-radius:8px;padding:7px 14px;font-weight:800;font-size:12px;cursor:pointer;flex:none}
+  .mqbtn.res{background:#fee2e2;color:#b91c1c}
+  .mqbtn.rst{background:#dcfce7;color:#15803d}
+
+  #addModal{z-index:60}
+  .addform input:read-only{background:#eef2f6;color:#64748b;cursor:not-allowed}
+  .mqfilter{display:flex;gap:4px;background:#eef2f6;padding:4px;border-radius:10px;margin:6px 0 8px}
+  .mqf{flex:1;border:none;background:transparent;border-radius:7px;padding:8px;font-weight:800;font-size:12.5px;color:#64748b;cursor:pointer}
+  .mqf.active{background:#fff;color:#0c2444;box-shadow:0 1px 3px rgba(0,0,0,.14)}
+  .mqact{display:flex;gap:6px;flex:none}
+  .mqbtn.edit{background:#e8eef7;color:#163a66}
 </style>
 </head>
 <body>
@@ -160,6 +224,8 @@
       <span class="fld"><label id="lPlant">공장</label><select id="fFactory"></select></span>
       <button class="rbtn" id="bRefresh" onclick="refresh()">새로고침</button>
       <label class="toggle"><input type="checkbox" id="fAuto"> <span id="lAuto">자동(30s)</span></label>
+      <button class="addbtn" id="bAdd" onclick="openAdd()">+ 직원</button>
+      <button class="addbtn" id="bManage" onclick="openManage()">직원 관리</button>
       <button class="lang" id="langBtn">ES</button>
     </div>
     <div class="updated" id="updated">—</div>
@@ -223,6 +289,39 @@
   </div>
 </div>
 
+<div class="modal" id="addModal">
+  <div class="box addbox">
+    <div class="mname" id="addTitle" style="text-align:center">직원 추가</div>
+    <div class="addform">
+      <label id="laId">사번</label><input id="aId" placeholder="M026..." autocomplete="off" autocapitalize="characters">
+      <label id="laName">이름 (ES)</label><input id="aName" placeholder="Nombre" autocomplete="off">
+      <label id="laKo">한글 약칭</label><input id="aKo" placeholder="이름" autocomplete="off">
+      <label id="laTeam">팀</label><input id="aTeam" placeholder="-" autocomplete="off">
+      <label id="laPlant">공장</label><select id="aFactory"></select>
+      <div class="amsg" id="addMsg"></div>
+      <div class="addbtns">
+        <button class="abtn-cancel" id="aCancel" onclick="closeAdd()">취소</button>
+        <button class="abtn-ok" id="aOk" onclick="submitAdd()">추가</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="manageModal">
+  <div class="box mqbox">
+    <div class="mname" id="mqTitle" style="text-align:center">직원 관리</div>
+    <input id="mqSearch" class="mqsearch" placeholder="검색 (사번/이름)" autocomplete="off">
+    <div class="mqfilter">
+      <button class="mqf active" id="mfAll" onclick="setManageFilter('all')">전체</button>
+      <button class="mqf" id="mfActive" onclick="setManageFilter('active')">재직</button>
+      <button class="mqf" id="mfOff" onclick="setManageFilter('off')">퇴사</button>
+    </div>
+    <div class="mqlist" id="mqList"></div>
+    <div class="amsg" id="mqMsg"></div>
+    <button onclick="closeManage()" id="mqClose" style="margin-top:6px;width:100%">닫기</button>
+  </div>
+</div>
+
 <script>
 /* ============================================================
    설정 (CONFIG)
@@ -250,7 +349,7 @@ const I18N={
     photoNone:"사진 없음", photoFail:"사진 불러오기 실패", close:"닫기",
     pinTitle:"관리자 대시보드", pinSub:"PIN을 입력하세요", pinOpen:"열기", pinBad:"PIN이 올바르지 않습니다.",
     loading:"불러오는 중…", queryErr:"조회 오류 — 설정/네트워크 확인", updated:"업데이트 ",
-    listTitle:(n)=>`목록 (${n})`, persons:"명" },
+    listTitle:(n)=>`목록 (${n})`, persons:"명", addEmp:"직원 추가", fId:"사번", fName:"이름 (ES)", fKo:"한글 약칭", fTeam:"팀", fPlant:"공장", addCancel:"취소", addOk:"추가", needMsg:"사번과 이름을 입력하세요", dupMsg:"이미 존재하는 사번입니다", addFail:"추가 실패 — Supabase 정책(권한) 확인", manage:"직원 관리", searchPh:"검색 (사번/이름)", resign:"퇴사", restore:"복직", noRes:"결과 없음", editEmp:"직원 수정", save:"저장", edit:"수정", stActive:"재직", stResigned:"퇴사" },
   es:{ title:"Panel de Asistencia y Comidas", date:"Fecha", plant:"Planta", all:"Todas", refresh:"Actualizar", auto:"Auto(30s)",
     kIn:"Entradas", kLate:"Tardes", kPresent:"Presentes", kOut:"Salidas", kAbsent:"Ausentes", kMeal:"Comidas",
     tabAtt:"Asistencia", tabAbsent:"Ausentes", tabMeal:"Comidas",
@@ -260,7 +359,7 @@ const I18N={
     photoNone:"Sin foto", photoFail:"Error al cargar foto", close:"Cerrar",
     pinTitle:"Panel", pinSub:"Ingrese el PIN", pinOpen:"Abrir", pinBad:"PIN incorrecto.",
     loading:"Cargando…", queryErr:"Error de consulta — revise config/red", updated:"Act. ",
-    listTitle:(n)=>`Lista (${n})`, persons:"" }
+    listTitle:(n)=>`Lista (${n})`, persons:"", addEmp:"Agregar empleado", fId:"N° empleado", fName:"Nombre (ES)", fKo:"Nombre KO", fTeam:"Equipo", fPlant:"Planta", addCancel:"Cancelar", addOk:"Agregar", needMsg:"Ingrese N° y nombre", dupMsg:"El N° ya existe", addFail:"Error al agregar — revise políticas", manage:"Gestión de empleados", searchPh:"Buscar (N°/nombre)", resign:"Baja", restore:"Reactivar", noRes:"Sin resultados", editEmp:"Editar empleado", save:"Guardar", edit:"Editar", stActive:"Activos", stResigned:"Baja" }
 };
 let lang=localStorage.getItem("yura_lang")||(navigator.language.startsWith("es")?"es":"ko");
 const t=k=>I18N[lang][k];
@@ -285,6 +384,11 @@ function applyLang(){
   $("kl1").textContent=t("kIn"); $("kl2").textContent=t("kLate"); $("kl3").textContent=t("kPresent");
   $("kl4").textContent=t("kOut"); $("kl5").textContent=t("kAbsent"); $("kl6").textContent=t("kMeal");
   document.querySelectorAll(".kpi .unit").forEach(u=>u.textContent=t("persons"));
+  $("bAdd").textContent="+ "+t("addEmp"); $("addTitle").textContent=t("addEmp");
+  $("laId").textContent=t("fId"); $("laName").textContent=t("fName"); $("laKo").textContent=t("fKo");
+  $("laTeam").textContent=t("fTeam"); $("laPlant").textContent=t("fPlant");
+  $("aCancel").textContent=t("addCancel"); $("aOk").textContent=t("addOk");
+  $("bManage").textContent=t("manage");
   $("tAtt").textContent=t("tabAtt"); $("tAbsent").textContent=t("tabAbsent"); $("tMeal").textContent=t("tabMeal");
   $("bExcel").textContent=t("excel"); $("mClose").textContent=t("close");
   $("gT").textContent=t("pinTitle"); $("gS").textContent=t("pinSub"); $("gO").textContent=t("pinOpen");
@@ -332,7 +436,7 @@ async function refresh(){
   $("updated").textContent=t("loading");
   try{
     const [emp,att,meal]=await Promise.all([
-      getJson(REST(`${CONFIG.T_EMPLOYEES}?select=employee_id,name,factory&limit=5000`)).catch(()=>[]),
+      getJson(REST(`${CONFIG.T_EMPLOYEES}?active=eq.true&select=employee_id,name,factory&limit=5000`)).catch(()=>[]),
       getJson(REST(`${CONFIG.T_RECORDS}?created_at=gte.${start}&created_at=lt.${end}&select=id,employee_id,name,type,factory,created_at&order=created_at.asc&limit=20000`)),
       getJson(REST(`${CONFIG.T_MEALS}?meal_date=eq.${date}&status=eq.applied&select=employee_id,name,factory,created_at&order=created_at.asc&limit=20000`))
     ]);
@@ -445,6 +549,102 @@ async function showPhoto(id,name,info){
 }
 function closeModal(){ $("modal").classList.remove("open"); }
 $("modal").addEventListener("click",e=>{ if(e.target.id==="modal") closeModal(); });
+
+/* ---------- 직원 추가 ---------- */
+let editingId=null;
+function factoryOptions(){ return Object.keys(CONFIG.FACTORIES).map(k=>`<option value="${k}">${CONFIG.FACTORIES[k][lang]}</option>`).join(""); }
+function openAdd(){
+  editingId=null;
+  $("aFactory").innerHTML=factoryOptions();
+  ["aId","aName","aKo","aTeam"].forEach(id=>$(id).value=""); $("addMsg").textContent="";
+  $("aId").readOnly=false; $("addTitle").textContent=t("addEmp"); $("aOk").textContent=t("addOk");
+  $("addModal").classList.add("open"); setTimeout(()=>$("aId").focus(),150);
+}
+function openEdit(id){
+  const row=manageData.find(x=>x.employee_id===id); if(!row) return;
+  editingId=id;
+  $("aFactory").innerHTML=factoryOptions();
+  $("aId").value=row.employee_id; $("aName").value=row.name||""; $("aKo").value=row.name_ko||"";
+  $("aTeam").value=row.team||""; $("aFactory").value=row.factory||Object.keys(CONFIG.FACTORIES)[0];
+  $("aId").readOnly=true; $("addMsg").textContent="";
+  $("addTitle").textContent=t("editEmp"); $("aOk").textContent=t("save");
+  $("addModal").classList.add("open"); setTimeout(()=>$("aName").focus(),150);
+}
+function closeAdd(){ $("addModal").classList.remove("open"); editingId=null; $("aId").readOnly=false; }
+$("addModal").addEventListener("click",e=>{ if(e.target.id==="addModal") closeAdd(); });
+$("aId").addEventListener("keydown",e=>{ if(e.key==="Enter") $("aName").focus(); });
+async function submitAdd(){
+  const id=$("aId").value.trim().toUpperCase(), name=$("aName").value.trim();
+  if(!id||!name){ $("addMsg").textContent=t("needMsg"); return; }
+  $("aOk").disabled=true; $("addMsg").textContent="";
+  const payload={name:name, name_ko:$("aKo").value.trim(), team:$("aTeam").value.trim(), factory:$("aFactory").value};
+  const wasEdit=!!editingId;
+  try{
+    let r;
+    if(wasEdit){
+      r=await fetch(REST(`${CONFIG.T_EMPLOYEES}?employee_id=eq.${encodeURIComponent(editingId)}`),
+        {method:"PATCH",headers:{...HEADERS,"Content-Type":"application/json","Prefer":"return=minimal"},body:JSON.stringify(payload)});
+    } else {
+      r=await fetch(REST(CONFIG.T_EMPLOYEES),
+        {method:"POST",headers:{...HEADERS,"Content-Type":"application/json","Prefer":"return=minimal"},body:JSON.stringify({employee_id:id, ...payload, active:true})});
+      if(r.status===409){ $("addMsg").textContent=t("dupMsg"); $("aOk").disabled=false; return; }
+    }
+    if(!r.ok){ $("addMsg").textContent=t("addFail"); console.error(await r.text()); $("aOk").disabled=false; return; }
+    if(wasEdit){ const row=manageData.find(x=>x.employee_id===id); if(row) Object.assign(row,payload); }
+    closeAdd();
+    if(wasEdit && $("manageModal").classList.contains("open")) renderManage();
+    refresh();
+  }catch(e){ $("addMsg").textContent=t("addFail"); }
+  finally{ $("aOk").disabled=false; }
+}
+
+/* ---------- 직원 관리 (퇴사/복직) ---------- */
+let manageData=[];
+function openManage(){
+  $("mqTitle").textContent=t("manage"); $("mqSearch").placeholder=t("searchPh");
+  $("mqClose").textContent=t("close"); $("mqMsg").textContent=""; $("mqSearch").value="";
+  $("mfAll").textContent=t("all"); $("mfActive").textContent=t("stActive"); $("mfOff").textContent=t("stResigned");
+  manageFilter="all"; $("mfAll").classList.add("active"); $("mfActive").classList.remove("active"); $("mfOff").classList.remove("active");
+  $("mqList").innerHTML=`<div class="empty">${t("loading")}</div>`;
+  $("manageModal").classList.add("open");
+  getJson(REST(`${CONFIG.T_EMPLOYEES}?select=employee_id,name,name_ko,team,factory,active&order=active.desc,employee_id.asc&limit=5000`))
+    .then(rows=>{ manageData=Array.isArray(rows)?rows:[]; renderManage(); setTimeout(()=>$("mqSearch").focus(),100); })
+    .catch(()=>{ $("mqList").innerHTML=`<div class="empty">${t("queryErr")}</div>`; });
+}
+function closeManage(){ $("manageModal").classList.remove("open"); }
+$("manageModal").addEventListener("click",e=>{ if(e.target.id==="manageModal") closeManage(); });
+$("mqSearch").addEventListener("input",renderManage);
+let manageFilter="all";
+function setManageFilter(fk){
+  manageFilter=fk;
+  ["all","active","off"].forEach(k=>$("mf"+(k==="all"?"All":k==="active"?"Active":"Off")).classList.toggle("active",k===fk));
+  renderManage();
+}
+function renderManage(){
+  const q=$("mqSearch").value.trim().toLowerCase();
+  let rows=manageData.filter(r=>!q || (r.employee_id||"").toLowerCase().includes(q) || (r.name||"").toLowerCase().includes(q) || (r.name_ko||"").toLowerCase().includes(q));
+  if(manageFilter==="active") rows=rows.filter(r=>r.active!==false);
+  else if(manageFilter==="off") rows=rows.filter(r=>r.active===false);
+  if(!rows.length){ $("mqList").innerHTML=`<div class="empty">${t("noRes")}</div>`; return; }
+  $("mqList").innerHTML=rows.map(r=>{
+    const off=r.active===false;
+    const tog= off ? `<button class="mqbtn rst" onclick="setActive('${r.employee_id}',true)">${t("restore")}</button>`
+                   : `<button class="mqbtn res" onclick="setActive('${r.employee_id}',false)">${t("resign")}</button>`;
+    const edit=`<button class="mqbtn edit" onclick="openEdit('${r.employee_id}')">${t("edit")}</button>`;
+    const sub=escapeHtml(r.employee_id)+(r.team?(" · "+escapeHtml(r.team)):"");
+    return `<div class="mqrow ${off?'off':''}"><div class="info"><div class="nm">${escapeHtml(r.name||r.employee_id)}</div><div class="id">${sub}</div></div><div class="mqact">${edit}${tog}</div></div>`;
+  }).join("");
+}
+async function setActive(id,toActive){
+  $("mqMsg").textContent="";
+  try{
+    const r=await fetch(REST(`${CONFIG.T_EMPLOYEES}?employee_id=eq.${encodeURIComponent(id)}`),
+      {method:"PATCH",headers:{...HEADERS,"Content-Type":"application/json","Prefer":"return=minimal"},body:JSON.stringify({active:toActive})});
+    if(!r.ok){ $("mqMsg").textContent=t("addFail"); console.error(await r.text()); return; }
+    const row=manageData.find(x=>x.employee_id===id); if(row) row.active=toActive;
+    renderManage(); refresh();
+  }catch(e){ $("mqMsg").textContent=t("addFail"); }
+}
 
 /* ---------- Excel(.xlsx) 내보내기 (라이브러리 없음) ---------- */
 function makeXlsx(sheetName, aoa){
