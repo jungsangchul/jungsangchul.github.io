@@ -26,7 +26,7 @@
   .cta:active{transform:scale(.97)}
   .cta .cta-sub{display:block;font-size:14px;font-weight:600;opacity:.9;margin-top:4px}
   .cta.cancel{background:#fff;color:var(--bad);border:2px solid #fecaca;box-shadow:none;font-size:18px;padding:18px;max-width:300px}
-  .field{width:100%;max-width:360px;border:2px solid var(--line);border-radius:16px;background:var(--field);padding:18px 20px;font-size:26px;font-weight:800;text-align:center;letter-spacing:2px;color:var(--ink);outline:none}
+  .field{width:100%;max-width:360px;border:2px solid var(--line);border-radius:16px;background:var(--field);padding:18px 20px;font-size:22px;font-weight:800;text-align:center;letter-spacing:1px;text-transform:uppercase;color:var(--ink);outline:none}
   .field:focus{border-color:var(--navy);background:#fff}
   .btn{width:100%;max-width:360px;border:none;border-radius:16px;padding:18px;font-size:18px;font-weight:800;color:#fff;background:var(--navy);cursor:pointer}
   .btn:active{transform:scale(.98)}
@@ -58,7 +58,7 @@
 
     <section class="panel" id="p-id">
       <div class="big-name" data-i18n="enterId">사번 입력</div>
-      <input class="field" id="idInput" inputmode="numeric" autocomplete="off" placeholder="------">
+      <input class="field" id="idInput" inputmode="text" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="M026…">
       <button class="btn" id="idBtn" data-i18n="confirm">확인</button>
       <div class="step" id="idMsg" style="min-height:18px;color:var(--bad)"></div>
     </section>
@@ -133,7 +133,7 @@ const I18N = {
     cutoffT:"Cerrado", cutoffM:"La solicitud de hoy ya cerró.",
     failT:"Error al solicitar", failM:"Intente de nuevo.", netFailM:"Verifique su conexión." }
 };
-let lang = localStorage.getItem("yura_lang") || (navigator.language.startsWith("es")?"es":"ko");
+let lang = localStorage.getItem("yura_lang") || "es";
 const t = k => I18N[lang][k];
 function dispName(){ return (lang==='ko' && me && me.name_ko) ? me.name_ko : (me?me.name:''); }
 
@@ -178,7 +178,7 @@ function init(){
 $("idBtn").onclick=verifyId;
 $("idInput").addEventListener("keydown",e=>{ if(e.key==="Enter") verifyId(); });
 async function verifyId(){
-  const id=$("idInput").value.trim(); $("idMsg").textContent="";
+  const id=$("idInput").value.trim().toUpperCase(); $("idMsg").textContent="";
   if(!id){ $("idMsg").textContent=t("idEmpty"); return; }
   $("idBtn").textContent=t("checking"); $("idBtn").disabled=true;
   try{
