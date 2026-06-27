@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0">
+<title>Registro de Empleado · 직원 등록</title>
+<script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Malgun Gothic','Noto Sans',sans-serif;background:#0b1a2e;color:#e8edf5;min-height:100vh}
+.wrap{max-width:560px;margin:0 auto;padding:16px}
+h2{font-size:14px;color:#3a9fd8;margin-bottom:18px;font-weight:800;line-height:1.6;padding:14px;background:#0d2040;border-radius:10px;border:1px solid #2a5a90}
+.sec{background:#0d2040;border:1px solid #1e4a80;border-radius:10px;padding:14px;margin-bottom:12px}
+.sec-title{font-size:10px;color:#567b9a;font-weight:700;letter-spacing:.5px;margin-bottom:12px}
+label{font-size:11px;color:#7aa8d4;font-weight:700;display:block;margin-bottom:4px;margin-top:10px}
+label:first-child{margin-top:0}
+input,select{width:100%;background:#0a1628;border:1px solid #2a5a90;border-radius:7px;padding:10px 12px;color:#dde8f5;font-size:13px;outline:none;font-family:inherit;-webkit-appearance:none}
+input.bad{border-color:#d85050}
+.tgg{display:flex;background:#0a1628;border-radius:7px;overflow:hidden;border:1px solid #2a5a90;margin-top:4px}
+.tgg button{flex:1;background:none;border:none;padding:10px 6px;color:#7aa8d4;font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;-webkit-tap-highlight-color:transparent}
+.tgg button.on{background:#1a6fc4;color:#fff}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.btn-save{background:linear-gradient(135deg,#1a6fc4,#3a9fd8);border:none;border-radius:10px;padding:15px;color:#fff;font-size:15px;font-weight:800;cursor:pointer;width:100%;font-family:inherit;margin-top:16px}
+.btn-save:disabled{opacity:.55}
+.btn-cam{background:#0a1628;border:1px solid #2a5a90;border-radius:8px;padding:11px;color:#a8c4e0;font-size:12px;cursor:pointer;width:100%;font-family:inherit;margin-top:8px}
+.pbox{width:100%;height:180px;background:#0a1628;border:1.5px dashed #2a5a90;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;margin-top:6px;overflow:hidden}
+.pbox img{width:100%;height:100%;object-fit:cover}
+#msg{margin-top:14px;font-size:12px;padding:12px;border-radius:7px;text-align:center;display:none;line-height:1.6}
+#done{display:none;text-align:center;padding:40px 16px}
+#done .big{font-size:54px;margin-bottom:14px}
+#done .t1{font-size:18px;font-weight:800;color:#2ecba4;margin-bottom:8px}
+#done .t2{font-size:13px;color:#a8c4e0;line-height:1.7}
+#done button{margin-top:22px;background:#1a6fc4;border:0;border-radius:9px;color:#fff;font-size:14px;font-weight:700;padding:12px 26px;cursor:pointer}
+</style>
+</head>
+<body>
+<div class="wrap" id="form-wrap">
+<h2>📋 YURA HARNESS MÉXICO<br>1공장 가공생산팀 직원정보 등록<br><span style="font-size:11px;color:#7aa8d4;font-weight:400">Registro de Información del Empleado</span></h2>
+
+<div class="sec"><div class="sec-title">👤 기본정보 / Información Básica</div>
+<label>이름 / Nombre *</label><input id="d-name" placeholder="Nombre completo">
+<label>사번 / Número de Empleado</label><input id="d-empno" placeholder="M026040xxx">
+<label>국적 / Nacionalidad</label><div class="tgg"><button id="d-kr" onclick="setNat('한국인')">🇰🇷 한국인</button><button id="d-mx" class="on" onclick="setNat('멕시코인')">🇲🇽 멕시코인 / Mexicano</button></div>
+<label>성별 / Género</label><div class="tgg"><button id="d-male" class="on" onclick="setGen('남')">♂ 남 / Masculino</button><button id="d-female" onclick="setGen('여')">♀ 여 / Femenino</button></div>
+</div>
+
+<div class="sec"><div class="sec-title">🏭 소속정보 / Puesto</div>
+<label>구분 / Clasificación</label><select id="d-ptype" onchange="updProc()"><option value="직접인원">직접인원 (Directo)</option><option value="간접인원">간접인원 (Indirecto)</option><option value="공정관리">공정관리 (Gestión)</option></select>
+<label>공정 / Proceso</label><select id="d-proc"></select>
+<label>직군 / Categoría</label><select id="d-jobtype"><option value="생산직">생산직 (Operativo)</option><option value="관리직">관리직 (Administrativo)</option></select>
+<label>교대 / Turno</label><div class="tgg"><button id="d-day" class="on" onclick="setSft('주간')">🌞 주간 / Diurno</button><button id="d-night" onclick="setSft('야간')">🌙 야간 / Nocturno</button></div>
+</div>
+
+<div class="sec"><div class="sec-title">📞 연락처 / Contacto</div>
+<label>전화번호 / Teléfono</label><input id="d-phone" placeholder="866-638-4477" type="tel">
+</div>
+
+<div class="sec"><div class="sec-title">📅 날짜 / Fechas <span style="color:#3a9fd8">(DD/MM/AAAA)</span></div>
+<div class="g2"><div><label>입사일 / Fecha de Ingreso *</label><input type="text" inputmode="numeric" class="datef" id="d-hire" placeholder="DD/MM/AAAA" maxlength="10"></div><div><label>생년월일 / Nacimiento</label><input type="text" inputmode="numeric" class="datef" id="d-birth" placeholder="DD/MM/AAAA" maxlength="10"></div></div>
+<label>배우자 생일 / Cónyuge</label><input type="text" inputmode="numeric" class="datef" id="d-spouse" placeholder="DD/MM/AAAA" maxlength="10">
+<div class="g2">
+<div><label>자녀1 / Hijo 1</label><input type="text" inputmode="numeric" class="datef" id="d-child1" placeholder="DD/MM/AAAA" maxlength="10"></div><div><label>자녀2 / Hijo 2</label><input type="text" inputmode="numeric" class="datef" id="d-child2" placeholder="DD/MM/AAAA" maxlength="10"></div><div><label>자녀3 / Hijo 3</label><input type="text" inputmode="numeric" class="datef" id="d-child3" placeholder="DD/MM/AAAA" maxlength="10"></div><div><label>자녀4 / Hijo 4</label><input type="text" inputmode="numeric" class="datef" id="d-child4" placeholder="DD/MM/AAAA" maxlength="10"></div><div><label>자녀5 / Hijo 5</label><input type="text" inputmode="numeric" class="datef" id="d-child5" placeholder="DD/MM/AAAA" maxlength="10"></div>
+</div></div>
+
+<div class="sec"><div class="sec-title">📍 거주지 / Domicilio</div>
+<label>시군구 / Municipio</label><select id="d-muni" onchange="updCol()"><option value="Monclova">Monclova</option><option value="Frontera">Frontera</option></select>
+<label>Colonia</label><select id="d-colonia"><option value="">-- 선택 / Seleccionar --</option></select>
+</div>
+
+<div class="sec"><div class="sec-title">🚌 교통수단 / Transporte</div>
+<div class="tgg"><button id="d-tc" class="on" onclick="setTr('자차')">🚗 자차 / Propio</button><button id="d-tb" onclick="setTr('버스')">🚌 통근버스 / Autobús</button></div>
+<select id="d-bus" style="display:none;margin-top:10px"><option value="01호차">01호차</option><option value="02호차">02호차</option><option value="03호차">03호차</option></select>
+</div>
+
+<div class="sec"><div class="sec-title">📷 사진 / Foto</div>
+<div class="pbox" id="pbox" onclick="document.getElementById('d-pf').click()"><span style="font-size:40px">📷</span></div>
+<input type="file" id="d-pf" accept="image/*" style="display:none" onchange="prevPh(event)">
+<button class="btn-cam" onclick="document.getElementById('d-cam').click()">📸 카메라 촬영 / Tomar Foto</button>
+<input type="file" id="d-cam" accept="image/*" capture="user" style="display:none" onchange="prevPh(event)">
+</div>
+
+<button class="btn-save" id="btn-save" onclick="saveD()">✅ 등록 / Registrar</button>
+<div id="msg"></div>
+</div>
+
+<div id="done">
+<div class="big">✅</div>
+<div class="t1">¡Registro completado!<br>등록 완료</div>
+<div class="t2">Tus datos se enviaron correctamente.<br>입력하신 정보가 직원목록에 등록되었습니다.</div>
+<button onclick="location.reload()">➕ Registrar otro / 다른 직원 등록</button>
+</div>
+
+<script>
+var SUPA_URL="https://lrjurjhavlalhlwaplxd.supabase.co", SUPA_KEY="sb_publishable_8arNtNo-c73EO0xrauAhtA_JPeLk4QZ";
+var ADDR={"Monclova": ["Praderas", "Obrera", "Mezquital del Valle", "El Pueblo", "Guadalupe", "Hipódromo", "Tecnológico"], "Frontera": ["Occidental", "Borja", "Morelos"]}, PROCS={"직접인원": [{"ko": "자동절단압착공정", "es": "Corte y Crimpado Auto"}, {"ko": "SEAL선취", "es": "Selección Seal"}, {"ko": "기타부품선취", "es": "Selección Otros"}, {"ko": "수동압착(SEAL압착)", "es": "Crimpado Manual (Seal)"}, {"ko": "수동압착(쌍압착)", "es": "Crimpado Manual (Doble)"}, {"ko": "수동압착(일반압착)", "es": "Crimpado Manual (General)"}, {"ko": "수동압착(A/BAG일반압착)", "es": "Crimpado Manual (A/BAG)"}, {"ko": "중간스트립", "es": "Pelado Intermedio"}, {"ko": "결속압착(JOINT)", "es": "Crimpado Joint"}, {"ko": "튜브선취(JOINT)", "es": "Selección Tubo Joint"}, {"ko": "열수축(JOINT)", "es": "Termoencogible Joint"}, {"ko": "테이핑(JOINT)", "es": "Cintado Joint"}, {"ko": "TWIST", "es": "TWIST"}, {"ko": "SLD절단", "es": "Corte SLD"}, {"ko": "SLD편조선절단", "es": "Corte Trenza SLD"}, {"ko": "SLD내피탈피", "es": "Pelado Interior SLD"}, {"ko": "SLD선취(SEAL)", "es": "Selección SLD Seal"}, {"ko": "SLD내피+압착", "es": "Crimpado SLD Interior"}, {"ko": "SLD압착", "es": "Crimpado SLD"}, {"ko": "SLD결속압착", "es": "Crimpado Unión SLD"}, {"ko": "SLD손테이핑(JOINT)", "es": "Cintado Manual SLD"}, {"ko": "SLD테이핑", "es": "Cintado SLD"}, {"ko": "SLD튜브선취", "es": "Selección Tubo SLD"}, {"ko": "SLD열수축", "es": "Termoencogible SLD"}, {"ko": "SLD내전압", "es": "Voltaje Interior SLD"}], "간접인원": [{"ko": "반장", "es": "Líder Master"}, {"ko": "절단압착공정 조장", "es": "Líder Corte/Crimp"}, {"ko": "후공정 조장", "es": "Líder Post-proceso"}, {"ko": "교육조장", "es": "Líder Capacitación"}, {"ko": "자동기 RM(금형/자재공급)", "es": "RM Auto (Molde/Material)"}, {"ko": "수동 RM(금형/자재공급)", "es": "RM Manual (Molde/Material)"}, {"ko": "후공정 RM(중간세트취합/진행)", "es": "RM Post-proceso"}, {"ko": "SLD RM(중간세트취합/진행)", "es": "RM SLD"}, {"ko": "출하 RM(선재수거/적재/출고)", "es": "RM Salida"}, {"ko": "로스수거/재활용", "es": "Recolección Pérdidas"}], "공정관리": [{"ko": "통역", "es": "Intérprete"}, {"ko": "생산진도관리", "es": "Control de Avance"}, {"ko": "자재관리(발주/실사/수불)", "es": "Control de Materiales"}, {"ko": "근태관리", "es": "Control de Asistencia"}, {"ko": "실적관리,교육,숙련도", "es": "Gestión de Desempeño"}]}, KOES={"자동절단압착공정": "Corte y Crimpado Auto", "SEAL선취": "Selección Seal", "기타부품선취": "Selección Otros", "수동압착(SEAL압착)": "Crimpado Manual (Seal)", "수동압착(쌍압착)": "Crimpado Manual (Doble)", "수동압착(일반압착)": "Crimpado Manual (General)", "수동압착(A/BAG일반압착)": "Crimpado Manual (A/BAG)", "중간스트립": "Pelado Intermedio", "결속압착(JOINT)": "Crimpado Joint", "튜브선취(JOINT)": "Selección Tubo Joint", "열수축(JOINT)": "Termoencogible Joint", "테이핑(JOINT)": "Cintado Joint", "TWIST": "TWIST", "SLD절단": "Corte SLD", "SLD편조선절단": "Corte Trenza SLD", "SLD내피탈피": "Pelado Interior SLD", "SLD선취(SEAL)": "Selección SLD Seal", "SLD내피+압착": "Crimpado SLD Interior", "SLD압착": "Crimpado SLD", "SLD결속압착": "Crimpado Unión SLD", "SLD손테이핑(JOINT)": "Cintado Manual SLD", "SLD테이핑": "Cintado SLD", "SLD튜브선취": "Selección Tubo SLD", "SLD열수축": "Termoencogible SLD", "SLD내전압": "Voltaje Interior SLD", "반장": "Líder Master", "절단압착공정 조장": "Líder Corte/Crimp", "후공정 조장": "Líder Post-proceso", "교육조장": "Líder Capacitación", "자동기 RM(금형/자재공급)": "RM Auto (Molde/Material)", "수동 RM(금형/자재공급)": "RM Manual (Molde/Material)", "후공정 RM(중간세트취합/진행)": "RM Post-proceso", "SLD RM(중간세트취합/진행)": "RM SLD", "출하 RM(선재수거/적재/출고)": "RM Salida", "로스수거/재활용": "Recolección Pérdidas", "통역": "Intérprete", "생산진도관리": "Control de Avance", "자재관리(발주/실사/수불)": "Control de Materiales", "근태관리": "Control de Asistencia", "실적관리,교육,숙련도": "Gestión de Desempeño"};
+var nat="멕시코인",gen="남",sft="주간",tr="자차",ph="";
+function setNat(v){nat=v;document.getElementById("d-kr").className=v==="한국인"?"on":"";document.getElementById("d-mx").className=v==="멕시코인"?"on":"";}
+function setGen(v){gen=v;document.getElementById("d-male").className=v==="남"?"on":"";document.getElementById("d-female").className=v==="여"?"on":"";}
+function setSft(v){sft=v;document.getElementById("d-day").className=v==="주간"?"on":"";document.getElementById("d-night").className=v==="야간"?"on":"";}
+function setTr(v){tr=v;document.getElementById("d-tc").className=v==="자차"?"on":"";document.getElementById("d-tb").className=v==="버스"?"on":"";document.getElementById("d-bus").style.display=v==="버스"?"":"none";}
+function updProc(){var t=document.getElementById("d-ptype").value,ps=PROCS[t]||[];document.getElementById("d-proc").innerHTML='<option value="">(공정 선택 / Seleccionar)</option>'+ps.map(function(p){return '<option value="'+p.ko+'">'+p.ko+' ('+p.es+')</option>';}).join("");}
+function updCol(){var mm=document.getElementById("d-muni").value,c=ADDR[mm]||[];document.getElementById("d-colonia").innerHTML='<option value="">-- 선택 / Seleccionar --</option>'+c.map(function(x){return '<option value="'+x+'">'+x+'</option>';}).join("");}
+// ── 날짜: DD/MM/AAAA 직접입력(기기 언어와 무관하게 스페인어 형식 고정) ──
+function maskDate(el){el.addEventListener("input",function(){var v=el.value.replace(/\D/g,"").slice(0,8),o=v.slice(0,2);if(v.length>=3)o+="/"+v.slice(2,4);if(v.length>=5)o+="/"+v.slice(4,8);el.value=o;el.classList.remove("bad");});}
+function dmyToIso(s){if(!s||!s.trim())return null;var m=s.trim().match(/^(\d{2})\/(\d{2})\/(\d{4})$/);if(!m)return undefined;var d=+m[1],mo=+m[2],y=+m[3];if(mo<1||mo>12||d<1||d>31||y<1900||y>2100)return undefined;var dt=new Date(y,mo-1,d);if(dt.getFullYear()!==y||dt.getMonth()!==mo-1||dt.getDate()!==d)return undefined;return y+"-"+("0"+mo).slice(-2)+"-"+("0"+d).slice(-2);}
+function prevPh(e){var f=e.target.files[0];if(!f)return;var r=new FileReader();r.onload=function(ev){var img=new Image();img.onload=function(){var mx=400,sc=Math.min(1,mx/Math.max(img.width,img.height));var cv=document.createElement("canvas");cv.width=Math.round(img.width*sc);cv.height=Math.round(img.height*sc);cv.getContext("2d").drawImage(img,0,0,cv.width,cv.height);ph=cv.toDataURL("image/jpeg",0.7);document.getElementById("pbox").innerHTML='<img src="'+ph+'">';};img.src=ev.target.result;};r.readAsDataURL(f);}
+function showMsg(t,c){var m=document.getElementById("msg");m.innerHTML=t;m.style.color=c;m.style.background=c+"22";m.style.border="1px solid "+c+"55";m.style.display="block";}
+function g(id){return document.getElementById(id).value;}
+function buildEmp(dates){
+  var grade=document.getElementById("d-jobtype").value==="관리직"?{ko:"사원",es:"ASISTENTE"}:{ko:"작업자",es:"OPERADOR"};
+  var transport=tr==="자차"?"자차":(g("d-bus")||"버스");
+  var kids=[dates.c1,dates.c2,dates.c3,dates.c4,dates.c5].filter(Boolean);
+  var pk=g("d-proc");
+  return {name:g("d-name").trim(),empno:g("d-empno").trim(),nationality:nat,gender:gen,
+    processType:g("d-ptype"),processName:pk,processNameEs:(KOES[pk]||""),
+    jobType:g("d-jobtype"),jobGrade:grade.es,jobGradeKo:grade.ko,level:1,
+    phone:g("d-phone").trim(),hireDate:dates.hire,birthDate:dates.birth||null,calType:"양력",
+    spouseBirth:dates.spouse||null,childBirths:kids,
+    municipio:g("d-muni"),colonia:g("d-colonia"),transport:transport,
+    photo:ph||null,resigned:false,resignDate:null,resignCode:null,
+    shiftHistory:[{shift:sft,from:dates.hire,to:null}]};
+}
+var _sb=null;
+function sb(){if(!_sb)_sb=window.supabase.createClient(SUPA_URL,SUPA_KEY,{auth:{persistSession:false,autoRefreshToken:false}});return _sb;}
+async function loadMasters(){
+  try{var c=sb();var r=await c.from("employees").select("data").eq("id",1).maybeSingle();if(r.error||!r.data||!r.data.data)return;var db=r.data.data;
+    var pg={"직접인원":[],"간접인원":[],"공정관리":[]},koes={};(db.processes||[]).forEach(function(p){if(pg[p.type])pg[p.type].push({ko:p.ko,es:p.es});koes[p.ko]=p.es;});if((db.processes||[]).length){PROCS=pg;KOES=koes;}
+    var mc={};(db.addresses||[]).forEach(function(a){if(!mc[a.muni])mc[a.muni]=[];mc[a.muni].push(a.col);});if((db.addresses||[]).length){ADDR=mc;document.getElementById("d-muni").innerHTML=Object.keys(mc).map(function(m){return '<option value="'+m+'">'+m+'</option>';}).join("");}
+    if((db.buses||[]).length){document.getElementById("d-bus").innerHTML=db.buses.map(function(b){return '<option value="'+b.num+'호차">'+b.num+'호차'+(b.ruta?' - '+b.ruta:'')+'</option>';}).join("");}
+    updProc();updCol();
+  }catch(e){}
+}
+async function registerToServer(emp){
+  var c=sb();
+  for(var i=0;i<5;i++){
+    var r=await c.from("employees").select("data,updated_at").eq("id",1).maybeSingle();
+    if(r.error||!r.data){return {ok:false,err:(r.error&&r.error.message)||"no row"};}
+    var db=r.data.data||{},stamp=r.data.updated_at;
+    if(!Array.isArray(db.employees))db.employees=[];
+    if(!db.meta)db.meta={nextEmpId:1};
+    var maxId=db.employees.reduce(function(m,e){var x=parseInt(e.id,10)||0;return x>m?x:m;},0);
+    var nid=Math.max(parseInt(db.meta.nextEmpId,10)||1,maxId+1);
+    emp.id=nid;db.meta.nextEmpId=nid+1;
+    db.employees.push(emp);
+    if(!db.settings)db.settings={};
+    var now=new Date().toISOString();db.settings.lastModifiedAt=now;db.settings.__localSavedAt=now;
+    var u=await c.from("employees").update({data:db,updated_at:now}).eq("id",1).eq("updated_at",stamp).select("updated_at").maybeSingle();
+    if(!u.error&&u.data){return {ok:true};}
+    db.employees.pop();
+    await new Promise(function(res){setTimeout(res,300+Math.random()*500);});
+  }
+  return {ok:false,err:"conflicto / 동시 저장 충돌"};
+}
+function badDate(id){document.getElementById(id).classList.add("bad");}
+async function saveD(){
+  ["d-hire","d-birth","d-spouse","d-child1","d-child2","d-child3","d-child4","d-child5"].forEach(function(id){document.getElementById(id).classList.remove("bad");});
+  var n=g("d-name").trim();
+  if(!n){showMsg("⚠️ 이름은 필수입니다. / Nombre es obligatorio.","#d85050");return;}
+  if(!g("d-proc")){showMsg("⚠️ 공정을 선택하세요. / Seleccione el proceso.","#d85050");return;}
+  var fields=[["d-hire","hire"],["d-birth","birth"],["d-spouse","spouse"],["d-child1","c1"],["d-child2","c2"],["d-child3","c3"],["d-child4","c4"],["d-child5","c5"]];
+  var dates={},bad=false;
+  fields.forEach(function(f){var v=dmyToIso(g(f[0]));if(v===undefined){bad=true;badDate(f[0]);}dates[f[1]]=v||"";});
+  if(bad){showMsg("⚠️ 날짜 형식이 올바르지 않습니다. DD/MM/AAAA로 입력하세요.<br>Fecha inválida. Use el formato DD/MM/AAAA.","#d85050");return;}
+  if(!dates.hire){showMsg("⚠️ 입사일은 필수입니다. / Fecha de ingreso es obligatoria.","#d85050");badDate("d-hire");return;}
+  var btn=document.getElementById("btn-save");btn.disabled=true;btn.textContent="⏳ 등록 중... / Registrando...";
+  showMsg("⏳ 서버에 등록 중입니다... / Registrando...","#3a9fd8");
+  try{
+    var res=await registerToServer(buildEmp(dates));
+    if(res.ok){document.getElementById("form-wrap").style.display="none";document.getElementById("done").style.display="block";window.scrollTo(0,0);}
+    else{showMsg("❌ 등록 실패: "+res.err+"<br>다시 시도하세요. / Intente de nuevo.","#d85050");btn.disabled=false;btn.textContent="✅ 등록 / Registrar";}
+  }catch(e){showMsg("❌ 네트워크 오류: "+(e&&e.message||e)+"<br>Error de red.","#d85050");btn.disabled=false;btn.textContent="✅ 등록 / Registrar";}
+}
+document.querySelectorAll(".datef").forEach(maskDate);
+updProc();updCol();loadMasters();
+</script>
+</body>
+</html>
