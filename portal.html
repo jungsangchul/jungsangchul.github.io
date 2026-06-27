@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>YURA HARNESS MÉXICO · Portal</title>
+<style>
+  :root{--navy:#0c2444;--navy2:#163a66;--gold:#c9a14a;--gold2:#e3c878;--ink:#0b1220;--muted:#8294ad}
+  *{box-sizing:border-box}
+  body{margin:0;min-height:100vh;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Malgun Gothic","Apple SD Gothic Neo",sans-serif;color:#e9eef7;
+    background:radial-gradient(1100px 620px at 50% -160px,#13294a,transparent),linear-gradient(180deg,#0a1726,#0b1d34);background-attachment:fixed}
+  .wrap{max-width:920px;margin:0 auto;padding:26px 16px 50px}
+  header{text-align:center;margin-bottom:26px;position:relative}
+  .logo{width:64px;height:64px;border-radius:18px;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:24px;color:#1a1407;
+    background:linear-gradient(135deg,var(--gold2),var(--gold));box-shadow:0 12px 30px -10px rgba(201,161,74,.7)}
+  header h1{margin:0;font-size:22px;font-weight:900;letter-spacing:.6px}
+  header .sub{font-size:13px;color:rgba(255,255,255,.65);font-weight:600;margin-top:5px}
+  .gold-line{height:3px;width:80px;margin:14px auto 0;border-radius:3px;background:linear-gradient(90deg,var(--gold),var(--gold2),var(--gold))}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px}
+  .card{background:#15243f;border:1px solid rgba(255,255,255,.07);border-radius:18px;padding:20px;display:flex;flex-direction:column;gap:12px;
+    box-shadow:0 1px 2px rgba(0,0,0,.35),0 18px 36px -22px rgba(0,0,0,.75);transition:transform .16s,box-shadow .16s}
+  .card:hover{transform:translateY(-3px);box-shadow:0 1px 2px rgba(0,0,0,.4),0 24px 42px -20px rgba(0,0,0,.8)}
+  .ic{width:46px;height:46px;border-radius:13px;display:flex;align-items:center;justify-content:center}
+  .ic svg{width:24px;height:24px;stroke:currentColor;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+  .ic.green{background:rgba(34,197,94,.16);color:#4ade80}
+  .ic.teal{background:rgba(45,212,191,.16);color:#2dd4bf}
+  .ic.blue{background:rgba(96,165,250,.16);color:#93c5fd}
+  .ic.gold{background:rgba(201,161,74,.18);color:#e3c878}
+  .ic.slate{background:rgba(148,163,184,.20);color:#cbd5e1}
+  .card h3{margin:0;font-size:17px;font-weight:800}
+  .card .ko{font-size:13px;color:var(--muted);font-weight:600;margin-top:-6px}
+  .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:auto}
+  .btn{flex:1;min-width:110px;text-align:center;text-decoration:none;border-radius:11px;padding:12px 10px;font-weight:800;font-size:14px;cursor:pointer;transition:.15s}
+  .btn.primary{background:linear-gradient(135deg,#1e4d8b,#13335c);color:#fff}
+  .btn.primary:hover{filter:brightness(1.08)}
+  .btn.alt{background:rgba(255,255,255,.08);color:#dbe6f5;border:1px solid rgba(255,255,255,.12)}
+  .btn.alt:hover{background:rgba(255,255,255,.15)}
+  .btn.gold{background:linear-gradient(135deg,var(--gold2),var(--gold));color:#1a1407}
+  .foot{text-align:center;color:var(--muted);font-size:12px;font-weight:600;margin-top:28px}
+  .foot b{color:var(--gold2)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo">YH</div>
+    <h1>YURA HARNESS MÉXICO</h1>
+    <div class="sub">유라하네스멕시코 · Asistencia &amp; Comida · 출석·식사 시스템</div>
+    <div class="gold-line"></div>
+  </header>
+
+  <div class="grid">
+
+    <div class="card">
+      <div class="ic green"><svg viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg></div>
+      <div>
+        <h3>Asistencia</h3>
+        <div class="ko">출퇴근 등록</div>
+      </div>
+      <div class="actions">
+        <a class="btn primary" href="attendance_qr.html?f=1">Planta 1 · 1공장</a>
+        <a class="btn alt" href="attendance_qr.html?f=lib">Biblioteca · 도서관</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="ic teal"><svg viewBox="0 0 24 24"><path d="M3 11h18"/><path d="M5 11a7 7 0 0 0 14 0"/><path d="M10 4c0 1-1 1-1 2.5"/><path d="M14 4c0 1-1 1-1 2.5"/></svg></div>
+      <div>
+        <h3>Comida</h3>
+        <div class="ko">식사 신청</div>
+      </div>
+      <div class="actions">
+        <a class="btn primary" href="meal_qr.html?f=1">Planta 1 · 1공장</a>
+        <a class="btn alt" href="meal_qr.html?f=lib">Biblioteca · 도서관</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="ic blue"><svg viewBox="0 0 24 24"><path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h9"/></svg></div>
+      <div>
+        <h3>Mi Estado</h3>
+        <div class="ko">내 기록 확인 (출퇴근·식사·이력)</div>
+      </div>
+      <div class="actions">
+        <a class="btn primary" href="status_qr.html">Abrir · 열기</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="ic gold"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></div>
+      <div>
+        <h3>Panel</h3>
+        <div class="ko">관리자 대시보드</div>
+      </div>
+      <div class="actions">
+        <a class="btn gold" href="manager_dashboard.html">Abrir · 열기</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="ic slate"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="6" height="6"/><rect x="15" y="3" width="6" height="6"/><rect x="3" y="15" width="6" height="6"/><path d="M15 15h2v2h-2zM19 15h2M15 19h2v2M19 19h2"/></svg></div>
+      <div>
+        <h3>Generar QR</h3>
+        <div class="ko">QR 포스터 생성 (관리자)</div>
+      </div>
+      <div class="actions">
+        <a class="btn alt" href="attendance_poster.html">Abrir · 열기</a>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="foot"><b>YURA HARNESS MÉXICO</b> · 유라하네스멕시코</div>
+</div>
+</body>
+</html>
