@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Buzón anónimo · 익명게시판</title>
+<style>
+  :root{--navy:#0f2747;--ink:#0b1220;--ok:#16a34a;--bad:#dc2626;--warn:#d97706;--line:#e2e8f0;--muted:#64748b;--field:#f1f5f9;--card:#fff}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;height:100%}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Malgun Gothic",sans-serif;background:#eef2f7;-webkit-user-select:none;user-select:none}
+  .app{min-height:100dvh;display:flex;flex-direction:column;background:#eef2f7;max-width:560px;margin:0 auto}
+  header{background:var(--navy);color:#fff;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:8px;padding-top:calc(14px + env(safe-area-inset-top));position:sticky;top:0;z-index:5}
+  header .brand{font-weight:800;letter-spacing:.3px;font-size:16px;display:flex;align-items:center;gap:8px}
+  .hd-right{display:flex;align-items:center;gap:10px}
+  .loc{font-size:12px;opacity:.85;font-weight:600}
+  .lang{background:rgba(255,255,255,.16);border:none;color:#fff;font-weight:800;font-size:12px;padding:6px 10px;border-radius:8px;cursor:pointer}
+  main{flex:1;padding:18px 16px 40px}
+  .panel{display:none}.panel.active{display:block;animation:fin .18s}
+  @keyframes fin{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .menu-card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px;margin-bottom:14px;cursor:pointer;display:flex;align-items:center;gap:16px;box-shadow:0 2px 8px rgba(15,39,71,.05);transition:transform .08s}
+  .menu-card:active{transform:scale(.98)}
+  .menu-ic{width:54px;height:54px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:28px;flex:0 0 auto}
+  .menu-ic.a{background:#e8eef7}.menu-ic.b{background:#e7f6ec}
+  .menu-tt{font-size:18px;font-weight:800;color:var(--ink)}
+  .menu-ds{font-size:13px;color:var(--muted);margin-top:3px;font-weight:600}
+  .intro{background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;border-radius:14px;padding:14px;font-size:13px;font-weight:600;line-height:1.5;margin-bottom:16px}
+  h2.sec{font-size:20px;font-weight:800;color:var(--ink);margin:4px 0 16px}
+  .back{background:none;border:none;color:var(--navy);font-weight:800;font-size:14px;padding:6px 0;margin-bottom:8px;cursor:pointer}
+  label{display:block;font-size:13px;font-weight:800;color:var(--navy);margin:14px 0 7px}
+  .field,select,textarea{width:100%;border:2px solid var(--line);border-radius:14px;background:var(--field);padding:14px 16px;font-size:16px;font-weight:600;color:var(--ink);outline:none;font-family:inherit}
+  .field:focus,select:focus,textarea:focus{border-color:var(--navy);background:#fff}
+  textarea{min-height:130px;resize:vertical;line-height:1.5}
+  .seg{display:flex;gap:8px}
+  .seg button{flex:1;border:2px solid var(--line);background:#fff;border-radius:14px;padding:14px;font-size:15px;font-weight:800;color:var(--muted);cursor:pointer}
+  .seg button.on{border-color:var(--navy);background:var(--navy);color:#fff}
+  .btn{width:100%;border:none;border-radius:16px;padding:17px;font-size:17px;font-weight:800;color:#fff;background:var(--navy);cursor:pointer;margin-top:18px}
+  .btn.ok{background:linear-gradient(135deg,#16a34a,#15803d)}
+  .btn:active{transform:scale(.98)}.btn:disabled{opacity:.6}
+  .msg{min-height:18px;font-size:13px;font-weight:700;color:var(--bad);margin-top:8px;text-align:center}
+  .id-wrap{max-width:340px;margin:30px auto 0;text-align:center}
+  .id-wrap .field{text-align:center;text-transform:uppercase;letter-spacing:1px;font-size:20px;font-weight:800}
+  .id-tt{font-size:20px;font-weight:800;color:var(--ink);margin-bottom:6px}
+  .id-sub{font-size:13px;color:var(--muted);font-weight:600;margin-bottom:18px;line-height:1.5}
+  .post{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:13px;box-shadow:0 1px 4px rgba(15,39,71,.04)}
+  .post .tag{display:inline-block;font-size:11px;font-weight:800;padding:3px 9px;border-radius:999px;margin-bottom:8px}
+  .tag.company{background:#e8eef7;color:var(--navy)}.tag.personal{background:#f3e8ff;color:#7e22ce}
+  .post .pt{font-size:16px;font-weight:800;color:var(--ink);line-height:1.35}
+  .post .pc{font-size:14px;color:#334155;margin-top:7px;line-height:1.55;white-space:pre-wrap}
+  .post .ans{margin-top:13px;background:#f0fdf4;border-left:3px solid var(--ok);border-radius:0 10px 10px 0;padding:11px 13px}
+  .post .ans-h{font-size:12px;font-weight:800;color:#15803d;margin-bottom:5px;display:flex;align-items:center;gap:5px}
+  .post .ans-b{font-size:14px;color:#14532d;line-height:1.55;white-space:pre-wrap}
+  .post .dt{font-size:11px;color:#94a3b8;margin-top:9px;font-weight:600;text-align:right}
+  .empty{text-align:center;color:var(--muted);font-weight:600;padding:50px 20px;font-size:14px}
+  .center-flood{position:fixed;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:30px;gap:16px;z-index:20}
+  .center-flood.show{display:flex}
+  .center-flood.ok{background:linear-gradient(160deg,#16a34a,#15803d);color:#fff}
+  .center-flood.bad{background:linear-gradient(160deg,#dc2626,#b91c1c);color:#fff}
+  .center-flood.busy{background:rgba(15,39,71,.96);color:#fff}
+  .mark{width:104px;height:104px;border-radius:50%;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:60px;font-weight:800}
+  .fl-tt{font-size:26px;font-weight:800}.fl-sub{font-size:15px;opacity:.92;max-width:320px;font-weight:600;line-height:1.5}
+  .fl-btn{border:none;border-radius:14px;padding:15px 30px;font-size:16px;font-weight:800;background:rgba(255,255,255,.2);color:#fff;cursor:pointer;margin-top:6px}
+  .spin{width:58px;height:58px;border-radius:50%;border:6px solid rgba(255,255,255,.25);border-top-color:#fff;animation:sp 1s linear infinite}
+  @keyframes sp{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <span class="brand">🔒 <span data-i18n="brand">Buzón anónimo</span></span>
+    <div class="hd-right"><span class="loc" id="locLabel">—</span><button class="lang" id="langBtn">한</button></div>
+  </header>
+  <main>
+    <!-- 홈 메뉴 -->
+    <section class="panel active" id="p-home">
+      <div class="intro" data-i18n="introHome">Tu mensaje es 100% anónimo. No se guarda quién lo escribe. Comparte tus dificultades o sugerencias y la empresa responderá.</div>
+      <div class="menu-card" id="goWrite">
+        <div class="menu-ic a">✍️</div>
+        <div><div class="menu-tt" data-i18n="mWriteT">Escribir sugerencia / inquietud</div><div class="menu-ds" data-i18n="mWriteD">Anónimo · requiere número de empleado</div></div>
+      </div>
+      <div class="menu-card" id="goList">
+        <div class="menu-ic b">💬</div>
+        <div><div class="menu-tt" data-i18n="mListT">Ver respuestas</div><div class="menu-ds" data-i18n="mListD">Mensajes ya respondidos por la empresa</div></div>
+      </div>
+    </section>
+
+    <!-- 사번인증 -->
+    <section class="panel" id="p-id">
+      <button class="back" id="idBack" data-i18n="back">‹ Atrás</button>
+      <div class="id-wrap">
+        <div class="id-tt" data-i18n="idT">Número de empleado</div>
+        <div class="id-sub" data-i18n="idS">Solo para verificar que trabaja aquí. Nunca se vincula a su mensaje.</div>
+        <input class="field" id="idInput" inputmode="text" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="M026…">
+        <button class="btn" id="idBtn" data-i18n="confirm">Confirmar</button>
+        <div class="msg" id="idMsg"></div>
+      </div>
+    </section>
+
+    <!-- 작성 폼 -->
+    <section class="panel" id="p-write">
+      <button class="back" id="wBack" data-i18n="back">‹ Atrás</button>
+      <h2 class="sec" data-i18n="wTitle">Escribir (anónimo)</h2>
+      <label data-i18n="lCat">Tipo</label>
+      <div class="seg" id="catSeg">
+        <button data-cat="company" class="on" data-i18n="catCompany">Empresa</button>
+        <button data-cat="personal" data-i18n="catPersonal">Personal</button>
+      </div>
+      <label data-i18n="lTitle">Asunto</label>
+      <input class="field" id="wTitleIn" maxlength="80" data-i18n-ph="phTitle" placeholder="Resumen breve">
+      <label data-i18n="lContent">Mensaje</label>
+      <textarea id="wContent" maxlength="2000" data-i18n-ph="phContent" placeholder="Escriba con libertad…"></textarea>
+      <button class="btn ok" id="wSubmit" data-i18n="submit">Enviar de forma anónima</button>
+      <div class="msg" id="wMsg"></div>
+    </section>
+
+    <!-- 답변완료 목록 -->
+    <section class="panel" id="p-list">
+      <button class="back" id="lBack" data-i18n="back">‹ Atrás</button>
+      <h2 class="sec" data-i18n="lTitle">Respuestas</h2>
+      <div id="listWrap"><div class="empty" data-i18n="loading">Cargando…</div></div>
+    </section>
+  </main>
+</div>
+
+<!-- 플러드 화면 -->
+<div class="center-flood busy" id="fBusy"><div class="spin"></div><div class="fl-sub" id="busyMsg">…</div></div>
+<div class="center-flood ok" id="fOk"><div class="mark">✓</div><div class="fl-tt" id="okTt">—</div><div class="fl-sub" id="okSub">—</div><button class="fl-btn" id="okBtn" data-i18n="done">OK</button></div>
+<div class="center-flood bad" id="fBad"><div class="mark">✕</div><div class="fl-tt" id="badTt">—</div><div class="fl-sub" id="badSub">—</div><button class="fl-btn" id="badBtn" data-i18n="retry">Reintentar</button></div>
+
+<script>
+const CONFIG = {
+  SUPABASE_URL:"https://lrjurjhavlalhlwaplxd.supabase.co",
+  SUPABASE_ANON:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxyanVyamhhdmxhbGhsd2FwbHhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNzUxNDAsImV4cCI6MjA5NTY1MTE0MH0.DVFmZaT37R9CXSMHdnLx4YAVNTnlBGijkOIaoUo7Qsk",
+  T_EMPLOYEES:"att_employees",
+  T_POSTS:"anon_posts",
+  FACTORIES:{
+    "1":  { ko:"1공장",  es:"Planta 1",   lat:26.900233831261286, lng:-101.45329965310623, radius:250 },
+    "lib":{ ko:"도서관", es:"Biblioteca", lat:26.901311333580495, lng:-101.42920690391297, radius:200 }
+  },
+  REQUIRE_GPS:true, TZ_OFFSET_HOURS:-6
+};
+
+const I18N={
+ es:{brand:"Buzón anónimo",back:"‹ Atrás",confirm:"Confirmar",done:"OK",retry:"Reintentar",submit:"Enviar de forma anónima",loading:"Cargando…",
+  introHome:"Tu mensaje es 100% anónimo. No se guarda quién lo escribe. Comparte tus dificultades o sugerencias y la empresa responderá.",
+  mWriteT:"Escribir sugerencia / inquietud",mWriteD:"Anónimo · requiere número de empleado",
+  mListT:"Ver respuestas",mListD:"Mensajes ya respondidos por la empresa",
+  idT:"Número de empleado",idS:"Solo para verificar que trabaja aquí. Nunca se vincula a su mensaje.",
+  wTitle:"Escribir (anónimo)",lCat:"Tipo",catCompany:"Empresa",catPersonal:"Personal",
+  lTitle:"Asunto",lContent:"Mensaje",phTitle:"Resumen breve",phContent:"Escriba con libertad…",
+  lTitle2:"Respuestas",
+  idEmpty:"Ingrese su número",idBad:"Número no registrado",netErr:"Error de red",checking:"Verificando…",
+  needTitle:"Escriba el asunto",needContent:"Escriba el mensaje",
+  busyLoc:"Verificando ubicación…",busySave:"Enviando…",
+  locOut:m=>`Fuera del área permitida (≈${m}m). Debe estar en planta.`,locFail:"Active el permiso de ubicación.",
+  saveFail:"No se pudo enviar. Intente de nuevo.",
+  okT:"¡Enviado!",okS:"Tu mensaje anónimo fue recibido. Te responderemos pronto.",
+  badLoc:"Fuera del área",badSave:"Error al enviar",
+  emptyList:"Aún no hay respuestas publicadas.",ansH:"Respuesta de la empresa"},
+ ko:{brand:"익명게시판",back:"‹ 뒤로",confirm:"확인",done:"확인",retry:"다시 시도",submit:"익명으로 제출",loading:"불러오는 중…",
+  introHome:"작성 내용은 100% 익명입니다. 누가 썼는지 저장하지 않습니다. 고민이나 건의사항을 자유롭게 남겨주시면 회사가 답변드립니다.",
+  mWriteT:"건의 · 고민 작성하기",mWriteD:"익명 · 사번 인증 필요",
+  mListT:"답변완료 보기",mListD:"회사가 답변을 완료한 글",
+  idT:"사번 입력",idS:"재직 확인용일 뿐, 작성 글과 절대 연결되지 않습니다.",
+  wTitle:"작성하기 (익명)",lCat:"구분",catCompany:"회사",catPersonal:"개인",
+  lTitle:"제목",lContent:"내용",phTitle:"간단한 요약",phContent:"자유롭게 작성하세요…",
+  lTitle2:"답변완료",
+  idEmpty:"사번을 입력하세요",idBad:"등록되지 않은 사번입니다",netErr:"통신 오류",checking:"확인 중…",
+  needTitle:"제목을 입력하세요",needContent:"내용을 입력하세요",
+  busyLoc:"위치 확인 중…",busySave:"제출 중…",
+  locOut:m=>`공장 반경 밖입니다 (약 ${m}m). 공장 내에서 작성하세요.`,locFail:"위치 권한을 허용하세요.",
+  saveFail:"제출하지 못했습니다. 다시 시도하세요.",
+  okT:"제출 완료!",okS:"익명 글이 접수되었습니다. 빠르게 답변드리겠습니다.",
+  badLoc:"위치 벗어남",badSave:"제출 실패",
+  emptyList:"아직 게시된 답변이 없습니다.",ansH:"회사 답변"}
+};
+let lang = localStorage.getItem("yura_lang")||"es";
+const t = k => I18N[lang][k];
+
+const $ = id => document.getElementById(id);
+const REST = p => CONFIG.SUPABASE_URL+"/rest/v1/"+p;
+const H = {"apikey":CONFIG.SUPABASE_ANON,"Authorization":"Bearer "+CONFIG.SUPABASE_ANON,"Content-Type":"application/json"};
+const params = new URLSearchParams(location.search);
+let factoryKey = params.get("f") || "1";
+let factory = CONFIG.FACTORIES[factoryKey] || CONFIG.FACTORIES["1"];
+let me = null, cat = "company";
+
+function applyLang(){
+  document.documentElement.lang = lang;
+  document.querySelectorAll("[data-i18n]").forEach(el=>{ const v=t(el.dataset.i18n); if(typeof v==="string") el.textContent=v; });
+  document.querySelectorAll("[data-i18n-ph]").forEach(el=>{ const v=t(el.dataset.i18nPh); if(typeof v==="string") el.placeholder=v; });
+  $("langBtn").textContent = lang==="ko"?"ES":"한";
+  $("locLabel").textContent = factory[lang];
+}
+$("langBtn").onclick=()=>{ lang=lang==="ko"?"es":"ko"; localStorage.setItem("yura_lang",lang); applyLang(); if($("p-list").classList.contains("active")) loadList(); };
+
+function show(id){ document.querySelectorAll(".panel").forEach(p=>p.classList.remove("active")); $(id).classList.add("active"); window.scrollTo(0,0); }
+function flood(which,show){ $(which).classList.toggle("show",show); }
+function busy(msg){ $("busyMsg").textContent=msg; flood("fBusy",true); }
+function okFlood(tt,sub){ flood("fBusy",false); $("okTt").textContent=tt; $("okSub").textContent=sub; flood("fOk",true); }
+function badFlood(tt,sub){ flood("fBusy",false); $("badTt").textContent=tt; $("badSub").textContent=sub; flood("fBad",true); }
+$("okBtn").onclick=()=>{ flood("fOk",false); show("p-home"); };
+$("badBtn").onclick=()=>{ flood("fBad",false); };
+
+/* 홈 메뉴 */
+$("goWrite").onclick=()=>{ if(me&&me.employee_id) show("p-write"); else { show("p-id"); setTimeout(()=>$("idInput").focus(),200);} };
+$("goList").onclick=()=>{ show("p-list"); loadList(); };
+$("idBack").onclick=()=>show("p-home");
+$("wBack").onclick=()=>show("p-home");
+$("lBack").onclick=()=>show("p-home");
+
+/* 사번 인증 (게이트, DB에 저장 안 함) */
+$("idBtn").onclick=verifyId;
+$("idInput").addEventListener("keydown",e=>{ if(e.key==="Enter") verifyId(); });
+async function verifyId(){
+  const id=$("idInput").value.trim().toUpperCase(); $("idMsg").textContent="";
+  if(!id){ $("idMsg").textContent=t("idEmpty"); return; }
+  $("idBtn").textContent=t("checking"); $("idBtn").disabled=true;
+  try{
+    const r=await fetch(REST(`${CONFIG.T_EMPLOYEES}?employee_id=eq.${encodeURIComponent(id)}&active=eq.true&select=employee_id&limit=1`),{headers:H});
+    const rows=await r.json();
+    if(!Array.isArray(rows)||rows.length===0){ $("idMsg").textContent=t("idBad"); return; }
+    me={employee_id:rows[0].employee_id};
+    localStorage.setItem("yura_board_me",JSON.stringify(me));   // 기기에만 저장(편의), 글과 무관
+    show("p-write");
+  }catch(e){ $("idMsg").textContent=t("netErr"); }
+  finally{ $("idBtn").textContent=t("confirm"); $("idBtn").disabled=false; }
+}
+
+/* 작성 폼 */
+$("catSeg").querySelectorAll("button").forEach(b=>{
+  b.onclick=()=>{ cat=b.dataset.cat; $("catSeg").querySelectorAll("button").forEach(x=>x.classList.remove("on")); b.classList.add("on"); };
+});
+$("wSubmit").onclick=submitPost;
+async function submitPost(){
+  const title=$("wTitleIn").value.trim(), content=$("wContent").value.trim(); $("wMsg").textContent="";
+  if(!title){ $("wMsg").textContent=t("needTitle"); return; }
+  if(!content){ $("wMsg").textContent=t("needContent"); return; }
+  // GPS 검증 (공장 인근만 작성)
+  if(CONFIG.REQUIRE_GPS){
+    busy(t("busyLoc"));
+    try{
+      const pos=await getPosition();
+      const d=haversine(pos.coords.latitude,pos.coords.longitude,factory.lat,factory.lng);
+      if(d>factory.radius){ badFlood(t("badLoc"), t("locOut")(Math.round(d))); return; }
+    }catch(e){ badFlood(t("badLoc"), t("locFail")); return; }
+  }
+  busy(t("busySave"));
+  // 익명: employee_id 를 절대 전송하지 않음
+  const body={ category:cat, factory:factoryKey, title, content };
+  try{
+    const r=await fetch(REST(CONFIG.T_POSTS),{method:"POST",headers:{...H,"Prefer":"return=minimal"},body:JSON.stringify(body)});
+    if(!r.ok){ console.error(await r.text()); badFlood(t("badSave"), t("saveFail")); return; }
+    $("wTitleIn").value=""; $("wContent").value="";
+    okFlood(t("okT"), t("okS"));
+  }catch(e){ badFlood(t("badSave"), t("saveFail")); }
+}
+
+/* 답변완료 목록 */
+async function loadList(){
+  $("listWrap").innerHTML=`<div class="empty">${t("loading")}</div>`;
+  try{
+    const r=await fetch(REST(`${CONFIG.T_POSTS}?status=eq.answered&select=category,title,content,answer,answered_at&order=answered_at.desc&limit=100`),{headers:H});
+    const rows=await r.json();
+    if(!Array.isArray(rows)||rows.length===0){ $("listWrap").innerHTML=`<div class="empty">${t("emptyList")}</div>`; return; }
+    $("listWrap").innerHTML = rows.map(p=>{
+      const ct = p.category==="personal" ? `<span class="tag personal">${t("catPersonal")}</span>` : `<span class="tag company">${t("catCompany")}</span>`;
+      const dt = p.answered_at ? new Date(p.answered_at).toLocaleDateString(lang==="ko"?"ko-KR":"es-MX") : "";
+      return `<div class="post">${ct}<div class="pt">${esc(p.title)}</div><div class="pc">${esc(p.content)}</div>
+        <div class="ans"><div class="ans-h">💬 ${t("ansH")}</div><div class="ans-b">${esc(p.answer||"")}</div></div>
+        <div class="dt">${dt}</div></div>`;
+    }).join("");
+  }catch(e){ $("listWrap").innerHTML=`<div class="empty">${t("netErr")}</div>`; }
+}
+function esc(s){ return (s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c])); }
+
+/* 유틸 */
+function getPosition(){ return new Promise((res,rej)=>{ if(!navigator.geolocation) return rej(); navigator.geolocation.getCurrentPosition(res,rej,{enableHighAccuracy:true,timeout:12000,maximumAge:0}); }); }
+function haversine(la1,lo1,la2,lo2){ const R=6371000,toR=x=>x*Math.PI/180; const dLa=toR(la2-la1),dLo=toR(lo2-lo1); const a=Math.sin(dLa/2)**2+Math.cos(toR(la1))*Math.cos(toR(la2))*Math.sin(dLo/2)**2; return 2*R*Math.asin(Math.sqrt(a)); }
+
+/* init */
+(function init(){
+  const saved=localStorage.getItem("yura_board_me");
+  if(saved){ try{ me=JSON.parse(saved); }catch(e){} }
+  applyLang(); show("p-home");
+})();
+</script>
+</body>
+</html>
