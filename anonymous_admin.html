@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>익명게시판 관리 · YURA</title>
+<style>
+  :root{--navy:#0f2747;--ink:#0b1220;--ok:#16a34a;--bad:#dc2626;--warn:#d97706;--line:#e2e8f0;--muted:#64748b;--field:#f1f5f9}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Malgun Gothic",sans-serif;background:#0f172a;color:#e2e8f0}
+  .wrap{max-width:920px;margin:0 auto;padding:0 16px 60px}
+  header{background:var(--navy);padding:16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:5}
+  header .brand{font-weight:800;font-size:17px;color:#fff}
+  header .sub{font-size:12px;color:#94a3b8;font-weight:600}
+  .btn{border:none;border-radius:12px;padding:11px 18px;font-size:14px;font-weight:800;cursor:pointer;color:#fff;background:var(--navy)}
+  .btn.ok{background:var(--ok)}.btn.gray{background:#334155}.btn:disabled{opacity:.5}
+  /* 로그인 */
+  .login{max-width:360px;margin:80px auto;background:#1e293b;border:1px solid #334155;border-radius:18px;padding:30px;text-align:center}
+  .login h1{font-size:20px;margin:0 0 6px;color:#fff}.login p{color:#94a3b8;font-size:13px;margin:0 0 20px}
+  .login input{width:100%;border:2px solid #334155;border-radius:12px;background:#0f172a;color:#fff;padding:14px;font-size:16px;text-align:center;outline:none;margin-bottom:14px}
+  .login input:focus{border-color:#3b82f6}
+  /* 탭 */
+  .tabs{display:flex;gap:8px;margin:18px 0}
+  .tab{flex:1;border:1px solid #334155;background:#1e293b;border-radius:12px;padding:13px;font-size:14px;font-weight:800;color:#94a3b8;cursor:pointer;text-align:center}
+  .tab.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+  .tab .n{display:inline-block;min-width:22px;padding:1px 7px;border-radius:999px;background:#dc2626;color:#fff;font-size:12px;margin-left:6px}
+  .tab.on .n{background:rgba(255,255,255,.25)}
+  /* 카드 */
+  .card{background:#1e293b;border:1px solid #334155;border-radius:16px;padding:18px;margin-bottom:14px}
+  .row1{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+  .tag{font-size:11px;font-weight:800;padding:3px 10px;border-radius:999px}
+  .tag.company{background:#1e3a5f;color:#bfdbfe}.tag.personal{background:#4c1d6b;color:#e9d5ff}
+  .tag.st-pending{background:#7c2d12;color:#fed7aa}.tag.st-answered{background:#14532d;color:#bbf7d0}
+  .dt{font-size:12px;color:#64748b;margin-left:auto}
+  .pt{font-size:17px;font-weight:800;color:#fff;line-height:1.35}
+  .pc{font-size:14px;color:#cbd5e1;margin-top:8px;line-height:1.6;white-space:pre-wrap}
+  .ans-box{margin-top:14px}
+  .ans-box label{font-size:12px;font-weight:800;color:#86efac;display:block;margin-bottom:6px}
+  textarea{width:100%;min-height:90px;border:2px solid #334155;border-radius:12px;background:#0f172a;color:#fff;padding:12px;font-size:14px;line-height:1.5;outline:none;font-family:inherit;resize:vertical}
+  textarea:focus{border-color:var(--ok)}
+  .ans-saved{margin-top:14px;background:#052e16;border-left:3px solid var(--ok);border-radius:0 10px 10px 0;padding:12px 14px}
+  .ans-saved .h{font-size:12px;font-weight:800;color:#4ade80;margin-bottom:5px}
+  .ans-saved .b{font-size:14px;color:#bbf7d0;line-height:1.55;white-space:pre-wrap}
+  .actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+  .empty{text-align:center;color:#64748b;padding:60px 20px;font-weight:600}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#16a34a;color:#fff;padding:12px 22px;border-radius:12px;font-weight:800;opacity:0;transition:opacity .2s;pointer-events:none;z-index:30}
+  .toast.show{opacity:1}
+</style>
+</head>
+<body>
+<header>
+  <div><div class="brand">🔒 익명게시판 관리</div><div class="sub">YURA HARNESS MÉXICO · 담당자 전용</div></div>
+  <button class="btn gray" id="reloadBtn" style="display:none">새로고침</button>
+</header>
+
+<div class="wrap">
+  <!-- 로그인 -->
+  <div class="login" id="login">
+    <h1>담당자 인증</h1>
+    <p>관리 비밀번호를 입력하세요</p>
+    <input id="pw" type="password" placeholder="비밀번호" autocomplete="off">
+    <button class="btn" style="width:100%" id="pwBtn">들어가기</button>
+    <div id="pwMsg" style="color:#f87171;font-size:13px;margin-top:10px;min-height:16px"></div>
+  </div>
+
+  <!-- 본문 -->
+  <div id="boardArea" style="display:none">
+    <div class="tabs">
+      <div class="tab on" data-tab="pending" id="tabP">답변 대기 <span class="n" id="cntP">0</span></div>
+      <div class="tab" data-tab="answered" id="tabA">답변 완료 <span class="n" id="cntA">0</span></div>
+    </div>
+    <div id="list"><div class="empty">불러오는 중…</div></div>
+  </div>
+</div>
+
+<div class="toast" id="toast">저장됨</div>
+
+<script>
+const CONFIG = {
+  SUPABASE_URL:"https://lrjurjhavlalhlwaplxd.supabase.co",
+  SUPABASE_ANON:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxyanVyamhhdmxhbGhsd2FwbHhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNzUxNDAsImV4cCI6MjA5NTY1MTE0MH0.DVFmZaT37R9CXSMHdnLx4YAVNTnlBGijkOIaoUo7Qsk",
+  T_POSTS:"anon_posts",
+  ADMIN_PW:"yura2026",          // ← 담당자 비밀번호. 운영 전 반드시 변경하세요.
+  ANSWERED_BY:"게시판 담당자"    // 답변자 표시명
+};
+const $ = id => document.getElementById(id);
+const REST = p => CONFIG.SUPABASE_URL+"/rest/v1/"+p;
+const H = {"apikey":CONFIG.SUPABASE_ANON,"Authorization":"Bearer "+CONFIG.SUPABASE_ANON,"Content-Type":"application/json"};
+let curTab="pending", allPosts=[];
+
+/* 로그인 */
+$("pwBtn").onclick=tryLogin;
+$("pw").addEventListener("keydown",e=>{ if(e.key==="Enter") tryLogin(); });
+function tryLogin(){
+  if($("pw").value===CONFIG.ADMIN_PW){
+    sessionStorage.setItem("yura_anon_admin","1");
+    enter();
+  } else { $("pwMsg").textContent="비밀번호가 올바르지 않습니다"; }
+}
+function enter(){
+  $("login").style.display="none"; $("boardArea").style.display="block"; $("reloadBtn").style.display="";
+  load();
+}
+$("reloadBtn").onclick=load;
+if(sessionStorage.getItem("yura_anon_admin")==="1") enter();
+
+/* 탭 */
+document.querySelectorAll(".tab").forEach(tb=>{
+  tb.onclick=()=>{ curTab=tb.dataset.tab; document.querySelectorAll(".tab").forEach(x=>x.classList.remove("on")); tb.classList.add("on"); render(); };
+});
+
+/* 로드 */
+async function load(){
+  $("list").innerHTML=`<div class="empty">불러오는 중…</div>`;
+  try{
+    const r=await fetch(REST(`${CONFIG.T_POSTS}?select=*&order=created_at.desc&limit=500`),{headers:H});
+    allPosts=await r.json();
+    if(!Array.isArray(allPosts)) allPosts=[];
+    const p=allPosts.filter(x=>x.status==="pending").length, a=allPosts.filter(x=>x.status==="answered").length;
+    $("cntP").textContent=p; $("cntA").textContent=a;
+    render();
+  }catch(e){ $("list").innerHTML=`<div class="empty">통신 오류</div>`; }
+}
+
+function render(){
+  const rows=allPosts.filter(x=>x.status===curTab);
+  if(rows.length===0){ $("list").innerHTML=`<div class="empty">${curTab==="pending"?"답변 대기 중인 글이 없습니다":"답변 완료된 글이 없습니다"}</div>`; return; }
+  $("list").innerHTML=rows.map(cardHtml).join("");
+  rows.forEach(p=>{
+    const sv=$("save_"+p.id); if(sv) sv.onclick=()=>saveAnswer(p.id);
+    const ed=$("edit_"+p.id); if(ed) ed.onclick=()=>{ $("editbox_"+p.id).style.display="block"; ed.style.display="none"; };
+    const del=$("del_"+p.id); if(del) del.onclick=()=>delPost(p.id);
+  });
+}
+
+function cardHtml(p){
+  const catTag = p.category==="personal" ? `<span class="tag personal">개인</span>` : `<span class="tag company">회사</span>`;
+  const stTag = p.status==="answered" ? `<span class="tag st-answered">답변완료</span>` : `<span class="tag st-pending">대기</span>`;
+  const dt = new Date(p.created_at).toLocaleString("ko-KR",{month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"});
+  let body=`<div class="card"><div class="row1">${catTag}${stTag}<span class="dt">${dt}</span></div>
+    <div class="pt">${esc(p.title)}</div><div class="pc">${esc(p.content)}</div>`;
+  if(p.status==="answered"){
+    const adt = p.answered_at ? new Date(p.answered_at).toLocaleDateString("ko-KR") : "";
+    body += `<div class="ans-saved"><div class="h">💬 답변 (${esc(p.answered_by||"")} · ${adt})</div><div class="b">${esc(p.answer||"")}</div></div>
+      <div class="actions"><button class="btn gray" id="edit_${p.id}">답변 수정</button><button class="btn gray" id="del_${p.id}" style="background:#7f1d1d">삭제</button></div>
+      <div id="editbox_${p.id}" style="display:none" class="ans-box"><label>답변 수정</label><textarea id="ans_${p.id}">${esc(p.answer||"")}</textarea>
+      <div class="actions"><button class="btn ok" id="save_${p.id}">저장</button></div></div>`;
+  } else {
+    body += `<div class="ans-box"><label>답변 작성</label><textarea id="ans_${p.id}" placeholder="이 글에 대한 답변을 작성하세요…"></textarea>
+      <div class="actions"><button class="btn ok" id="save_${p.id}">답변 등록</button><button class="btn gray" id="del_${p.id}" style="background:#7f1d1d">삭제</button></div></div>`;
+  }
+  return body+`</div>`;
+}
+
+async function saveAnswer(id){
+  const ans=$("ans_"+id).value.trim();
+  if(!ans){ toast("답변 내용을 입력하세요"); return; }
+  const btn=$("save_"+id); btn.disabled=true; btn.textContent="저장 중…";
+  const body={ answer:ans, status:"answered", answered_by:CONFIG.ANSWERED_BY, answered_at:new Date().toISOString() };
+  try{
+    const r=await fetch(REST(`${CONFIG.T_POSTS}?id=eq.${id}`),{method:"PATCH",headers:{...H,"Prefer":"return=minimal"},body:JSON.stringify(body)});
+    if(!r.ok){ console.error(await r.text()); toast("저장 실패"); btn.disabled=false; btn.textContent="답변 등록"; return; }
+    toast("답변이 등록되었습니다"); await load();
+  }catch(e){ toast("통신 오류"); btn.disabled=false; }
+}
+
+async function delPost(id){
+  if(!confirm("이 글을 완전히 삭제할까요? 되돌릴 수 없습니다.")) return;
+  try{
+    const r=await fetch(REST(`${CONFIG.T_POSTS}?id=eq.${id}`),{method:"DELETE",headers:{...H,"Prefer":"return=minimal"}});
+    if(!r.ok){ toast("삭제 실패"); return; }
+    toast("삭제됨"); await load();
+  }catch(e){ toast("통신 오류"); }
+}
+
+function esc(s){ return (s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c])); }
+let toastTimer;
+function toast(msg){ $("toast").textContent=msg; $("toast").classList.add("show"); clearTimeout(toastTimer); toastTimer=setTimeout(()=>$("toast").classList.remove("show"),2200); }
+</script>
+</body>
+</html>
