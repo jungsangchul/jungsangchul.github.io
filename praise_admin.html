@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>칭찬게시판 관리 · YURA</title>
+<style>
+  :root{--navy:#0f2747;--gold:#b45309;--ok:#16a34a;--bad:#dc2626;--line:#e2e8f0;--muted:#64748b}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Malgun Gothic",sans-serif;background:#0f172a;color:#e2e8f0}
+  .wrap{max-width:960px;margin:0 auto;padding:0 16px 60px}
+  header{background:linear-gradient(135deg,#92400e,#b45309);padding:16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:5}
+  header .brand{font-weight:800;font-size:17px;color:#fff}header .sub{font-size:12px;color:#fde68a;font-weight:600}
+  .btn{border:none;border-radius:12px;padding:11px 18px;font-size:14px;font-weight:800;cursor:pointer;color:#fff;background:var(--navy)}
+  .btn.ok{background:var(--ok)}.btn.gold{background:var(--gold)}.btn.gray{background:#334155}.btn.red{background:#7f1d1d}.btn:disabled{opacity:.5}
+  .login{max-width:360px;margin:80px auto;background:#1e293b;border:1px solid #334155;border-radius:18px;padding:30px;text-align:center}
+  .login h1{font-size:20px;margin:0 0 6px;color:#fff}.login p{color:#94a3b8;font-size:13px;margin:0 0 20px}
+  .login input{width:100%;border:2px solid #334155;border-radius:12px;background:#0f172a;color:#fff;padding:14px;font-size:16px;text-align:center;outline:none;margin-bottom:14px}
+  .login input:focus{border-color:#f59e0b}
+  .tabs{display:flex;gap:8px;margin:18px 0}
+  .tab{flex:1;border:1px solid #334155;background:#1e293b;border-radius:12px;padding:13px;font-size:14px;font-weight:800;color:#94a3b8;cursor:pointer;text-align:center}
+  .tab.on{background:var(--gold);color:#fff;border-color:var(--gold)}
+  .tab .n{display:inline-block;min-width:22px;padding:1px 7px;border-radius:999px;background:#dc2626;color:#fff;font-size:12px;margin-left:6px}
+  .tab.on .n{background:rgba(255,255,255,.25)}
+  .card{background:#1e293b;border:1px solid #334155;border-radius:16px;padding:18px;margin-bottom:14px}
+  .row1{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+  .tgt{font-size:18px;font-weight:800;color:#fff}.tgt small{font-size:12px;color:#94a3b8;font-weight:600;margin-left:6px}
+  .tag{font-size:11px;font-weight:800;padding:3px 10px;border-radius:999px}
+  .tag.sel{background:#14532d;color:#bbf7d0}.tag.rej{background:#7f1d1d;color:#fecaca}.tag.pen{background:#7c2d12;color:#fed7aa}
+  .dt{font-size:12px;color:#64748b;margin-left:auto}
+  .reason{font-size:14px;color:#e2e8f0;line-height:1.6;white-space:pre-wrap;background:#0f172a;border-radius:12px;padding:13px 15px;margin-top:4px}
+  .from{font-size:12px;color:#64748b;margin-top:8px}
+  .actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+  .empty{text-align:center;color:#64748b;padding:60px 20px;font-weight:600}
+  /* 집계 */
+  .period-bar{display:flex;gap:8px;align-items:center;margin-bottom:16px;flex-wrap:wrap}
+  .period-bar select,.period-bar input{border:2px solid #334155;background:#1e293b;color:#fff;border-radius:10px;padding:10px 12px;font-size:14px;font-weight:700;outline:none}
+  .seg2{display:flex;gap:6px}
+  .seg2 button{border:1px solid #334155;background:#1e293b;color:#94a3b8;border-radius:10px;padding:9px 16px;font-weight:800;font-size:13px;cursor:pointer}
+  .seg2 button.on{background:var(--gold);color:#fff;border-color:var(--gold)}
+  .rank{background:#1e293b;border:1px solid #334155;border-radius:16px;overflow:hidden;margin-bottom:16px}
+  .rank-item{display:flex;align-items:center;gap:14px;padding:15px 18px;border-bottom:1px solid #334155;cursor:pointer}
+  .rank-item:last-child{border-bottom:none}.rank-item:hover{background:#243044}
+  .rank-no{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;background:#334155;color:#cbd5e1;flex:0 0 auto}
+  .rank-no.g1{background:#f59e0b;color:#fff}.rank-no.g2{background:#94a3b8;color:#fff}.rank-no.g3{background:#b45309;color:#fff}
+  .rank-nm{font-size:16px;font-weight:800;color:#fff}.rank-id{font-size:12px;color:#94a3b8}
+  .rank-cnt{margin-left:auto;text-align:right}.rank-cnt b{font-size:22px;color:#fbbf24}.rank-cnt span{font-size:12px;color:#94a3b8;display:block}
+  .detail{background:#0f172a;border-top:1px solid #334155;padding:14px 18px;display:none}
+  .detail.show{display:block}
+  .detail .r{font-size:13px;color:#cbd5e1;line-height:1.5;padding:8px 0;border-bottom:1px dashed #334155}
+  .detail .r:last-child{border-bottom:none}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#16a34a;color:#fff;padding:12px 22px;border-radius:12px;font-weight:800;opacity:0;transition:opacity .2s;pointer-events:none;z-index:30}
+  .toast.show{opacity:1}
+  .langtog{display:inline-flex;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.35);border-radius:9px;overflow:hidden}
+  .langtog button{border:none;background:transparent;color:#fff;font-weight:800;font-size:12px;padding:8px 11px;cursor:pointer;line-height:1;opacity:.7}
+  .langtog button.on{background:#fff;color:#92400e;opacity:1}
+  a.btn{text-decoration:none;display:inline-block}
+  .tr-btn{margin-top:10px;padding:7px 12px;font-size:12px;background:#1e3a5f;color:#fff;border:none;border-radius:12px;font-weight:800;cursor:pointer}
+  .tr-out{margin-top:10px;background:#0b2540;border:1px solid #1e3a5f;border-radius:10px;padding:11px 13px}
+  .tr-out .tr-h{font-size:11px;font-weight:800;color:#93c5fd;margin-bottom:5px}
+  .tr-out .tr-b{font-size:14px;color:#dbeafe;line-height:1.6;white-space:pre-wrap}
+  .hint{font-size:12px;color:#64748b;margin-bottom:14px}
+</style>
+</head>
+<body>
+<header>
+  <div><div class="brand">🏆 <span data-i18n="brand">칭찬게시판 관리</span></div><div class="sub" data-i18n="subFull">YURA HARNESS MÉXICO · 담당자 전용</div></div>
+  <div style="display:flex;gap:8px;align-items:center">
+    <a class="btn gray" href="blog.html?f=1">🏠 <span data-i18n="navBoard">게시판</span></a>
+    <a class="btn gray" href="employee_admin.html">👥 <span data-i18n="navEmp">직원</span></a>
+    <button class="btn gray" id="reloadBtn" style="display:none" data-i18n="reload">새로고침</button>
+    <div class="langtog" id="langTog"><button data-l="es" class="on">ES</button><button data-l="ko">한</button></div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="login" id="login">
+    <h1 data-i18n="loginH">담당자 인증</h1>
+    <p data-i18n="loginP">관리 비밀번호를 입력하세요</p>
+    <input id="pw" type="password" placeholder="비밀번호" data-i18n-ph="pwPh" autocomplete="off">
+    <button class="btn gold" style="width:100%" id="pwBtn" data-i18n="enter">들어가기</button>
+    <div id="pwMsg" style="color:#f87171;font-size:13px;margin-top:10px;min-height:16px"></div>
+  </div>
+
+  <div id="area" style="display:none">
+    <div class="tabs">
+      <div class="tab on" data-tab="review" id="tabR"><span data-i18n="tabReview">검토 대기</span> <span class="n" id="cntR">0</span></div>
+      <div class="tab" data-tab="award" id="tabAw" data-i18n="tabAward">우수사원 집계</div>
+    </div>
+
+    <!-- 검토 -->
+    <div id="reviewArea">
+      <div class="hint" data-i18n="hintReview">사유가 충실한 칭찬을 채택하세요. 채택된 칭찬만 우수사원 집계에 반영됩니다.</div>
+      <div id="reviewList"><div class="empty" data-i18n="loading">불러오는 중…</div></div>
+    </div>
+
+    <!-- 집계 -->
+    <div id="awardArea" style="display:none">
+      <div class="period-bar">
+        <div class="seg2" id="modeSeg">
+          <button data-mode="month" class="on" data-i18n="mMonth">월</button>
+          <button data-mode="quarter" data-i18n="mQuarter">분기</button>
+          <button data-mode="year" data-i18n="mYear">연</button>
+        </div>
+        <select id="yearSel"></select>
+        <select id="monthSel"></select>
+        <select id="quarterSel" style="display:none"></select>
+      </div>
+      <div class="hint" id="awardHint" data-i18n="awardHint">채택된 칭찬 기준 · 많이 받은 순. 행을 클릭하면 사유가 펼쳐집니다.</div>
+      <div id="rankWrap"><div class="empty" data-i18n="pickPeriod">기간을 선택하세요</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const CONFIG = {
+  SUPABASE_URL:"https://lrjurjhavlalhlwaplxd.supabase.co",
+  SUPABASE_ANON:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxyanVyamhhdmxhbGhsd2FwbHhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNzUxNDAsImV4cCI6MjA5NTY1MTE0MH0.DVFmZaT37R9CXSMHdnLx4YAVNTnlBGijkOIaoUo7Qsk",
+  T_PRAISE:"praise_posts",
+  ADMIN_PW:"yura2026",          // ← 담당자 비밀번호. 운영 전 반드시 변경하세요.
+  REVIEWER:"게시판 담당자"
+};
+const $ = id => document.getElementById(id);
+const REST = p => CONFIG.SUPABASE_URL+"/rest/v1/"+p;
+const H = {"apikey":CONFIG.SUPABASE_ANON,"Authorization":"Bearer "+CONFIG.SUPABASE_ANON,"Content-Type":"application/json"};
+const I18N={
+ es:{brand:"Reconocimientos",subFull:"YURA HARNESS MÉXICO · Solo administrador",navBoard:"Tablón",navEmp:"Empleados",reload:"Recargar",
+  loginH:"Acceso administrador",loginP:"Ingrese la contraseña",pwPh:"Contraseña",enter:"Entrar",pwBad:"Contraseña incorrecta",
+  tabReview:"Por revisar",tabAward:"Empleado destacado",loading:"Cargando…",netErr:"Error de red",
+  hintReview:"Selecciona los reconocimientos con buen motivo. Solo los seleccionados cuentan para el premio.",
+  emptyReview:"No hay reconocimientos por revisar",tagPending:"Por revisar",
+  trBtn:"🇰🇷 Traducir (KO)",trHead:"🇰🇷 한글 번역 (자동 · 참고용)",translating:"번역 중…",trFail:"Traducción fallida (revise internet)",
+  from:(by,per)=>`Reconoció: ${by} · Periodo ${per}`,btnSelect:"Seleccionar",btnReject:"Rechazar",btnDel:"Eliminar",
+  delConfirm:"¿Eliminar este reconocimiento definitivamente?",delFail:"Error al eliminar",deleted:"Eliminado",actFail:"Error al procesar",selected:"Seleccionado",rejected:"Rechazado",
+  mMonth:"Mes",mQuarter:"Trim.",mYear:"Año",yearSuffix:"",monthSuffix:"",
+  quarterLabels:["T1 (ene–mar)","T2 (abr–jun)","T3 (jul–sep)","T4 (oct–dic)"],
+  awardHint:"Por reconocimientos seleccionados · de mayor a menor. Clic en una fila para ver los motivos.",
+  pickPeriod:"Seleccione un periodo",emptyRank:"Sin reconocimientos seleccionados en este periodo",cntSel:"seleccionados"},
+ ko:{brand:"칭찬게시판 관리",subFull:"YURA HARNESS MÉXICO · 담당자 전용",navBoard:"게시판",navEmp:"직원",reload:"새로고침",
+  loginH:"담당자 인증",loginP:"관리 비밀번호를 입력하세요",pwPh:"비밀번호",enter:"들어가기",pwBad:"비밀번호가 올바르지 않습니다",
+  tabReview:"검토 대기",tabAward:"우수사원 집계",loading:"불러오는 중…",netErr:"통신 오류",
+  hintReview:"사유가 충실한 칭찬을 채택하세요. 채택된 칭찬만 우수사원 집계에 반영됩니다.",
+  emptyReview:"검토 대기 중인 칭찬이 없습니다",tagPending:"검토대기",
+  trBtn:"🇰🇷 한글 번역",trHead:"🇰🇷 한글 번역 (자동 · 참고용)",translating:"번역 중…",trFail:"번역 실패 (인터넷 연결 확인)",
+  from:(by,per)=>`칭찬한 사람: ${by} · 기간 ${per}`,btnSelect:"채택",btnReject:"반려",btnDel:"삭제",
+  delConfirm:"이 칭찬을 완전히 삭제할까요?",delFail:"삭제 실패",deleted:"삭제됨",actFail:"처리 실패",selected:"채택되었습니다",rejected:"반려되었습니다",
+  mMonth:"월",mQuarter:"분기",mYear:"연",yearSuffix:"년",monthSuffix:"월",
+  quarterLabels:["1분기(1~3월)","2분기(4~6월)","3분기(7~9월)","4분기(10~12월)"],
+  awardHint:"채택된 칭찬 기준 · 많이 받은 순. 행을 클릭하면 사유가 펼쳐집니다.",
+  pickPeriod:"기간을 선택하세요",emptyRank:"해당 기간에 채택된 칭찬이 없습니다",cntSel:"채택 칭찬"}
+};
+let lang="es"; const t=k=>I18N[lang][k];
+function applyLang(){
+  document.documentElement.lang=lang;
+  document.querySelectorAll("[data-i18n]").forEach(el=>{ const v=t(el.dataset.i18n); if(typeof v==="string") el.textContent=v; });
+  document.querySelectorAll("[data-i18n-ph]").forEach(el=>{ const v=t(el.dataset.i18nPh); if(typeof v==="string") el.placeholder=v; });
+  document.querySelectorAll("#langTog button").forEach(b=>b.classList.toggle("on", b.dataset.l===lang));
+  if($("area").style.display!=="none"){ relabelPeriod(); renderReview(); if($("awardArea").style.display!=="none") renderRank(); }
+}
+document.querySelectorAll("#langTog button").forEach(b=>{ b.onclick=()=>{ if(lang===b.dataset.l) return; lang=b.dataset.l; applyLang(); }; });
+function relabelPeriod(){
+  const ys=$("yearSel"), ms=$("monthSel"), qs=$("quarterSel");
+  if(ys) for(const o of ys.options) o.textContent=o.value+t("yearSuffix");
+  if(ms) for(const o of ms.options) o.textContent=o.value+t("monthSuffix");
+  if(qs){ const ql=t("quarterLabels"); for(const o of qs.options) o.textContent=ql[parseInt(o.value,10)-1]; }
+}
+let all=[], mode="month";
+
+/* 로그인 */
+$("pwBtn").onclick=tryLogin;
+$("pw").addEventListener("keydown",e=>{ if(e.key==="Enter") tryLogin(); });
+function tryLogin(){ if($("pw").value===CONFIG.ADMIN_PW){ sessionStorage.setItem("yura_praise_admin","1"); enter(); } else { $("pwMsg").textContent=t("pwBad"); } }
+function enter(){ $("login").style.display="none"; $("area").style.display="block"; $("reloadBtn").style.display=""; setupPeriodSelectors(); applyLang(); load(); }
+$("reloadBtn").onclick=load;
+if(sessionStorage.getItem("yura_praise_admin")==="1") enter();
+
+/* 탭 */
+document.querySelectorAll(".tab").forEach(tb=>{
+  tb.onclick=()=>{
+    document.querySelectorAll(".tab").forEach(x=>x.classList.remove("on")); tb.classList.add("on");
+    const isReview=tb.dataset.tab==="review";
+    $("reviewArea").style.display=isReview?"block":"none";
+    $("awardArea").style.display=isReview?"none":"block";
+    if(!isReview) renderRank();
+  };
+});
+
+/* 로드 */
+async function load(){
+  $("reviewList").innerHTML=`<div class="empty">${t("loading")}</div>`;
+  try{
+    const r=await fetch(REST(`${CONFIG.T_PRAISE}?select=*&order=created_at.desc&limit=2000`),{headers:H});
+    all=await r.json(); if(!Array.isArray(all)) all=[];
+    $("cntR").textContent=all.filter(x=>x.status==="pending").length;
+    renderReview();
+    if($("awardArea").style.display!=="none") renderRank();
+  }catch(e){ $("reviewList").innerHTML=`<div class="empty">${t("netErr")}</div>`; }
+}
+
+/* 검토 목록 */
+function renderReview(){
+  const rows=all.filter(x=>x.status==="pending");
+  if(rows.length===0){ $("reviewList").innerHTML=`<div class="empty">${t("emptyReview")}</div>`; return; }
+  $("reviewList").innerHTML=rows.map(p=>{
+    const dt=new Date(p.created_at).toLocaleString(lang==="ko"?"ko-KR":"es-MX",{month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"});
+    return `<div class="card">
+      <div class="row1"><span class="tag pen">${t("tagPending")}</span><div class="tgt">${esc(p.target_name)} <small>${esc(p.target_id)}</small></div><span class="dt">${dt}</span></div>
+      <div class="reason">${esc(p.reason)}</div>
+      <button class="tr-btn" id="tr_${p.id}">${t("trBtn")}</button><div class="tr-out" id="trout_${p.id}" style="display:none"></div>
+      <div class="from">${t("from")(esc(p.praiser_id),esc(p.period||""))}</div>
+      <div class="actions"><button class="btn ok" data-act="selected" data-id="${p.id}">${t("btnSelect")}</button>
+      <button class="btn gray" data-act="rejected" data-id="${p.id}">${t("btnReject")}</button>
+      <button class="btn red" data-act="delete" data-id="${p.id}">${t("btnDel")}</button></div></div>`;
+  }).join("");
+  $("reviewList").querySelectorAll("button[data-act]").forEach(b=>{
+    b.onclick=()=>act(b.dataset.id, b.dataset.act);
+  });
+  rows.forEach(p=>{ const tr=$("tr_"+p.id); if(tr) tr.onclick=()=>doTranslate(p.id, p.reason||""); });
+}
+
+async function act(id, action){
+  if(action==="delete"){
+    if(!confirm(t("delConfirm"))) return;
+    try{ const r=await fetch(REST(`${CONFIG.T_PRAISE}?id=eq.${id}`),{method:"DELETE",headers:{...H,"Prefer":"return=minimal"}});
+      if(!r.ok){ toast(t("delFail")); return; } toast(t("deleted")); await load(); }catch(e){ toast(t("netErr")); }
+    return;
+  }
+  const body={ status:action, reviewed_by:CONFIG.REVIEWER, reviewed_at:new Date().toISOString() };
+  try{
+    const r=await fetch(REST(`${CONFIG.T_PRAISE}?id=eq.${id}`),{method:"PATCH",headers:{...H,"Prefer":"return=minimal"},body:JSON.stringify(body)});
+    if(!r.ok){ console.error(await r.text()); toast(t("actFail")); return; }
+    toast(action==="selected"?t("selected"):t("rejected")); await load();
+  }catch(e){ toast(t("netErr")); }
+}
+
+/* 기간 선택 */
+function setupPeriodSelectors(){
+  const now=new Date(), y=now.getFullYear();
+  const ys=$("yearSel"); ys.innerHTML="";
+  for(let yr=y; yr>=y-3; yr--){ const o=document.createElement("option"); o.value=yr; o.textContent=yr+t("yearSuffix"); ys.appendChild(o); }
+  const ms=$("monthSel"); ms.innerHTML="";
+  for(let m=1;m<=12;m++){ const o=document.createElement("option"); o.value=m; o.textContent=m+t("monthSuffix"); ms.appendChild(o); }
+  ms.value=now.getMonth()+1;
+  const qs=$("quarterSel"); qs.innerHTML="";
+  t("quarterLabels").forEach((lab,i)=>{ const o=document.createElement("option"); o.value=i+1; o.textContent=lab; qs.appendChild(o); });
+  qs.value=Math.floor(now.getMonth()/3)+1;
+  ys.onchange=renderRank; ms.onchange=renderRank; qs.onchange=renderRank;
+  document.querySelectorAll("#modeSeg button").forEach(b=>{
+    b.onclick=()=>{ mode=b.dataset.mode; document.querySelectorAll("#modeSeg button").forEach(x=>x.classList.remove("on")); b.classList.add("on");
+      $("monthSel").style.display = mode==="month"?"":"none";
+      $("quarterSel").style.display = mode==="quarter"?"":"none";
+      renderRank(); };
+  });
+}
+
+function periodsForSelection(){
+  const y=$("yearSel").value;
+  if(mode==="year"){ return m=>m && m.startsWith(y+"-"); }
+  if(mode==="quarter"){ const q=parseInt($("quarterSel").value,10); const months=[]; for(let i=0;i<3;i++){ months.push(y+"-"+String((q-1)*3+1+i).padStart(2,"0")); } return m=>months.includes(m); }
+  const mm=y+"-"+String($("monthSel").value).padStart(2,"0"); return m=>m===mm;
+}
+
+function renderRank(){
+  const inPeriod=periodsForSelection();
+  const sel=all.filter(x=>x.status==="selected" && inPeriod(x.period));
+  if(sel.length===0){ $("rankWrap").innerHTML=`<div class="empty">${t("emptyRank")}</div>`; return; }
+  const map={};
+  sel.forEach(p=>{ const k=p.target_id; if(!map[k]) map[k]={id:p.target_id,name:p.target_name,count:0,reasons:[]}; map[k].count++; map[k].reasons.push(p.reason); });
+  const ranked=Object.values(map).sort((a,b)=>b.count-a.count);
+  $("rankWrap").innerHTML=`<div class="rank">`+ranked.map((r,i)=>{
+    const g=i===0?"g1":i===1?"g2":i===2?"g3":"";
+    const reasons=r.reasons.map(x=>`<div class="r">• ${esc(x)}</div>`).join("");
+    return `<div><div class="rank-item" data-i="${i}">
+      <div class="rank-no ${g}">${i+1}</div>
+      <div><div class="rank-nm">${esc(r.name)}</div><div class="rank-id">${esc(r.id)}</div></div>
+      <div class="rank-cnt"><b>${r.count}</b><span>${t("cntSel")}</span></div></div>
+      <div class="detail" id="dt_${i}">${reasons}</div></div>`;
+  }).join("")+`</div>`;
+  $("rankWrap").querySelectorAll(".rank-item").forEach(it=>{
+    it.onclick=()=>{ const d=$("dt_"+it.dataset.i); d.classList.toggle("show"); };
+  });
+}
+
+async function translateToKo(text){
+  try{
+    const u="https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=ko&dt=t&q="+encodeURIComponent(text);
+    const r=await fetch(u);
+    if(r.ok){ const d=await r.json(); if(d&&d[0]) return d[0].map(s=>s[0]).join(""); }
+  }catch(e){}
+  try{
+    const u="https://api.mymemory.translated.net/get?q="+encodeURIComponent(text.slice(0,480))+"&langpair=es|ko";
+    const r=await fetch(u);
+    if(r.ok){ const d=await r.json(); if(d&&d.responseData&&d.responseData.translatedText) return d.responseData.translatedText; }
+  }catch(e){}
+  return null;
+}
+async function doTranslate(id, text){
+  const btn=$("tr_"+id), out=$("trout_"+id);
+  btn.disabled=true; btn.textContent=t("translating");
+  const ko=await translateToKo(text);
+  btn.disabled=false; btn.textContent=t("trBtn");
+  if(ko){ out.style.display="block"; out.innerHTML=`<div class="tr-h">${t("trHead")}</div><div class="tr-b">${esc(ko)}</div>`; }
+  else { toast(t("trFail")); }
+}
+function esc(s){ return (s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c])); }
+let toastTimer;
+function toast(msg){ $("toast").textContent=msg; $("toast").classList.add("show"); clearTimeout(toastTimer); toastTimer=setTimeout(()=>$("toast").classList.remove("show"),2200); }
+</script>
+</body>
+</html>
