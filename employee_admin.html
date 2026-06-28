@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>직원 관리 · YURA</title>
+<style>
+  :root{--navy:#0f2747;--ink:#0b1220;--ok:#16a34a;--bad:#dc2626;--warn:#d97706;--line:#334155;--muted:#94a3b8;--field:#0f172a}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Malgun Gothic",sans-serif;background:#0f172a;color:#e2e8f0}
+  .wrap{max-width:1000px;margin:0 auto;padding:0 16px 80px}
+  header{background:var(--navy);padding:16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:5}
+  header .brand{font-weight:800;font-size:17px;color:#fff}
+  header .sub{font-size:12px;color:#94a3b8;font-weight:600}
+  .btn{border:none;border-radius:12px;padding:11px 16px;font-size:14px;font-weight:800;cursor:pointer;color:#fff;background:var(--navy);text-decoration:none;display:inline-block}
+  .btn.ok{background:var(--ok)}.btn.gray{background:#334155}.btn.red{background:#7f1d1d}.btn.gold{background:#c9a14a;color:#1b1407}.btn:disabled{opacity:.5}
+  .btn.sm{padding:7px 11px;font-size:12px}
+  a.btn{text-decoration:none}
+  /* 로그인 */
+  .login{max-width:360px;margin:80px auto;background:#1e293b;border:1px solid #334155;border-radius:18px;padding:30px;text-align:center}
+  .login h1{font-size:20px;margin:0 0 6px;color:#fff}.login p{color:#94a3b8;font-size:13px;margin:0 0 20px}
+  .login input{width:100%;border:2px solid #334155;border-radius:12px;background:#0f172a;color:#fff;padding:14px;font-size:16px;text-align:center;outline:none;margin-bottom:14px}
+  .login input:focus{border-color:#3b82f6}
+  /* 툴바 */
+  .toolbar{display:flex;gap:8px;align-items:center;margin:18px 0;flex-wrap:wrap}
+  .toolbar input{flex:1;min-width:180px;border:1px solid #334155;border-radius:12px;background:#1e293b;color:#fff;padding:12px 14px;font-size:15px;outline:none}
+  .toolbar input:focus{border-color:#3b82f6}
+  .cnt{font-size:13px;color:#94a3b8;font-weight:700;margin-right:4px}
+  /* 테이블 */
+  .tbl{background:#1e293b;border:1px solid #334155;border-radius:14px;overflow:hidden}
+  .thead{display:flex;padding:11px 14px;font-size:12px;font-weight:800;color:#94a3b8;border-bottom:1px solid #334155;background:#172033}
+  .trow{display:flex;align-items:center;padding:12px 14px;border-top:1px solid #28344a;font-size:14px}
+  .trow:first-child{border-top:none}
+  .c-id{width:120px;flex:0 0 auto;color:#cbd5e1;font-weight:700;font-size:13px}
+  .c-es{flex:1;min-width:0;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .c-ko{width:90px;flex:0 0 auto;color:#cbd5e1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .c-team{width:160px;flex:0 0 auto;color:#94a3b8;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .c-fac{width:42px;flex:0 0 auto;text-align:center;color:#94a3b8}
+  .c-act{width:64px;flex:0 0 auto;text-align:center}
+  .c-btn{width:118px;flex:0 0 auto;text-align:right;display:flex;gap:6px;justify-content:flex-end}
+  .pill{font-size:11px;font-weight:800;padding:3px 9px;border-radius:999px;cursor:pointer}
+  .pill.on{background:#14532d;color:#bbf7d0}.pill.off{background:#3f1d1d;color:#fecaca}
+  .empty{text-align:center;color:#64748b;padding:50px 20px;font-weight:600}
+  @media(max-width:760px){ .c-team,.c-ko{display:none} .c-id{width:96px} .c-btn{width:96px} }
+  /* 모달 */
+  .modal{position:fixed;inset:0;z-index:20;background:rgba(2,6,16,.7);display:none;align-items:center;justify-content:center;padding:16px}
+  .modal.show{display:flex}
+  .sheet{width:100%;max-width:480px;max-height:92vh;overflow-y:auto;background:#0f172a;border:1px solid #334155;border-radius:18px;padding:22px}
+  .sheet h2{margin:0 0 16px;font-size:18px;color:#fff}
+  label{display:block;font-size:12px;font-weight:800;color:#fbbf24;margin:14px 0 6px}
+  .f{width:100%;border:2px solid #334155;border-radius:12px;background:#1e293b;color:#fff;padding:12px 14px;font-size:16px;outline:none;font-family:inherit}
+  .f:focus{border-color:#3b82f6}
+  .f:disabled{opacity:.6}
+  .rowf{display:flex;gap:10px}.rowf>div{flex:1}
+  .chkrow{display:flex;align-items:center;gap:10px;margin-top:16px}
+  .chkrow input{width:20px;height:20px}
+  .modal-actions{display:flex;gap:8px;margin-top:22px}
+  .modal-actions .btn{flex:1;text-align:center}
+  .fmsg{min-height:18px;font-size:13px;font-weight:700;color:#f87171;margin-top:10px;text-align:center}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#16a34a;color:#fff;padding:12px 22px;border-radius:12px;font-weight:800;opacity:0;transition:opacity .2s;pointer-events:none;z-index:30}
+  .toast.show{opacity:1}
+</style>
+</head>
+<body>
+<header>
+  <div><div class="brand">👥 직원 관리</div><div class="sub">YURA HARNESS MÉXICO · 담당자 전용</div></div>
+  <div style="display:flex;gap:8px">
+    <a class="btn gray" href="blog.html?f=1">🏠 게시판</a>
+    <button class="btn gray" id="reloadBtn" style="display:none">새로고침</button>
+  </div>
+</header>
+
+<div class="wrap">
+  <!-- 로그인 -->
+  <div class="login" id="login">
+    <h1>담당자 인증</h1>
+    <p>관리 비밀번호를 입력하세요</p>
+    <input id="pw" type="password" placeholder="비밀번호" autocomplete="off">
+    <button class="btn" style="width:100%" id="pwBtn">들어가기</button>
+    <div id="pwMsg" style="color:#f87171;font-size:13px;margin-top:10px;min-height:16px"></div>
+  </div>
+
+  <!-- 본문 -->
+  <div id="area" style="display:none">
+    <div class="toolbar">
+      <input id="q" placeholder="🔍 사번·스페인 이름·한글 이름·팀 검색">
+      <span class="cnt" id="cnt">0명</span>
+      <button class="btn gold" id="addBtn">+ 직원 추가</button>
+    </div>
+    <div class="tbl">
+      <div class="thead"><div class="c-id">사번</div><div class="c-es">스페인 이름</div><div class="c-ko">한글</div><div class="c-team">팀</div><div class="c-fac">공장</div><div class="c-act">상태</div><div class="c-btn"></div></div>
+      <div id="list"><div class="empty">불러오는 중…</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- 추가/수정 모달 -->
+<div class="modal" id="modal"><div class="sheet">
+  <h2 id="modalTitle">직원 추가</h2>
+  <label>사번 (employee_id)</label>
+  <input class="f" id="fId" autocomplete="off" placeholder="예: M026050036">
+  <label>스페인 이름 (name) · 화면 표시명</label>
+  <input class="f" id="fName" autocomplete="off" placeholder="예: Alina Guadalupe Navarro">
+  <label>한글 이름 (name_ko)</label>
+  <input class="f" id="fKo" autocomplete="off" placeholder="예: 알리나">
+  <label>팀 (team)</label>
+  <input class="f" id="fTeam" autocomplete="off" placeholder="예: 가공 생산(Produccion maquinado)">
+  <div class="rowf">
+    <div><label>공장</label>
+      <select class="f" id="fFac"><option value="1">1공장</option><option value="2">2공장</option></select></div>
+    <div><label>입사일</label><input class="f" id="fHire" type="date"></div>
+  </div>
+  <div class="chkrow"><input type="checkbox" id="fActive" checked><label style="margin:0;color:#e2e8f0">활성 (active) — 체크 해제 시 비활성 처리</label></div>
+  <div class="modal-actions"><button class="btn gray" id="cancelBtn">취소</button><button class="btn ok" id="saveBtn">저장</button></div>
+  <div class="fmsg" id="fMsg"></div>
+</div></div>
+
+<div class="toast" id="toast">저장됨</div>
+
+<script>
+const CONFIG = {
+  SUPABASE_URL:"https://lrjurjhavlalhlwaplxd.supabase.co",
+  SUPABASE_ANON:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxyanVyamhhdmxhbGhsd2FwbHhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNzUxNDAsImV4cCI6MjA5NTY1MTE0MH0.DVFmZaT37R9CXSMHdnLx4YAVNTnlBGijkOIaoUo7Qsk",
+  T_EMPLOYEES:"att_employees",
+  ADMIN_PW:"yura2026"   // ← 담당자 비밀번호. 운영 전 반드시 변경하세요.
+};
+const $ = id => document.getElementById(id);
+const REST = p => CONFIG.SUPABASE_URL+"/rest/v1/"+p;
+const H = {"apikey":CONFIG.SUPABASE_ANON,"Authorization":"Bearer "+CONFIG.SUPABASE_ANON,"Content-Type":"application/json"};
+let all=[], editingId=null;
+
+/* 로그인 */
+$("pwBtn").onclick=tryLogin;
+$("pw").addEventListener("keydown",e=>{ if(e.key==="Enter") tryLogin(); });
+function tryLogin(){
+  if($("pw").value===CONFIG.ADMIN_PW){ sessionStorage.setItem("yura_emp_admin","1"); enter(); }
+  else { $("pwMsg").textContent="비밀번호가 올바르지 않습니다"; }
+}
+function enter(){ $("login").style.display="none"; $("area").style.display="block"; $("reloadBtn").style.display=""; load(); }
+$("reloadBtn").onclick=load;
+if(sessionStorage.getItem("yura_emp_admin")==="1") enter();
+
+/* 로드 */
+async function load(){
+  $("list").innerHTML=`<div class="empty">불러오는 중…</div>`;
+  try{
+    const r=await fetch(REST(`${CONFIG.T_EMPLOYEES}?select=employee_id,name,name_ko,team,factory,hire_date,active&order=name.asc&limit=2000`),{headers:H});
+    all=await r.json(); if(!Array.isArray(all)) all=[];
+    render();
+  }catch(e){ $("list").innerHTML=`<div class="empty">통신 오류</div>`; }
+}
+
+$("q").addEventListener("input", render);
+function render(){
+  const q=$("q").value.trim().toLowerCase();
+  let rows=all;
+  if(q) rows=all.filter(e=> (e.employee_id||"").toLowerCase().includes(q) || (e.name||"").toLowerCase().includes(q) || (e.name_ko||"").toLowerCase().includes(q) || (e.team||"").toLowerCase().includes(q));
+  $("cnt").textContent=rows.length+"명";
+  if(rows.length===0){ $("list").innerHTML=`<div class="empty">결과 없음</div>`; return; }
+  $("list").innerHTML=rows.slice(0,500).map(e=>{
+    const act = e.active!==false ? `<span class="pill on" data-id="${esc(e.employee_id)}">활성</span>` : `<span class="pill off" data-id="${esc(e.employee_id)}">비활성</span>`;
+    return `<div class="trow">
+      <div class="c-id">${esc(e.employee_id)}</div>
+      <div class="c-es">${esc(e.name||"")}</div>
+      <div class="c-ko">${esc(e.name_ko||"")}</div>
+      <div class="c-team">${esc(e.team||"")}</div>
+      <div class="c-fac">${esc(e.factory||"")}</div>
+      <div class="c-act">${act}</div>
+      <div class="c-btn"><button class="btn gray sm" data-edit="${esc(e.employee_id)}">수정</button><button class="btn red sm" data-del="${esc(e.employee_id)}">삭제</button></div>
+    </div>`;
+  }).join("") + (rows.length>500?`<div class="empty">… 외 ${rows.length-500}명 (검색으로 좁혀주세요)</div>`:"");
+  $("list").querySelectorAll("[data-edit]").forEach(b=>b.onclick=()=>openEdit(b.dataset.edit));
+  $("list").querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>delEmp(b.dataset.del));
+  $("list").querySelectorAll(".pill").forEach(b=>b.onclick=()=>toggleActive(b.dataset.id));
+}
+
+/* 추가/수정 모달 */
+$("addBtn").onclick=()=>openAdd();
+$("cancelBtn").onclick=()=>$("modal").classList.remove("show");
+function openAdd(){
+  editingId=null; $("modalTitle").textContent="직원 추가"; $("fMsg").textContent="";
+  $("fId").value=""; $("fId").disabled=false; $("fName").value=""; $("fKo").value=""; $("fTeam").value=""; $("fFac").value="1"; $("fHire").value=""; $("fActive").checked=true;
+  $("modal").classList.add("show"); setTimeout(()=>$("fId").focus(),120);
+}
+function openEdit(id){
+  const e=all.find(x=>x.employee_id===id); if(!e) return;
+  editingId=id; $("modalTitle").textContent="직원 수정"; $("fMsg").textContent="";
+  $("fId").value=e.employee_id; $("fId").disabled=true; // 사번(키)은 수정 불가
+  $("fName").value=e.name||""; $("fKo").value=e.name_ko||""; $("fTeam").value=e.team||"";
+  $("fFac").value=e.factory||"1"; $("fHire").value=e.hire_date||""; $("fActive").checked=e.active!==false;
+  $("modal").classList.add("show");
+}
+
+$("saveBtn").onclick=save;
+async function save(){
+  $("fMsg").textContent="";
+  const id=$("fId").value.trim(), name=$("fName").value.trim();
+  if(!id){ $("fMsg").textContent="사번을 입력하세요"; return; }
+  if(!name){ $("fMsg").textContent="스페인 이름을 입력하세요"; return; }
+  const payload={ name, name_ko:$("fKo").value.trim()||null, team:$("fTeam").value.trim()||null, factory:$("fFac").value, active:$("fActive").checked };
+  const hire=$("fHire").value; if(hire) payload.hire_date=hire;
+  $("saveBtn").disabled=true; $("saveBtn").textContent="저장 중…";
+  try{
+    let r;
+    if(editingId){
+      r=await fetch(REST(`${CONFIG.T_EMPLOYEES}?employee_id=eq.${encodeURIComponent(editingId)}`),{method:"PATCH",headers:{...H,"Prefer":"return=minimal"},body:JSON.stringify(payload)});
+    } else {
+      payload.employee_id=id;
+      r=await fetch(REST(CONFIG.T_EMPLOYEES),{method:"POST",headers:{...H,"Prefer":"return=minimal"},body:JSON.stringify(payload)});
+    }
+    if(!r.ok){
+      const txt=await r.text();
+      if(r.status===409 || /duplicate/i.test(txt)){ $("fMsg").textContent="이미 존재하는 사번입니다"; }
+      else { console.error(txt); $("fMsg").textContent="저장 실패 ("+r.status+")"; }
+      $("saveBtn").disabled=false; $("saveBtn").textContent="저장"; return;
+    }
+    $("modal").classList.remove("show"); toast(editingId?"수정되었습니다":"추가되었습니다"); await load();
+  }catch(e){ $("fMsg").textContent="통신 오류"; }
+  finally{ $("saveBtn").disabled=false; $("saveBtn").textContent="저장"; }
+}
+
+async function toggleActive(id){
+  const e=all.find(x=>x.employee_id===id); if(!e) return;
+  const next=!(e.active!==false);
+  try{
+    const r=await fetch(REST(`${CONFIG.T_EMPLOYEES}?employee_id=eq.${encodeURIComponent(id)}`),{method:"PATCH",headers:{...H,"Prefer":"return=minimal"},body:JSON.stringify({active:next})});
+    if(!r.ok){ toast("변경 실패"); return; }
+    e.active=next; render(); toast(next?"활성 처리":"비활성 처리");
+  }catch(e){ toast("통신 오류"); }
+}
+
+async function delEmp(id){
+  if(!confirm(`사번 ${id} 직원을 완전히 삭제할까요?\n(비활성 처리만 원하면 상태 토글을 사용하세요)`)) return;
+  try{
+    const r=await fetch(REST(`${CONFIG.T_EMPLOYEES}?employee_id=eq.${encodeURIComponent(id)}`),{method:"DELETE",headers:{...H,"Prefer":"return=minimal"}});
+    if(!r.ok){ toast("삭제 실패"); return; }
+    toast("삭제됨"); await load();
+  }catch(e){ toast("통신 오류"); }
+}
+
+function esc(s){ return (s||"").toString().replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c])); }
+let toastTimer;
+function toast(msg){ $("toast").textContent=msg; $("toast").classList.add("show"); clearTimeout(toastTimer); toastTimer=setTimeout(()=>$("toast").classList.remove("show"),2200); }
+</script>
+</body>
+</html>
