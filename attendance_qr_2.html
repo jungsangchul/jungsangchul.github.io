@@ -127,7 +127,12 @@ const CONFIG = {
 
   // 근무 장소: 좌표/반경 + 근태 인정시각  (공장 / 도서관)
   FACTORIES: {
-    "2": { ko:"2공장", es:"Planta 2", lat:25.523788, lng:-103.372426, radius:1000, inBy:"07:20", outBy:"16:20" }   // Torreón · Parque Industrial Lajat (Google Maps 확인 좌표)
+    "2": { ko:"2공장", es:"Planta 2", inBy:"07:20", outBy:"16:20",
+      // 출근 스캔 허용 위치 (여러 곳 중 한 곳 반경 안이면 통과)
+      sites:[
+        { name:"Parque Industrial Lajat",  lat:25.523788,   lng:-103.372426,  radius:1000 },  // Torreón (Google Maps 확인 좌표)
+        { name:"Yura Corporation Mexico",  lat:25.4718464,  lng:-103.3606391, radius:1000 }   // Gómez Palacio 신규 위치 (2026-07 추가)
+      ] }
   },
 
   // 특정일 출근 인정시각 예외 (YYYY-MM-DD: "HH:MM") — 해당 날짜에만 적용, 지나면 자동으로 평소 inBy로 복귀
@@ -305,9 +310,15 @@ async function doPunch(){
     if(pos){
       lat=pos.coords.latitude; lng=pos.coords.longitude;
       const acc=pos.coords.accuracy||0;
-      const dist=haversine(lat,lng,factory.lat,factory.lng);
-      // 측정 오차(acc)를 감안해 경계 근처 오인 거부 방지
-      if(dist-acc>factory.radius){ reject(t("locOutT"), t("locOutM")(Math.round(dist)), true); return; }
+      // 허용 위치 목록(sites) 중 한 곳이라도 반경 안이면 통과. 측정 오차(acc)를 감안해 경계 근처 오인 거부 방지
+      const sites = factory.sites || [{lat:factory.lat,lng:factory.lng,radius:factory.radius}];
+      let inside=false, nearest=Infinity;
+      for(const s of sites){
+        const d=haversine(lat,lng,s.lat,s.lng);
+        if(d<nearest) nearest=d;
+        if(d-acc<=s.radius){ inside=true; break; }
+      }
+      if(!inside){ reject(t("locOutT"), t("locOutM")(Math.round(nearest)), true); return; }
     }
   }
   if(CONFIG.REQUIRE_PHOTO){

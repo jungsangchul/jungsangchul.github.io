@@ -289,6 +289,14 @@
     <div class="updated" id="updated">—</div>
   </header>
 
+  <div class="tabs">
+    <button class="tab active" data-tab="att" onclick="setTab('att')" id="tAtt">출석 현황</button>
+    <button class="tab" data-tab="absent" onclick="setTab('absent')" id="tAbsent">미출근</button>
+    <button class="tab" data-tab="noout" onclick="setTab('noout')" id="tNoout">퇴근 미타각</button>
+    <button class="tab" data-tab="early" onclick="setTab('early')" id="tEarly">조퇴</button>
+    <button class="tab" data-tab="meal" onclick="setTab('meal')" id="tMeal">식사 신청</button>
+  </div>
+
   <section class="kpis">
     <div class="kpi slate">
       <div class="kpi-top"><span class="kpi-ic"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span><span class="l" id="kl0">재직 총원</span></div>
@@ -319,14 +327,6 @@
       <div class="kpi-bot"><span class="v" id="kMeal">–</span><span class="unit"></span><span class="kpi-rate" id="rMeal" style="display:none"></span></div>
     </div>
   </section>
-
-  <div class="tabs">
-    <button class="tab active" data-tab="att" onclick="setTab('att')" id="tAtt">출석 현황</button>
-    <button class="tab" data-tab="absent" onclick="setTab('absent')" id="tAbsent">미출근</button>
-    <button class="tab" data-tab="noout" onclick="setTab('noout')" id="tNoout">퇴근 미타각</button>
-    <button class="tab" data-tab="early" onclick="setTab('early')" id="tEarly">조퇴</button>
-    <button class="tab" data-tab="meal" onclick="setTab('meal')" id="tMeal">식사 신청</button>
-  </div>
 
   <div class="card">
     <div class="head"><h3 id="barTitle">공장별 인원</h3></div>
