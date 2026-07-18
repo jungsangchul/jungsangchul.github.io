@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>금형 지정장소 라벨 출력</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'맑은 고딕','Malgun Gothic',sans-serif; background:#f0f2f5; color:#222; }
+
+  .topbar { background:#1a2e4a; color:#fff; padding:12px 20px; display:flex; align-items:center; gap:14px; }
+  .topbar h1 { font-size:18px; font-weight:700; }
+  .topbar .ver { font-size:11px; color:#c9a227; }
+  .upzone { margin-left:auto; display:flex; gap:8px; }
+  .upbtn { padding:8px 14px; font-size:13px; font-weight:700; background:#c9a227; color:#fff; border:none; border-radius:6px; cursor:pointer; }
+  .upbtn:hover { background:#b08e1f; }
+  .upbtn.gray { background:#4a5a72; }
+  .upbtn.gray:hover { background:#3a4a62; }
+  .upbtn.dl { background:#1565c0; }
+  .upbtn.dl:hover { background:#0f4c92; }
+  .upbtn.lang { background:#2e7d32; }
+  .upbtn.lang:hover { background:#1f5e23; }
+
+  /* 서버 연결 잠금 오버레이 */
+  #lockOverlay { position:fixed; inset:0; background:rgba(20,30,50,.72); z-index:999; display:none; align-items:center; justify-content:center; }
+  .lockbox { background:#fff; border-radius:10px; padding:28px 34px; text-align:center; max-width:420px; box-shadow:0 8px 30px rgba(0,0,0,.35); font-size:15px; line-height:1.6; }
+  .lockbox .spin { width:36px; height:36px; margin:0 auto 14px; border:4px solid #e0e0e0; border-top-color:#1a2e4a; border-radius:50%; animation:sp 1s linear infinite; }
+  @keyframes sp { to { transform:rotate(360deg); } }
+  .lockbox button { margin-top:16px; padding:10px 24px; font-size:15px; font-weight:700; background:#1a2e4a; color:#fff; border:none; border-radius:6px; cursor:pointer; }
+  @media print { #lockOverlay { display:none !important; } }
+
+  /* 붙여넣기 모달 */
+  #pasteModal { position:fixed; inset:0; background:rgba(20,30,50,.6); z-index:900; display:none; align-items:center; justify-content:center; }
+  .pastebox { background:#fff; border-radius:10px; width:min(720px, 94vw); max-height:88vh; display:flex; flex-direction:column; padding:16px 18px; box-shadow:0 8px 30px rgba(0,0,0,.35); }
+  .pastebox .ph { display:flex; align-items:center; margin-bottom:8px; }
+  .pastebox h3 { font-size:16px; }
+  .pclose { margin-left:auto; background:none; border:none; font-size:18px; cursor:pointer; color:#888; }
+  .pguide { font-size:12px; color:#666; background:#f5f7fa; border-radius:6px; padding:8px 10px; margin-bottom:8px; line-height:1.6; }
+  #pasteArea { width:100%; height:160px; font-family:Consolas,monospace; font-size:12px; border:2px solid #1a2e4a; border-radius:6px; padding:8px; resize:vertical; }
+  #pasteArea:focus { outline:none; border-color:#c9a227; }
+  .ppv { font-size:12px; margin:8px 0; max-height:170px; overflow:auto; }
+  .ppv table { border-collapse:collapse; width:100%; }
+  .ppv th, .ppv td { border:1px solid #ddd; padding:3px 6px; text-align:center; font-family:Consolas,monospace; }
+  .ppv th { background:#1a2e4a; color:#fff; font-family:'맑은 고딕',sans-serif; }
+  .ppv .ok { color:#1e7e34; font-weight:700; }
+  .ppv .err { color:#c62828; font-weight:700; white-space:pre-line; }
+  .pbtns { display:flex; gap:8px; justify-content:flex-end; }
+  .pbtns button { padding:10px 20px; font-size:14px; font-weight:700; border:none; border-radius:6px; cursor:pointer; }
+  .pbtns button:disabled { opacity:.4; cursor:not-allowed; }
+  @media print { #pasteModal { display:none !important; } }
+
+  /* 반영 방식 선택 모달 */
+  #modeModal { position:fixed; inset:0; background:rgba(20,30,50,.6); z-index:950; display:none; align-items:center; justify-content:center; }
+  .modebox { background:#fff; border-radius:10px; width:min(440px,92vw); padding:20px 22px; box-shadow:0 8px 30px rgba(0,0,0,.35); display:flex; flex-direction:column; gap:10px; }
+  .modebox h3 { font-size:16px; text-align:center; }
+  .modedesc { font-size:13px; color:#666; text-align:center; margin-bottom:4px; }
+  .modebox button { border:none; border-radius:8px; cursor:pointer; padding:14px; text-align:left; display:flex; flex-direction:column; gap:4px; }
+  .modebox button b { font-size:15px; }
+  .modebox button span { font-size:12px; opacity:.85; font-weight:400; }
+  .mode-merge { background:#e6f4ea; color:#1e7e34; border:2px solid #1e7e34 !important; }
+  .mode-merge:hover { background:#d4ecd9; }
+  .mode-replace { background:#fdecea; color:#c62828; border:2px solid #c62828 !important; }
+  .mode-replace:hover { background:#fadbd8; }
+  .mode-cancel { background:#e0e0e0; color:#444; text-align:center !important; align-items:center; font-weight:700; }
+  @media print { #modeModal { display:none !important; } }
+
+  .wrap { display:flex; gap:14px; padding:14px; align-items:flex-start; }
+  .panel { background:#fff; border-radius:8px; box-shadow:0 1px 4px rgba(0,0,0,.12); }
+
+  /* 좌측: 입력부 */
+  .left { flex:1.2; min-width:420px; }
+  .tabs { display:flex; border-bottom:2px solid #1a2e4a; }
+  .tab { flex:1; padding:12px; text-align:center; font-weight:700; cursor:pointer; background:#e8ebf0; color:#555; border-radius:8px 8px 0 0; font-size:15px; }
+  .tab.on { background:#1a2e4a; color:#fff; }
+  .tabbody { padding:14px; }
+
+  .scanbox { display:flex; gap:8px; }
+  .scanbox input { flex:1; padding:14px; font-size:20px; border:3px solid #1a2e4a; border-radius:6px; font-family:Consolas,monospace; }
+  .scanbox input:focus { outline:none; border-color:#c9a227; }
+  .scanbox button { padding:0 22px; font-size:16px; font-weight:700; background:#1a2e4a; color:#fff; border:none; border-radius:6px; cursor:pointer; }
+  .scanmsg { margin-top:10px; padding:10px 12px; border-radius:6px; font-size:14px; display:none; }
+  .scanmsg.ok { display:block; background:#e6f4ea; color:#1e7e34; border:1px solid #b7dfc2; }
+  .scanmsg.err { display:block; background:#fdecea; color:#c62828; border:1px solid #f5c6c3; }
+  .hint { margin-top:10px; font-size:12px; color:#888; }
+
+  .searchrow { display:flex; gap:8px; margin-bottom:10px; }
+  .searchrow input { flex:1; padding:10px; font-size:15px; border:2px solid #ccc; border-radius:6px; }
+  .searchrow input:focus { outline:none; border-color:#1a2e4a; }
+  .listtbl-wrap { max-height:520px; overflow-y:auto; border:1px solid #ddd; border-radius:6px; }
+  table.listtbl { width:100%; border-collapse:collapse; font-size:13px; }
+  table.listtbl th { position:sticky; top:0; background:#1a2e4a; color:#fff; padding:8px 6px; font-size:12px; z-index:1; }
+  table.listtbl td { padding:6px; border-bottom:1px solid #eee; text-align:center; font-family:Consolas,monospace; }
+  table.listtbl td.kr { font-family:'맑은 고딕',sans-serif; }
+  table.listtbl tr:hover { background:#f5f7fa; cursor:pointer; }
+  table.listtbl tr.sel { background:#fff6dd; }
+  .listactions { display:flex; gap:8px; margin-top:10px; align-items:center; }
+  .listactions button { padding:9px 16px; font-size:14px; font-weight:700; border:none; border-radius:6px; cursor:pointer; }
+  .btn-add { background:#1a2e4a; color:#fff; }
+  .btn-gray { background:#e0e0e0; color:#444; }
+  .selcount { font-size:13px; color:#666; margin-left:auto; }
+
+  /* 우측: 출력 대기 */
+  .right { flex:1; min-width:380px; }
+  .right .head { padding:12px 14px; border-bottom:2px solid #1a2e4a; display:flex; align-items:center; gap:10px; }
+  .right .head h2 { font-size:16px; }
+  .right .head .cnt { background:#c9a227; color:#fff; border-radius:12px; padding:2px 10px; font-size:13px; font-weight:700; }
+  .right .head button { margin-left:auto; }
+  .qbody { padding:12px 14px; max-height:420px; overflow-y:auto; }
+  .qitem { display:flex; align-items:center; gap:10px; border:1px solid #ddd; border-radius:6px; padding:8px 10px; margin-bottom:8px; }
+  .qitem .lab { flex:1; }
+  .qitem .lab .l1 { font-size:17px; font-weight:800; }
+  .qitem .lab .l2 { font-size:13px; color:#555; font-family:Consolas,monospace; }
+  .qitem .qty { width:52px; padding:5px; text-align:center; border:1px solid #ccc; border-radius:4px; font-size:14px; }
+  .qitem .del { background:#fdecea; color:#c62828; border:none; border-radius:4px; padding:6px 10px; cursor:pointer; font-weight:700; }
+  .qempty { text-align:center; color:#aaa; padding:30px 0; font-size:14px; }
+
+  .printopts { padding:12px 14px; border-top:1px solid #eee; display:flex; flex-direction:column; gap:6px; font-size:13px; }
+  .printopts select, .printopts input[type=number] { padding:6px; border:1px solid #ccc; border-radius:4px; font-size:13px; width:100%; }
+  .optgrid { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
+  .optgrid label { display:flex; flex-direction:column; gap:3px; font-size:12px; font-weight:700; color:#444; }
+  .optgrid .unit { font-weight:400; color:#999; }
+  .pv-title { margin-top:8px; font-size:12px; font-weight:700; color:#666; }
+  .pv-wrap { border:1px dashed #bbb; border-radius:6px; background:#fafafa; padding:8px; overflow:auto; max-height:230px; display:flex; justify-content:center; }
+  .printbtn { display:block; width:calc(100% - 28px); margin:0 14px 14px; padding:14px; font-size:17px; font-weight:800; background:#c9a227; color:#fff; border:none; border-radius:6px; cursor:pointer; }
+  .printbtn:hover { background:#b08e1f; }
+
+  /* ===== 인쇄 영역 (LETTER) ===== */
+  #printArea { display:none; }
+  @media print {
+    body * { visibility:hidden; }
+    body { background:#fff; }
+    #printArea, #printArea * { visibility:visible; }
+    #printArea { display:block; position:absolute; left:0; top:0; width:100%; }
+    @page { size: letter; margin: 10mm; }
+  }
+  .sheet-flow { display:flex; flex-wrap:wrap; gap:4mm; align-content:flex-start; }
+  .plabel {
+    border:1.5pt solid #000; box-sizing:border-box; background:#fff;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    text-align:center; page-break-inside:avoid; break-inside:avoid;
+    padding:2mm; overflow:hidden; flex:none;
+  }
+  .plabel .pl1 { line-height:1.05; white-space:nowrap; }
+  .plabel .pl2 { font-family:'맑은 고딕',sans-serif; line-height:1.2; margin-top:1.5mm; white-space:nowrap; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <h1 data-i18n="title">🏷️ 금형 지정장소 라벨 출력</h1>
+  <span class="ver">v2.6 · LETTER · <span id="dataSrc">-</span> · <span data-i18n="total">총</span> <span id="totalCnt">-</span></span>
+  <div class="upzone">
+    <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" style="display:none" onchange="handleFile(this.files[0]); this.value='';">
+    <button class="upbtn" data-i18n="btnUpload" onclick="document.getElementById('fileInput').click()">📂 리스트 업로드</button>
+    <button class="upbtn" data-i18n="btnPaste" onclick="openPaste()">📋 붙여넣기 입력</button>
+    <button class="upbtn gray" data-i18n="btnRefresh" onclick="loadFromServer()">↻ 새로고침</button>
+    <button class="upbtn dl" data-i18n="btnDownload" onclick="downloadExcel()">⬇ 엑셀 다운로드</button>
+    <button class="upbtn lang" id="langBtn" onclick="toggleLang()">🌐 Español</button>
+  </div>
+</div>
+
+<div class="wrap">
+  <!-- 좌측 -->
+  <div class="panel left">
+    <div class="tabs">
+      <div class="tab on" id="tabScan" data-i18n="tabScan" onclick="showTab('scan')">① 바코드 스캔</div>
+      <div class="tab" id="tabList" data-i18n="tabList" onclick="showTab('list')">② 금형 리스트 선택</div>
+    </div>
+
+    <div class="tabbody" id="bodyScan">
+      <div class="scanbox">
+        <input type="text" id="scanInput" data-i18n-ph="scanPh" placeholder="바코드 스캔 ($267030061)" autocomplete="off">
+        <button data-i18n="btnAdd" onclick="doScan()">추가</button>
+      </div>
+      <div class="scanmsg" id="scanMsg"></div>
+      <div class="hint" data-i18n-html="scanHint"></div>
+    </div>
+
+    <div class="tabbody" id="bodyList" style="display:none">
+      <div class="searchrow">
+        <input type="text" id="searchInput" data-i18n-ph="searchPh" placeholder="검색" oninput="renderList()">
+      </div>
+      <div class="listtbl-wrap">
+        <table class="listtbl">
+          <thead><tr>
+            <th style="width:34px"><input type="checkbox" id="chkAll" onclick="toggleAll(this)"></th>
+            <th data-i18n-html="thBc">바코드</th><th data-i18n-html="thCode">금형코드</th><th data-i18n-html="thNo">관리<br>번호</th><th data-i18n-html="thStore">보관<br>장소</th><th data-i18n-html="thLoc">지정<br>장소</th>
+          </tr></thead>
+          <tbody id="listBody"></tbody>
+        </table>
+      </div>
+      <div class="listactions">
+        <button class="btn-add" data-i18n="btnAddSel" onclick="addSelected()">✔ 선택 항목 추가</button>
+        <button class="btn-gray" data-i18n="btnClearSel" onclick="clearSel()">선택 해제</button>
+        <span class="selcount" id="selCount"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 우측 -->
+  <div class="panel right">
+    <div class="head">
+      <h2 data-i18n="queueTitle">🖨️ 출력 대기 목록</h2>
+      <span class="cnt" id="queueCnt">0</span>
+      <button class="btn-gray" style="padding:6px 12px;border:none;border-radius:5px;cursor:pointer;font-weight:700" data-i18n="btnClearAll" onclick="clearQueue()">전체 삭제</button>
+    </div>
+    <div class="qbody" id="queueBody"></div>
+    <div class="printopts">
+      <div class="optgrid">
+        <label><span data-i18n="optPresetLbl">프리셋</span>
+          <select id="optPreset" onchange="applyPreset()">
+            <option value="" data-i18n="presetCustom">직접 설정</option>
+            <option value="95,48,42,13" selected data-i18n="presetM">보통 (2열×5행/장)</option>
+            <option value="95,60,52,15" data-i18n="presetL">크게 (2열×4행/장)</option>
+            <option value="63,35,28,10" data-i18n="presetS">작게 (3열×7행/장)</option>
+            <option value="196,62,80,22" data-i18n="presetXL">특대 (1열×4행/장)</option>
+          </select>
+        </label>
+        <label><span data-i18n="optW">네모 가로</span> <span class="unit">(mm)</span>
+          <input type="number" id="optW" min="20" max="196" step="1" value="95" onchange="optChanged()">
+        </label>
+        <label><span data-i18n="optH">네모 세로</span> <span class="unit">(mm)</span>
+          <input type="number" id="optH" min="10" max="259" step="1" value="48" onchange="optChanged()">
+        </label>
+        <label><span data-i18n="optBorder">테두리 굵기</span> <span class="unit">(pt)</span>
+          <input type="number" id="optBorder" min="0" max="6" step="0.5" value="1.5" onchange="optChanged()">
+        </label>
+        <label><span data-i18n="optF1">지정장소 크기</span> <span class="unit">(pt)</span>
+          <input type="number" id="optF1" min="8" max="200" step="1" value="42" onchange="optChanged()">
+        </label>
+        <label><span data-i18n="optB1">지정장소 굵기</span>
+          <select id="optB1" onchange="optChanged()">
+            <option value="400" data-i18n="wNormal">보통</option>
+            <option value="700" data-i18n="wBold">굵게</option>
+            <option value="900" selected data-i18n="wXBold">매우 굵게</option>
+          </select>
+        </label>
+        <label><span data-i18n="optF2">금형코드 크기</span> <span class="unit">(pt)</span>
+          <input type="number" id="optF2" min="6" max="120" step="1" value="13" onchange="optChanged()">
+        </label>
+        <label><span data-i18n="optB2">금형코드 굵기</span>
+          <select id="optB2" onchange="optChanged()">
+            <option value="400" data-i18n="wNormal">보통</option>
+            <option value="600" selected data-i18n="wBold">굵게</option>
+            <option value="900" data-i18n="wXBold">매우 굵게</option>
+          </select>
+        </label>
+      </div>
+      <label style="margin-top:4px"><input type="checkbox" id="optStore" onchange="optChanged()"> <span data-i18n="optStore">보관장소 표시</span></label>
+      <div class="pv-title" data-i18n="pvTitle">미리보기 (실제 크기)</div>
+      <div class="pv-wrap"><div id="pvBox"></div></div>
+    </div>
+    <button class="printbtn" data-i18n="btnPrint" onclick="doPrint()">🖨️ 인쇄 (LETTER)</button>
+  </div>
+</div>
+
+<!-- 붙여넣기 입력 모달 -->
+<div id="pasteModal">
+  <div class="pastebox">
+    <div class="ph">
+      <h3 data-i18n="pasteTitle">📋 데이터 붙여넣기 (서버 반영)</h3>
+      <button class="pclose" onclick="closePaste()">✕</button>
+    </div>
+    <div class="pguide" data-i18n-html="pasteGuide"></div>
+    <textarea id="pasteArea" data-i18n-ph="pastePh" placeholder="여기에 붙여넣기 (Ctrl+V)" oninput="previewPaste()"></textarea>
+    <div id="pastePreview" class="ppv"></div>
+    <div class="pbtns">
+      <button class="btn-gray" data-i18n="btnCancel" onclick="closePaste()">취소</button>
+      <button class="btn-add" id="pasteApplyBtn" data-i18n="btnApply" onclick="applyPaste()" disabled>✔ 서버 반영</button>
+    </div>
+  </div>
+</div>
+
+<!-- 반영 방식 선택 모달 -->
+<div id="modeModal">
+  <div class="modebox">
+    <h3 data-i18n="modeTitle">서버 반영 방식 선택</h3>
+    <div class="modedesc" id="modeDesc"></div>
+    <button class="mode-merge" onclick="doMerge()">
+      <b data-i18n="modeMergeB">➕ 추가 / 수정</b>
+      <span data-i18n="modeMergeS">기존 데이터 유지 · 같은 바코드는 수정, 새 바코드는 추가</span>
+    </button>
+    <button class="mode-replace" onclick="doReplace()">
+      <b data-i18n="modeReplaceB">🔄 전체 교체</b>
+      <span data-i18n="modeReplaceS">서버의 기존 데이터를 모두 지우고 새 리스트로 대체</span>
+    </button>
+    <button class="mode-cancel" data-i18n="btnCancel" onclick="closeMode()">취소</button>
+  </div>
+</div>
+
+<div id="lockOverlay">
+  <div class="lockbox">
+    <div class="spin"></div>
+    <div id="lockMsg" style="white-space:pre-line"></div>
+    <button data-i18n="btnRetry" onclick="loadFromServer()">다시 시도</button>
+  </div>
+</div>
+
+<div id="printArea"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+/* ================= 한국어/스페인어 (KO/ES) ================= */
+const I18N = {
+ko: {
+  title:'🏷️ 금형 지정장소 라벨 출력', total:'총', btnUpload:'📂 리스트 업로드', btnPaste:'📋 붙여넣기 입력', btnRefresh:'↻ 새로고침',
+  langBtn:'🌐 Español',
+  tabScan:'① 바코드 스캔', tabList:'② 금형 리스트 선택',
+  scanPh:'바코드 스캔 ($267030061)', btnAdd:'추가',
+  scanHint:'· 스캐너로 금형 바코드를 찍으면 자동으로 출력 목록에 추가됩니다. ( $ 유무 무관 )<br>· 같은 금형을 다시 스캔하면 수량이 +1 됩니다.',
+  scanAdded:'✔ 추가됨: ', scanUnknown:'❌ 등록되지 않은 바코드: ',
+  searchPh:'검색: 금형코드 / 바코드 / 지정장소 / 관리번호',
+  thBc:'바코드', thCode:'금형코드', thNo:'관리<br>번호', thStore:'보관<br>장소', thLoc:'지정<br>장소',
+  btnAddSel:'✔ 선택 항목 추가', btnClearSel:'선택 해제', selCount:n=>`선택 ${n}건`, noSel:'선택된 항목이 없습니다.',
+  queueTitle:'🖨️ 출력 대기 목록', btnClearAll:'전체 삭제', qEmpty:'스캔하거나 리스트에서 선택하세요',
+  confirmClearQ:'출력 대기 목록을 모두 삭제할까요?',
+  optPresetLbl:'프리셋', presetCustom:'직접 설정', presetM:'보통 (2열×5행/장)', presetL:'크게 (2열×4행/장)', presetS:'작게 (3열×7행/장)', presetXL:'특대 (1열×4행/장)',
+  optW:'네모 가로', optH:'네모 세로', optBorder:'테두리 굵기', optF1:'지정장소 크기', optB1:'지정장소 굵기', optF2:'금형코드 크기', optB2:'금형코드 굵기',
+  wNormal:'보통', wBold:'굵게', wXBold:'매우 굵게', optStore:'보관장소 표시', pvTitle:'미리보기 (실제 크기)',
+  btnPrint:'🖨️ 인쇄 (LETTER)', noLabels:'출력할 라벨이 없습니다.', sizeOver:'라벨 크기가 LETTER 인쇄영역(196×259mm)을 초과합니다.',
+  connecting:'서버에서 금형 리스트를 불러오는 중...', srcLabel:t=>`Supabase (${t} 기준)`,
+  emptyServer:'서버에 등록된 금형이 없습니다. 리스트 업로드로 데이터를 등록해 주세요.',
+  connFail:m=>`⚠ 서버 연결 실패: ${m}\n네트워크 확인 후 [다시 시도]를 눌러 주세요.`,
+  btnRetry:'다시 시도',
+  confirmSync:(name,n)=>`서버의 금형 리스트를 전체 교체합니다.\n\n출처: ${name}\n건수: ${n}건\n\n계속할까요?`,
+  syncing:n=>`서버에 업로드 중... (${n}건)`, syncDone:n=>`✔ 서버 반영 완료: ${n}건`,
+  syncErr:m=>`⚠ 서버 반영 중 오류: ${m}\n[다시 시도]를 눌러 현재 서버 상태를 다시 불러오세요.`,
+  delFail:'삭제 실패', insFail:'삽입 실패',
+  xlsxLibFail:'엑셀 파싱 라이브러리(XLSX)를 불러오지 못했습니다.\n인터넷 연결을 확인하거나 CSV 파일로 업로드해 주세요.',
+  xlsxReadErr:m=>'엑셀 파일을 읽는 중 오류가 발생했습니다: '+m, csvReadErr:m=>'CSV 파일을 읽는 중 오류: '+m,
+  errNoHeader:"헤더를 찾을 수 없습니다. '금형바코드'와 '지정장소' 열이 필요합니다.", errNoRows:'데이터 행이 없습니다.',
+  errNoPaste:'붙여넣은 데이터가 없습니다.', errNoLocCol:'지정장소 열을 찾을 수 없습니다. 6개 열(바코드~지정장소)을 함께 복사해 주세요.',
+  pasteTitle:'📋 데이터 붙여넣기 (서버 반영)',
+  pasteGuide:'엑셀에서 범위를 복사(Ctrl+C)한 뒤 아래에 붙여넣기(Ctrl+V) 하세요.<br>· 헤더 행(금형바코드/금형코드/…)이 <b>있으면</b> 열 이름으로 자동 인식합니다.<br>· 헤더가 <b>없으면</b> 열 순서를 <b>금형바코드 · 금형코드 · 관리번호 · 금형명 · 보관장소 · 지정장소</b> 로 간주합니다.',
+  pastePh:'여기에 붙여넣기 (Ctrl+V)', btnCancel:'취소', btnApply:'✔ 서버 반영',
+  pasteOk:n=>`✔ ${n}건 인식됨 (아래는 앞 5건 미리보기)`,
+  pvTh:['바코드','금형코드','관리번호','금형명','보관장소','지정장소'],
+  pasteSrc:n=>`붙여넣기 입력 (${n}건)`,
+  dupFound:'❌ 중복 데이터가 있어 서버에 반영할 수 없습니다.\n원본을 수정한 뒤 다시 업로드해 주세요.',
+  dupBc:'· 중복 바코드:', dupCode:'· 중복 금형코드+관리번호:', dupName:'· 중복 금형명+관리번호:',
+  modeTitle:'서버 반영 방식 선택', modeMergeB:'➕ 추가 / 수정', modeMergeS:'기존 데이터 유지 · 같은 바코드는 수정, 새 바코드는 추가',
+  modeReplaceB:'🔄 전체 교체', modeReplaceS:'서버의 기존 데이터를 모두 지우고 새 리스트로 대체',
+  mergeDone:(a,u)=>`✔ 반영 완료\n신규 추가: ${a}건\n기존 수정: ${u}건\n(나머지 기존 데이터는 유지됨)`,
+  btnDownload:'⬇ 엑셀 다운로드', dlEmpty:'다운로드할 데이터가 없습니다.'
+},
+es: {
+  title:'🏷️ Etiquetas de Ubicación de Moldes', total:'Total', btnUpload:'📂 Subir lista de moldes', btnPaste:'📋 Pegar datos', btnRefresh:'↻ Actualizar',
+  langBtn:'🌐 한국어',
+  tabScan:'① Escanear molde', tabList:'② Lista de moldes',
+  scanPh:'Escanee el código del molde ($267030061)', btnAdd:'Agregar',
+  scanHint:'· Escanee el código de barras del molde y se agregará automáticamente a la lista de impresión. (Con o sin $)<br>· Si escanea el mismo molde otra vez, la cantidad aumenta +1.',
+  scanAdded:'✔ Agregado: ', scanUnknown:'❌ Molde no registrado: ',
+  searchPh:'Buscar: código de molde / barcode / ubicación / No. de control',
+  thBc:'Barcode', thCode:'Código<br>molde', thNo:'No.<br>control', thStore:'Alma-<br>cén', thLoc:'Ubica-<br>ción',
+  btnAddSel:'✔ Agregar seleccionados', btnClearSel:'Deseleccionar', selCount:n=>`${n} seleccionado(s)`, noSel:'No hay elementos seleccionados.',
+  queueTitle:'🖨️ Lista de impresión', btnClearAll:'Borrar todo', qEmpty:'Escanee o seleccione un molde de la lista',
+  confirmClearQ:'¿Borrar toda la lista de impresión?',
+  optPresetLbl:'Preajuste', presetCustom:'Personalizado', presetM:'Normal (2col×5fil/hoja)', presetL:'Grande (2col×4fil/hoja)', presetS:'Chico (3col×7fil/hoja)', presetXL:'Extra grande (1col×4fil/hoja)',
+  optW:'Ancho del cuadro', optH:'Alto del cuadro', optBorder:'Grosor del borde', optF1:'Tamaño ubicación', optB1:'Grosor ubicación', optF2:'Tamaño código', optB2:'Grosor código',
+  wNormal:'Normal', wBold:'Negrita', wXBold:'Extra negrita', optStore:'Mostrar almacén', pvTitle:'Vista previa (tamaño real)',
+  btnPrint:'🖨️ Imprimir (CARTA)', noLabels:'No hay etiquetas para imprimir.', sizeOver:'El tamaño de la etiqueta excede el área de impresión CARTA (196×259mm).',
+  connecting:'Cargando la lista de moldes del servidor...', srcLabel:t=>`Supabase (al ${t})`,
+  emptyServer:'No hay moldes registrados en el servidor. Suba una lista para registrar datos.',
+  connFail:m=>`⚠ Error de conexión al servidor: ${m}\nVerifique la red y presione [Reintentar].`,
+  btnRetry:'Reintentar',
+  confirmSync:(name,n)=>`Se reemplazará TODA la lista de moldes del servidor.\n\nOrigen: ${name}\nRegistros: ${n}\n\n¿Continuar?`,
+  syncing:n=>`Subiendo al servidor... (${n} registros)`, syncDone:n=>`✔ Servidor actualizado: ${n} registros`,
+  syncErr:m=>`⚠ Error al actualizar el servidor: ${m}\nPresione [Reintentar] para recargar el estado actual.`,
+  delFail:'Error al borrar', insFail:'Error al insertar',
+  xlsxLibFail:'No se pudo cargar la librería XLSX.\nVerifique la conexión a internet o suba un archivo CSV.',
+  xlsxReadErr:m=>'Error al leer el archivo Excel: '+m, csvReadErr:m=>'Error al leer el archivo CSV: '+m,
+  errNoHeader:"No se encontró el encabezado. Se requieren las columnas '금형바코드' (barcode) y '지정장소' (ubicación).", errNoRows:'No hay filas de datos.',
+  errNoPaste:'No hay datos pegados.', errNoLocCol:'No se encontró la columna de ubicación. Copie las 6 columnas (barcode ~ ubicación).',
+  pasteTitle:'📋 Pegar datos (al servidor)',
+  pasteGuide:'Copie el rango en Excel (Ctrl+C) y péguelo abajo (Ctrl+V).<br>· Si <b>incluye</b> la fila de encabezado, las columnas se reconocen por nombre.<br>· Si <b>no</b> hay encabezado, el orden de columnas se asume: <b>barcode · código de molde · No. control · nombre · almacén · ubicación</b>.',
+  pastePh:'Pegue aquí (Ctrl+V)', btnCancel:'Cancelar', btnApply:'✔ Enviar al servidor',
+  pasteOk:n=>`✔ ${n} registros reconocidos (vista previa de los primeros 5)`,
+  pvTh:['Barcode','Código molde','No. control','Nombre','Almacén','Ubicación'],
+  pasteSrc:n=>`Datos pegados (${n} registros)`,
+  dupFound:'❌ Hay datos duplicados; no se puede actualizar el servidor.\nCorrija el archivo original y vuelva a subirlo.',
+  dupBc:'· Barcode duplicado:', dupCode:'· Código de molde + No. control duplicado:', dupName:'· Nombre de molde + No. control duplicado:',
+  modeTitle:'Seleccione el modo de actualización', modeMergeB:'➕ Agregar / Modificar', modeMergeS:'Mantiene los datos existentes · mismo barcode se modifica, nuevo barcode se agrega',
+  modeReplaceB:'🔄 Reemplazar todo', modeReplaceS:'Borra todos los datos del servidor y los sustituye por la nueva lista',
+  mergeDone:(a,u)=>`✔ Actualización completa\nAgregados: ${a}\nModificados: ${u}\n(El resto de los datos existentes se mantiene)`,
+  btnDownload:'⬇ Descargar Excel', dlEmpty:'No hay datos para descargar.'
+}
+};
+let LANG = 'ko';
+try{ LANG = localStorage.getItem('moldLabelLang') || 'ko'; }catch(e){}
+function T(key){ return (I18N[LANG] && I18N[LANG][key] !== undefined) ? I18N[LANG][key] : I18N.ko[key]; }
+let lastSrcTime = null;
+
+function applyLang(){
+  document.documentElement.lang = LANG;
+  document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = T(el.dataset.i18n); });
+  document.querySelectorAll('[data-i18n-html]').forEach(el => { el.innerHTML = T(el.dataset.i18nHtml); });
+  document.querySelectorAll('[data-i18n-ph]').forEach(el => { el.placeholder = T(el.dataset.i18nPh); });
+  document.getElementById('langBtn').textContent = T('langBtn');
+  document.getElementById('selCount').textContent = T('selCount')(selSet.size);
+  renderQueue();
+  if(lastSrcTime) document.getElementById('dataSrc').textContent = T('srcLabel')(lastSrcTime);
+}
+function toggleLang(){
+  LANG = (LANG === 'ko') ? 'es' : 'ko';
+  try{ localStorage.setItem('moldLabelLang', LANG); }catch(e){}
+  applyLang();
+}
+
+/* ================= Supabase 전용 데이터 계층 ================= */
+const SUPA_URL = 'https://lrjurjhavlalhlwaplxd.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxyanVyamhhdmxhbGhsd2FwbHhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNzUxNDAsImV4cCI6MjA5NTY1MTE0MH0.DVFmZaT37R9CXSMHdnLx4YAVNTnlBGijkOIaoUo7Qsk';
+const TABLE = 'mold_locations';
+const SB_HEADERS = { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY, 'Content-Type': 'application/json' };
+
+let MOLDS = [];
+let byBc = {};
+
+function setData(list, srcLabel){
+  MOLDS = list;
+  byBc = {};
+  MOLDS.forEach(m => { byBc[m.bc.toUpperCase()] = m; });
+  document.getElementById('totalCnt').textContent = MOLDS.length;
+  document.getElementById('dataSrc').textContent = srcLabel;
+  selSet.clear();
+  renderList(); renderPreview();
+}
+
+function showLock(msg){
+  document.getElementById('lockMsg').textContent = msg;
+  document.getElementById('lockOverlay').style.display = 'flex';
+}
+function hideLock(){ document.getElementById('lockOverlay').style.display = 'none'; }
+
+async function sbFetchAll(){
+  const rows = [];
+  const PAGE = 1000;
+  for(let from = 0; ; from += PAGE){
+    const res = await fetch(`${SUPA_URL}/rest/v1/${TABLE}?select=bc,code,mgmt_no,name,store,loc,sort_order&order=sort_order.asc,id.asc&limit=${PAGE}&offset=${from}`, { headers: SB_HEADERS });
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    const chunk = await res.json();
+    chunk.forEach(r => rows.push({ bc:r.bc, code:r.code||'', no:r.mgmt_no||'', name:r.name||'', store:r.store||'', loc:r.loc||'' }));
+    if(chunk.length < PAGE) break;
+  }
+  return rows;
+}
+
+async function loadFromServer(){
+  showLock(T('connecting'));
+  try{
+    const rows = await sbFetchAll();
+    lastSrcTime = new Date().toLocaleTimeString('ko-KR', {hour12:false});
+    setData(rows, T('srcLabel')(lastSrcTime));
+    hideLock();
+    if(rows.length === 0){
+      alert(T('emptyServer'));
+    }
+  }catch(e){
+    showLock(T('connFail')(e.message));
+  }
+}
+window.addEventListener('load', ()=>{ applyLang(); loadFromServer(); });
+
+/* ---------- 리스트 업로드 → 서버 전체 교체 ---------- */
+const HEADER_MAP = {
+  '금형바코드':'bc', 'CODE':'bc', '바코드':'bc',
+  '금형코드':'code', 'TML':'code', '코드':'code',
+  '관리번호':'no',
+  '금형명':'name',
+  '보관장소':'store',
+  '지정장소':'loc', '장소':'loc'
+};
+
+function handleFile(file){
+  if(!file) return;
+  const ext = file.name.split('.').pop().toLowerCase();
+  if(ext === 'csv'){
+    const fr = new FileReader();
+    fr.onload = () => {
+      try{ syncToServer(parseCSV(fr.result), file.name); }
+      catch(e){ alert(e.message.startsWith('❌') ? e.message : T('csvReadErr')(e.message)); }
+    };
+    fr.readAsText(file, 'utf-8');
+  } else {
+    if(typeof XLSX === 'undefined'){
+      alert(T('xlsxLibFail'));
+      return;
+    }
+    const fr = new FileReader();
+    fr.onload = () => {
+      try{
+        const wb = XLSX.read(new Uint8Array(fr.result), {type:'array'});
+        const sn = wb.SheetNames.includes('금형지정장소') ? '금형지정장소' : wb.SheetNames[0];
+        const aoa = XLSX.utils.sheet_to_json(wb.Sheets[sn], {header:1, defval:''});
+        syncToServer(parseAOA(aoa), file.name + ' [' + sn + ']');
+      }catch(e){
+        alert(e.message.startsWith('❌') ? e.message : T('xlsxReadErr')(e.message));
+      }
+    };
+    fr.readAsArrayBuffer(file);
+  }
+}
+
+function parseCSV(text){
+  const lines = text.replace(/\r/g,'').split('\n').filter(l=>l.trim());
+  return parseAOA(lines.map(l => l.split(',').map(c => c.trim().replace(/^"|"$/g,''))));
+}
+
+function parseAOA(aoa){
+  let hIdx = -1, colMap = {};
+  for(let i=0; i<Math.min(aoa.length,10); i++){
+    const row = aoa[i].map(c => String(c).trim());
+    if(row.some(c => c === '금형바코드' || c === 'CODE' || c === '바코드')){
+      hIdx = i;
+      row.forEach((h,ci) => { if(HEADER_MAP[h] && !(HEADER_MAP[h] in colMap)) colMap[HEADER_MAP[h]] = ci; });
+      break;
+    }
+  }
+  if(hIdx < 0 || !('bc' in colMap) || !('loc' in colMap)){
+    throw new Error(T('errNoHeader'));
+  }
+  const rows = [];
+  for(let i=hIdx+1; i<aoa.length; i++){
+    const r = aoa[i];
+    const bc = String(r[colMap.bc] ?? '').trim();
+    if(!bc) continue;
+    rows.push({
+      bc,
+      code:  String(r[colMap.code]  ?? '').trim(),
+      no:    String(r[colMap.no]    ?? '').trim(),
+      name:  String(r[colMap.name]  ?? '').trim(),
+      store: String(r[colMap.store] ?? '').trim(),
+      loc:   String(r[colMap.loc]   ?? '').trim()
+    });
+  }
+  if(rows.length === 0) throw new Error(T('errNoRows'));
+  validateDup(rows);
+  return rows;
+}
+
+/* ---------- 중복 검사: 바코드 / (금형코드+관리번호) / (금형명+관리번호) ---------- */
+function findDups(rows, keyFn){
+  const map = {};
+  rows.forEach(m => { const k = keyFn(m); if(!k) return; (map[k] = map[k] || []).push(m); });
+  return Object.entries(map).filter(([k,v]) => v.length > 1).map(([k,v]) => k + ' ×' + v.length);
+}
+function validateDup(rows){
+  const problems = [];
+  const dBc = findDups(rows, m => m.bc.toUpperCase());
+  if(dBc.length) problems.push(T('dupBc') + '\n  ' + dBc.slice(0,10).join('\n  ') + (dBc.length>10 ? '\n  ...' : ''));
+  const dCode = findDups(rows, m => (m.code ? (m.code + ' ' + m.no).toUpperCase() : ''));
+  if(dCode.length) problems.push(T('dupCode') + '\n  ' + dCode.slice(0,10).join('\n  ') + (dCode.length>10 ? '\n  ...' : ''));
+  const dName = findDups(rows, m => (m.name && m.name !== m.code ? (m.name + ' ' + m.no).toUpperCase() : ''));
+  if(dName.length) problems.push(T('dupName') + '\n  ' + dName.slice(0,10).join('\n  ') + (dName.length>10 ? '\n  ...' : ''));
+  if(problems.length) throw new Error(T('dupFound') + '\n\n' + problems.join('\n\n'));
+}
+
+/* 업로드/붙여넣기 → 반영 방식 선택 모달 */
+let pendingSync = null; // {rows, name}
+function syncToServer(rows, name){
+  pendingSync = {rows, name};
+  document.getElementById('modeDesc').textContent = name + ' · ' + rows.length + (LANG==='ko' ? '건' : ' registros');
+  document.getElementById('modeModal').style.display = 'flex';
+}
+function closeMode(){ document.getElementById('modeModal').style.display = 'none'; pendingSync = null; }
+
+/* ➕ 추가/수정: 기존 데이터 유지, 같은 바코드는 수정, 새 바코드는 추가 */
+async function doMerge(){
+  const {rows, name} = pendingSync; closeMode();
+  showLock(T('syncing')(rows.length));
+  try{
+    /* 1) 현재 서버 데이터 조회 */
+    const res0 = await fetch(`${SUPA_URL}/rest/v1/${TABLE}?select=bc,code,mgmt_no,name,store,loc,sort_order&order=sort_order.asc`, { headers: SB_HEADERS });
+    if(!res0.ok) throw new Error('HTTP ' + res0.status);
+    const server = (await res0.json()).map(r => ({ bc:r.bc, code:r.code||'', no:r.mgmt_no||'', name:r.name||'', store:r.store||'', loc:r.loc||'', sort:r.sort_order||0 }));
+    const srvByBc = {};
+    server.forEach(s => srvByBc[s.bc.toUpperCase()] = s);
+    /* 2) 병합 결과 전체에 대해 중복 검사 (기존 데이터와의 금형코드+관리번호 충돌 포함) */
+    const kept = server.filter(s => !rows.some(m => m.bc.toUpperCase() === s.bc.toUpperCase()));
+    validateDup(kept.concat(rows));
+    /* 3) sort_order: 수정건은 기존 순번 유지, 신규건은 맨 뒤에 이어붙임 */
+    let maxSort = server.reduce((mx,s)=>Math.max(mx,s.sort), 0);
+    let added = 0, updated = 0;
+    const payload = rows.map(m => {
+      const ex = srvByBc[m.bc.toUpperCase()];
+      if(ex){ updated++; return { bc:m.bc, code:m.code, mgmt_no:m.no, name:m.name, store:m.store, loc:m.loc, sort_order:ex.sort }; }
+      added++; return { bc:m.bc, code:m.code, mgmt_no:m.no, name:m.name, store:m.store, loc:m.loc, sort_order:++maxSort };
+    });
+    /* 4) upsert (바코드 기준) */
+    for(let i=0; i<payload.length; i+=500){
+      const res = await fetch(`${SUPA_URL}/rest/v1/${TABLE}?on_conflict=bc`, {
+        method:'POST',
+        headers: Object.assign({}, SB_HEADERS, {'Prefer':'resolution=merge-duplicates'}),
+        body: JSON.stringify(payload.slice(i,i+500))
+      });
+      if(!res.ok) throw new Error(T('insFail') + ' HTTP ' + res.status);
+    }
+    hideLock();
+    alert(T('mergeDone')(added, updated));
+    await loadFromServer();
+  }catch(e){
+    if(String(e.message).startsWith('❌')){ hideLock(); alert(e.message); }
+    else showLock(T('syncErr')(e.message));
+  }
+}
+
+/* 🔄 전체 교체: 서버 데이터를 모두 지우고 업로드 데이터로 대체 */
+async function doReplace(){
+  const {rows, name} = pendingSync; closeMode();
+  if(!confirm(T('confirmSync')(name, rows.length))) return;
+  showLock(T('syncing')(rows.length));
+  try{
+    let res = await fetch(`${SUPA_URL}/rest/v1/${TABLE}?id=gt.0`, { method:'DELETE', headers: SB_HEADERS });
+    if(!res.ok) throw new Error(T('delFail') + ' HTTP ' + res.status);
+    for(let i=0; i<rows.length; i+=500){
+      const batch = rows.slice(i,i+500).map((m,bi)=>({
+        bc:m.bc, code:m.code, mgmt_no:m.no, name:m.name, store:m.store, loc:m.loc, sort_order:i+bi+1
+      }));
+      res = await fetch(`${SUPA_URL}/rest/v1/${TABLE}`, { method:'POST', headers: SB_HEADERS, body: JSON.stringify(batch) });
+      if(!res.ok) throw new Error(T('insFail') + ' HTTP ' + res.status);
+    }
+    queue = []; renderQueue();
+    hideLock();
+    alert(T('syncDone')(rows.length));
+    await loadFromServer();
+  }catch(e){
+    showLock(T('syncErr')(e.message));
+  }
+}
+
+/* ---------- 엑셀 다운로드 (서버 데이터) ---------- */
+function downloadExcel(){
+  if(!MOLDS.length){ alert(T('dlEmpty')); return; }
+  if(typeof XLSX === 'undefined'){ alert(T('xlsxLibFail')); return; }
+  const header = ['금형바코드','금형코드','관리번호','금형명','보관장소','지정장소'];
+  const aoa = [header].concat(MOLDS.map(m => [m.bc, m.code, m.no, m.name, m.store, m.loc]));
+  const ws = XLSX.utils.aoa_to_sheet(aoa);
+  ws['!cols'] = [{wch:13},{wch:15},{wch:9},{wch:15},{wch:10},{wch:10}];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, '금형지정장소');
+  const d = new Date();
+  const ymd = d.getFullYear() + String(d.getMonth()+1).padStart(2,'0') + String(d.getDate()).padStart(2,'0');
+  XLSX.writeFile(wb, '금형지정장소_' + ymd + '.xlsx');
+}
+
+/* ---------- 붙여넣기 입력 ---------- */
+let pasteRows = null;
+
+function openPaste(){
+  document.getElementById('pasteArea').value = '';
+  document.getElementById('pastePreview').innerHTML = '';
+  document.getElementById('pasteApplyBtn').disabled = true;
+  pasteRows = null;
+  document.getElementById('pasteModal').style.display = 'flex';
+  setTimeout(()=>document.getElementById('pasteArea').focus(), 50);
+}
+function closePaste(){ document.getElementById('pasteModal').style.display = 'none'; }
+
+function parsePasted(text){
+  const lines = text.replace(/\r/g,'').split('\n').filter(l => l.trim());
+  if(lines.length === 0) throw new Error(T('errNoPaste'));
+  /* 구분자: 탭 우선(엑셀 복사), 탭이 없으면 콤마 */
+  const delim = text.includes('\t') ? '\t' : ',';
+  const aoa = lines.map(l => l.split(delim).map(c => c.trim().replace(/^"|"$/g,'')));
+  /* 헤더 행이 있으면 헤더 방식으로 */
+  const hasHeader = aoa.slice(0,10).some(row => row.some(c => c === '금형바코드' || c === 'CODE' || c === '바코드'));
+  if(hasHeader) return parseAOA(aoa);
+  /* 헤더 없음: 고정 열 순서 (바코드,금형코드,관리번호,금형명,보관장소,지정장소) */
+  const rows = [];
+  for(const r of aoa){
+    const bc = String(r[0] ?? '').trim();
+    if(!bc) continue;
+    rows.push({
+      bc,
+      code:  String(r[1] ?? '').trim(),
+      no:    String(r[2] ?? '').trim(),
+      name:  String(r[3] ?? '').trim(),
+      store: String(r[4] ?? '').trim(),
+      loc:   String(r[5] ?? '').trim()
+    });
+  }
+  if(rows.length === 0) throw new Error(T('errNoRows'));
+  const noLoc = rows.filter(m => !m.loc).length;
+  if(noLoc === rows.length) throw new Error(T('errNoLocCol'));
+  validateDup(rows);
+  return rows;
+}
+
+function previewPaste(){
+  const box = document.getElementById('pastePreview');
+  const btn = document.getElementById('pasteApplyBtn');
+  const text = document.getElementById('pasteArea').value;
+  if(!text.trim()){ box.innerHTML=''; btn.disabled = true; pasteRows = null; return; }
+  try{
+    pasteRows = parsePasted(text);
+    const head = pasteRows.slice(0,5).map(m =>
+      `<tr><td>${m.bc}</td><td>${m.code}</td><td>${m.no}</td><td>${m.name}</td><td>${m.store}</td><td><b>${m.loc}</b></td></tr>`).join('');
+    box.innerHTML = `<div class="ok">${T('pasteOk')(pasteRows.length)}</div>
+      <table><tr>${T('pvTh').map(h=>`<th>${h}</th>`).join('')}</tr>${head}</table>`;
+    btn.disabled = false;
+  }catch(e){
+    pasteRows = null;
+    box.innerHTML = `<div class="err">✕ ${e.message}</div>`;
+    btn.disabled = true;
+  }
+}
+
+async function applyPaste(){
+  if(!pasteRows || !pasteRows.length) return;
+  closePaste();
+  await syncToServer(pasteRows, T('pasteSrc')(pasteRows.length));
+}
+
+
+let queue = [];          // [{m, qty}]
+let selSet = new Set();  // 리스트 선택 (bc)
+
+/* ---------- 탭 ---------- */
+function showTab(t){
+  document.getElementById('tabScan').classList.toggle('on', t==='scan');
+  document.getElementById('tabList').classList.toggle('on', t==='list');
+  document.getElementById('bodyScan').style.display = t==='scan' ? '' : 'none';
+  document.getElementById('bodyList').style.display = t==='list' ? '' : 'none';
+  if(t==='scan') setTimeout(()=>document.getElementById('scanInput').focus(),50);
+  if(t==='list') renderList();
+}
+
+/* ---------- 스캔 ---------- */
+const scanInput = document.getElementById('scanInput');
+scanInput.addEventListener('keydown', e => { if(e.key==='Enter'){ e.preventDefault(); doScan(); } });
+window.addEventListener('load', ()=>scanInput.focus());
+
+function doScan(){
+  let v = scanInput.value.trim().toUpperCase();
+  scanInput.value=''; scanInput.focus();
+  if(!v) return;
+  let m = byBc[v] || byBc['$'+v];
+  const msg = document.getElementById('scanMsg');
+  if(!m){
+    msg.className='scanmsg err';
+    msg.textContent = T('scanUnknown') + v;
+    return;
+  }
+  addToQueue(m);
+  msg.className='scanmsg ok';
+  msg.textContent = T('scanAdded') + m.loc + '  |  ' + m.code + ' ' + m.no;
+}
+
+/* ---------- 리스트 ---------- */
+function filtered(){
+  const q = document.getElementById('searchInput').value.trim().toUpperCase();
+  if(!q) return MOLDS;
+  return MOLDS.filter(m =>
+    m.bc.toUpperCase().includes(q) || m.code.toUpperCase().includes(q) ||
+    m.no.toUpperCase().includes(q) || m.loc.toUpperCase().includes(q) ||
+    m.store.toUpperCase().includes(q));
+}
+function renderList(){
+  const rows = filtered();
+  const tb = document.getElementById('listBody');
+  tb.innerHTML = rows.map(m => `
+    <tr class="${selSet.has(m.bc)?'sel':''}" onclick="rowClick('${m.bc}')">
+      <td><input type="checkbox" ${selSet.has(m.bc)?'checked':''} onclick="event.stopPropagation();rowClick('${m.bc}')"></td>
+      <td>${m.bc}</td><td>${m.code}</td><td>${m.no}</td><td class="kr">${m.store}</td><td><b>${m.loc}</b></td>
+    </tr>`).join('');
+  document.getElementById('selCount').textContent = T('selCount')(selSet.size);
+  document.getElementById('chkAll').checked = rows.length>0 && rows.every(m=>selSet.has(m.bc));
+}
+function rowClick(bc){
+  if(selSet.has(bc)) selSet.delete(bc); else selSet.add(bc);
+  renderList();
+}
+function toggleAll(cb){
+  const rows = filtered();
+  if(cb.checked) rows.forEach(m=>selSet.add(m.bc));
+  else rows.forEach(m=>selSet.delete(m.bc));
+  renderList();
+}
+function clearSel(){ selSet.clear(); renderList(); }
+function addSelected(){
+  if(selSet.size===0){ alert(T('noSel')); return; }
+  selSet.forEach(bc => addToQueue(byBc[bc.toUpperCase()]));
+  selSet.clear(); renderList();
+}
+
+/* ---------- 출력 대기 ---------- */
+function addToQueue(m){
+  const ex = queue.find(q => q.m.bc === m.bc);
+  if(ex) ex.qty++;
+  else queue.push({m, qty:1});
+  renderQueue();
+}
+function renderQueue(){
+  const box = document.getElementById('queueBody');
+  document.getElementById('queueCnt').textContent = queue.reduce((s,q)=>s+q.qty,0);
+  if(queue.length===0){ box.innerHTML='<div class="qempty">'+T('qEmpty')+'</div>'; return; }
+  box.innerHTML = queue.map((q,i)=>`
+    <div class="qitem">
+      <div class="lab">
+        <div class="l1">${q.m.loc}</div>
+        <div class="l2">${q.m.code} ${q.m.no}</div>
+      </div>
+      <input class="qty" type="number" min="1" max="99" value="${q.qty}" onchange="setQty(${i},this.value)">
+      <button class="del" onclick="delQ(${i})">✕</button>
+    </div>`).join('');
+}
+function setQty(i,v){ queue[i].qty = Math.max(1, parseInt(v)||1); renderQueue(); }
+const _origRenderQueue = renderQueue;
+renderQueue = function(){ _origRenderQueue(); if(typeof renderPreview==='function') renderPreview(); };
+function delQ(i){ queue.splice(i,1); renderQueue(); }
+function clearQueue(){ if(queue.length && confirm(T('confirmClearQ'))){ queue=[]; renderQueue(); } }
+
+/* ---------- 인쇄 (LETTER) ---------- */
+/* LETTER 216×279mm, 여백 10mm → 인쇄영역 약 196×259mm */
+const AREA_W = 196, AREA_H = 259, GAP = 4; // mm
+
+function getOpts(){
+  const clamp = (v,min,max,def) => { v = parseFloat(v); return isNaN(v) ? def : Math.min(max, Math.max(min, v)); };
+  return {
+    w:  clamp(document.getElementById('optW').value, 20, AREA_W, 95),
+    h:  clamp(document.getElementById('optH').value, 10, AREA_H, 48),
+    bw: clamp(document.getElementById('optBorder').value, 0, 6, 1.5),
+    f1: clamp(document.getElementById('optF1').value, 6, 300, 42),
+    f2: clamp(document.getElementById('optF2').value, 4, 200, 13),
+    b1: document.getElementById('optB1').value,
+    b2: document.getElementById('optB2').value,
+    store: document.getElementById('optStore').checked
+  };
+}
+
+function applyPreset(){
+  const v = document.getElementById('optPreset').value;
+  if(v){
+    const [w,h,f1,f2] = v.split(',');
+    document.getElementById('optW').value = w;
+    document.getElementById('optH').value = h;
+    document.getElementById('optF1').value = f1;
+    document.getElementById('optF2').value = f2;
+  }
+  renderPreview(); buildPrint();
+}
+function optChanged(){
+  document.getElementById('optPreset').value = ''; // 직접 설정으로 전환
+  renderPreview(); buildPrint();
+}
+
+function labelHTML(m, o){
+  return `
+    <div class="plabel" style="width:${o.w}mm;height:${o.h}mm;border-width:${o.bw}pt;${o.bw===0?'border:none;':''}">
+      <div class="pl1" style="font-size:${o.f1}pt;font-weight:${o.b1}">${m.loc}</div>
+      <div class="pl2" style="font-size:${o.f2}pt;font-weight:${o.b2}">${m.code} ${m.no}</div>
+      ${o.store?`<div class="pl2" style="font-size:${(o.f2*0.8).toFixed(1)}pt;font-weight:400;color:#333">${m.store}</div>`:''}
+    </div>`;
+}
+
+function renderPreview(){
+  const o = getOpts();
+  const sample = queue.length ? queue[0].m : (MOLDS[0] || {loc:'A01-01', code:'TAPMM025K2SN', no:'P01', store:'공무실'});
+  document.getElementById('pvBox').innerHTML = labelHTML(sample, o);
+}
+
+function buildPrint(){
+  const o = getOpts();
+  const labels = [];
+  queue.forEach(q => { for(let i=0;i<q.qty;i++) labels.push(q.m); });
+
+  const cols = Math.max(1, Math.floor((AREA_W + GAP) / (o.w + GAP)));
+  const rows = Math.max(1, Math.floor((AREA_H + GAP) / (o.h + GAP)));
+  const perPage = cols * rows;
+  const pages = [];
+  for(let i=0;i<labels.length;i+=perPage) pages.push(labels.slice(i,i+perPage));
+
+  document.getElementById('printArea').innerHTML = pages.map((pg,pi)=>`
+    <div class="sheet-flow" style="${pi<pages.length-1?'page-break-after:always;':''}">
+      ${pg.map(m=>labelHTML(m,o)).join('')}
+    </div>`).join('');
+}
+
+function doPrint(){
+  if(queue.length===0){ alert(T('noLabels')); return; }
+  const o = getOpts();
+  buildPrint();
+  const cols = Math.max(1, Math.floor((AREA_W + GAP) / (o.w + GAP)));
+  if(o.w > AREA_W || o.h > AREA_H){
+    alert(T('sizeOver'));
+    return;
+  }
+  window.print();
+}
+renderPreview();
+</script>
+</body>
+</html>
