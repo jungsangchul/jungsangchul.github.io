@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>위치조회 2공장 / Consulta de Ubicación Planta 2</title>
+<style>
+:root{
+  --navy:#12233f; --navy2:#1d3557; --gold:#e0a636; --bg:#f2f4f8;
+  --card:#ffffff; --line:#dde3ec; --txt:#1c2533; --sub:#6b7686;
+  --green:#1a7f4b; --red:#c0392b; --blue:#2563ab;
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+body{margin:0; font-family:'Malgun Gothic','맑은 고딕',Segoe UI,sans-serif; background:var(--bg); color:var(--txt); font-size:15px;}
+header{background:var(--navy); color:#fff; padding:12px 14px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:50;}
+header h1{font-size:17px; margin:0; font-weight:700; letter-spacing:.5px;}
+header .sub{font-size:11px; color:#aab8cf; margin-top:2px;}
+.lang-btn{background:var(--gold); color:var(--navy); border:none; border-radius:20px; padding:7px 14px; font-weight:700; font-size:13px; cursor:pointer;}
+.tabs{display:flex; background:var(--navy2); position:sticky; top:56px; z-index:49;}
+.tabs button{flex:1; background:none; border:none; color:#9fb0c8; padding:12px 0; font-size:14px; font-weight:700; cursor:pointer; border-bottom:3px solid transparent;}
+.tabs button.on{color:#fff; border-bottom-color:var(--gold);}
+main{max-width:640px; margin:0 auto; padding:14px;}
+.card{background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px; margin-bottom:14px;}
+.scan-wrap{position:relative;}
+#q{width:100%; padding:15px 44px 15px 14px; font-size:17px; border:2px solid var(--navy2); border-radius:10px; outline:none;}
+#q:focus{border-color:var(--gold);}
+.clear-x{position:absolute; right:8px; top:50%; transform:translateY(-50%); background:#e8ecf2; border:none; border-radius:50%; width:30px; height:30px; font-size:15px; color:var(--sub); cursor:pointer; display:none;}
+.hint{font-size:12px; color:var(--sub); margin-top:8px; line-height:1.5;}
+/* autocomplete */
+#ac{position:absolute; left:0; right:0; top:calc(100% + 4px); background:#fff; border:1px solid var(--line); border-radius:10px; box-shadow:0 8px 24px rgba(18,35,63,.18); max-height:320px; overflow-y:auto; z-index:40; display:none;}
+.ac-item{padding:11px 12px; border-bottom:1px solid #f0f2f6; cursor:pointer; display:flex; align-items:center; gap:8px;}
+.ac-item:last-child{border-bottom:none;}
+.ac-item:active{background:#f4f7fb;}
+.ac-item .code{font-weight:700; font-size:14px;}
+.ac-item .name{font-size:12px; color:var(--sub); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1;}
+.badge{font-size:10px; font-weight:700; padding:3px 7px; border-radius:10px; flex-shrink:0;}
+.b-loc{background:#e4efff; color:var(--blue);}
+.b-app{background:#fdf1d8; color:#9a6b00;}
+.b-wire{background:#e2f5ea; color:var(--green);}
+/* result */
+.res-title{font-size:13px; color:var(--sub); font-weight:700; margin-bottom:8px;}
+.loc-big{background:var(--navy); color:var(--gold); border-radius:12px; text-align:center; padding:22px 10px; margin:10px 0;}
+.loc-big .lbl{font-size:12px; color:#9fb0c8; letter-spacing:2px; font-weight:700;}
+.loc-big .val{font-size:44px; font-weight:800; letter-spacing:2px; line-height:1.15; word-break:break-all;}
+.kv{display:flex; justify-content:space-between; padding:8px 2px; border-bottom:1px solid #f0f2f6; font-size:14px;}
+.kv:last-child{border-bottom:none;}
+.kv .k{color:var(--sub);}
+.kv .v{font-weight:700; text-align:right; word-break:break-all; max-width:60%;}
+.loc-stack{display:flex; flex-direction:column; gap:8px; margin-top:10px;}
+.loc-item{background:var(--navy); color:var(--gold); border-radius:12px; text-align:center; padding:16px 10px; font-size:34px; font-weight:800; letter-spacing:2px; word-break:break-all;}
+.loc-empty{background:#f4f6fa; color:#b06060; border-radius:12px; text-align:center; padding:16px 10px; font-size:16px; font-weight:700;}
+/* upload mode buttons */
+.up-modes{display:flex; gap:8px;}
+.up-modes .btn{margin-top:10px;}
+.noresult{text-align:center; color:var(--sub); padding:26px 0; font-size:14px;}
+/* data tab */
+.dtabs{display:flex; gap:6px; margin-bottom:12px;}
+.dtabs button{flex:1; padding:10px 0; border:1.5px solid var(--line); background:#fff; border-radius:9px; font-weight:700; font-size:13px; color:var(--sub); cursor:pointer;}
+.dtabs button.on{background:var(--navy); color:#fff; border-color:var(--navy);}
+.cnt{font-size:13px; color:var(--sub); margin-bottom:8px;}
+.cnt b{color:var(--navy); font-size:15px;}
+textarea{width:100%; height:180px; border:1.5px solid var(--line); border-radius:9px; padding:10px; font-size:12px; font-family:Consolas,monospace; resize:vertical;}
+.btn{width:100%; padding:14px 0; border:none; border-radius:10px; font-size:15px; font-weight:700; cursor:pointer; margin-top:10px;}
+.btn-primary{background:var(--gold); color:var(--navy);}
+.btn-danger{background:var(--red); color:#fff;}
+.btn:disabled{opacity:.45;}
+.parse-info{margin-top:8px; font-size:13px; padding:10px; border-radius:8px; display:none;}
+.pi-ok{background:#e2f5ea; color:var(--green); display:block;}
+.pi-err{background:#fdecea; color:var(--red); display:block;}
+/* overlay */
+#lock{position:fixed; inset:0; background:rgba(18,35,63,.93); z-index:100; display:none; align-items:center; justify-content:center; flex-direction:column; color:#fff; text-align:center; padding:20px;}
+#lock .big{font-size:20px; font-weight:800; margin-bottom:10px;}
+#lock p{color:#aab8cf; font-size:14px;}
+#lock button{margin-top:16px; padding:12px 34px; border:none; border-radius:10px; background:var(--gold); color:var(--navy); font-weight:800; font-size:15px; cursor:pointer;}
+#toast{position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:var(--navy); color:#fff; padding:11px 20px; border-radius:24px; font-size:14px; display:none; z-index:90; max-width:88%; text-align:center;}
+footer{text-align:center; color:#9aa5b5; font-size:11px; padding:10px 0 24px;}
+.spin{display:inline-block; width:14px; height:14px; border:2px solid #fff; border-top-color:transparent; border-radius:50%; animation:sp .7s linear infinite; vertical-align:-2px; margin-right:6px;}
+@keyframes sp{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1 id="t_title">📦 위치조회 (2공장)</h1>
+    <div class="sub">YURA HARNESS MÉXICO</div>
+  </div>
+  <button class="lang-btn" id="langBtn" onclick="toggleLang()">ES</button>
+</header>
+
+<div class="tabs">
+  <button id="tabSearch" class="on" onclick="showTab('search')">🔍 <span id="t_tab1">조회</span></button>
+  <button id="tabData" onclick="showTab('data')">📋 <span id="t_tab2">데이터 관리</span></button>
+</div>
+
+<main>
+<!-- ============ SEARCH TAB ============ -->
+<section id="pgSearch">
+  <div class="card">
+    <div class="scan-wrap">
+      <input id="q" autocomplete="off" placeholder="바코드 스캔 또는 자재코드/품명 입력">
+      <button class="clear-x" id="clearX" onclick="clearQ()">✕</button>
+      <div id="ac"></div>
+    </div>
+    <div class="hint" id="t_hint">📷 바코드를 스캔하거나 자재코드/품명을 입력하세요. 입력 중 유사 항목이 자동으로 표시됩니다.</div>
+  </div>
+  <div id="result"></div>
+</section>
+
+<!-- ============ DATA TAB ============ -->
+<section id="pgData" style="display:none">
+  <div class="card">
+    <div class="dtabs">
+      <button id="dt_loc" class="on" onclick="pickSheet('loc')">loc (<span id="c_loc">-</span>)</button>
+      <button id="dt_app" onclick="pickSheet('app')">app (<span id="c_app">-</span>)</button>
+      <button id="dt_wire" onclick="pickSheet('wire')">wire (<span id="c_wire">-</span>)</button>
+    </div>
+    <div class="cnt"><span id="t_current">현재 서버 데이터</span>: <b id="curCnt">-</b> <span id="t_rows">건</span></div>
+    <div class="hint" id="sheetGuide"></div>
+    <textarea id="pasteBox" placeholder=""></textarea>
+    <div class="parse-info" id="parseInfo"></div>
+    <button class="btn btn-primary" id="btnParse" onclick="doParse()">1️⃣ <span id="t_parse">데이터 확인</span></button>
+    <div class="up-modes">
+      <button class="btn btn-primary" id="btnMerge" onclick="doUpload('merge')" disabled>2️⃣ <span id="t_merge">부분 교체</span></button>
+      <button class="btn btn-danger" id="btnReplace" onclick="doUpload('replace')" disabled>2️⃣ <span id="t_replace">전체 교체</span></button>
+    </div>
+    <div class="hint" id="t_modeHint">부분 교체: 붙여넣은 항목만 갱신/추가 · 전체 교체: 서버 데이터 전부 삭제 후 교체</div>
+  </div>
+</section>
+</main>
+
+<div id="lock">
+  <div class="big" id="t_lock1">⚠️ 서버 연결 실패</div>
+  <p id="t_lock2">Supabase 서버에 연결할 수 없습니다.<br>네트워크 확인 후 다시 시도하세요.</p>
+  <button onclick="location.reload()" id="t_retry">다시 시도</button>
+</div>
+<div id="toast"></div>
+<footer>위치조회 2공장 v1.1 · Supabase 연동 · <span id="buildInfo"></span></footer>
+
+<script>
+const APP_BUILD = 'v1.10 (2026-07-19)';
+document.getElementById('buildInfo').textContent = APP_BUILD;
+
+const SUPA_URL = 'https://lrjurjhavlalhlwaplxd.supabase.co/rest/v1';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxyanVyamhhdmxhbGhsd2FwbHhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNzUxNDAsImV4cCI6MjA5NTY1MTE0MH0.DVFmZaT37R9CXSMHdnLx4YAVNTnlBGijkOIaoUo7Qsk';
+const HDR = {'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json'};
+
+/* ================= i18n ================= */
+const I18N = {
+  ko: {
+    title:'📦 위치조회 (2공장)', tab1:'조회', tab2:'데이터 관리',
+    ph:'바코드 스캔 또는 자재코드/품명 입력',
+    hint:'📷 바코드를 스캔하거나 자재코드/품명을 입력하세요. 입력 중 유사 항목이 자동으로 표시됩니다.',
+    location:'위치', rack:'Rack위치', noloc:'위치 미지정',
+    matcode:'자재코드', matname:'품명', qty:'수량', time:'처리일시', worker:'작업자', barcode:'바코드',
+    moldcode:'금형코드', moldname:'금형명', mgmt:'관리번호', storage:'보관장소', assign:'지정장소',
+    wirecode:'유라CODE', wirename:'업체명(전선명)', wireloc:'자재배치',
+    srcloc:'자재', srcapp:'금형', srcwire:'전선',
+    latest:'최신 기록', history:'전체 기록', records:'건',
+    noresult:'검색 결과가 없습니다.', found:'검색 결과',
+    current:'현재 서버 데이터', rows:'건',
+    parse:'데이터 확인', merge:'부분 교체', replace:'전체 교체',
+    modeHint:'부분 교체: 붙여넣은 항목만 갱신/추가 · 전체 교체: 서버 데이터 전부 삭제 후 교체',
+    guide_loc:'엑셀 loc 시트 전체를 복사하여 붙여넣으세요 (12열: 바코드~위치). 머리글 포함 가능.',
+    guide_app:'엑셀 app 시트 전체를 복사하여 붙여넣으세요 (6열: 금형바코드~지정장소). 머리글 포함 가능.',
+    guide_wire:'엑셀 wire 시트 전체를 복사하여 붙여넣으세요 (A:유라CODE, B:업체명, F:자재배치). 머리글 포함 가능.',
+    parsed:(n)=>`✅ ${n}건 확인됨. [부분 교체] 또는 [전체 교체]를 선택하세요.`,
+    parseEmpty:'❌ 붙여넣은 데이터에서 유효한 행을 찾지 못했습니다.',
+    confirmReplace:(t,n)=>`[${t}] 서버 데이터를 전체 삭제하고 ${n}건으로 교체합니다.\n계속하시겠습니까?`,
+    confirmMerge:(t,n)=>`[${t}] 붙여넣은 ${n}건과 동일한 항목(바코드/코드)은 갱신하고, 새 항목은 추가합니다.\n기존 다른 데이터는 유지됩니다. 계속하시겠습니까?`,
+    uploading:'업로드 중...', uploadDone:(n)=>`✅ 업로드 완료: ${n}건`,
+    uploadFail:'❌ 업로드 실패. 네트워크를 확인하세요.',
+    loading:'데이터 불러오는 중...',
+    lock1:'⚠️ 서버 연결 실패', lock2:'Supabase 서버에 연결할 수 없습니다.\n네트워크 확인 후 다시 시도하세요.', retry:'다시 시도',
+    langBtn:'ES'
+  },
+  es: {
+    title:'📦 Consulta de Ubicación (Planta 2)', tab1:'Buscar', tab2:'Gestión de Datos',
+    ph:'Escanee código de barras o escriba código/nombre',
+    hint:'📷 Escanee el código de barras o escriba el código de material/nombre. Se mostrarán sugerencias automáticamente.',
+    location:'Ubicación', rack:'Ubicación Rack', noloc:'Sin ubicación asignada',
+    matcode:'Código material', matname:'Nombre', qty:'Cantidad', time:'Fecha/hora', worker:'Operador', barcode:'Código de barras',
+    moldcode:'Código de molde', moldname:'Nombre de molde', mgmt:'No. control', storage:'Almacén', assign:'Ubicación asignada',
+    wirecode:'Código YURA', wirename:'Nombre (cable)', wireloc:'Ubicación material',
+    srcloc:'Material', srcapp:'Molde', srcwire:'Cable',
+    latest:'Registro más reciente', history:'Todos los registros', records:'reg.',
+    noresult:'No se encontraron resultados.', found:'Resultados',
+    current:'Datos actuales en servidor', rows:'reg.',
+    parse:'Verificar datos', merge:'Reemplazo parcial', replace:'Reemplazo total',
+    modeHint:'Parcial: solo actualiza/agrega los registros pegados · Total: elimina todo y reemplaza',
+    guide_loc:'Copie y pegue toda la hoja loc de Excel (12 columnas). Puede incluir encabezado.',
+    guide_app:'Copie y pegue toda la hoja app de Excel (6 columnas). Puede incluir encabezado.',
+    guide_wire:'Copie y pegue toda la hoja wire de Excel (A:Código, B:Nombre, F:Ubicación). Puede incluir encabezado.',
+    parsed:(n)=>`✅ ${n} registros verificados. Seleccione [Reemplazo parcial] o [Reemplazo total].`,
+    parseEmpty:'❌ No se encontraron filas válidas en los datos pegados.',
+    confirmReplace:(t,n)=>`[${t}] Se eliminarán todos los datos del servidor y se reemplazarán con ${n} registros.\n¿Continuar?`,
+    confirmMerge:(t,n)=>`[${t}] Los registros con el mismo código/barras se actualizarán y los nuevos se agregarán (${n} reg.).\nLos demás datos se conservan. ¿Continuar?`,
+    uploading:'Subiendo...', uploadDone:(n)=>`✅ Carga completa: ${n} registros`,
+    uploadFail:'❌ Error al subir. Verifique la red.',
+    loading:'Cargando datos...',
+    lock1:'⚠️ Error de conexión', lock2:'No se puede conectar al servidor Supabase.\nVerifique la red e intente de nuevo.', retry:'Reintentar',
+    langBtn:'KO'
+  }
+};
+let LANG = localStorage.getItem('locapp2_lang') || 'ko';
+function T(k){ return I18N[LANG][k]; }
+function toggleLang(){ LANG = (LANG==='ko'?'es':'ko'); localStorage.setItem('locapp2_lang',LANG); applyLang(); }
+function applyLang(){
+  const t = I18N[LANG];
+  document.getElementById('t_title').textContent = t.title;
+  document.getElementById('t_tab1').textContent = t.tab1;
+  document.getElementById('t_tab2').textContent = t.tab2;
+  document.getElementById('q').placeholder = t.ph;
+  document.getElementById('t_hint').textContent = t.hint;
+  document.getElementById('t_current').textContent = t.current;
+  document.getElementById('t_rows').textContent = t.rows;
+  document.getElementById('t_parse').textContent = t.parse;
+  document.getElementById('t_merge').textContent = t.merge;
+  document.getElementById('t_replace').textContent = t.replace;
+  document.getElementById('t_modeHint').textContent = t.modeHint;
+  document.getElementById('t_lock1').textContent = t.lock1;
+  document.getElementById('t_lock2').innerHTML = t.lock2.replace(/\n/g,'<br>');
+  document.getElementById('t_retry').textContent = t.retry;
+  document.getElementById('langBtn').textContent = t.langBtn;
+  document.getElementById('sheetGuide').textContent = t['guide_'+curSheet];
+  if(lastResultRender) lastResultRender();
+}
+
+/* ================= data load ================= */
+let DB = { loc:[], app:[], wire:[] };
+let lastResultRender = null;
+
+async function fetchAll(table){
+  const rows = [];
+  let offset = 0;
+  while(true){
+    const r = await fetch(`${SUPA_URL}/${table}?select=*&order=id.asc&limit=1000&offset=${offset}`, {headers:HDR});
+    if(!r.ok) throw new Error(table+' '+r.status);
+    const chunk = await r.json();
+    rows.push(...chunk);
+    if(chunk.length < 1000) break;
+    offset += 1000;
+  }
+  return rows;
+}
+async function loadAll(){
+  toast(T('loading'), 60000);
+  try{
+    const [l,a,w] = await Promise.all([fetchAll('loc_data_2'), fetchAll('app_data_2'), fetchAll('wire_data_2')]);
+    DB.loc = l; DB.app = a; DB.wire = w;
+    document.getElementById('c_loc').textContent = l.length;
+    document.getElementById('c_app').textContent = a.length;
+    document.getElementById('c_wire').textContent = w.length;
+    updateCurCnt();
+    hideToast();
+  }catch(e){
+    console.error(e);
+    document.getElementById('lock').style.display = 'flex';
+  }
+}
+
+/* ================= search ================= */
+const qEl = document.getElementById('q');
+const acEl = document.getElementById('ac');
+const resEl = document.getElementById('result');
+
+qEl.addEventListener('input', ()=>{
+  document.getElementById('clearX').style.display = qEl.value ? 'block' : 'none';
+  showAC(qEl.value.trim());
+});
+qEl.addEventListener('keydown', (e)=>{
+  if(e.key === 'Enter'){ e.preventDefault(); hideAC(); doSearch(qEl.value.trim()); }
+});
+document.addEventListener('click', (e)=>{
+  if(!e.target.closest('.scan-wrap')) hideAC();
+});
+function clearQ(){ qEl.value=''; hideAC(); document.getElementById('clearX').style.display='none'; qEl.focus(); }
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+/* --- autocomplete: unique items across 3 sources --- */
+function buildCandidates(query){
+  const q = query.toLowerCase();
+  const out = [];
+  const seen = new Set();
+  // loc: unique mat_code
+  for(const r of DB.loc){
+    const c = (r.mat_code||''), n = (r.mat_name||'');
+    if(!c && !n) continue;
+    if(c.toLowerCase().includes(q) || n.toLowerCase().includes(q)){
+      const key = 'L|'+c+'|'+n;
+      if(!seen.has(key)){ seen.add(key); out.push({src:'loc', code:c, name:n}); }
+    }
+    if(out.length >= 60) break;
+  }
+  for(const r of DB.app){
+    const c = (r.code||''), n = (r.name||'');
+    if(c.toLowerCase().includes(q) || n.toLowerCase().includes(q)){
+      const key = 'A|'+c+'|'+(r.mgmt_no||'');
+      if(!seen.has(key)){ seen.add(key); out.push({src:'app', code:c, name:n, row:r}); }
+    }
+    if(out.length >= 80) break;
+  }
+  for(const r of DB.wire){
+    const c = (r.code||''), n = (r.name||'');
+    if(c.toLowerCase().includes(q) || n.toLowerCase().includes(q)){
+      const key = 'W|'+c;
+      if(!seen.has(key)){ seen.add(key); out.push({src:'wire', code:c, name:n, row:r}); }
+    }
+    if(out.length >= 100) break;
+  }
+  return out.slice(0, 30);
+}
+function showAC(query){
+  if(!query || query.length < 1){ hideAC(); return; }
+  const items = buildCandidates(query);
+  if(items.length === 0){ hideAC(); return; }
+  const bmap = {loc:['b-loc','srcloc'], app:['b-app','srcapp'], wire:['b-wire','srcwire']};
+  acEl.innerHTML = items.map((it,i)=>{
+    const [cls,lbl] = bmap[it.src];
+    return `<div class="ac-item" data-i="${i}">
+      <span class="badge ${cls}">${T(lbl)}</span>
+      <span class="code">${esc(it.code)}</span>
+      <span class="name">${esc(it.name)}</span>
+    </div>`;
+  }).join('');
+  acEl.style.display = 'block';
+  acEl.querySelectorAll('.ac-item').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const it = items[+el.dataset.i];
+      hideAC();
+      qEl.value = it.code || it.name;
+      if(it.src === 'loc') renderLocByMat(it.code, it.name);
+      else if(it.src === 'app') renderApp([it.row]);
+      else renderWire([it.row]);
+    });
+  });
+}
+function hideAC(){ acEl.style.display = 'none'; }
+
+/* --- exact / scan search --- */
+function doSearch(raw){
+  if(!raw){ return; }
+  const q = raw.trim();
+  const ql = q.toLowerCase();
+
+  // 1) loc barcode exact (with/without @)
+  let hits = DB.loc.filter(r => r.bc === q || r.bc === '@'+q || (r.bc||'').toLowerCase() === ql);
+  if(hits.length){ renderLoc(hits); afterScan(); return; }
+
+  // 2) app barcode / code exact (with/without $)
+  let ahits = DB.app.filter(r => r.bc === q || r.bc === '$'+q || (r.code||'').toLowerCase() === ql);
+  if(ahits.length){ renderApp(ahits); afterScan(); return; }
+
+  // 3) wire code exact
+  let whits = DB.wire.filter(r => (r.code||'').toLowerCase() === ql);
+  if(whits.length){ renderWire(whits); afterScan(); return; }
+
+  // 4) loc mat_code / mat_name exact
+  hits = DB.loc.filter(r => (r.mat_code||'').toLowerCase() === ql || (r.mat_name||'').toLowerCase() === ql);
+  if(hits.length){ renderLoc(hits); afterScan(); return; }
+
+  // 5) contains fallback (partial)
+  hits = DB.loc.filter(r => (r.mat_code||'').toLowerCase().includes(ql) || (r.mat_name||'').toLowerCase().includes(ql));
+  if(hits.length){ renderLoc(hits); afterScan(); return; }
+  ahits = DB.app.filter(r => (r.code||'').toLowerCase().includes(ql) || (r.name||'').toLowerCase().includes(ql));
+  if(ahits.length){ renderApp(ahits); afterScan(); return; }
+  whits = DB.wire.filter(r => (r.code||'').toLowerCase().includes(ql) || (r.name||'').toLowerCase().includes(ql));
+  if(whits.length){ renderWire(whits); afterScan(); return; }
+
+  lastResultRender = ()=>{ resEl.innerHTML = `<div class="card"><div class="noresult">🔍 ${esc(q)}<br>${T('noresult')}</div></div>`; };
+  lastResultRender();
+  afterScan();
+}
+function afterScan(){
+  // barcode scanners: select text so next scan overwrites
+  qEl.select();
+}
+
+/* --- renderers --- */
+function sortByTimeDesc(rows){
+  return [...rows].sort((a,b)=> String(b.proc_time||'').localeCompare(String(a.proc_time||'')));
+}
+function renderLoc(rows){
+  lastResultRender = ()=>{
+    const sorted = sortByTimeDesc(rows);
+    const top = sorted[0];
+    // unique 호기위치 (L열) values, latest first
+    const locs = [];
+    for(const r of sorted){
+      const v = (r.loc || '').trim();
+      if(v && !locs.includes(v)) locs.push(v);
+    }
+    let stack;
+    if(locs.length){
+      stack = `<div class="loc-stack">` + locs.map(v=>`<div class="loc-item">${esc(v)}</div>`).join('') + `</div>`;
+    }else{
+      stack = `<div class="loc-stack"><div class="loc-empty">${T('noloc')}</div></div>`;
+    }
+    resEl.innerHTML = `<div class="card">
+      <div class="res-title"><span class="badge b-loc">${T('srcloc')}</span> ${esc(top.mat_code||'')}</div>
+      <div class="kv"><span class="k">${T('matname')}</span><span class="v">${esc(top.mat_name)}</span></div>
+      ${stack}
+    </div>`;
+  };
+  lastResultRender();
+}
+function renderLocByMat(code, name){
+  const rows = DB.loc.filter(r => (r.mat_code||'') === code && (r.mat_name||'') === name);
+  if(rows.length) renderLoc(rows);
+}
+function renderApp(rows){
+  lastResultRender = ()=>{
+    resEl.innerHTML = rows.slice(0,20).map(r=>{
+      const v = (r.loc||'').trim();
+      const stack = v ? `<div class="loc-stack"><div class="loc-item">${esc(v)}</div></div>`
+                      : `<div class="loc-stack"><div class="loc-empty">${T('noloc')}</div></div>`;
+      return `<div class="card">
+        <div class="res-title"><span class="badge b-app">${T('srcapp')}</span> ${esc(r.code||'')}</div>
+        <div class="kv"><span class="k">${T('moldname')}</span><span class="v">${esc(r.name)}</span></div>
+        <div class="kv"><span class="k">${T('mgmt')}</span><span class="v">${esc(r.mgmt_no)}</span></div>
+        ${stack}
+      </div>`;
+    }).join('');
+  };
+  lastResultRender();
+}
+function renderWire(rows){
+  lastResultRender = ()=>{
+    resEl.innerHTML = rows.slice(0,20).map(r=>{
+      const v = (r.loc||'').trim();
+      const stack = v ? `<div class="loc-stack"><div class="loc-item">${esc(v)}</div></div>`
+                      : `<div class="loc-stack"><div class="loc-empty">${T('noloc')}</div></div>`;
+      return `<div class="card">
+        <div class="res-title"><span class="badge b-wire">${T('srcwire')}</span> ${esc(r.code||'')}</div>
+        <div class="kv"><span class="k">${T('wirename')}</span><span class="v">${esc(r.name)}</span></div>
+        ${stack}
+      </div>`;
+    }).join('');
+  };
+  lastResultRender();
+}
+
+/* ================= tabs ================= */
+function showTab(t){
+  document.getElementById('pgSearch').style.display = (t==='search')?'':'none';
+  document.getElementById('pgData').style.display = (t==='data')?'':'none';
+  document.getElementById('tabSearch').classList.toggle('on', t==='search');
+  document.getElementById('tabData').classList.toggle('on', t==='data');
+  if(t==='search') setTimeout(()=>qEl.focus(), 100);
+}
+
+/* ================= data management ================= */
+let curSheet = 'loc';
+let parsedRows = null;
+const TABLE = {loc:'loc_data_2', app:'app_data_2', wire:'wire_data_2'};
+const HEADS = ['바코드','금형바코드','유라CODE','업체바코드'];
+
+function pickSheet(s){
+  curSheet = s; parsedRows = null;
+  ['loc','app','wire'].forEach(k=>document.getElementById('dt_'+k).classList.toggle('on', k===s));
+  document.getElementById('sheetGuide').textContent = T('guide_'+s);
+  document.getElementById('pasteBox').value = '';
+  document.getElementById('parseInfo').className = 'parse-info';
+  document.getElementById('btnMerge').disabled = true;
+  document.getElementById('btnReplace').disabled = true;
+  updateCurCnt();
+}
+function updateCurCnt(){
+  document.getElementById('curCnt').textContent = DB[curSheet].length;
+}
+function parsePaste(text, sheet){
+  const rows = [];
+  for(const line of text.split(/\r?\n/)){
+    if(!line.trim()) continue;
+    const c = line.split('\t').map(x=>x.trim());
+    if(HEADS.some(h => c[0] === h)) continue; // header row
+    const val = i => (c[i] !== undefined && c[i] !== '') ? c[i] : null;
+    if(sheet === 'loc'){
+      if(!val(0) && !val(3)) continue;
+      const qn = val(5) != null ? parseFloat(String(val(5)).replace(/,/g,'')) : null;
+      rows.push({bc:val(0), vendor_bc:val(1), bundle_bc:val(2), mat_code:val(3), mat_name:val(4),
+                 qty:(isNaN(qn)?null:qn), unit:val(6), rack:val(7), proc_time:val(8),
+                 worker:val(9), gubun:val(10), loc:val(11)});
+    }else if(sheet === 'app'){
+      if(!val(0) && !val(1)) continue;
+      rows.push({bc:val(0), code:val(1), mgmt_no:val(2), name:val(3), storage:val(4), loc:val(5)});
+    }else{ // wire: A=code, B=name, F=loc (or 3-col paste: C=loc)
+      if(!val(0)) continue;
+      const lv = c.length >= 6 ? val(5) : (c.length === 3 ? val(2) : val(c.length-1));
+      rows.push({code:val(0), name:val(1), loc:lv});
+    }
+  }
+  return rows;
+}
+function doParse(){
+  const text = document.getElementById('pasteBox').value;
+  parsedRows = parsePaste(text, curSheet);
+  const info = document.getElementById('parseInfo');
+  const ok = parsedRows.length > 0;
+  info.className = 'parse-info ' + (ok ? 'pi-ok' : 'pi-err');
+  info.textContent = ok ? T('parsed')(parsedRows.length) : T('parseEmpty');
+  document.getElementById('btnMerge').disabled = !ok;
+  document.getElementById('btnReplace').disabled = !ok;
+}
+const KEYCOL = {loc:'bc', app:'bc', wire:'code'};
+
+async function doUpload(mode){
+  if(!parsedRows || !parsedRows.length) return;
+  const msg = (mode === 'replace') ? T('confirmReplace')(curSheet, parsedRows.length)
+                                   : T('confirmMerge')(curSheet, parsedRows.length);
+  if(!confirm(msg)) return;
+  const btn = document.getElementById(mode === 'replace' ? 'btnReplace' : 'btnMerge');
+  const orig = btn.innerHTML;
+  document.getElementById('btnMerge').disabled = true;
+  document.getElementById('btnReplace').disabled = true;
+  btn.innerHTML = `<span class="spin"></span>${T('uploading')}`;
+  const table = TABLE[curSheet];
+  try{
+    if(mode === 'replace'){
+      // delete all
+      const dr = await fetch(`${SUPA_URL}/${table}?id=gt.0`, {method:'DELETE', headers:HDR});
+      if(!dr.ok) throw new Error('delete '+dr.status);
+    }else{
+      // partial: delete only rows whose key matches pasted keys, then insert pasted rows
+      const keyCol = KEYCOL[curSheet];
+      const keys = [...new Set(parsedRows.map(r => r[keyCol]).filter(v => v != null && v !== ''))];
+      for(let i=0; i<keys.length; i+=80){
+        const chunk = keys.slice(i, i+80).map(k => '"' + String(k).replace(/"/g,'') + '"').join(',');
+        const url = `${SUPA_URL}/${table}?${keyCol}=in.(${encodeURIComponent(chunk)})`;
+        const dr = await fetch(url, {method:'DELETE', headers:HDR});
+        if(!dr.ok) throw new Error('partial delete '+dr.status);
+      }
+    }
+    // batch insert
+    for(let i=0; i<parsedRows.length; i+=500){
+      const r = await fetch(`${SUPA_URL}/${table}`, {
+        method:'POST',
+        headers:{...HDR, 'Prefer':'return=minimal'},
+        body: JSON.stringify(parsedRows.slice(i, i+500))
+      });
+      if(!r.ok) throw new Error('insert '+r.status);
+    }
+    DB[curSheet] = await fetchAll(table);
+    document.getElementById('c_'+curSheet).textContent = DB[curSheet].length;
+    updateCurCnt();
+    toast(T('uploadDone')(DB[curSheet].length), 3500);
+    document.getElementById('pasteBox').value = '';
+    document.getElementById('parseInfo').className = 'parse-info';
+    parsedRows = null;
+  }catch(e){
+    console.error(e);
+    toast(T('uploadFail'), 4000);
+  }
+  btn.innerHTML = orig;
+  document.getElementById('btnMerge').disabled = true;
+  document.getElementById('btnReplace').disabled = true;
+}
+
+/* ================= misc ================= */
+let toastTimer = null;
+function toast(msg, ms){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.style.display = 'block';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.style.display='none', ms||2500);
+}
+function hideToast(){ document.getElementById('toast').style.display='none'; clearTimeout(toastTimer); }
+
+/* init */
+applyLang();
+pickSheet('loc');
+loadAll().then(()=>qEl.focus());
+</script>
+</body>
+</html>
