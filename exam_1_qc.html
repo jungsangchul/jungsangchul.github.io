@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>QC검사 자격인증 평가 (1공장)</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+:root{--bg:#0f1117;--s:#1a1d27;--s2:#22263a;--br:#2a2f45;--t:#e8eaf0;--t2:#8892b0;--blue:#4a90d9;--green:#2ecc71;--red:#e74c3c;--gold:#e8b84b;--sky:#5ba3e8;}
+html,body{min-height:100%;background:var(--bg);color:var(--t);font-family:-apple-system,BlinkMacSystemFont,"Noto Sans KR",sans-serif;-webkit-font-smoothing:antialiased;}
+.screen{display:none;min-height:100vh;-webkit-flex-direction:column;flex-direction:column;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;padding:1.2rem;}
+.screen.active{display:-webkit-box;display:-webkit-flex;display:flex;}
+#examScreen{padding:0;-webkit-justify-content:flex-start;justify-content:flex-start;-webkit-align-items:stretch;align-items:stretch;}
+.card{background:var(--s);border:1px solid var(--br);border-radius:16px;padding:2rem 1.5rem;width:100%;max-width:420px;}
+.ttl{font-size:1.1rem;font-weight:800;text-align:center;color:var(--sky);margin-bottom:0.25rem;}
+.sub{font-size:0.78rem;color:var(--t2);text-align:center;margin-bottom:1.2rem;}
+.tags{display:-webkit-flex;display:flex;gap:0.5rem;-webkit-justify-content:center;justify-content:center;flex-wrap:wrap;margin-bottom:1.2rem;}
+.tag{background:var(--s2);border:1px solid var(--br);border-radius:20px;padding:0.2rem 0.7rem;font-size:0.72rem;color:var(--t2);}
+label{display:block;font-size:0.82rem;color:var(--t2);margin-bottom:0.3rem;font-weight:600;}
+select,input{width:100%;background:var(--s2);border:1px solid var(--br);border-radius:10px;color:var(--t);font-size:1rem;padding:0.75rem 0.9rem;outline:none;-webkit-appearance:none;appearance:none;margin-bottom:1rem;}
+#selectedInfo{display:none;background:rgba(74,144,217,0.1);border:1px solid rgba(74,144,217,0.3);border-radius:8px;padding:0.6rem 0.9rem;margin-bottom:0.8rem;font-size:0.85rem;color:var(--sky);}
+#directInputWrap{display:none;}
+.btn-start{display:block;width:100%;background:linear-gradient(135deg,#4a90d9,#3a7bc8);color:#fff;border:none;border-radius:12px;padding:1rem;font-size:1.05rem;font-weight:700;cursor:pointer;margin-top:0.5rem;-webkit-appearance:none;}
+.btn-start:active{opacity:0.85;}
+.hdr{background:var(--s);border-bottom:1px solid var(--br);padding:0.8rem 1rem;width:100%;display:-webkit-flex;display:flex;-webkit-justify-content:space-between;justify-content:space-between;-webkit-align-items:center;align-items:center;position:-webkit-sticky;position:sticky;top:0;z-index:100;}
+.hdr-u{font-size:0.78rem;color:var(--t2);}
+.hdr-u strong{color:var(--sky);}
+.tmr{font-size:0.9rem;font-weight:700;color:var(--gold);font-family:monospace;background:var(--s2);padding:0.2rem 0.6rem;border-radius:6px;}
+.tmr.warn{color:var(--red);-webkit-animation:p 1s infinite;animation:p 1s infinite;}
+@-webkit-keyframes p{0%,100%{opacity:1}50%{opacity:0.5}}
+@keyframes p{0%,100%{opacity:1}50%{opacity:0.5}}
+.pb-w{width:100%;height:5px;background:var(--s2);}
+.pb-f{height:100%;background:linear-gradient(90deg,#4a90d9,#2bbcb0);-webkit-transition:width 0.4s;transition:width 0.4s;}
+.qw{padding:1.2rem 1rem 5rem;width:100%;max-width:600px;margin:0 auto;}
+.qcnt{font-size:0.75rem;color:var(--t2);text-align:center;margin-bottom:0.5rem;}
+.qtxt{font-size:1.05rem;font-weight:700;line-height:1.7;color:var(--t);background:var(--s);border:1px solid var(--br);border-radius:12px;padding:1.1rem 1rem;margin-bottom:1rem;word-break:keep-all;}
+.opts{display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;gap:0.65rem;}
+.opt-btn{background:var(--s);border:2px solid var(--br);border-radius:12px;padding:0.9rem 1rem;text-align:left;cursor:pointer;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;gap:0.7rem;color:var(--t);font-size:0.97rem;width:100%;-webkit-appearance:none;appearance:none;}
+.opt-btn.selected{border-color:#4a90d9;background:rgba(74,144,217,0.15);}
+.opt-btn:active{opacity:0.8;}
+.onum{width:28px;height:28px;border-radius:50%;background:var(--s2);border:1px solid var(--br);display:-webkit-inline-flex;display:inline-flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;font-size:0.78rem;font-weight:700;-webkit-flex-shrink:0;flex-shrink:0;color:var(--t2);}
+.opt-btn.selected .onum{background:#4a90d9;border-color:#4a90d9;color:#fff;}
+.otxt{-webkit-flex:1;flex:1;line-height:1.5;word-break:keep-all;text-align:left;}
+.dots{display:-webkit-flex;display:flex;flex-wrap:wrap;margin:0.8rem 0;}
+.a-dot{width:32px;height:32px;border-radius:50%;border:2px solid var(--br);display:-webkit-inline-flex;display:inline-flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;font-size:0.72rem;font-weight:700;cursor:pointer;color:var(--t2);background:var(--s2);margin:0.2rem;}
+.a-dot.answered{background:#4a90d9;border-color:#4a90d9;color:#fff;}
+.a-dot.current{border-color:var(--gold);}
+.nav{display:-webkit-flex;display:flex;gap:0.6rem;margin-top:1.4rem;}
+.btn-prev,.btn-next,.btn-submit{-webkit-flex:1;flex:1;padding:0.9rem;border:none;border-radius:12px;font-size:1rem;font-weight:700;cursor:pointer;-webkit-appearance:none;appearance:none;}
+.btn-prev{background:var(--s2);color:var(--t2);}
+.btn-next{background:linear-gradient(135deg,#4a90d9,#3a7bc8);color:#fff;}
+.btn-submit{background:linear-gradient(135deg,#2ecc71,#27ae60);color:#fff;}
+.done-card{background:var(--s);border:1px solid var(--br);border-radius:16px;padding:2rem 1.5rem;width:100%;max-width:420px;text-align:center;}
+.done-title{font-size:1.3rem;font-weight:800;color:var(--green);margin-bottom:0.5rem;}
+.done-msg{font-size:0.85rem;color:var(--t2);line-height:1.7;white-space:pre-line;}
+</style></head><body>
+  <div class="card"><div class="ttl">QC검사 자격인증 평가 (1공장)</div>
+  <div class="sub">2026-06-07 | 60분 | 4문항</div>
+  <div class="tags"><span class="tag">❓ 4문항</span><span class="tag">🎯 60점 합격</span><span class="tag">⏱ 60분</span></div>
+  <label>사번</label>
+  <select id="empIdSelect"><option value="">-- 선택 / Select --</option>
+<option value="0">0400223519 - 정상철 (수동압착공정)</option><option value="1">223232323 - 홍길동 (압착공정)</option><option value="2">사번/N°Emp - 이름/Nombre (공정명(KR))</option><option value="3">MX-00001 - 홍길동 (압착공정)</option><option value="4">MX-00002 - María García (후공정)</option><option value="5">2541 - 텀블러 (자동절단)</option>
+  <option value="__direct__">직접 입력</option></select>
+  <div id="directInputWrap">
+    <label>사번</label><input type="text" id="directEmpId" placeholder="사번 직접 입력" autocomplete="off">
+    <label>이름</label><input type="text" id="directName" placeholder="이름 직접 입력" autocomplete="off">
+  </div>
+  <div id="selectedInfo"><span id="infoText"></span></div>
+  <button type="button" id="startBtn" class="btn-start">시험 시작</button>
+  </div>
+</div>
+<div id="examScreen" class="screen">
+  <div class="hdr"><div class="hdr-u">👤 <strong id="hdrName">-</strong> <span id="hdrEmpId"></span></div><div class="tmr" id="timerDisp">--:--</div></div>
+  <div class="pb-w"><div class="pb-f" id="progressFill" style="width:0%"></div></div>
+  <div class="qw">
+    <div class="qcnt" id="qCounter"></div>
+    <div class="qtxt" id="qText"></div>
+    <img id="qImg" style="display:none;max-width:100%;max-height:220px;object-fit:contain;border-radius:10px;border:1px solid var(--br);margin-bottom:0.8rem;cursor:zoom-in" onclick="openImgZoom(this.src)">
+    <div class="opts" id="optionsList"></div>
+    <div class="dots" id="answerDots"></div>
+    <div class="nav" id="navBtns"></div>
+  </div>
+</div>
+<div id="doneScreen" class="screen">
+  <div class="done-card">
+  <div id="doneIcon" style="font-size:3rem;transition:all 0.3s">⏳</div>
+  <div class="done-title" id="doneTitle">전송 중...</div>
+  <div class="done-msg" id="doneMsg">서버에 저장 중...</div>
+  <div style="margin-top:1rem;font-size:0.8rem;color:var(--t2)" id="doneDetail"></div>
+  </div>
+</div>
+<div id="imgZoomOverlay" onclick="closeImgZoom()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.93);z-index:9999;align-items:center;justify-content:center;-webkit-align-items:center;-webkit-justify-content:center">  <img id="imgZoomImg" style="max-width:95vw;max-height:92vh;-webkit-max-width:95vw;-webkit-max-height:92vh;object-fit:contain;border-radius:8px">  <div onclick="closeImgZoom()" style="position:fixed;top:14px;right:18px;color:#fff;font-size:2.2rem;cursor:pointer;line-height:1;text-shadow:0 2px 8px #000">✕</div></div><script>var ORIG=[];
+var Q=[];
+var S=[];
+var SB_URL="https://lrjurjhavlalhlwaplxd.supabase.co";
+var SB_ANON="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxyanVyamhhdmxhbGhsd2FwbHhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNzUxNDAsImV4cCI6MjA5NTY1MTE0MH0.DVFmZaT37R9CXSMHdnLx4YAVNTnlBGijkOIaoUo7Qsk";
+var DUR=60*60;
+var PASS=60;
+var TITLE="QC검사 자격인증 평가 (1공장)";
+var T={"title":"QC검사 자격인증 평가 (1공장)","empId":"사번","name":"이름","start":"시험 시작","prev":"◀ 이전","next":"다음 ▶","submit":"📥 제출 및 저장","saved":"저장 완료!","savedMsg":"답안 파일이 저장되었습니다.\n담당자에게 전송해주세요.","chooseFirst":"사번을 선택해주세요.","unanswered":"미답변 문항이 있습니다. 제출하시겠습니까?","question":"문항","of":"/","timeUp":"시간 종료! 자동 제출됩니다.","timerWarn":"5분 남았습니다!","notSelected":"직접 입력","direct_empId":"사번 직접 입력","direct_name":"이름 직접 입력","isEs":false,"isBoth":true,"minLabel":"분","qLabel":"문항","passLabel":"점 합격","selectPlaceholder":"-- 선택 / Select --"};
+var user={empId:"",name:"",process:""};
+var ans=[];
+var cur=0;
+var tsec=0;
+var tiv=null;
+function id(x){return document.getElementById(x);}
+function shuffleQuestions(arr){
+  var a=arr.slice();
+  for(var i=a.length-1;i>0;i--){
+    var j=Math.floor(Math.random()*(i+1));
+    var tmp=a[i];a[i]=a[j];a[j]=tmp;
+  }
+  return a;
+}
+document.addEventListener("DOMContentLoaded",function(){
+  id("empIdSelect").addEventListener("change",onSel);
+  id("startBtn").addEventListener("click",doStart);
+  loadFromSupabase();
+});
+function sbGet(path){
+  return fetch(SB_URL+"/rest/v1/"+path,{
+    headers:{"apikey":SB_ANON,"Authorization":"Bearer "+SB_ANON}
+  }).then(function(r){return r.json();});
+}
+function loadFromSupabase(){
+  id("startBtn").disabled=true;
+  id("startBtn").textContent="데이터 로딩 중...";
+  Promise.all([
+    sbGet("exam_questions_qc1?select=id,text,text_es,opts,opts_es,ans,sort_order,img&order=sort_order.asc,id.asc"),
+    sbGet("exam_students_qc1?select=id,emp_id,name,process,process_es,hire_date&order=name.asc")
+  ]).then(function(results){
+    var qs=results[0];
+    var ss=results[1];
+    if(Array.isArray(qs)&&qs.length>0){
+      ORIG=qs.map(function(q,i){
+        return {text:q.text||"",textEs:q.text_es||"",opts:q.opts||[],optsEs:q.opts_es||[],ans:q.ans||1,idx:i,img:q.img||""};
+      });
+      Q=ORIG.slice();
+    }
+    if(Array.isArray(ss)&&ss.length>0){
+      S=ss.map(function(s){
+        return {name:s.name||"",empId:s.emp_id||"",process:s.process||"",processEs:s.process_es||"",hireDate:s.hire_date||"",_sbId:s.id};
+      });
+      var sel=id("empIdSelect");
+      sel.innerHTML='<option value="">'+T.selectPlaceholder+'</option>';
+      S.forEach(function(s){
+        var o=document.createElement("option");
+        o.value=s.empId;
+        o.textContent=s.name+" ("+s.empId+")";
+        sel.appendChild(o);
+      });
+      var opt=document.createElement("option");
+      opt.value="__direct__";
+      opt.textContent=T.notSelected||"직접 입력";
+      sel.appendChild(opt);
+    }
+    if(ORIG.length>0){
+      id("startBtn").disabled=false;
+      id("startBtn").textContent=T.start||"시험 시작";
+    } else {
+      id("startBtn").textContent="문제 로드 실패 — 재시도 중...";
+      setTimeout(function(){loadFromSupabase();},3000);
+    }
+  }).catch(function(e){
+    console.warn("Supabase 오류:",e);
+    id("startBtn").textContent="연결 오류 — 재시도 중...";
+    setTimeout(function(){loadFromSupabase();},3000);
+  });
+}
+function onSel(){
+  var v=id("empIdSelect").value;
+  id("directInputWrap").style.display=v==="__direct__"?"block":"none";
+  id("selectedInfo").style.display="none";
+  if(v&&v!=="__direct__"){
+    var s=S.find(function(x){return x.empId===v;});
+    if(s){id("selectedInfo").style.display="block";
+      id("infoText").textContent=(s.name||"-")+" | "+(s.empId||"-")+(s.process?" | "+s.process:"");}
+  }
+}
+function doStart(){
+  var v=id("empIdSelect").value;
+  if(v==="__direct__"){
+    var e=(id("directEmpId").value||"").trim();
+    var n=(id("directName").value||"").trim();
+    if(!e||!n){alert(T.chooseFirst);return;}
+    user={empId:e,name:n,process:"",hireDate:""};
+  }else if(!v||v===""){
+    alert(T.chooseFirst);return;
+  }else{
+    var s=S.find(function(x){return x.empId===v;});
+    if(!s){alert(T.chooseFirst);return;}
+    user={empId:s.empId||"",name:s.name||"",process:s.process||"",hireDate:s.hireDate||""};
+  }
+  if(!ORIG||ORIG.length===0){loadFromSupabase();return;}
+  Q=shuffleQuestions(ORIG);
+  ans=[];for(var i=0;i<Q.length;i++)ans.push(0);
+  cur=0;tsec=DUR;
+  id("hdrName").textContent=user.name;id("hdrEmpId").textContent=user.empId;
+  showScr("examScreen");
+  renderQ();startTimer();
+}
+function startTimer(){
+  clearInterval(tiv);
+  tiv=setInterval(function(){
+    tsec--;
+    var m=Math.floor(tsec/60),s=tsec%60;
+    id("timerDisp").textContent=(m<10?"0":"")+m+":"+(s<10?"0":"")+s;
+    if(tsec===299)alert(T.timerWarn);
+    if(tsec<=60)id("timerDisp").className="exam-timer warn";
+    if(tsec<=0){clearInterval(tiv);alert(T.timeUp);submit(true);}
+  },1000);
+}
+function renderQ(){
+  var q=Q[cur];var total=Q.length;
+  id("progressFill").style.width=Math.round(((cur+1)/total)*100)+"%";
+  id("qCounter").textContent=T.question+" "+(cur+1)+" "+T.of+" "+total;
+  var qTextEl=id("qText");
+  if(T.isBoth&&q.textEs){qTextEl.innerHTML="<span style='font-size:0.95em'>"+esc(q.text)+"</span><br><span style='font-size:0.88em;color:#7fd'>"+esc(q.textEs)+"</span>";}
+  else if(T.isEs&&q.textEs){qTextEl.textContent=q.textEs;}
+  else{qTextEl.textContent=q.text;}
+  var imgEl=id("qImg");
+  if(imgEl){
+    if(q.img){
+      if(imgEl.getAttribute("src")!==q.img){
+        imgEl.style.display="none";
+        imgEl.onload=function(){imgEl.style.display="block";};
+        imgEl.src=q.img;
+      }else{imgEl.style.display="block";}
+    }else{imgEl.style.display="none";imgEl.onload=null;imgEl.removeAttribute("src");}
+  }
+  var ol=id("optionsList");var h="";
+  var lbl=["①","②","③","④"];
+  function esc(v){return String(v==null?"":v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
+  for(var i=0;i<q.opts.length;i++){
+    var optTxt=q.opts[i];
+    if(T.isEs&&q.optsEs&&q.optsEs[i])optTxt=q.optsEs[i];
+    else if(T.isBoth&&q.optsEs&&q.optsEs[i])optTxt=q.opts[i]+" / "+q.optsEs[i];
+    h+='<button type="button" class="opt-btn'+(ans[cur]===(i+1)?" selected":"")+'" data-n="'+(i+1)+'">'+
+      '<span class="onum">'+lbl[i]+'</span><span class="otxt">'+esc(optTxt)+'</span></button>';
+  }
+  ol.innerHTML=h;
+  var bs=ol.querySelectorAll(".opt-btn");
+  for(var i=0;i<bs.length;i++)(function(b){b.addEventListener("click",function(){pickAns(parseInt(b.getAttribute("data-n")));});})(bs[i]);
+  renderDots();renderNav();
+}
+function pickAns(n){ans[cur]=n;renderQ();}
+function renderDots(){
+  var d=id("answerDots");var h="";
+  for(var i=0;i<Q.length;i++)h+='<div class="a-dot'+(ans[i]>0?" answered":"")+(i===cur?" current":"")+'" data-q="'+i+'">'+( i+1)+"</div>";
+  d.innerHTML=h;
+  var ds=d.querySelectorAll(".a-dot");
+  for(var i=0;i<ds.length;i++)(function(el){el.addEventListener("click",function(){goQ(parseInt(el.getAttribute("data-q")));});})(ds[i]);
+}
+function renderNav(){
+  var n=id("navBtns");var h="";
+  var last=cur===Q.length-1;
+  if(cur>0)h+='<button type="button" id="bp" class="btn-prev">'+T.prev+'</button>';
+  if(last)h+='<button type="button" id="bs" class="btn-submit">'+T.submit+'</button>';
+  else h+='<button type="button" id="bn" class="btn-next">'+T.next+'</button>';
+  n.innerHTML=h;
+  if(id("bp"))id("bp").addEventListener("click",function(){goQ(cur-1);});
+  if(id("bn"))id("bn").addEventListener("click",function(){goQ(cur+1);});
+  if(id("bs"))id("bs").addEventListener("click",function(){submit(false);});
+}
+function goQ(n){if(n<0||n>=Q.length)return;cur=n;renderQ();window.scrollTo(0,0);}
+function submit(auto){
+  var u=0;for(var i=0;i<ans.length;i++)if(!ans[i])u++;
+  if(!auto&&u>0&&!confirm(T.unanswered))return;
+  clearInterval(tiv);
+  var el=DUR-tsec;
+  var det=[];var originalAnswers=[];
+  for(var i=0;i<ORIG.length;i++)originalAnswers.push(0);
+  for(var i=0;i<Q.length;i++){
+    var oi=(typeof Q[i].idx==="number")?Q[i].idx:i;
+    originalAnswers[oi]=ans[i];
+    det.push({qNum:oi+1,displayNum:i+1,userAns:ans[i],isCorrect:ans[i]===Q[i].ans});
+  }
+  det.sort(function(a,b){return a.qNum-b.qNum;});
+  var ok=0;for(var i=0;i<det.length;i++)if(det[i].isCorrect)ok++;
+  var theoryScore=ORIG.length>0?Math.round(ok/ORIG.length*100):0;
+  var pl={
+    emp_id:user.empId,name:user.name,process:user.process,
+    date:new Date().toISOString().slice(0,10),
+    correct:ok,
+    theory_raw:ok,theory_raw_max:ORIG.length,
+    theory_weighted:theoryScore,theory_pct:50,
+    practical_raw:0,practical_max:100,
+    practical_weighted:0,practical_pct:50,
+    total_score:Math.round(theoryScore*0.5),
+    passed:theoryScore>=PASS,
+    details:det,
+    practical_item_scores:[],
+    timestamp:Date.now(),
+    team:"",
+    hire_date:user.hireDate||""
+  };
+  showScr("doneScreen");
+  id("doneMsg").textContent=T.isEs?"Enviando al servidor...":"서버에 저장 중...";
+  id("doneDetail").innerHTML="";
+  fetch(SB_URL+"/rest/v1/exam_results_qc1",{
+    method:"POST",
+    headers:{"apikey":SB_ANON,"Authorization":"Bearer "+SB_ANON,"Content-Type":"application/json","Prefer":"return=minimal"},
+    body:JSON.stringify(pl)
+  }).then(function(r){
+    if(!r.ok) throw new Error("HTTP "+r.status);
+    id("doneIcon").textContent="✅";
+    id("doneTitle").textContent="저장 완료!";
+    id("doneMsg").textContent="✅ 서버 저장 완료!";
+    id("doneDetail").innerHTML="결과가 서버에 저장되었습니다.<br>"
+      +"<span style='color:#2ecc71'>정답</span>: <strong>"+ok+"/"+ORIG.length+"</strong>"
+      +(ORIG.length>0?" ("+theoryScore+"%)":"");
+  }).catch(function(e){
+    console.warn("저장 실패:",e);
+    id("doneIcon").textContent="⚠️";
+    id("doneTitle").textContent="연결 오류";
+    id("doneMsg").textContent="오류: "+e.message;
+    id("doneDetail").innerHTML="잠시 후 다시 제출해 주세요 / Intente de nuevo";
+    var json=JSON.stringify({empId:user.empId,name:user.name,process:user.process,
+      examTitle:TITLE,examDate:new Date().toISOString().slice(0,10),
+      answers:originalAnswers,details:det,correct:ok,
+      elapsedSec:el,submittedAt:new Date().toISOString()},null,2);
+    var safe=(user.empId||user.name||"exam").replace(/[^a-zA-Z0-9]/g,"_");
+    var fname=safe+".json";
+    try{
+      var blob=new Blob([json],{type:"application/json"});
+      var a=document.createElement("a");
+      a.href=URL.createObjectURL(blob);a.download=fname;
+      document.body.appendChild(a);a.click();
+      setTimeout(function(){document.body.removeChild(a);URL.revokeObjectURL(a.href);},1500);
+      id("doneDetail").innerHTML=(T.isEs?"Archivo guardado: ":"파일명: ")+"<strong>"+fname+"</strong><br>"+
+        (T.isEs?"Correctas":"정답")+": "+ok+"/"+ORIG.length+"문항";
+    }catch(e2){
+      var w=window.open();if(w)w.document.write("<pre>"+json+"</pre>");
+    }
+  });
+}
+function showScr(s){
+  var all=document.querySelectorAll(".screen");
+  for(var i=0;i<all.length;i++){var c=all[i].className;
+    all[i].className=c.replace(/\s*active\s*/g," ").trim();}
+  var t=id(s);if(t)t.className=(t.className+" active").trim();
+}
+function openImgZoom(src){
+  var ov=id("imgZoomOverlay");if(!ov)return;
+  id("imgZoomImg").src=src;
+  ov.style.display="flex";
+  document.body.style.overflow="hidden";
+}
+function closeImgZoom(){
+  var ov=id("imgZoomOverlay");if(!ov)return;
+  ov.style.display="none";
+  document.body.style.overflow="";
+}</script></body></html>
