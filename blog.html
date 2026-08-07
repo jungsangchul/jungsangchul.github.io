@@ -87,6 +87,11 @@
   .stat-answered{background:rgba(52,211,153,.16);color:var(--green)}
   .stat-pending{background:rgba(251,191,36,.16);color:var(--amber)}
   .stat-selected{background:rgba(227,200,120,.18);color:var(--gold)}
+  .stat-rejected{background:rgba(248,113,113,.16);color:#fca5a5}
+  .d-reject{margin-top:14px;background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.3);border-radius:12px;padding:13px 15px}
+  .d-reject .h{font-size:12px;font-weight:800;color:#fca5a5;margin-bottom:6px}
+  .d-reject .b{font-size:14px;line-height:1.55;white-space:pre-wrap}
+  .d-reject .nt{font-size:11px;color:var(--muted);margin-top:8px}
   .empty{text-align:center;color:var(--muted);font-weight:600;padding:50px 20px;font-size:14px}
 
   .period-bar{display:flex;gap:8px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
@@ -460,7 +465,7 @@ const I18N={
   lCat:"Tipo",catCompany:"Empresa",catPersonal:"Personal",lDept:"Departamento al que va dirigido",deptPh:"Selecciona el departamento…",lTitle:"Asunto",lContent:"Mensaje",phTitle:"Resumen breve",phContent:"Escribe con libertad…",submitAnon:"Enviar anónimo",
   lSearch:"Buscar compañero (nombre o número)",phSearch:"Nombre o M026…",lSelected:"Seleccionado",lReason:"Motivo",phReason:"¿Qué hizo bien? Sé específico…",submitPraise:"Enviar reconocimiento",
   mMonth:"Mes",mQuarter:"Trim.",mYear:"Año",cnt:"reconoc.",
-  author:"Anónimo",ansH:"Respuesta de la empresa",trAns:"Traducir respuesta",trPost:"Traducir al español",trDoing:"Traduciendo…",trHead:"Traducción automática (referencia)",trFail:"Error de traducción (verifica tu internet)",viewsLabel:"Vistas",stPending:"En revisión",stAnswered:"Respondido",stSelected:"Seleccionado",pendingNote:"En revisión. Aún sin respuesta de la empresa.",
+  author:"Anónimo",ansH:"Respuesta de la empresa",trAns:"Traducir respuesta",trPost:"Traducir al español",trDoing:"Traduciendo…",trHead:"Traducción automática (referencia)",trFail:"Error de traducción (verifica tu internet)",viewsLabel:"Vistas",stPending:"En revisión",stAnswered:"Respondido",stSelected:"Seleccionado",stRejected:"No aprobado",rejHead:"📝 Comentario del revisor",rejNote:"Solo tú puedes ver esta publicación y el comentario.",dupPraise:"Ya reconociste a este compañero esta semana. Inténtalo la próxima semana.",pendingNote:"En revisión. Aún sin respuesta de la empresa.",
   adminMh:"Administrador",adminAnon:"Responder buzón",adminPraise:"Revisar reconoc.",adminEmp:"Empleados",lPhoto:"Fotos (opcional, máx 5)",addPhoto:"Adjuntar fotos",camLabel:"Cámara",albumLabel:"Galería",busyImg:"Subiendo imágenes…",imgFail:"No se pudieron subir las imágenes (¿almacenamiento configurado?)",visToday:"Hoy",visTotal:"Total",pasteHint:"💡 También puedes pegar una captura con Ctrl+V.",gpsNote:"📍 Solo se puede publicar dentro de la planta (se valida tu ubicación).",
   idEmpty:"Ingrese su número",idBad:"Número no registrado",netErr:"Error de red",checking:"Verificando…",
   needTitle:"Escriba el asunto",needContent:"Escriba el mensaje",searchEmpty:"Escriba nombre o número",noRes:"Sin resultados",self:"No puede reconocerse a sí mismo",needSel:"Seleccione un compañero",needReason:"Escriba el motivo",
@@ -489,7 +494,7 @@ const I18N={
   lCat:"구분",catCompany:"회사",catPersonal:"개인",lDept:"요청 부서 (민원 대상)",deptPh:"부서를 선택하세요…",lTitle:"제목",lContent:"내용",phTitle:"간단한 요약",phContent:"자유롭게 작성하세요…",submitAnon:"익명으로 제출",
   lSearch:"동료 검색 (이름 또는 사번)",phSearch:"이름 또는 M026…",lSelected:"선택됨",lReason:"칭찬 사유",phReason:"무엇을 잘했나요? 구체적으로…",submitPraise:"칭찬 보내기",
   mMonth:"월",mQuarter:"분기",mYear:"연",cnt:"건 채택",
-  author:"익명",ansH:"회사 답변",trAns:"답변 번역",trPost:"한글 번역",trDoing:"번역 중…",trHead:"한글 번역 (자동 · 참고용)",trFail:"번역 실패 (인터넷 확인)",viewsLabel:"조회",stPending:"검토중",stAnswered:"답변완료",stSelected:"채택",pendingNote:"검토중입니다. 아직 회사 답변이 없습니다.",
+  author:"익명",ansH:"회사 답변",trAns:"답변 번역",trPost:"한글 번역",trDoing:"번역 중…",trHead:"한글 번역 (자동 · 참고용)",trFail:"번역 실패 (인터넷 확인)",viewsLabel:"조회",stPending:"검토중",stAnswered:"답변완료",stSelected:"채택",stRejected:"반려",rejHead:"📝 반려 의견",rejNote:"이 글과 반려 의견은 작성자 본인에게만 표시됩니다.",dupPraise:"이번 주에 이미 이 동료를 칭찬했습니다. 다음 주에 다시 시도하세요.",pendingNote:"검토중입니다. 아직 회사 답변이 없습니다.",
   adminMh:"담당자 전용",adminAnon:"익명 답변",adminPraise:"칭찬 검토",adminEmp:"직원 관리",lPhoto:"사진 (선택, 최대 5장)",addPhoto:"사진 첨부",camLabel:"카메라 촬영",albumLabel:"앨범 선택",busyImg:"이미지 업로드 중…",imgFail:"이미지 업로드 실패 (스토리지 설정 확인)",visToday:"오늘",visTotal:"전체",pasteHint:"💡 캡쳐한 이미지는 Ctrl+V 로 바로 붙여넣을 수 있습니다.",gpsNote:"📍 글쓰기는 공장 반경 내에서만 가능합니다 (위치 확인).",
   idEmpty:"사번을 입력하세요",idBad:"등록되지 않은 사번입니다",netErr:"통신 오류",checking:"확인 중…",
   needTitle:"제목을 입력하세요",needContent:"내용을 입력하세요",searchEmpty:"이름 또는 사번을 입력하세요",noRes:"검색 결과 없음",self:"본인은 칭찬할 수 없습니다",needSel:"칭찬할 동료를 선택하세요",needReason:"칭찬 사유를 입력하세요",
@@ -509,6 +514,8 @@ let factory=CONFIG.FACTORIES[factoryKey]||CONFIG.FACTORIES["1"];
 let me=null,curFilter="all",cat="company",target=null,mode="month";
 const BUCKET="anon-images", MAX_PHOTOS=5; let photoStore={a:[],p:[],nt:[]};
 let anonPosts=[],praisePosts=[],noticePosts=[],viewItems=[],openIdx=null;
+let myRejIds=new Set(); // 본인 작성 반려글 ID (본인에게만 반려 상태·의견 표시)
+function praiseVisible(x){ return x.status!=="rejected" || myRejIds.has(x.id); }
 
 function applyLang(){
   document.documentElement.lang=lang;
@@ -543,15 +550,23 @@ async function loadAll(){
   try{
     const [a,p,n]=await Promise.all([
       getList(CONFIG.T_POSTS, "id,category,department,title,content,status,answer,answered_at,created_at,image_url,image_urls,views", "id,category,title,content,status,answer,answered_at,created_at,image_url,image_urls"),
-      getList(CONFIG.T_PRAISE, "id,target_name,reason,status,created_at,period,image_urls,views", "id,target_name,reason,status,created_at,period,image_urls"),
+      getList(CONFIG.T_PRAISE, "id,target_name,reason,status,reject_reason,created_at,period,image_urls,views", "id,target_name,reason,status,created_at,period,image_urls"),
       getList(CONFIG.T_NOTICE, "id,title,content,title_es,content_es,active,created_at,views,image_urls", "id,title,content,title_es,content_es,active,created_at,views")
     ]);
     anonPosts=a; praisePosts=p; noticePosts=(n||[]).filter(x=>x.active!==false);
   }catch(e){ anonPosts=[]; praisePosts=[]; noticePosts=[]; }
+  // 본인이 작성한 반려글 ID 조회 (반려 의견은 작성자 본인에게만 노출)
+  myRejIds=new Set();
+  if(me&&me.employee_id){
+    try{
+      const r=await fetch(REST(`${CONFIG.T_PRAISE}?praiser_id=eq.${encodeURIComponent(me.employee_id)}&status=eq.rejected&select=id`),{headers:H});
+      if(r.ok){ const d=await r.json(); if(Array.isArray(d)) d.forEach(x=>myRejIds.add(x.id)); }
+    }catch(e){}
+  }
   $("nNotice").textContent=noticePosts.length;
-  $("nAll").textContent=noticePosts.length+anonPosts.length+praisePosts.filter(x=>x.status!=="rejected").length;
+  $("nAll").textContent=noticePosts.length+anonPosts.length+praisePosts.filter(praiseVisible).length;
   $("nAnon").textContent=anonPosts.length;
-  $("nPraise").textContent=praisePosts.filter(x=>x.status!=="rejected").length;
+  $("nPraise").textContent=praisePosts.filter(praiseVisible).length;
   render(); renderRank();
 }
 
@@ -567,7 +582,7 @@ function render(){
   }
   let items=[];
   if(curFilter==="all"||curFilter==="anon") items=items.concat(anonPosts.map(x=>({_t:"anon",...x})));
-  if(curFilter==="all"||curFilter==="praise") items=items.concat(praisePosts.filter(x=>x.status!=="rejected").map(x=>({_t:"praise",...x})));
+  if(curFilter==="all"||curFilter==="praise") items=items.concat(praisePosts.filter(praiseVisible).map(x=>({_t:"praise",...x})));
   items.sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
   // 📢 공지는 항상 목록 맨 위에 고정 (공지 탭에서는 공지만)
   const notices=noticePosts.map(x=>({_t:"notice",...x})).sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
@@ -735,8 +750,9 @@ function anonRow(p,i){
     <div class="r-meta"><span class="r-views" id="rv_${i}">👁 ${p.views||0}</span><span class="r-date">${mmdd(p.created_at)}</span>${stat}</div>${delBtnHtml(i)}<span class="r-exp">▾</span></div>`;
 }
 function praiseRow(p,i){
-  const selected=p.status==="selected";
-  const stat = selected?`<span class="r-stat stat-selected">${t("stSelected")}</span>`:`<span class="r-stat stat-pending">${t("stPending")}</span>`;
+  const stat = p.status==="selected"?`<span class="r-stat stat-selected">${t("stSelected")}</span>`
+             : p.status==="rejected"?`<span class="r-stat stat-rejected">${t("stRejected")}</span>`
+             : `<span class="r-stat stat-pending">${t("stPending")}</span>`;
   return `<div class="row" data-i="${i}"><div class="r-main"><span class="r-chip chip-praise">🏆 ${t("tabPraise")}</span><span class="r-title">${esc(p.target_name)}</span></div>
     <div class="r-meta"><span class="r-views" id="rv_${i}">👁 ${p.views||0}</span><span class="r-date">${mmdd(p.created_at)}</span>${stat}</div>${delBtnHtml(i)}<span class="r-exp">▾</span></div>`;
 }
@@ -767,6 +783,9 @@ function detailBodyHtml(p, sfx){
   } else {
     transText=p.reason||"";
     html=`<div class="d-reason">${esc(p.reason)}</div>${galleryHtml(p)}`;
+    if(p.status==="rejected"&&myRejIds.has(p.id)){
+      html+=`<div class="d-reject"><div class="h">${t("rejHead")}</div><div class="b">${esc(p.reject_reason||"-")}</div><div class="nt">🔒 ${t("rejNote")}</div></div>`;
+    }
   }
   const needTr = transText.trim() && (lang==="ko" ? !isMostlyHangul(transText) : hasHangul(transText));
   if(needTr){
@@ -823,7 +842,9 @@ function openDetail(i){
     const stat = p.status==="answered"?`<span class="r-stat stat-answered">${t("stAnswered")}</span>`:`<span class="r-stat stat-pending">${t("stPending")}</span>`;
     head=`<div class="d-meta">${chip}${dchip}${stat}<span class="r-date" style="margin-left:auto">${mmdd(p.created_at)}</span></div><div class="d-title">${esc(p.title)}</div>`;
   } else {
-    const stat = p.status==="selected"?`<span class="r-stat stat-selected">${t("stSelected")}</span>`:`<span class="r-stat stat-pending">${t("stPending")}</span>`;
+    const stat = p.status==="selected"?`<span class="r-stat stat-selected">${t("stSelected")}</span>`
+               : p.status==="rejected"?`<span class="r-stat stat-rejected">${t("stRejected")}</span>`
+               : `<span class="r-stat stat-pending">${t("stPending")}</span>`;
     head=`<div class="d-meta"><span class="r-chip chip-praise">🏆 ${t("tabPraise")}</span>${stat}<span class="r-date" style="margin-left:auto">${mmdd(p.created_at)}</span></div><div class="d-target">${esc(p.target_name)}</div>`;
   }
   $("detailBody").innerHTML = head + detailBodyHtml(p,"m");
@@ -1040,6 +1061,33 @@ function selectTarget(id,nm){
   $("selWrap").style.display="block"; setTimeout(()=>$("pReason").focus(),100);
 }
 $("selX").onclick=()=>{ target=null; $("selWrap").style.display="none"; $("pReason").value=""; setTimeout(()=>$("searchIn").focus(),100); };
+// ============================================
+// 디바이스 핑거프린트 (화면 비노출, 관리자 어뷰징 탐지용)
+// ============================================
+async function getDeviceFingerprint(){
+  let devId=localStorage.getItem("yh_device_id");
+  if(!devId){
+    devId=(window.crypto&&crypto.randomUUID)?crypto.randomUUID():Date.now().toString(36)+Math.random().toString(36).slice(2,10);
+    localStorage.setItem("yh_device_id",devId);
+  }
+  const raw=[navigator.userAgent,navigator.language,screen.width+"x"+screen.height,screen.colorDepth,Intl.DateTimeFormat().resolvedOptions().timeZone,navigator.hardwareConcurrency||"",navigator.maxTouchPoints||""].join("|");
+  let hw="";
+  try{
+    const buf=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(raw));
+    hw=Array.from(new Uint8Array(buf)).slice(0,8).map(b=>b.toString(16).padStart(2,"0")).join("");
+  }catch(e){ let h=0; for(let i=0;i<raw.length;i++){h=((h<<5)-h+raw.charCodeAt(i))|0;} hw=(h>>>0).toString(16); }
+  return devId.replace(/-/g,"").slice(0,8)+"-"+hw;
+}
+// 같은 기기 → 같은 대상 칭찬: 7일 1회 제한
+async function checkPraiseDuplicate(fp,targetName){
+  const weekAgo=new Date(Date.now()-7*24*3600*1000).toISOString();
+  try{
+    const r=await fetch(REST(`${CONFIG.T_PRAISE}?fingerprint=eq.${encodeURIComponent(fp)}&target_name=eq.${encodeURIComponent(targetName)}&created_at=gte.${encodeURIComponent(weekAgo)}&select=id&limit=1`),{headers:H});
+    if(!r.ok) return false;
+    const d=await r.json(); return Array.isArray(d)&&d.length>0;
+  }catch(e){ return false; } // 조회 실패 시 등록 허용
+}
+
 $("pSubmit").onclick=submitPraise;
 async function submitPraise(){
   $("pMsg").textContent="";
@@ -1047,6 +1095,10 @@ async function submitPraise(){
   if(me&&target.employee_id===me.employee_id){ badFlood(t("badErr"), t("dupSelf")); return; }
   const reason=$("pReason").value.trim();
   if(!reason){ $("pMsg").textContent=t("needReason"); return; }
+  // 핑거프린트 중복 검사 (관리자 사번은 면제 — 대리 등록 허용)
+  const isAdminWriter = me && CONFIG.WRITE_ANYWHERE_IDS.map(x=>x.toUpperCase()).includes((me.employee_id||"").toUpperCase());
+  const fp = await getDeviceFingerprint();
+  if(!isAdminWriter && await checkPraiseDuplicate(fp, target.name)){ badFlood(t("badErr"), t("dupPraise")); return; }
   if(!(await gpsOk())) return;
   let urls=[];
   if(photoStore.p.length){
@@ -1055,7 +1107,7 @@ async function submitPraise(){
     if(!urls){ badFlood(t("badErr"), t("imgFail")); return; }
   }
   busy(t("busySave"));
-  const body={period:periodNow(),factory:factoryKey,praiser_id:me.employee_id,target_id:target.employee_id,target_name:target.name,reason};
+  const body={period:periodNow(),factory:factoryKey,praiser_id:me.employee_id,target_id:target.employee_id,target_name:target.name,reason,fingerprint:fp};
   if(urls.length) body.image_urls=urls;
   try{
     const r=await fetch(REST(CONFIG.T_PRAISE),{method:"POST",headers:{...H,"Prefer":"return=minimal"},body:JSON.stringify(body)});

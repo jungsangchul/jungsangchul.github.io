@@ -53,6 +53,15 @@
   .detail .r:last-child{border-bottom:none}
   .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#16a34a;color:#fff;padding:12px 22px;border-radius:12px;font-weight:800;opacity:0;transition:opacity .2s;pointer-events:none;z-index:30}
   .toast.show{opacity:1}
+  .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:40;padding:20px}
+  .modal-bg.show{display:flex}
+  .modal-box{background:#1e293b;border:1px solid #334155;border-radius:16px;padding:20px;width:100%;max-width:440px;box-shadow:0 24px 60px rgba(0,0,0,.55)}
+  .modal-box h3{margin:0 0 4px;font-size:16px}
+  .modal-box .mh{font-size:12px;color:var(--muted);margin-bottom:12px}
+  .modal-box textarea{width:100%;box-sizing:border-box;min-height:110px;background:#0f172a;border:1px solid #334155;border-radius:12px;color:#e2e8f0;padding:12px;font-size:14px;font-family:inherit;resize:vertical}
+  .modal-box textarea:focus{outline:none;border-color:var(--gold)}
+  .modal-acts{display:flex;gap:8px;margin-top:14px}
+  .modal-acts .btn{flex:1}
   .langtog{display:inline-flex;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.35);border-radius:9px;overflow:hidden}
   .langtog button{border:none;background:transparent;color:#fff;font-weight:800;font-size:12px;padding:8px 11px;cursor:pointer;line-height:1;opacity:.7}
   .langtog button.on{background:#fff;color:#92400e;opacity:1}
@@ -114,6 +123,18 @@
   </div>
 </div>
 
+<div class="modal-bg" id="rejModal">
+  <div class="modal-box">
+    <h3 data-i18n="rejMTitle">반려 의견</h3>
+    <div class="mh" data-i18n="rejMHint">작성자 본인에게만 표시됩니다. 비워두고 반려할 수도 있습니다.</div>
+    <textarea id="rejReason" data-i18n-ph="rejMPh" placeholder="반려 사유를 입력하세요…"></textarea>
+    <div class="modal-acts">
+      <button class="btn gray" id="rejCancel" data-i18n="rejMCancel">취소</button>
+      <button class="btn red" id="rejConfirm" data-i18n="rejMOk">반려 처리</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -136,6 +157,7 @@ const I18N={
   trBtn:"🇰🇷 Traducir (KO)",trHead:"🇰🇷 한글 번역 (자동 · 참고용)",translating:"번역 중…",trFail:"Traducción fallida (revise internet)",
   from:(by,per)=>`Reconoció: ${by} · Periodo ${per}`,btnSelect:"Seleccionar",btnReject:"Rechazar",btnDel:"Eliminar",
   delConfirm:"¿Eliminar este reconocimiento definitivamente?",delFail:"Error al eliminar",deleted:"Eliminado",actFail:"Error al procesar",selected:"Seleccionado",rejected:"Rechazado",
+  rejMTitle:"Comentario de rechazo",rejMHint:"Solo el autor podrá verlo. También puede rechazar sin comentario.",rejMPh:"Escriba el motivo del rechazo…",rejMCancel:"Cancelar",rejMOk:"Rechazar",
   mMonth:"Mes",mQuarter:"Trim.",mYear:"Año",yearSuffix:"",monthSuffix:"",
   quarterLabels:["T1 (ene–mar)","T2 (abr–jun)","T3 (jul–sep)","T4 (oct–dic)"],
   awardHint:"Por reconocimientos seleccionados · de mayor a menor. Clic en una fila para ver los motivos.",
@@ -148,6 +170,7 @@ const I18N={
   trBtn:"🇰🇷 한글 번역",trHead:"🇰🇷 한글 번역 (자동 · 참고용)",translating:"번역 중…",trFail:"번역 실패 (인터넷 연결 확인)",
   from:(by,per)=>`칭찬한 사람: ${by} · 기간 ${per}`,btnSelect:"채택",btnReject:"반려",btnDel:"삭제",
   delConfirm:"이 칭찬을 완전히 삭제할까요?",delFail:"삭제 실패",deleted:"삭제됨",actFail:"처리 실패",selected:"채택되었습니다",rejected:"반려되었습니다",
+  rejMTitle:"반려 의견",rejMHint:"작성자 본인에게만 표시됩니다. 비워두고 반려할 수도 있습니다.",rejMPh:"반려 사유를 입력하세요…",rejMCancel:"취소",rejMOk:"반려 처리",
   mMonth:"월",mQuarter:"분기",mYear:"연",yearSuffix:"년",monthSuffix:"월",
   quarterLabels:["1분기(1~3월)","2분기(4~6월)","3분기(7~9월)","4분기(10~12월)"],
   awardHint:"채택된 칭찬 기준 · 많이 받은 순. 행을 클릭하면 사유가 펼쳐집니다.",
@@ -224,6 +247,7 @@ function renderReview(){
   rows.forEach(p=>{ const tr=$("tr_"+p.id); if(tr) tr.onclick=()=>doTranslate(p.id, p.reason||""); });
 }
 
+let rejPendingId=null;
 async function act(id, action){
   if(action==="delete"){
     if(!confirm(t("delConfirm"))) return;
@@ -231,13 +255,31 @@ async function act(id, action){
       if(!r.ok){ toast(t("delFail")); return; } toast(t("deleted")); await load(); }catch(e){ toast(t("netErr")); }
     return;
   }
+  if(action==="rejected"){ // 반려는 의견 입력 모달을 거친다
+    rejPendingId=id; $("rejReason").value="";
+    $("rejModal").classList.add("show");
+    setTimeout(()=>$("rejReason").focus(),100);
+    return;
+  }
+  await patchStatus(id, action, null);
+}
+async function patchStatus(id, action, rejectReason){
   const body={ status:action, reviewed_by:CONFIG.REVIEWER, reviewed_at:new Date().toISOString() };
+  if(action==="rejected") body.reject_reason=(rejectReason||"").trim()||null;
   try{
     const r=await fetch(REST(`${CONFIG.T_PRAISE}?id=eq.${id}`),{method:"PATCH",headers:{...H,"Prefer":"return=minimal"},body:JSON.stringify(body)});
     if(!r.ok){ console.error(await r.text()); toast(t("actFail")); return; }
     toast(action==="selected"?t("selected"):t("rejected")); await load();
   }catch(e){ toast(t("netErr")); }
 }
+$("rejCancel").onclick=()=>{ rejPendingId=null; $("rejModal").classList.remove("show"); };
+$("rejModal").onclick=e=>{ if(e.target===$("rejModal")){ rejPendingId=null; $("rejModal").classList.remove("show"); } };
+$("rejConfirm").onclick=async()=>{
+  if(rejPendingId==null) return;
+  const id=rejPendingId, reason=$("rejReason").value;
+  rejPendingId=null; $("rejModal").classList.remove("show");
+  await patchStatus(id, "rejected", reason);
+};
 
 /* 기간 선택 */
 function setupPeriodSelectors(){
