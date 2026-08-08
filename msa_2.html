@@ -1,0 +1,2267 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/png" href="/favicon.png">
+<title>MSA 측정시스템 분석 · 2공장 · YURA HARNESS MÉXICO</title>
+<style>
+:root{
+  --navy:#0f2b4c; --navy2:#17395f; --gold:#c9a227; --gold-l:#e8c95a;
+  --ok:#1e874b; --ng:#c0392b; --warn:#d68910;
+  --bg:#eef1f5; --card:#fff; --line:#d5dbe3; --txt:#1c2733; --mut:#6b7887;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;font-family:'Malgun Gothic','맑은 고딕',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  background:var(--bg);color:var(--txt);font-size:14px;line-height:1.5}
+.topbar{position:sticky;top:0;z-index:100;box-shadow:0 3px 12px rgba(0,0,0,.22)}
+header{background:linear-gradient(135deg,var(--navy),var(--navy2));color:#fff;padding:12px 16px 10px}
+header h1{margin:0;font-size:17px;font-weight:700;letter-spacing:-.3px}
+header h1 span{color:var(--gold-l)}
+header p{margin:2px 0 0;font-size:11px;color:#b9c6d6}
+.tabwrap{background:#0a2038;padding:5px 14px 6px}
+.langbtn{position:absolute;top:12px;right:14px;background:rgba(255,255,255,.14);color:#fff;
+  border:1px solid rgba(255,255,255,.32);padding:5px 13px;font-size:12px;font-weight:700;border-radius:14px}
+.langbtn:hover{background:rgba(255,255,255,.24)}
+header{position:relative}
+nav.tabs{display:flex;gap:2px;max-width:1200px;margin:0 auto;overflow-x:auto}
+nav.tabs button{flex:1;min-width:120px;background:transparent;color:#9fb1c6;border:0;padding:10px 8px;
+  border-radius:5px}
+nav.tabs button.on{background:var(--gold);color:#3a2c00}
+@media(max-width:520px){header p{display:none} header{padding:10px 14px 8px} header h1{font-size:15px}}
+.wrap{max-width:1200px;margin:0 auto;padding:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:14px}
+.card>h2{margin:0 0 12px;font-size:14px;font-weight:700;color:var(--navy);
+  border-left:4px solid var(--gold);padding-left:8px}
+.card>h2 small{font-weight:400;color:var(--mut);font-size:11px;margin-left:6px}
+label{display:block;font-size:11px;font-weight:700;color:var(--mut);margin-bottom:4px}
+input,select,textarea{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:6px;
+  font-size:14px;font-family:inherit;background:#fff;color:var(--txt)}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--gold);outline-offset:-1px;border-color:var(--gold)}
+textarea{resize:vertical;min-height:64px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px}
+.grid{display:grid;gap:10px}
+.g2{grid-template-columns:repeat(2,1fr)} .g3{grid-template-columns:repeat(3,1fr)}
+.g4{grid-template-columns:repeat(4,1fr)}
+@media(max-width:760px){.g3,.g4{grid-template-columns:repeat(2,1fr)}}
+button{font-family:inherit;font-size:13px;font-weight:700;padding:10px 14px;border-radius:6px;
+  border:1px solid transparent;cursor:pointer;transition:filter .15s}
+button:active{filter:brightness(.9)}
+.btn{background:var(--navy);color:#fff}
+.btn-gold{background:var(--gold);color:#3a2c00}
+.btn-line{background:#fff;color:var(--navy);border-color:var(--navy)}
+.btn-sm{padding:6px 10px;font-size:12px}
+.btn-danger{background:var(--ng);color:#fff}
+.delbtn{background:#fff;color:var(--ng);border:1px solid var(--ng);padding:3px 9px;font-size:11px;border-radius:5px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.panel{display:none} .panel.on{display:block}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th,td{border:1px solid var(--line);padding:6px 8px;text-align:center}
+th{background:#f2f5f9;color:var(--navy);font-weight:700;font-size:11px;white-space:nowrap}
+tbody tr:nth-child(even){background:#fafbfd}
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.pill{display:inline-block;padding:2px 9px;border-radius:11px;font-size:11px;font-weight:700}
+.p-ok{background:#e3f4ea;color:var(--ok)} .p-ng{background:#fbe6e3;color:var(--ng)}
+.p-wa{background:#fdf1dd;color:var(--warn)} .p-mut{background:#eceff3;color:var(--mut)}
+
+/* ── 세로형 인원 리스트 ── */
+.emplist{border:1px solid var(--line);border-radius:8px;background:#fff;
+  max-height:340px;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.emphd{display:flex;align-items:center;gap:8px;padding:7px 10px;background:#f2f5f9;
+  border-bottom:1px solid var(--line);font-size:11px;font-weight:700;color:var(--navy);
+  position:sticky;top:0;z-index:2}
+.emphd .c-ord{width:30px;flex:0 0 30px;text-align:center}
+.emphd .c-nm{flex:1}
+.emphd .c-gr{width:62px;flex:0 0 62px;text-align:center}
+.emprow{display:flex;align-items:center;gap:8px;padding:6px 10px;border-bottom:1px solid #eef1f5;cursor:pointer}
+.emprow:last-child{border-bottom:0}
+.emprow:hover{background:#f7f9fc}
+.emprow.on{background:#eef4fb}
+.emprow .c-ord{width:30px;flex:0 0 30px;height:24px;border-radius:12px;display:flex;
+  align-items:center;justify-content:center;font-size:11px;font-weight:800;
+  background:#eceff3;color:#aab3bf}
+.emprow.on .c-ord{background:var(--navy);color:#fff}
+.emprow .c-nm{flex:1;min-width:0;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.emprow.on .c-nm{font-weight:700}
+.emprow .c-nm small{color:var(--mut);font-size:11px;margin-left:6px}
+.emprow .c-gr{width:62px;flex:0 0 62px;text-align:center;font-size:11px;font-weight:700;color:var(--gold)}
+@media(max-width:520px){.emprow .c-nm{font-size:12px}}
+
+.cellrow{display:flex;gap:3px;min-width:max-content;padding:2px 0}
+.cell{width:34px;height:34px;flex:0 0 34px;border:1px solid var(--line);border-radius:5px;background:#fff;
+  font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;user-select:none;color:#aab3bf}
+.cell.ok{background:var(--ok);color:#fff;border-color:var(--ok)}
+.cell.ng{background:var(--ng);color:#fff;border-color:var(--ng)}
+.cell.hd{background:#f2f5f9;color:var(--navy);cursor:default;font-size:10px}
+.cell.miss{box-shadow:inset 0 0 0 3px var(--gold)}
+.opblk{border:1px solid var(--line);border-radius:8px;padding:10px;margin-bottom:10px;background:#fcfdff}
+.opblk h3{margin:0 0 8px;font-size:13px;color:var(--navy);display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.gtabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.gtab{padding:7px 14px;border-radius:6px;border:1px solid var(--line);background:#fff;
+  font-size:12px;font-weight:700;cursor:pointer;color:var(--mut)}
+.gtab.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+.gtab.filled{border-color:var(--gold);color:var(--navy)}
+.gtab.filled.on{color:#fff}
+.gmem{font-size:12px;color:var(--navy);background:#f7f9fc;border:1px solid var(--line);
+  border-radius:6px;padding:8px 10px;margin-bottom:10px}
+.gmem b{color:var(--gold)}
+.kpi{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+@media(max-width:760px){.kpi{grid-template-columns:repeat(2,1fr)}}
+.kpi div{background:#f7f9fc;border:1px solid var(--line);border-radius:8px;padding:10px;text-align:center}
+.kpi b{display:block;font-size:20px;color:var(--navy);font-weight:800}
+.kpi span{font-size:10px;color:var(--mut)}
+.note{font-size:11px;color:var(--mut);margin:6px 0 0}
+input.num{width:62px;padding:5px 4px;text-align:center;font-size:12px;
+  font-family:ui-monospace,Menlo,Consolas,monospace}
+#toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(90px);
+  background:var(--navy);color:#fff;padding:11px 20px;border-radius:24px;font-size:13px;font-weight:700;
+  z-index:999;transition:transform .25s;box-shadow:0 6px 18px rgba(0,0,0,.25);max-width:88vw;text-align:center}
+#toast.on{transform:translateX(-50%) translateY(0)}
+
+/* ── 6분할 차트 ── */
+.chartgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+@media(max-width:1000px){.chartgrid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:660px){.chartgrid{grid-template-columns:1fr}}
+.chartbox{border:1px solid var(--line);border-radius:8px;background:#fff;padding:5px}
+.chartbox canvas{width:100%;display:block;border:0;background:transparent}
+hr{border:0;border-top:1px dashed var(--line);margin:14px 0}
+.empty{text-align:center;color:var(--mut);padding:26px;font-size:13px}
+tr.clickrow{cursor:pointer}
+tr.clickrow:hover{background:#eef4fb!important}
+tr.clickrow td:first-child::after{content:' ▸';color:var(--gold);font-weight:800}
+.modal{position:fixed;inset:0;background:rgba(15,43,76,.55);z-index:500;display:none;
+  align-items:flex-start;justify-content:center;padding:16px;overflow-y:auto}
+.modal.on{display:flex}
+.modalbox{background:#fff;border-radius:10px;max-width:1120px;width:100%;margin:auto;
+  box-shadow:0 12px 40px rgba(0,0,0,.32)}
+.modalhd{display:flex;justify-content:space-between;align-items:center;gap:10px;
+  padding:12px 14px;border-bottom:1px solid var(--line);position:sticky;top:0;background:#fff;
+  border-radius:10px 10px 0 0;z-index:3}
+.modalhd h3{margin:0;font-size:14px;font-weight:700;color:var(--navy)}
+.modalbody{padding:14px}
+.modalbody h4{margin:14px 0 8px;font-size:12px;color:var(--navy);
+  border-left:3px solid var(--gold);padding-left:7px}
+.modalbody h4:first-child{margin-top:0}
+.glos{font-size:11.5px;color:#4a5560;line-height:1.75;background:#f7f9fc;
+  border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin-top:10px}
+.glos b{color:var(--navy)}
+.glos table{margin:8px 0}
+.glos .interp{margin-top:8px;padding-top:8px;border-top:1px dashed var(--line);color:var(--navy)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+
+<div class="topbar">
+  <header>
+    <button class="langbtn" id="langBtn" onclick="toggleLang()">ES</button>
+    <h1>MSA <span>측정시스템 분석 · 2공장 (Torreón)</span></h1>
+    <p>Análisis del Sistema de Medición — YURA HARNESS MÉXICO</p>
+  </header>
+  <div class="tabwrap">
+    <nav class="tabs">
+      <button class="on" data-t="att">계수형 Gage R&amp;R</button>
+      <button data-t="var">계량형 Gage R&amp;R</button>
+      <button data-t="hist">이력 조회</button>
+      <button data-t="admin">관리자</button>
+    </nav>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- ══ 인원 선택 ══ -->
+  <div class="card">
+    <h2>평가자 선정 <small>Selección de personal</small></h2>
+    <div class="grid g3">
+      <div>
+        <label>공장 (Planta)</label>
+        <select id="fFactory" disabled style="opacity:0.7;cursor:not-allowed">
+          <option value="2" selected>2공장 (Torreón)</option>
+        </select>
+      </div>
+      <div>
+        <label>팀 (Equipo)</label>
+        <select id="fTeam"><option value="">— 전체 팀 —</option></select>
+      </div>
+      <div>
+        <label>검색 (Buscar)</label>
+        <input id="fSearch" placeholder="이름 / 사번">
+      </div>
+    </div>
+    <div style="margin-top:10px">
+      <div class="row" style="justify-content:space-between;margin-bottom:6px">
+        <label style="margin:0">선택 인원 <span id="selCnt" class="pill p-mut">0명</span>
+          <span id="grpCnt" class="pill p-mut"></span></label>
+        <button class="btn-line btn-sm" onclick="selAll(false)">전체해제</button>
+      </div>
+      <div class="emplist" id="empList">
+        <div class="emphd"><div class="c-ord">순번</div><div class="c-nm">이름 / Nombre</div>
+          <div class="c-gr">조</div></div>
+        <div class="empty">불러오는 중…</div>
+      </div>
+      <p class="note">이름을 누르면 선택·해제됩니다. 계량형은 <b>선택 순서대로 3명씩 1개 조</b>가 자동 편성되며,
+        오른쪽 「조」 칸에 배정 결과가 표시됩니다. 계수형은 선택된 인원 전체가 평가 대상입니다.</p>
+    </div>
+  </div>
+
+  <!-- ══════════ 계수형 ══════════ -->
+  <section class="panel on" id="p-att">
+    <div class="card">
+      <h2>평가 조건 <small>Condiciones — Gage R&amp;R por Atributos</small></h2>
+      <div class="grid g4">
+        <div><label>평가명</label><input id="aTitle" placeholder="압착부 외관 판정"></div>
+        <div><label>공정 (Proceso)</label><input id="aProc" placeholder="자동절단압착"></div>
+        <div><label>평가일</label><input type="date" id="aDate"></div>
+        <div><label>평가주기 (Periodo)</label>
+          <div style="display:flex;gap:6px">
+            <select id="aYear" style="flex:0 0 42%"></select><select id="aQtr"></select>
+          </div></div>
+        <div><label>시료수 (Muestras)</label><input type="number" id="aSamples" value="20" min="2" max="60"></div>
+        <div><label>반복수 (Ensayos)</label><input type="number" id="aTrials" value="3" min="1" max="5"></div>
+        <div><label>E 기준 (≥)</label><input type="number" id="cE" value="0.90" step="0.01"></div>
+        <div><label>PFA 기준 (≤)</label><input type="number" id="cFa" value="0.05" step="0.01"></div>
+        <div><label>PMISS 기준 (≤)</label><input type="number" id="cMs" value="0.02" step="0.01"></div>
+      </div>
+      <div style="margin-top:10px">
+        <label>PFA / PMISS 분모 기준</label>
+        <select id="aDenom">
+          <option value="sample">시료수 기준 (현행 엑셀과 동일)</option>
+          <option value="eval">시료수 × 반복수 기준 (AIAG)</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>시료 참값 <small>Valor de referencia</small></h2>
+      <div class="row" style="margin-bottom:8px">
+        <button class="btn-line btn-sm" onclick="refAll('OK')">전체 OK</button>
+        <button class="btn-line btn-sm" onclick="refAll('NG')">전체 NG</button>
+        <button class="btn-line btn-sm" onclick="refHalf()">OK/NG 반반 무작위</button>
+      </div>
+      <div class="scroll"><div id="refGrid"></div></div>
+      <p class="note">셀을 누르면 OK ↔ NG 로 바뀝니다.</p>
+    </div>
+
+    <div class="card">
+      <h2>작업자별 판정 입력 <small>Evaluación por operador</small></h2>
+      <div id="attInput"><div class="empty">평가자를 먼저 선택하세요</div></div>
+    </div>
+
+    <div class="card">
+      <h2>판정 결과 <small>Informe — 계수형 / Atributos</small></h2>
+      <div id="attResult"><div class="empty">판정을 입력하면 자동 계산됩니다</div></div>
+      <div class="row" style="margin-top:12px">
+        <button class="btn" onclick="saveAtt()">Supabase 저장</button>
+        <button class="btn-gold" onclick="exportAttXlsx()">엑셀 내려받기</button>
+        <button class="btn-line" onclick="window.print()">인쇄</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ 계량형 ══════════ -->
+  <section class="panel" id="p-var">
+    <div class="card">
+      <h2>공통 조건 <small>Condiciones comunes</small></h2>
+      <div class="grid g4">
+        <div><label>평가명</label><input id="vTitle" placeholder="압착고 측정 R&R"></div>
+        <div><label>평가일</label><input type="date" id="vDate"></div>
+        <div><label>평가주기 (Periodo)</label>
+          <div style="display:flex;gap:6px">
+            <select id="vYear" style="flex:0 0 42%"></select><select id="vQtr"></select>
+          </div></div>
+        <div><label>시료수 (2~10)</label><input type="number" id="vParts" value="10" min="2" max="10"></div>
+        <div><label>측정횟수 (2~3)</label><input type="number" id="vTrials" value="3" min="2" max="3"></div>
+        <div style="grid-column:span 4">
+          <label>계산 방식</label>
+          <select id="vRound">
+            <option value="1">엑셀과 동일 (EV·AV·GRR·PV·TV 소수 4자리 반올림)</option>
+            <option value="0">반올림 없이 정밀 계산</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>조 선택 <small>Entrada de grupo</small></h2>
+      <div class="gtabs" id="gTabs"></div>
+      <div class="gmem" id="gMem">선택된 인원이 없습니다</div>
+      <div class="grid g4">
+        <div><label>계측기 NO (N.º de medidor)</label><input id="vGage" placeholder="95061941"></div>
+        <div><label>규격상한 USL</label><input type="number" id="vUsl" step="0.001" placeholder="1.080"></div>
+        <div><label>규격하한 LSL</label><input type="number" id="vLsl" step="0.001" placeholder="0.980"></div>
+        <div><label>규격공차 (Tolerancia)</label><input type="number" id="vTol" step="0.001" placeholder="0.100"></div>
+      </div>
+      <div style="margin-top:10px">
+        <label>조치계획 (Plan de acción)</label>
+        <select id="vAction">
+          <option value="">— 선택 —</option>
+          <option>Capacitación en medición (측정 교육)</option>
+          <option>Calibración de instrumentos (계측기 교정)</option>
+          <option>Baja de instrumentos (계측기 폐기)</option>
+          <option>Reevaluación post-capacitación (교육 후 재평가)</option>
+        </select>
+      </div>
+      <p class="note" id="vTolNote">계측기·규격·조치계획은 <b>조별로 따로</b> 저장됩니다. USL·LSL을 넣으면 공차가 자동 계산됩니다.</p>
+    </div>
+
+    <div class="card">
+      <h2>측정값 입력 <small>Ingreso de datos de medición</small></h2>
+      <div id="varInput"><div class="empty">인원을 선택하면 조가 자동 편성됩니다</div></div>
+      <div class="row" style="margin-top:8px">
+        <button class="btn" onclick="calcVar()">계산</button>
+        <button class="btn-line btn-sm" onclick="clearGroupData()">이 조 지우기</button>
+      </div>
+      <div style="margin-top:10px">
+        <label>일괄 붙여넣기 (한 줄 = 한 측정자·한 회차, 시료 순서대로)</label>
+        <textarea id="vPaste" placeholder="0.850&#9;0.868&#9;0.885 …"></textarea>
+        <button class="btn-line btn-sm" style="margin-top:6px" onclick="applyPaste()">붙여넣기 적용</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>조 분석 결과 <small>Resultados — 계량형 / Variable (Xbar-R)</small></h2>
+      <div id="varResult"><div class="empty">측정값을 입력하면 자동 계산됩니다</div></div>
+    </div>
+
+    <div class="card">
+      <h2>그래프 <small>Gráficas de Gage R&amp;R</small></h2>
+      <div class="chartgrid">
+        <div class="chartbox"><canvas id="cv1" height="200"></canvas></div>
+        <div class="chartbox"><canvas id="cv2" height="200"></canvas></div>
+        <div class="chartbox"><canvas id="cv3" height="200"></canvas></div>
+        <div class="chartbox"><canvas id="cv4" height="200"></canvas></div>
+        <div class="chartbox"><canvas id="cv5" height="200"></canvas></div>
+        <div class="chartbox"><canvas id="cv6" height="200"></canvas></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>전체 조 요약 <small>Resultados de Gage R&amp;R</small></h2>
+      <div class="scroll" id="varSummary"><div class="empty">계산된 조가 없습니다</div></div>
+      <div class="row" style="margin-top:12px">
+        <button class="btn" onclick="saveVar()">전체 조 저장</button>
+        <button class="btn-gold" onclick="exportVarXlsx()">엑셀 내려받기</button>
+        <button class="btn-line" onclick="window.print()">인쇄</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>판정 기준 <small>Criterios</small></h2>
+      <div class="scroll">
+        <table>
+          <thead><tr><th>구분</th><th>우수 (Excelente)</th><th>양호 (Bueno)</th><th>부족 (Insuficiente)</th></tr></thead>
+          <tbody>
+            <tr><td>% Contribution</td><td>1% 미만</td><td>1 ~ 9%</td><td>9% 초과</td></tr>
+            <tr><td>% Tolerance (5.15σ)</td><td>10% 미만</td><td>10 ~ 30%</td><td>30% 초과</td></tr>
+            <tr><td>distinct categories (ndc)</td><td>10 초과</td><td>4 ~ 10</td><td>4 미만</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="note">세 항목 중 가장 낮은 수준이 최종 등급이며, 우수·양호는 Aprobado(합격), 부족은 No aprobado(불합격)입니다.
+        규격공차를 입력하지 않으면 % Tolerance 는 제외되고 나머지 두 항목으로만 판정합니다.</p>
+      <hr>
+      <p class="note" style="line-height:1.7">
+        <b>% Contribution</b> — 전체 변동 중 측정시스템(사람+계측기)이 차지하는 <b>분산</b> 비율. 낮을수록 좋습니다.<br>
+        <b>% Tolerance</b> — 측정오차 폭(5.15σ)이 제품 규격공차의 몇 %를 잡아먹는지. 규격 대비 계측기가 쓸 만한지를 봅니다.<br>
+        <b>ndc (distinct categories, 구분 범주 수)</b> — 이 측정시스템이 부품 간 차이를 <b>몇 단계로 구분해 낼 수 있는지</b>를 뜻합니다.
+        1.41 × PV / GRR 로 계산하며, ndc = 9 라면 시료들을 9개 등급으로 나눠 볼 수 있을 만큼 분해능이 있다는 의미입니다.
+        AIAG 는 최소 5 이상을 요구하고, 이 기준표에서는 10 초과 우수 · 4~10 양호 · 4 미만 부족으로 봅니다.
+        값이 작으면 측정오차가 부품 편차에 묻혀 합격/불합격 구분이 어려워집니다.</p>
+    </div>
+  </section>
+
+  <!-- ══════════ 관리자 ══════════ -->
+  <section class="panel" id="p-admin">
+    <div class="card" id="admGate">
+      <h2>관리자 인증 <small>Acceso de administrador</small></h2>
+      <div class="grid g3">
+        <div><label>비밀번호 (Contraseña)</label><input type="password" id="admPin" autocomplete="off"
+          placeholder="관리자 비밀번호" onkeydown="if(event.key==='Enter')admLogin()"></div>
+        <div style="display:flex;align-items:flex-end">
+          <button class="btn" style="width:100%" onclick="admLogin()">확인</button></div>
+      </div>
+      <p class="note">관리자 전용 기능입니다. 비밀번호는 파일 상단 <b>ADMIN_PIN</b> 값에서 변경할 수 있습니다.</p>
+    </div>
+
+    <div id="admBody" style="display:none">
+      <div class="card">
+        <h2>계량형 시험데이터 생성 <small>Generador de datos de prueba</small></h2>
+        <div class="grid g4" style="margin-top:12px">
+          <div><label>기준값 (중심 · Nominal)</label>
+            <input type="number" id="admTarget" step="0.001" value="1.000" oninput="admSpec()"></div>
+          <div><label>공차 ± (Tolerancia)</label>
+            <input type="number" id="admTol" step="0.001" value="0.050" oninput="admSpec()"></div>
+          <div><label>측정 소수 자릿수</label>
+            <select id="admDec"><option value="2">2자리 (0.01)</option>
+              <option value="3" selected>3자리 (0.001)</option>
+              <option value="4">4자리 (0.0001)</option></select></div>
+          <div><label>계측기 NO (접두)</label><input id="admGage" placeholder="9506194" value="9506194"></div>
+        </div>
+        <p class="note" id="admSpecNote"></p>
+
+        <h2 style="margin-top:16px">조별 생성 수준 <small>Nivel por grupo</small></h2>
+        <div class="scroll" id="admGroups"><div class="empty">인원을 선택하면 조가 표시됩니다</div></div>
+
+        <div class="row" style="margin-top:12px">
+          <button class="btn" onclick="admGenerate()">전체 조 데이터 생성</button>
+          <button class="btn-line" onclick="admRandomLevels()">수준 무작위 재배정</button>
+          <button class="btn-line" onclick="admClear()">생성 데이터 삭제</button>
+        </div>
+        <p class="note">시료수·측정횟수는 <b>계량형 탭의 공통 조건</b> 값을 사용합니다
+          (현재 <span id="admPT">—</span>). 생성 후 계량형 탭에서 결과와 그래프를 확인하고 저장하세요.</p>
+      </div>
+
+      <div class="card">
+        <h2>평가주기별 기록 일괄 삭제 <small>Borrado por periodo</small></h2>
+        <div class="grid g4">
+          <div><label>평가주기 (Periodo)</label>
+            <div style="display:flex;gap:6px">
+              <select id="dYear" style="flex:0 0 42%"></select><select id="dQtr"></select>
+            </div></div>
+          <div><label>구분</label>
+            <select id="dKind"><option value="both">계량형 + 계수형</option>
+              <option value="var">계량형만</option><option value="att">계수형만</option></select></div>
+          <div style="display:flex;align-items:flex-end">
+            <button class="btn-line" style="width:100%" onclick="admCount()">건수 확인</button></div>
+          <div style="display:flex;align-items:flex-end">
+            <button class="btn-danger" style="width:100%" onclick="admPurge()">일괄 삭제</button></div>
+        </div>
+        <p class="note" id="dNote">선택한 공장·평가주기에 해당하는 저장 기록을 지웁니다. 되돌릴 수 없습니다.</p>
+      </div>
+
+      <div class="card">
+        <h2>생성 결과 미리보기 <small>Vista previa</small></h2>
+        <div class="scroll" id="admPreview"><div class="empty">아직 생성된 데이터가 없습니다</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ 이력 ══════════ -->
+  <section class="panel" id="p-hist">
+    <div class="card">
+      <h2>기간 조회 <small>Consulta por periodo</small></h2>
+      <div class="grid g4">
+        <div><label>시작일</label><input type="date" id="hFrom"></div>
+        <div><label>종료일</label><input type="date" id="hTo"></div>
+        <div><label>평가주기 (Periodo)</label>
+          <div style="display:flex;gap:6px">
+            <select id="hYear" style="flex:0 0 42%"></select><select id="hQtr"></select>
+          </div></div>
+        <div style="display:flex;align-items:flex-end;gap:6px">
+          <button class="btn" style="flex:1" onclick="loadHist()">조회</button>
+          <button class="btn-gold" style="flex:1" onclick="exportHistXlsx()">엑셀</button>
+        </div>
+      </div>
+      <p class="note">상단에서 선택한 공장·팀 기준으로 조회합니다. <b>표의 행을 클릭하면 평가 세부내역</b>이 열립니다.</p>
+    </div>
+    <div class="card">
+      <h2>계량형 이력 <small>Historial — Variable</small></h2>
+      <div class="scroll" id="histVar"><div class="empty">조회 버튼을 누르세요</div></div>
+    </div>
+    <div class="card">
+      <h2>계수형 이력 <small>Historial — Atributos</small></h2>
+      <div class="scroll" id="histAtt"><div class="empty">조회 버튼을 누르세요</div></div>
+    </div>
+  </section>
+
+</div>
+
+<div class="modal" id="modal">
+  <div class="modalbox">
+    <div class="modalhd">
+      <h3 id="modalTitle">상세 내역</h3>
+      <button class="btn-line btn-sm" onclick="closeModal()">닫기</button>
+    </div>
+    <div class="modalbody" id="modalBody"></div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+/* ═════════ Supabase ═════════ */
+const SB_URL = 'https://lrjurjhavlalhlwaplxd.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxyanVyamhhdmxhbGhsd2FwbHhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNzUxNDAsImV4cCI6MjA5NTY1MTE0MH0.DVFmZaT37R9CXSMHdnLx4YAVNTnlBGijkOIaoUo7Qsk';
+
+async function sb(path, opts){
+  if(!/^[\x00-\xFF]+$/.test(SB_KEY) || SB_KEY.length < 40)
+    throw new Error('SB_KEY 가 설정되지 않았습니다.');
+  opts = opts || {};
+  const h = Object.assign({
+    'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Content-Type': 'application/json'
+  }, opts.headers || {});
+  const res = await fetch(SB_URL + '/rest/v1/' + path, Object.assign({}, opts, {headers:h}));
+  const txt = await res.text();
+  if(!res.ok) throw new Error(txt || ('HTTP ' + res.status));
+  return txt ? JSON.parse(txt) : null;
+}
+const $ = id => document.getElementById(id);
+function toast(m){ const t=$('toast'); t.textContent=m; t.classList.add('on');
+  clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('on'),2400); }
+const num = v => { const n=parseFloat(v); return isFinite(n)?n:null; };
+const today = () => new Date().toISOString().slice(0,10);
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function download(text,name){ const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([text],{type:'text/csv;charset=utf-8'}));
+  a.download=name; a.click(); URL.revokeObjectURL(a.href); }
+const shortName = s => String(s||'').split('/')[0].trim();
+const plantLabel = ()=> $('fFactory').value==='2' ? '2공장 (Torreón)' : '1공장 (Monclova)';
+
+/* ══════════ 엑셀(xlsx) 저장 ══════════ */
+function saveWorkbook(sheets,fname){
+  if(typeof XLSX==='undefined'){
+    const aoa=sheets[0].aoa;
+    const csv='\uFEFF'+aoa.map(r=>r.map(c=>{
+      const s=String(c==null?'':c);
+      return /[",\n]/.test(s) ? '"'+s.replace(/"/g,'""')+'"' : s;
+    }).join(',')).join('\n');
+    download(csv, fname.replace(/\.xlsx$/,'.csv'));
+    toast('엑셀 모듈을 못 불러와 CSV로 저장했습니다');
+    return;
+  }
+  const wb=XLSX.utils.book_new();
+  sheets.forEach(s=>{
+    const ws=XLSX.utils.aoa_to_sheet(s.aoa);
+    ws['!cols']=s.cols || s.aoa[0].map(()=>({wch:14}));
+    XLSX.utils.book_append_sheet(wb, ws, String(s.name).slice(0,31));
+  });
+  XLSX.writeFile(wb, fname);
+  toast('엑셀 파일을 내려받았습니다');
+}
+
+document.querySelectorAll('nav.tabs button').forEach(b=>{
+  b.onclick=()=>{
+    document.querySelectorAll('nav.tabs button').forEach(x=>x.classList.remove('on'));
+    document.querySelectorAll('.panel').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on'); $('p-'+b.dataset.t).classList.add('on');
+    if(b.dataset.t==='var'){ renderGTabs(); renderVarInput(); }
+    if(b.dataset.t==='admin') admRender();
+  };
+});
+
+/* ═════════════ 인원 (세로형) ═════════════ */
+let ALL_EMP=[], SEL=[];
+const empTable = ()=> $('fFactory').value==='2' ? 'att_employees_2' : 'att_employees';
+const empLabel = e => e.name_ko ? (e.name_ko+' / '+e.name) : e.name;
+
+/* 선택 순서대로 3명씩 자동 조편성 */
+function autoGroups(){
+  const gs=[];
+  for(let i=0;i<SEL.length;i+=3) gs.push(SEL.slice(i,i+3));
+  return gs;
+}
+const nGroups = ()=> Math.max(1, autoGroups().length);
+const opsOf   = g => autoGroups()[g-1] || [];
+
+function setEmpBody(html){
+  $('empList').innerHTML='<div class="emphd"><div class="c-ord">순번</div>'+
+    '<div class="c-nm">이름 / Nombre</div><div class="c-gr">조</div></div>'+html;
+}
+async function loadEmployees(){
+  setEmpBody('<div class="empty">불러오는 중…</div>');
+  try{
+    ALL_EMP = await sb(empTable()+'?select=employee_id,name,name_ko,team&active=is.true&order=name.asc&limit=2000') || [];
+  }catch(e){
+    ALL_EMP=[]; setEmpBody('<div class="empty">인원을 불러오지 못했습니다.<br>'+esc(e.message)+'</div>'); return;
+  }
+  const teams=[...new Set(ALL_EMP.map(e=>e.team).filter(Boolean))].sort();
+  $('fTeam').innerHTML='<option value="">— 전체 팀 —</option>'+
+    teams.map(t=>'<option value="'+esc(t)+'">'+esc(t)+'</option>').join('');
+  SEL=[]; VD={};
+  renderEmp();
+}
+function filteredEmp(){
+  const t=$('fTeam').value, kw=$('fSearch').value.trim().toLowerCase();
+  return ALL_EMP.filter(e=>{
+    if(t && e.team!==t) return false;
+    if(kw && (((e.name||'')+(e.name_ko||'')+(e.employee_id||'')).toLowerCase().indexOf(kw)<0)) return false;
+    return true;
+  });
+}
+function renderEmp(){
+  const list=filteredEmp();
+  if(!list.length){ setEmpBody('<div class="empty">해당 인원이 없습니다</div>'); updCnt(); return; }
+  setEmpBody(list.map(e=>{
+    const i=SEL.findIndex(s=>s.employee_id===e.employee_id), on=i>=0;
+    const g=on?Math.floor(i/3)+1:'';
+    return '<div class="emprow'+(on?' on':'')+'" data-id="'+esc(e.employee_id)+'">'+
+      '<div class="c-ord">'+(on?(i+1):'')+'</div>'+
+      '<div class="c-nm">'+esc(empLabel(e))+'<small>'+esc(e.employee_id)+'</small></div>'+
+      '<div class="c-gr">'+(on?g+'조':'')+'</div></div>';
+  }).join(''));
+  $('empList').querySelectorAll('.emprow').forEach(r=>{
+    r.onclick=()=>{
+      const id=r.dataset.id, i=SEL.findIndex(s=>s.employee_id===id);
+      if(i>=0) SEL.splice(i,1);
+      else{ const e=ALL_EMP.find(x=>x.employee_id===id);
+        SEL.push({employee_id:e.employee_id, name:empLabel(e), team:e.team}); }
+      renderEmp(); renderAttInput(); renderGTabs(); renderVarInput(); admRender();
+    };
+  });
+  updCnt();
+}
+function updCnt(){
+  $('selCnt').textContent=SEL.length+'명';
+  const gs=autoGroups();
+  $('grpCnt').textContent = gs.length ? gs.length+'개 조 자동편성' : '';
+}
+function selAll(on){ if(!on){ SEL=[]; VD={}; }
+  renderEmp(); renderAttInput(); renderGTabs(); renderVarInput(); }
+$('fFactory').onchange=loadEmployees;
+$('fTeam').onchange=renderEmp;
+$('fSearch').oninput=renderEmp;
+
+/* ══════════════════════════════════════════
+   계수형 Gage R&R  (조 개념 없음)
+   ══════════════════════════════════════════ */
+let REFS=[], ANS={};
+const nSamp = ()=> Math.max(2,Math.min(60,parseInt($('aSamples').value)||20));
+const nTri  = ()=> Math.max(1,Math.min(5, parseInt($('aTrials').value)||3));
+
+function initRefs(){ const n=nSamp(), old=REFS.slice();
+  REFS=Array.from({length:n},(_,i)=>old[i]||'OK'); renderRefs(); }
+function renderRefs(){
+  let h='<div class="cellrow"><div class="cell hd">시료</div>';
+  REFS.forEach((_,i)=>h+='<div class="cell hd">'+(i+1)+'</div>');
+  h+='</div><div class="cellrow"><div class="cell hd">참값</div>';
+  REFS.forEach((v,i)=>h+='<div class="cell '+(v==='OK'?'ok':'ng')+'" data-i="'+i+'">'+v+'</div>');
+  h+='</div>';
+  const g=$('refGrid'); g.innerHTML=h;
+  g.querySelectorAll('.cell[data-i]').forEach(c=>{
+    c.onclick=()=>{ const i=+c.dataset.i; REFS[i]=REFS[i]==='OK'?'NG':'OK';
+      renderRefs(); renderAttInput(); };
+  });
+}
+function refAll(v){ REFS=REFS.map(()=>v); renderRefs(); renderAttInput(); }
+function refHalf(){
+  const n=REFS.length, half=Math.floor(n/2);
+  const a=Array.from({length:n},(_,i)=>i<half?'NG':'OK');
+  for(let i=n-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
+  REFS=a; renderRefs(); renderAttInput();
+}
+function renderAttInput(){
+  const box=$('attInput');
+  if(!SEL.length){ box.innerHTML='<div class="empty">평가자를 먼저 선택하세요</div>'; calcAtt(); return; }
+  const n=nSamp(), t=nTri(); let h='';
+  SEL.forEach((op,oi)=>{
+    if(!ANS[op.employee_id]) ANS[op.employee_id]={};
+    h+='<div class="opblk"><h3><span class="pill p-mut">'+(oi+1)+'</span>'+esc(op.name)+
+       '<span class="pill p-mut">'+esc(op.employee_id)+'</span>'+
+       '<button class="btn-line btn-sm" data-fill="'+esc(op.employee_id)+'">참값 일괄입력</button>'+
+       '<button class="btn-line btn-sm" data-clr="'+esc(op.employee_id)+'">지우기</button></h3><div class="scroll">'+
+       '<div class="cellrow"><div class="cell hd">시료</div>';
+    for(let i=0;i<n;i++) h+='<div class="cell hd">'+(i+1)+'</div>';
+    h+='</div>';
+    for(let tr=1;tr<=t;tr++){
+      const a=ANS[op.employee_id][tr]||(ANS[op.employee_id][tr]=Array(n).fill(''));
+      while(a.length<n) a.push('');
+      h+='<div class="cellrow"><div class="cell hd">'+tr+'차</div>';
+      for(let i=0;i<n;i++){
+        const v=a[i], cls=v==='OK'?'ok':v==='NG'?'ng':'';
+        h+='<div class="cell '+cls+(v&&v!==REFS[i]?' miss':'')+'" data-op="'+esc(op.employee_id)+
+           '" data-tr="'+tr+'" data-i="'+i+'">'+(v||'·')+'</div>';
+      }
+      h+='</div>';
+    }
+    h+='</div></div>';
+  });
+  box.innerHTML=h;
+  box.querySelectorAll('.cell[data-op]').forEach(c=>{
+    c.onclick=()=>{ const o=c.dataset.op, tr=c.dataset.tr, i=+c.dataset.i, cur=ANS[o][tr][i];
+      ANS[o][tr][i]= cur===''?'OK' : cur==='OK'?'NG' : '';
+      renderAttInput(); };
+  });
+  box.querySelectorAll('[data-fill]').forEach(b=>b.onclick=()=>{
+    const id=b.dataset.fill; for(let tr=1;tr<=nTri();tr++) ANS[id][tr]=REFS.slice(); renderAttInput(); });
+  box.querySelectorAll('[data-clr]').forEach(b=>b.onclick=()=>{
+    const id=b.dataset.clr; for(let tr=1;tr<=nTri();tr++) ANS[id][tr]=Array(nSamp()).fill(''); renderAttInput(); });
+  calcAtt();
+}
+function calcAtt(){
+  const box=$('attResult');
+  if(!SEL.length){ box.innerHTML='<div class="empty">평가자를 먼저 선택하세요</div>'; return; }
+  const n=nSamp(), t=nTri();
+  const okN=REFS.filter(v=>v==='OK').length, ngN=REFS.filter(v=>v==='NG').length;
+  const mode=$('aDenom').value;
+  const cE=num($('cE').value)??.9, cFa=num($('cFa').value)??.05, cMs=num($('cMs').value)??.02;
+  const rows=SEL.map((op,idx)=>{
+    let hit=0,tot=0,fa=0,ms=0,done=0;
+    for(let tr=1;tr<=t;tr++){
+      const a=(ANS[op.employee_id]||{})[tr]||[]; let any=false;
+      for(let i=0;i<n;i++){ const v=a[i]; if(!v) continue; any=true; tot++;
+        if(v===REFS[i]) hit++; else if(REFS[i]==='OK') fa++; else ms++; }
+      if(any) done++;
+    }
+    const dFa = mode==='eval' ? okN*Math.max(done,1) : okN;
+    const dMs = mode==='eval' ? ngN*Math.max(done,1) : ngN;
+    const E=tot?hit/tot:null, Pfa=dFa?fa/dFa:0, Pms=dMs?ms/dMs:0;
+    return {no:idx+1, op, hit, tot, fa, ms, E, Pfa, Pms,
+            pass:(E!==null && E>=cE && Pfa<=cFa && Pms<=cMs)};
+  });
+  const fil=rows.filter(r=>r.tot>0);
+  const avgE=fil.length?fil.reduce((s,r)=>s+r.E,0)/fil.length:0;
+  let h='<div class="kpi">'+
+    '<div><b>'+fil.length+'</b><span>평가 인원</span></div>'+
+    '<div><b>'+(fil.length?(avgE*100).toFixed(1):'—')+'%</b><span>평균 효율 E</span></div>'+
+    '<div><b>'+fil.filter(r=>r.pass).length+'</b><span>합격 Aprobado</span></div>'+
+    '<div><b>'+fil.filter(r=>!r.pass).length+'</b><span>불합격 Rechazado</span></div></div><hr>';
+  h+='<div class="scroll"><table><thead><tr><th>NO</th><th>작업자<br><small>Operador</small></th>'+
+    '<th>OK<br>시료</th><th>NG<br>시료</th><th>일치수<br><small>Aciertos</small></th>'+
+    '<th>FALSE<br>(OK→NG)</th><th>MISS<br>(NG→OK)</th><th>E</th><th>PFA</th><th>PMISS</th>'+
+    '<th>판정<br><small>Decisión</small></th></tr></thead><tbody>';
+  rows.forEach(r=>{
+    h+='<tr><td>'+r.no+'</td><td style="text-align:left">'+esc(r.op.name)+'</td><td>'+okN+'</td><td>'+ngN+'</td>'+
+      '<td><b>'+r.hit+'</b> / '+r.tot+'</td><td>'+r.fa+'</td><td>'+r.ms+'</td>'+
+      '<td>'+(r.E===null?'—':r.E.toFixed(3))+'</td><td>'+r.Pfa.toFixed(3)+'</td><td>'+r.Pms.toFixed(3)+'</td>'+
+      '<td>'+(r.tot===0?'<span class="pill p-mut">미입력</span>':
+        r.pass?'<span class="pill p-ok">합격</span>':'<span class="pill p-ng">불합격</span>')+'</td></tr>';
+  });
+  h+='</tbody></table></div>'+
+    '<p class="note">E = 일치수 ÷ 총평가수 · PFA = FALSE ÷ '+(mode==='eval'?'(OK시료수×반복수)':'OK시료수')+
+    ' · PMISS = MISS ÷ '+(mode==='eval'?'(NG시료수×반복수)':'NG시료수')+
+    ' — E ≥ '+cE+', PFA ≤ '+cFa+', PMISS ≤ '+cMs+' 모두 충족 시 합격</p>';
+  box.innerHTML=h; window._attRows=rows;
+}
+async function saveAtt(){
+  if(!SEL.length) return toast('평가자를 선택하세요');
+  try{
+    const s=await sb('msa_sessions',{method:'POST',headers:{'Prefer':'return=representation'},
+      body:JSON.stringify([{
+        factory:$('fFactory').value, team:$('fTeam').value||(SEL[0]&&SEL[0].team)||null,
+        title:$('aTitle').value||null, process_name:$('aProc').value||null,
+        eval_date:$('aDate').value||today(), period:periodOf('aYear','aQtr'),
+        sample_count:nSamp(), trial_count:nTri(),
+        refs:REFS, crit_e:num($('cE').value), crit_pfa:num($('cFa').value), crit_pmiss:num($('cMs').value)
+      }])});
+    const sid=s[0].id, recs=[];
+    SEL.forEach(op=>{ for(let tr=1;tr<=nTri();tr++){
+      const a=(ANS[op.employee_id]||{})[tr];
+      if(a&&a.some(v=>v)) recs.push({session_id:sid, employee_id:op.employee_id,
+        employee_name:op.name, trial:tr, answers:a, updated_at:new Date().toISOString()});
+    }});
+    if(recs.length) await sb('msa_evaluations',{method:'POST',body:JSON.stringify(recs)});
+    toast('계수형 저장 완료 · '+recs.length+'건');
+  }catch(e){ toast('저장 실패: '+e.message); }
+}
+function exportAttXlsx(){
+  const rows=window._attRows||[]; if(!rows.length) return toast('결과가 없습니다');
+  const okN=REFS.filter(v=>v==='OK').length, ngN=REFS.filter(v=>v==='NG').length;
+  const d=$('aDate').value||today();
+  const s1=[['계수형 Gage R&R 판정결과 · Atributos'],[],
+    ['평가주기',periodLabel(periodOf('aYear','aQtr'))],['평가일',d],['평가명',$('aTitle').value],['공정',$('aProc').value],
+    ['팀',$('fTeam').value],['공장',plantLabel()],
+    ['시료수',nSamp()],['반복수',nTri()],['OK시료',okN],['NG시료',ngN],
+    ['판정기준','E ≥ '+$('cE').value+' · PFA ≤ '+$('cFa').value+' · PMISS ≤ '+$('cMs').value],[],
+    ['NO','작업자','사번','OK시료','NG시료','일치수','총평가수','FALSE(OK→NG)','MISS(NG→OK)','E','PFA','PMISS','판정']];
+  rows.forEach(r=>s1.push([r.no,r.op.name,r.op.employee_id,okN,ngN,r.hit,r.tot,r.fa,r.ms,
+    r.E===null?'':+r.E.toFixed(3),+r.Pfa.toFixed(3),+r.Pms.toFixed(3),
+    r.tot===0?'미입력':(r.pass?'합격':'불합격')]));
+
+  const hdr=['작업자','회차'].concat(REFS.map((_,i)=>'시료'+(i+1)));
+  const s2=[hdr,['참값(기준)',''].concat(REFS)];
+  SEL.forEach(op=>{
+    for(let tr=1;tr<=nTri();tr++){
+      const a=(ANS[op.employee_id]||{})[tr]||[];
+      s2.push([op.name,tr+'차'].concat(REFS.map((_,i)=>a[i]||'')));
+    }
+  });
+  saveWorkbook([{name:'판정결과',aoa:s1,cols:[{wch:6},{wch:30},{wch:14}].concat(Array(10).fill({wch:11}))},
+                {name:'판정내역',aoa:s2,cols:[{wch:30},{wch:7}].concat(REFS.map(()=>({wch:7})))}],
+    'MSA_계수형_'+d+'.xlsx');
+}
+['aSamples','aTrials'].forEach(id=>$(id).onchange=()=>{initRefs();renderAttInput();});
+['cE','cFa','cMs','aDenom'].forEach(id=>$(id).onchange=calcAtt);
+
+/* ══════════════════════════════════════════
+   계량형 Gage R&R — 3명 1개조 · AIAG Xbar-R 법
+   ══════════════════════════════════════════ */
+const K1={2:0.8862,3:0.5908};
+const K2={2:0.7071,3:0.5231};
+const K3={2:0.7071,3:0.5231,4:0.4467,5:0.4030,6:0.3742,7:0.3534,8:0.3375,9:0.3249,10:0.3146};
+const A2={2:1.880,3:1.023}, D4={2:3.267,3:2.575};
+const LVL_ES={'우수':'Excelente','양호':'Bueno','부족':'Insuficiente'};
+
+let curG=1, VD={}, GINFO={}, VR=null;   // VD: {empId:{trial:[vals]}}
+
+const vParts  = ()=> Math.max(2,Math.min(10,parseInt($('vParts').value)||10));
+const vTrials = ()=> Math.max(2,Math.min(3, parseInt($('vTrials').value)||3));
+const gi = g => (GINFO[g] = GINFO[g] || {gage:'',usl:'',lsl:'',tol:'',action:''});
+
+function renderGTabs(){
+  const gs=autoGroups(); const n=Math.max(1,gs.length);
+  if(curG>n) curG=1;
+  let h='';
+  for(let g=1;g<=n;g++){
+    const cnt=(gs[g-1]||[]).length;
+    h+='<button class="gtab'+(g===curG?' on':'')+(cnt>=2?' filled':'')+'" data-g="'+g+'">'+
+       g+'조 (grupo '+g+')'+(cnt?' · '+cnt+'명':'')+'</button>';
+  }
+  $('gTabs').innerHTML=h;
+  $('gTabs').querySelectorAll('.gtab').forEach(b=>{
+    b.onclick=()=>{ saveGInfo(); curG=+b.dataset.g; renderGTabs(); renderVarInput(); };
+  });
+  updTolNote();
+  const mem=opsOf(curG);
+  $('gMem').innerHTML = mem.length
+    ? '<b>'+curG+'조</b> · '+mem.map((m,i)=>'측정자'+(i+1)+' '+esc(m.name)).join(' &nbsp;|&nbsp; ')
+    : '선택된 인원이 없습니다 — 위 목록에서 인원을 고르면 3명씩 자동으로 조가 만들어집니다';
+  loadGInfo();
+}
+function loadGInfo(){
+  const d=gi(curG);
+  $('vGage').value=d.gage; $('vUsl').value=d.usl; $('vLsl').value=d.lsl;
+  $('vTol').value=d.tol;   $('vAction').value=d.action;
+}
+function saveGInfo(){
+  const d=gi(curG);
+  d.gage=$('vGage').value; d.usl=$('vUsl').value; d.lsl=$('vLsl').value;
+  d.tol=$('vTol').value;   d.action=$('vAction').value;
+  updTolNote();
+}
+function updTolNote(){
+  const el=$('vTolNote'), has=num($('vTol').value)>0;
+  el.style.color = has ? '' : '#c0392b';
+  el.innerHTML = has
+    ? '계측기·규격·조치계획은 <b>조별로 따로</b> 저장됩니다. USL·LSL을 넣으면 공차가 자동 계산됩니다.'
+    : '⚠ <b>규격공차가 비어 있어 % Tolerance 를 계산할 수 없습니다.</b> USL·LSL 또는 공차를 입력하세요. '+
+      '(예: 압착고 규격 0.98~1.08 → 공차 0.10) — 공차 없이는 % Contribution 과 ndc 두 항목만으로 등급이 매겨집니다.';
+}
+['vGage','vUsl','vLsl','vTol','vAction'].forEach(id=>{
+  $(id).oninput=$(id).onchange=()=>{
+    if(id==='vUsl'||id==='vLsl'){
+      const u=num($('vUsl').value), l=num($('vLsl').value);
+      if(u!==null&&l!==null&&u>l) $('vTol').value=+(u-l).toFixed(6);
+    }
+    saveGInfo(); calcVar();
+  };
+});
+['vParts','vTrials','vRound'].forEach(id=>$(id).onchange=renderVarInput);
+
+function renderVarInput(){
+  const box=$('varInput'), ops=opsOf(curG);
+  if(ops.length<2){
+    box.innerHTML='<div class="empty">'+curG+'조는 현재 '+ops.length+
+      '명입니다.<br>계량형 분석에는 한 조에 2~3명이 필요합니다.</div>';
+    calcVar(); return;
+  }
+  const p=vParts(), t=vTrials();
+  let h='';
+  ops.forEach((op,oi)=>{
+    VD[op.employee_id]=VD[op.employee_id]||{};
+    h+='<div class="opblk"><h3>측정자 '+(oi+1)+' · '+esc(op.name)+
+       '<span class="pill p-mut">'+esc(op.employee_id)+'</span></h3><div class="scroll">'+
+       '<table><thead><tr><th>회차</th>';
+    for(let i=0;i<p;i++) h+='<th>'+(i+1)+'</th>';
+    h+='<th>평균</th><th>R</th></tr></thead><tbody>';
+    for(let tr=1;tr<=t;tr++){
+      const a=VD[op.employee_id][tr]||(VD[op.employee_id][tr]=Array(p).fill(''));
+      while(a.length<p) a.push('');
+      const nums=a.slice(0,p).map(num).filter(v=>v!==null);
+      const mean=nums.length?nums.reduce((x,y)=>x+y,0)/nums.length:null;
+      const rng=nums.length?Math.max(...nums)-Math.min(...nums):null;
+      h+='<tr><th>'+tr+'차</th>';
+      for(let i=0;i<p;i++) h+='<td><input class="num" inputmode="decimal" value="'+esc(a[i])+
+        '" data-op="'+esc(op.employee_id)+'" data-tr="'+tr+'" data-i="'+i+'"></td>';
+      h+='<td>'+(mean===null?'—':mean.toFixed(4))+'</td><td>'+(rng===null?'—':rng.toFixed(4))+'</td></tr>';
+    }
+    h+='</tbody></table></div></div>';
+  });
+  box.innerHTML=h;
+  box.querySelectorAll('input.num').forEach(inp=>{
+    inp.onchange=inp.onblur=()=>{
+      VD[inp.dataset.op][inp.dataset.tr][+inp.dataset.i]=inp.value.trim();
+      renderVarInput();
+    };
+  });
+  calcVar();
+}
+function clearGroupData(){
+  opsOf(curG).forEach(op=>{ delete VD[op.employee_id]; });
+  renderVarInput(); toast(curG+'조 데이터를 지웠습니다');
+}
+function applyPaste(){
+  const ops=opsOf(curG); if(ops.length<2) return toast('이 조에 측정자가 2명 이상이어야 합니다');
+  const lines=$('vPaste').value.split(/\r?\n/).map(l=>l.trim()).filter(Boolean);
+  if(!lines.length) return toast('붙여넣을 내용이 없습니다');
+  const p=vParts(), t=vTrials(); let k=0;
+  ops.forEach(op=>{ VD[op.employee_id]=VD[op.employee_id]||{};
+    for(let tr=1;tr<=t;tr++){
+      if(k<lines.length){
+        const v=(lines[k].match(/-?\d+(\.\d+)?/g)||[]).slice(0,p);
+        VD[op.employee_id][tr]=Array.from({length:p},(_,i)=>v[i]!==undefined?v[i]:'');
+        k++;
+      }
+    }});
+  $('vPaste').value=''; renderVarInput(); toast(k+'줄 적용 · '+curG+'조');
+}
+function lvl(kind,v){
+  if(kind==='c') return v<1?'우수':v<=9?'양호':'부족';
+  if(kind==='t') return v<10?'우수':v<=30?'양호':'부족';
+  return v>10?'우수':v>=4?'양호':'부족';
+}
+function analyze(g){
+  const ops=opsOf(g), p=vParts(), t=vTrials(), o=ops.length;
+  if(o<2) return null;
+  const TOL=num(gi(g).tol);
+  const M=[]; let missing=0;
+  for(const op of ops){
+    const tr=[];
+    for(let k=1;k<=t;k++){
+      const a=(VD[op.employee_id]||{})[k]||[];
+      const row=[];
+      for(let i=0;i<p;i++){ const v=num(a[i]); if(v===null) missing++; row.push(v); }
+      tr.push(row);
+    }
+    M.push(tr);
+  }
+  if(missing) return {incomplete:missing};
+
+  const R4=v=>Math.round(v*1e4)/1e4, rd=$('vRound').value==='1'?R4:(v=>v);
+  const Rbars=[],Xbars=[],opPartMean=[],rangesByOp=[],partSum=Array(p).fill(0);
+  M.forEach(tr=>{
+    let rs=0,xs=0; const pm=[],rgs=[];
+    for(let i=0;i<p;i++){
+      const col=tr.map(x=>x[i]);
+      const rg=Math.max(...col)-Math.min(...col); rs+=rg; rgs.push(rg);
+      pm.push(col.reduce((a,b)=>a+b,0)/t);
+      col.forEach(v=>{ xs+=v; partSum[i]+=v; });
+    }
+    Rbars.push(rs/p); Xbars.push(xs/(p*t)); opPartMean.push(pm); rangesByOp.push(rgs);
+  });
+  const Rbb=Rbars.reduce((a,b)=>a+b,0)/o;
+  const XbarR=Math.max(...Xbars)-Math.min(...Xbars);
+  const Xbb=Xbars.reduce((a,b)=>a+b,0)/o;
+  const partAvg=partSum.map(s=>s/(o*t));
+  const Rp=Math.max(...partAvg)-Math.min(...partAvg);
+
+  const EV=rd(Rbb*K1[t]);
+  const AV=rd(Math.sqrt(Math.max(0, Math.pow(XbarR*K2[o],2)-(EV*EV)/(p*t))));
+  const GRR=rd(Math.sqrt(EV*EV+AV*AV));
+  const PV=rd(Rp*K3[p]);
+  const TV=rd(Math.sqrt(GRR*GRR+PV*PV));
+
+  const pctC=TV?GRR*GRR/(TV*TV)*100:0;
+  const pctS=TV?GRR/TV*100:0;
+  const pctT=TOL?5.15*GRR/TOL*100:null;
+  const ndc=GRR>0?Math.floor(1.41*PV/GRR):0;
+  const lc=lvl('c',pctC), lt=(pctT===null?null:lvl('t',pctT)), ld=lvl('d',ndc);
+  const ord={'우수':0,'양호':1,'부족':2};
+  const grade=[lc,lt,ld].filter(Boolean).sort((a,b)=>ord[b]-ord[a])[0];
+  return {g,ops,p,t,o,M,Rbars,Xbars,Rbb,XbarR,Xbb,Rp,partAvg,opPartMean,rangesByOp,
+    EV,AV,GRR,PV,TV,pctC,pctS,pctT,ndc,lc,lt,ld,grade,
+    result: grade==='부족'?'No aprobado':'Aprobado',
+    UCLX:Xbb+A2[t]*Rbb, LCLX:Xbb-A2[t]*Rbb, UCLR:D4[t]*Rbb, TOL};
+}
+function calcVar(){
+  const box=$('varResult'), res=analyze(curG);
+  VR=(res && !res.incomplete)?res:null;
+  if(!res){ box.innerHTML='<div class="empty">'+curG+'조에 측정자가 2명 이상이어야 합니다</div>';
+    drawAll(); renderSummary(); return; }
+  if(res.incomplete){ box.innerHTML='<div class="empty">'+curG+'조 측정값 '+res.incomplete+
+    '칸이 비어 있습니다</div>'; drawAll(); renderSummary(); return; }
+
+  const pc=g=>g==='우수'?'p-ok':g==='양호'?'p-wa':'p-ng';
+  const V=res, vTV=V.TV*V.TV;
+  let h='<div class="kpi">'+
+    '<div><b>'+V.pctC.toFixed(2)+'%</b><span>% Contribution</span></div>'+
+    '<div><b'+(V.pctT===null?' style="color:#c0392b;font-size:13px"':'')+'>'+
+      (V.pctT===null?'규격 미입력':V.pctT.toFixed(2)+'%')+'</b><span>% Tolerance (5.15σ)</span></div>'+
+    '<div><b>'+V.ndc+'</b><span>distinct categories (ndc)</span></div>'+
+    '<div><b>'+V.grade+'</b><span>'+LVL_ES[V.grade]+' · '+V.result+'</span></div></div>';
+
+  h+='<div class="scroll" style="margin-top:12px"><table><thead><tr>'+
+     '<th>Source</th><th>St. Dev.</th><th>Variance</th><th>% Contribution</th>'+
+     '<th>% Study Var.</th><th>% Tol (5.15σ)</th></tr></thead><tbody>';
+  const line=(nm,sd)=>{
+    const va=sd*sd, c=vTV?va/vTV*100:0, s=V.TV?sd/V.TV*100:0, tl=V.TOL?5.15*sd/V.TOL*100:null;
+    return '<tr><td style="text-align:left">'+nm+'</td><td>'+sd.toFixed(4)+'</td>'+
+      '<td>'+va.toExponential(3)+'</td><td>'+c.toFixed(2)+'</td><td>'+s.toFixed(2)+'</td>'+
+      '<td>'+(tl===null?'—':tl.toFixed(2))+'</td></tr>';
+  };
+  h+=line('<b>Total Gage R&R</b>',V.GRR)+line('&nbsp;&nbsp;&nbsp;Repeatability (EV)',V.EV)+
+     line('&nbsp;&nbsp;&nbsp;Reproducibility (AV)',V.AV)+line('Part to Part (PV)',V.PV)+
+     line('<b>Total Variation (TV)</b>',V.TV)+'</tbody></table></div>';
+  h+=varGlossary(V);
+
+  h+='<div class="scroll" style="margin-top:10px"><table><thead><tr>'+
+     '<th>판정 항목</th><th>값</th><th>수준</th><th>기준</th></tr></thead><tbody>'+
+     '<tr><td>% Contribution</td><td>'+V.pctC.toFixed(3)+'%</td><td><span class="pill '+pc(V.lc)+'">'+
+        V.lc+' / '+LVL_ES[V.lc]+'</span></td><td>1 미만 우수 · 1~9 양호 · 9 초과 부족</td></tr>'+
+     '<tr><td>% Tolerance</td><td>'+(V.pctT===null?'규격공차 미입력':V.pctT.toFixed(3)+'%')+'</td><td>'+
+        (V.lt?'<span class="pill '+pc(V.lt)+'">'+V.lt+' / '+LVL_ES[V.lt]+'</span>':'—')+
+        '</td><td>10 미만 우수 · 10~30 양호 · 30 초과 부족</td></tr>'+
+     '<tr><td>distinct categories</td><td>'+V.ndc+'</td><td><span class="pill '+pc(V.ld)+'">'+
+        V.ld+' / '+LVL_ES[V.ld]+'</span></td><td>10 초과 우수 · 4~10 양호 · 4 미만 부족</td></tr>'+
+     '</tbody></table></div>';
+
+  h+='<div class="scroll" style="margin-top:10px"><table><thead><tr><th>측정자</th><th>Xbar</th><th>Rbar</th></tr></thead><tbody>';
+  V.ops.forEach((op,i)=>h+='<tr><td style="text-align:left">'+esc(op.name)+'</td><td>'+
+    V.Xbars[i].toFixed(4)+'</td><td>'+V.Rbars[i].toFixed(4)+'</td></tr>');
+  h+='<tr><th>전체</th><th>'+V.Xbb.toFixed(4)+'</th><th>'+V.Rbb.toFixed(4)+'</th></tr></tbody></table></div>';
+  h+='<p class="note">EV = R̿ × K1('+K1[V.t]+') · AV = √[(X̄diff × K2('+K2[V.o]+'))² − EV²/(시료수×측정횟수)] · '+
+     'GRR = √(EV²+AV²) · PV = Rp × K3('+K3[V.p]+') · TV = √(GRR²+PV²) · ndc = 1.41 × PV / GRR</p>';
+  box.innerHTML=h;
+  drawAll(); renderSummary();
+}
+function allResults(){
+  const out=[];
+  for(let g=1;g<=nGroups();g++){ const r=analyze(g); if(r && !r.incomplete) out.push(r); }
+  return out;
+}
+function renderSummary(){
+  const rs=allResults(), box=$('varSummary');
+  if(!rs.length){ box.innerHTML='<div class="empty">계산이 완료된 조가 없습니다</div>'; return; }
+  const pc=g=>g==='우수'?'p-ok':g==='양호'?'p-wa':'p-ng';
+  let h='<table><thead><tr><th>구분</th><th>Medido por 1</th><th>Medido por 2</th><th>Medido por 3</th>'+
+    '<th>계측기 NO</th><th>Contribution</th><th>Tolerance</th><th>distinct<br>categories</th>'+
+    '<th>Grade</th><th>Resultado</th><th>Plan de acción</th></tr></thead><tbody>';
+  rs.forEach(r=>{
+    const d=gi(r.g);
+    h+='<tr><td><b>'+r.g+'조</b></td>';
+    for(let i=0;i<3;i++) h+='<td style="text-align:left">'+esc(r.ops[i]?r.ops[i].name:'')+'</td>';
+    h+='<td>'+esc(d.gage)+'</td><td>'+r.pctC.toFixed(3)+'%</td>'+
+      '<td>'+(r.pctT===null?'—':r.pctT.toFixed(3)+'%')+'</td><td>'+r.ndc+'</td>'+
+      '<td><span class="pill '+pc(r.grade)+'">'+r.grade+' / '+LVL_ES[r.grade]+'</span></td>'+
+      '<td>'+r.result+'</td><td style="text-align:left">'+esc(d.action)+'</td></tr>';
+  });
+  const avgC=rs.reduce((s,r)=>s+r.pctC,0)/rs.length;
+  const tt=rs.filter(r=>r.pctT!==null);
+  const avgT=tt.length?tt.reduce((s,r)=>s+r.pctT,0)/tt.length:null;
+  const avgD=rs.reduce((s,r)=>s+r.ndc,0)/rs.length;
+  h+='<tr><th colspan="5">평균 (Promedio)</th><th>'+avgC.toFixed(3)+'%</th>'+
+     '<th>'+(avgT===null?'—':avgT.toFixed(3)+'%')+'</th><th>'+avgD.toFixed(1)+'</th><th colspan="3"></th></tr>';
+  box.innerHTML=h+'</tbody></table>';
+}
+
+/* ══════════════════════════════════════════
+   그래프 — 6분할 (Minitab 형식)
+   ══════════════════════════════════════════ */
+const OPC=['#4472c4','#ed7d31','#70ad47'];   // 측정자 1·2·3
+const SER=['#4472c4','#ed7d31','#a5a5a5'];   // %Contribution / %Study / %Tol
+
+function cc(id,H){
+  const c=$(id), dpr=window.devicePixelRatio||1, w=c.clientWidth||360, h=H||200;
+  c.width=w*dpr; c.height=h*dpr;
+  const x=c.getContext('2d'); x.setTransform(dpr,0,0,dpr,0,0); x.clearRect(0,0,w,h);
+  return {x,w,h};
+}
+function title(x,w,t){
+  x.fillStyle='#0f2b4c'; x.font='bold 11px sans-serif'; x.textAlign='center';
+  x.fillText(t,w/2,13);
+}
+function axes(x,pad,w,h){
+  x.strokeStyle='#c8d0da'; x.lineWidth=1; x.beginPath();
+  x.moveTo(pad.l,pad.t); x.lineTo(pad.l,h-pad.b); x.lineTo(w-pad.r,h-pad.b); x.stroke();
+}
+function yTicks(x,pad,w,h,min,max,fmt,n){
+  n=n||4; x.font='8px sans-serif'; x.textAlign='right'; x.fillStyle='#6b7887';
+  for(let i=0;i<=n;i++){
+    const v=min+(max-min)*i/n, y=h-pad.b-(v-min)/(max-min)*(h-pad.t-pad.b);
+    x.fillText(fmt(v),pad.l-3,y+3);
+    if(i>0&&i<n){ x.strokeStyle='#f0f3f7'; x.beginPath();
+      x.moveTo(pad.l,y); x.lineTo(w-pad.r,y); x.stroke(); }
+  }
+}
+function legend(x,w,pad,items){
+  x.font='8px sans-serif'; x.textAlign='left';
+  let lx=pad.l, ly=22;
+  items.forEach(it=>{
+    const tw=x.measureText(it[0]).width+16;
+    if(lx+tw>w-pad.r){ lx=pad.l; ly+=10; }
+    x.fillStyle=it[1]; x.fillRect(lx,ly-5,8,4);
+    x.fillStyle='#4a5560'; x.fillText(it[0],lx+11,ly);
+    lx+=tw;
+  });
+  return ly+6;
+}
+function drawSet(V,pf){
+  const ids=[1,2,3,4,5,6].map(i=>pf+i);
+  ids.forEach(id=>{ const c=$(id); if(c) c.getContext('2d').clearRect(0,0,c.width,c.height); });
+  if(!ids.every(id=>$(id))) return;
+  if(!V){ ids.forEach(id=>{ const {x,w,h}=cc(id); x.fillStyle='#aab3bf'; x.font='11px sans-serif';
+      x.textAlign='center'; x.fillText('데이터 없음',w/2,h/2); }); return; }
+  chComponents(V,ids[0]); chByPart(V,ids[1]); chRChart(V,ids[2]);
+  chByOper(V,ids[3]);   chXChart(V,ids[4]);  chInteract(V,ids[5]);
+}
+function drawAll(){ drawSet(VR,'cv'); }
+
+/* ① 변동성분 */
+function chComponents(V,id){
+  const {x,w,h}=cc(id);
+  const pad={l:34,r:6,t:40,b:24};
+  title(x,w,tw('변동성분'));
+  const hasTol=V.TOL>0;
+  const items=[['% Contribution',SER[0]],['% Study Var',SER[1]]];
+  if(hasTol) items.push(['% Tol (5.15σ)',SER[2]]);
+  pad.t=legend(x,w,pad,items)+4;
+  const cats=[['Gage R&R',V.GRR],[tw('반복'),V.EV],[tw('재현성'),V.AV],[tw('부품-부품'),V.PV]];
+  const vals=cats.map(c=>{
+    const sd=c[1];
+    const a=[V.TV?sd*sd/(V.TV*V.TV)*100:0, V.TV?sd/V.TV*100:0];
+    if(hasTol) a.push(5.15*sd/V.TOL*100);
+    return a;
+  });
+  const max=Math.max(100,...vals.flat())*1.02;
+  axes(x,pad,w,h);
+  yTicks(x,pad,w,h,0,max,v=>v.toFixed(0)+'%',5);
+  const bw=(w-pad.l-pad.r)/cats.length, ns=vals[0].length, sw=Math.min(9,(bw*0.62)/ns);
+  cats.forEach((c,ci)=>{
+    const cx=pad.l+bw*(ci+0.5);
+    vals[ci].forEach((v,si)=>{
+      const bx=cx-(ns*sw)/2+si*sw;
+      const by=h-pad.b-(v/max)*(h-pad.t-pad.b);
+      x.fillStyle=SER[si]; x.fillRect(bx,by,sw-1,h-pad.b-by);
+    });
+    x.fillStyle='#4a5560'; x.font='8px sans-serif'; x.textAlign='center';
+    x.fillText(c[0],cx,h-pad.b+11);
+  });
+}
+/* ② 측정값(시료) */
+function chByPart(V,id){
+  const {x,w,h}=cc(id);
+  const pad={l:38,r:8,t:24,b:22};
+  title(x,w,tw('측정값(시료)'));
+  const raw=[]; V.M.forEach(tr=>tr.forEach(r=>r.forEach((v,i)=>raw.push([i,v]))));
+  const all=raw.map(r=>r[1]);
+  const lo=Math.min(...all), hi=Math.max(...all), sp=(hi-lo)||1;
+  const min=lo-sp*.1, max=hi+sp*.1;
+  const X=i=>pad.l+(V.p<2?.5:i/(V.p-1))*(w-pad.l-pad.r);
+  const Y=v=>h-pad.b-(v-min)/(max-min)*(h-pad.t-pad.b);
+  axes(x,pad,w,h); yTicks(x,pad,w,h,min,max,v=>v.toFixed(2));
+  raw.forEach(r=>{ x.fillStyle='rgba(120,132,148,.5)';
+    x.beginPath(); x.arc(X(r[0]),Y(r[1]),2,0,6.3); x.fill(); });
+  x.strokeStyle='#b8a33a'; x.lineWidth=2; x.beginPath();
+  V.partAvg.forEach((v,i)=> i?x.lineTo(X(i),Y(v)):x.moveTo(X(i),Y(v))); x.stroke();
+  V.partAvg.forEach((v,i)=>{ x.fillStyle='#0f2b4c';
+    x.beginPath(); x.arc(X(i),Y(v),2.6,0,6.3); x.fill(); });
+  x.fillStyle='#6b7887'; x.font='8px sans-serif'; x.textAlign='center';
+  const step=V.p>10?2:1;
+  for(let i=0;i<V.p;i+=step) x.fillText(String(i+1),X(i),h-pad.b+10);
+}
+/* ③ R 관리도 */
+function chRChart(V,id){
+  const {x,w,h}=cc(id);
+  const pad={l:38,r:8,t:24,b:24};
+  title(x,w,tw('R관리도(측정자기준)'));
+  pad.t=legend(x,w,pad,V.ops.map((o,i)=>[shortName(o.name),OPC[i%3]])
+    .concat([['R̿','#000'],['UCL R','#c0392b']]))+2;
+  const all=[].concat(...V.rangesByOp);
+  const max=Math.max(V.UCLR,...all)*1.15||1, N=V.o*V.p;
+  const X=i=>pad.l+(N<2?.5:i/(N-1))*(w-pad.l-pad.r);
+  const Y=v=>h-pad.b-v/max*(h-pad.t-pad.b);
+  axes(x,pad,w,h); yTicks(x,pad,w,h,0,max,v=>v.toFixed(3));
+  x.strokeStyle='#000'; x.lineWidth=1; x.beginPath();
+  x.moveTo(pad.l,Y(V.Rbb)); x.lineTo(w-pad.r,Y(V.Rbb)); x.stroke();
+  x.strokeStyle='#c0392b'; x.beginPath();
+  x.moveTo(pad.l,Y(V.UCLR)); x.lineTo(w-pad.r,Y(V.UCLR)); x.stroke();
+  let k=0;
+  V.rangesByOp.forEach((rg,oi)=>{
+    if(oi){ x.strokeStyle='#e6eaf0'; x.beginPath();
+      x.moveTo(X(k-0.5),pad.t); x.lineTo(X(k-0.5),h-pad.b); x.stroke(); }
+    x.strokeStyle=OPC[oi%3]; x.lineWidth=1.2; x.beginPath();
+    rg.forEach((v,i)=>{ const px=X(k+i),py=Y(v); i?x.lineTo(px,py):x.moveTo(px,py); }); x.stroke();
+    rg.forEach((v,i)=>{ x.fillStyle=v>V.UCLR?'#c0392b':OPC[oi%3];
+      x.beginPath(); x.arc(X(k+i),Y(v),2.2,0,6.3); x.fill(); });
+    x.fillStyle=OPC[oi%3]; x.font='8px sans-serif'; x.textAlign='center';
+    x.fillText(shortName(V.ops[oi].name),X(k+(V.p-1)/2),h-pad.b+11);
+    k+=V.p;
+  });
+}
+/* ④ 측정자 */
+function chByOper(V,id){
+  const {x,w,h}=cc(id);
+  const pad={l:38,r:8,t:24,b:24};
+  title(x,w,tw('측정자'));
+  const all=[]; V.M.forEach(tr=>tr.forEach(r=>r.forEach(v=>all.push(v))));
+  const lo=Math.min(...all), hi=Math.max(...all), sp=(hi-lo)||1;
+  const min=lo-sp*.1, max=hi+sp*.1;
+  const X=i=>pad.l+(V.o<2?.5:(i+0.5)/V.o)*(w-pad.l-pad.r);
+  const Y=v=>h-pad.b-(v-min)/(max-min)*(h-pad.t-pad.b);
+  axes(x,pad,w,h); yTicks(x,pad,w,h,min,max,v=>v.toFixed(2));
+  V.M.forEach((tr,oi)=>{
+    tr.forEach(r=>r.forEach(v=>{ x.fillStyle='rgba(120,132,148,.45)';
+      x.beginPath(); x.arc(X(oi),Y(v),2.2,0,6.3); x.fill(); }));
+  });
+  x.strokeStyle='#4472c4'; x.lineWidth=2; x.beginPath();
+  V.Xbars.forEach((v,i)=> i?x.lineTo(X(i),Y(v)):x.moveTo(X(i),Y(v))); x.stroke();
+  V.Xbars.forEach((v,i)=>{ x.fillStyle='#0f2b4c';
+    x.beginPath(); x.arc(X(i),Y(v),3,0,6.3); x.fill(); });
+  x.fillStyle='#4a5560'; x.font='8px sans-serif'; x.textAlign='center';
+  V.ops.forEach((o,i)=> x.fillText(shortName(o.name),X(i),h-pad.b+11));
+}
+/* ⑤ XBAR 관리도 */
+function chXChart(V,id){
+  const {x,w,h}=cc(id);
+  const pad={l:38,r:8,t:24,b:24};
+  title(x,w,tw('XBAR관리도'));
+  pad.t=legend(x,w,pad,V.ops.map((o,i)=>[shortName(o.name),OPC[i%3]])
+    .concat([['average','#000'],['UCL/LCL X','#c0392b']]))+2;
+  const all=[].concat(...V.opPartMean);
+  const lo=Math.min(V.LCLX,...all), hi=Math.max(V.UCLX,...all), sp=(hi-lo)||1;
+  const min=lo-sp*.12, max=hi+sp*.12, N=V.o*V.p;
+  const X=i=>pad.l+(N<2?.5:i/(N-1))*(w-pad.l-pad.r);
+  const Y=v=>h-pad.b-(v-min)/(max-min)*(h-pad.t-pad.b);
+  axes(x,pad,w,h); yTicks(x,pad,w,h,min,max,v=>v.toFixed(2));
+  [[V.UCLX,'#c0392b'],[V.LCLX,'#c0392b'],[V.Xbb,'#000']].forEach(a=>{
+    x.strokeStyle=a[1]; x.lineWidth=1; x.beginPath();
+    x.moveTo(pad.l,Y(a[0])); x.lineTo(w-pad.r,Y(a[0])); x.stroke();
+  });
+  let k=0;
+  V.opPartMean.forEach((pm,oi)=>{
+    if(oi){ x.strokeStyle='#e6eaf0'; x.beginPath();
+      x.moveTo(X(k-0.5),pad.t); x.lineTo(X(k-0.5),h-pad.b); x.stroke(); }
+    x.strokeStyle=OPC[oi%3]; x.lineWidth=1.2; x.beginPath();
+    pm.forEach((v,i)=>{ const px=X(k+i),py=Y(v); i?x.lineTo(px,py):x.moveTo(px,py); }); x.stroke();
+    pm.forEach((v,i)=>{ x.fillStyle=(v>V.UCLX||v<V.LCLX)?'#c0392b':OPC[oi%3];
+      x.beginPath(); x.arc(X(k+i),Y(v),2.2,0,6.3); x.fill(); });
+    x.fillStyle=OPC[oi%3]; x.font='8px sans-serif'; x.textAlign='center';
+    x.fillText(shortName(V.ops[oi].name),X(k+(V.p-1)/2),h-pad.b+11);
+    k+=V.p;
+  });
+}
+/* ⑥ 시료*측정자 교호작용 */
+function chInteract(V,id){
+  const {x,w,h}=cc(id);
+  const pad={l:38,r:8,t:24,b:22};
+  title(x,w,tw('시료*측정자 교호작용'));
+  pad.t=legend(x,w,pad,V.ops.map((o,i)=>[shortName(o.name),OPC[i%3]]))+2;
+  const all=[].concat(...V.opPartMean);
+  const lo=Math.min(...all), hi=Math.max(...all), sp=(hi-lo)||1;
+  const min=lo-sp*.12, max=hi+sp*.12;
+  const X=i=>pad.l+(V.p<2?.5:i/(V.p-1))*(w-pad.l-pad.r);
+  const Y=v=>h-pad.b-(v-min)/(max-min)*(h-pad.t-pad.b);
+  axes(x,pad,w,h); yTicks(x,pad,w,h,min,max,v=>v.toFixed(2));
+  V.opPartMean.forEach((pm,oi)=>{
+    x.strokeStyle=OPC[oi%3]; x.lineWidth=1.6; x.beginPath();
+    pm.forEach((v,i)=> i?x.lineTo(X(i),Y(v)):x.moveTo(X(i),Y(v))); x.stroke();
+    pm.forEach((v,i)=>{ x.fillStyle=OPC[oi%3];
+      x.beginPath(); x.arc(X(i),Y(v),2.4,0,6.3); x.fill(); });
+  });
+  x.fillStyle='#6b7887'; x.font='8px sans-serif'; x.textAlign='center';
+  const step=V.p>10?2:1;
+  for(let i=0;i<V.p;i+=step) x.fillText(String(i+1),X(i),h-pad.b+10);
+}
+
+/* 변동 성분 용어 설명 + 자동 해석 */
+function varGlossary(V){
+  let h='<div class="glos"><b>변동 성분이란?</b> 측정값의 산포를 원인별로 쪼갠 표준편차이며, '+
+    '단위는 측정값과 같습니다.'+
+    '<div class="scroll"><table><thead><tr><th>약어</th><th>정식 명칭</th><th>의미</th></tr></thead><tbody>'+
+    '<tr><td><b>EV</b></td><td style="text-align:left">Equipment Variation · 반복성 (Repetibilidad)</td>'+
+      '<td style="text-align:left">같은 사람이 같은 시료를 여러 번 재도 값이 흔들리는 정도 — 계측기 자체 오차</td></tr>'+
+    '<tr><td><b>AV</b></td><td style="text-align:left">Appraiser Variation · 재현성 (Reproducibilidad)</td>'+
+      '<td style="text-align:left">측정자가 바뀌면 평균이 달라지는 정도 — 사람 간 측정 방법 차이</td></tr>'+
+    '<tr><td><b>GRR</b></td><td style="text-align:left">Gage R&amp;R · 측정시스템 총오차</td>'+
+      '<td style="text-align:left">√(EV² + AV²) — 사람과 계측기를 합친 측정오차 전체</td></tr>'+
+    '<tr><td><b>PV</b></td><td style="text-align:left">Part Variation · 부품 산포</td>'+
+      '<td style="text-align:left">시료들이 실제로 갖고 있는 치수 차이</td></tr>'+
+    '<tr><td><b>TV</b></td><td style="text-align:left">Total Variation · 총 산포</td>'+
+      '<td style="text-align:left">√(GRR² + PV²) — 측정오차와 부품 차이를 합친 전체 산포</td></tr>'+
+    '</tbody></table></div>';
+
+  if(V){
+    const ratio = V.GRR>0 ? V.PV/V.GRR : 0;
+    const evav  = V.AV>0 ? V.EV/V.AV : (V.EV>0?99:1);
+    h+='<div class="interp"><b>이번 결과 해석</b><br>';
+    h+='· 측정오차(GRR '+V.GRR.toFixed(4)+')보다 시료 간 실제 차이(PV '+V.PV.toFixed(4)+')가 <b>'+
+       ratio.toFixed(1)+'배</b> 큽니다. ';
+    h+= ratio>=4 ? '시료를 구분하는 데 충분한 분해능입니다 (ndc '+V.ndc+').'
+      : ratio>=2.8 ? '구분은 가능하지만 여유가 크지 않습니다 (ndc '+V.ndc+').'
+      : '<span style="color:#c0392b">측정오차에 시료 차이가 묻혀 합격·불합격 구분이 어렵습니다 (ndc '+V.ndc+').</span>';
+    h+='<br>· ';
+    h+= evav>=1.3
+      ? 'EV('+V.EV.toFixed(4)+') > AV('+V.AV.toFixed(4)+') — <b>사람 간 차이보다 계측기 반복오차가 큽니다.</b> '+
+        '개선이 필요하면 측정자 교육보다 <b>계측기 상태·측정 방법(고정 방식, 프로브 압력, 측정 위치)</b>을 먼저 점검하세요.'
+      : evav<=0.77
+      ? 'AV('+V.AV.toFixed(4)+') > EV('+V.EV.toFixed(4)+') — <b>측정자 간 편차가 계측기 오차보다 큽니다.</b> '+
+        '<b>측정 방법 표준화와 작업자 교육</b>이 우선입니다.'
+      : 'EV('+V.EV.toFixed(4)+')와 AV('+V.AV.toFixed(4)+')가 비슷한 수준입니다. 계측기와 측정자 양쪽을 함께 점검하세요.';
+    if(V.TOL>0){
+      const pt=5.15*V.GRR/V.TOL*100;
+      h+='<br>· 측정오차 폭(5.15σ)이 규격공차의 <b>'+pt.toFixed(1)+'%</b>를 차지합니다. ';
+      h+= pt<10 ? '규격 대비 충분히 정밀합니다.' : pt<=30 ? '사용 가능한 수준입니다.'
+        : '<span style="color:#c0392b">규격을 판정하기에 오차가 너무 큽니다.</span>';
+    }else{
+      h+='<br>· <span style="color:#c0392b">규격공차가 입력되지 않아 % Tolerance 판정은 빠져 있습니다.</span>';
+    }
+    h+='</div>';
+  }
+  return h+'</div>';
+}
+
+/* ══════════════════════════════════════════
+   관리자 — 계량형 데이터 생성
+   ══════════════════════════════════════════ */
+const ADMIN_PIN = 'yura2026';    /* 관리자 비밀번호 — 필요시 이 값만 변경 */
+let adminOK=false, GLV={};        /* GLV: {조번호: 수준} */
+
+/* 수준별 목표 — %Contribution 과 %Tolerance 범위 (모두 Aprobado 구간) */
+const LEVELS={
+  '우수':   {c:[0.3,0.9],  t:[5,9],    desc:'Excelente — 여유 있게 합격'},
+  '양호':   {c:[2.0,6.0],  t:[12,22],  desc:'Bueno — 무난한 합격'},
+  '경계':   {c:[7.0,8.6],  t:[24,29],  desc:'Bueno(하한) — 합격이나 다소 미흡'}
+};
+const LEVEL_KEYS=Object.keys(LEVELS);
+
+function admLogin(){
+  if($('admPin').value.trim()===ADMIN_PIN){
+    adminOK=true; $('admGate').style.display='none'; $('admBody').style.display='';
+    admRender(); toast('관리자 모드');
+  }else{ toast('비밀번호가 올바르지 않습니다'); $('admPin').value=''; }
+}
+function admSpec(){
+  const c=num($('admTarget').value), t=num($('admTol').value);
+  $('admSpecNote').innerHTML = (c!==null&&t!==null&&t>0)
+    ? '규격 <b>'+(c-t).toFixed(4).replace(/0+$/,'').replace(/\.$/,'')+' ~ '+
+      (c+t).toFixed(4).replace(/0+$/,'').replace(/\.$/,'')+'</b> · 규격공차(전폭) <b>'+
+      (2*t).toFixed(4).replace(/0+$/,'').replace(/\.$/,'')+'</b>'
+    : '<span style="color:#c0392b">기준값과 공차를 입력하세요</span>';
+}
+function admRender(){
+  if(!adminOK) return;
+  admSpec();
+  $('admPT').textContent='시료 '+vParts()+' · 측정 '+vTrials()+'회';
+  const gs=autoGroups();
+  if(!gs.length){ $('admGroups').innerHTML='<div class="empty">인원을 선택하면 조가 표시됩니다</div>'; return; }
+  let h='<table><thead><tr><th>조</th><th>측정자</th><th>생성 수준</th><th>목표 %Contrib</th>'+
+        '<th>목표 %Tol</th></tr></thead><tbody>';
+  gs.forEach((mem,i)=>{
+    const g=i+1;
+    if(!GLV[g]) GLV[g]=LEVEL_KEYS[Math.floor(Math.random()*LEVEL_KEYS.length)];
+    const L=LEVELS[GLV[g]];
+    h+='<tr><td><b>'+g+'조</b></td><td style="text-align:left">'+
+      mem.map(m=>esc(shortName(m.name))).join(', ')+
+      (mem.length<2?' <span class="pill p-ng">인원부족</span>':'')+'</td>'+
+      '<td><select data-lv="'+g+'">'+LEVEL_KEYS.map(k=>
+        '<option value="'+k+'"'+(GLV[g]===k?' selected':'')+'>'+k+' · '+LEVELS[k].desc+'</option>').join('')+
+      '</select></td>'+
+      '<td>'+L.c[0]+' ~ '+L.c[1]+'%</td><td>'+L.t[0]+' ~ '+L.t[1]+'%</td></tr>';
+  });
+  $('admGroups').innerHTML=h+'</tbody></table>';
+  $('admGroups').querySelectorAll('select[data-lv]').forEach(s=>{
+    s.onchange=()=>{ GLV[+s.dataset.lv]=s.value; admRender(); };
+  });
+}
+function admRandomLevels(){
+  autoGroups().forEach((_,i)=>{ GLV[i+1]=LEVEL_KEYS[Math.floor(Math.random()*LEVEL_KEYS.length)]; });
+  admRender(); toast('수준을 무작위로 재배정했습니다');
+}
+
+/* 표준정규 난수 */
+function nrand(){
+  let u=0,v=0; while(!u)u=Math.random(); while(!v)v=Math.random();
+  return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);
+}
+/* 원시 측정행렬로 지표 계산 (analyze 와 동일한 수식) */
+function evalM(M,p,t,o,TOL){
+  const Rbars=[],Xbars=[],partSum=Array(p).fill(0);
+  M.forEach(tr=>{
+    let rs=0,xs=0;
+    for(let i=0;i<p;i++){
+      const col=tr.map(x=>x[i]);
+      rs+=Math.max(...col)-Math.min(...col);
+      col.forEach(v=>{ xs+=v; partSum[i]+=v; });
+    }
+    Rbars.push(rs/p); Xbars.push(xs/(p*t));
+  });
+  const R4=v=>Math.round(v*1e4)/1e4, rd=$('vRound').value==='1'?R4:(v=>v);
+  const Rbb=Rbars.reduce((a,b)=>a+b,0)/o;
+  const XbarR=Math.max(...Xbars)-Math.min(...Xbars);
+  const partAvg=partSum.map(s=>s/(o*t));
+  const Rp=Math.max(...partAvg)-Math.min(...partAvg);
+  const EV=rd(Rbb*K1[t]);
+  const AV=rd(Math.sqrt(Math.max(0,Math.pow(XbarR*K2[o],2)-(EV*EV)/(p*t))));
+  const GRR=rd(Math.sqrt(EV*EV+AV*AV));
+  const PV=rd(Rp*K3[p]);
+  const TV=rd(Math.sqrt(GRR*GRR+PV*PV));
+  const pctC=TV?GRR*GRR/(TV*TV)*100:0;
+  const pctT=TOL?5.15*GRR/TOL*100:null;
+  const ndc=GRR>0?Math.floor(1.41*PV/GRR):0;
+  const lc=lvl('c',pctC), lt=pctT===null?null:lvl('t',pctT), ld=lvl('d',ndc);
+  const ord={'우수':0,'양호':1,'부족':2};
+  const grade=[lc,lt,ld].filter(Boolean).sort((a,b)=>ord[b]-ord[a])[0];
+  return {EV,AV,GRR,PV,TV,pctC,pctT,ndc,grade,result:grade==='부족'?'No aprobado':'Aprobado'};
+}
+/* 목표 수준에 맞는 측정행렬 1회 생성 */
+function genOnce(p,t,o,center,TOL,dec,lvName){
+  const L=LEVELS[lvName];
+  const c=(L.c[0]+Math.random()*(L.c[1]-L.c[0]))/100;
+  const tp= L.t[0]+Math.random()*(L.t[1]-L.t[0]);
+  const GRR=tp/100*TOL/5.15;
+  const PV=GRR*Math.sqrt((1-c)/c);
+  const Rp=PV/K3[p];
+  const f=0.55+Math.random()*0.30;                 /* EV 가 차지하는 분산 비율 */
+  const EV=GRR*Math.sqrt(f), AV=GRR*Math.sqrt(1-f);
+  const XbarR=Math.sqrt(AV*AV+(EV*EV)/(p*t))/K2[o];
+  /* 시료 참값 — 무작위 후 범위를 Rp 로 정규화 */
+  let pv=Array.from({length:p},()=>Math.random());
+  const mn=Math.min(...pv), mx=Math.max(...pv)||1;
+  pv=pv.map(v=> center - Rp/2 + (v-mn)/((mx-mn)||1)*Rp);
+  /* 측정자 편의(bias) — 최대-최소가 XbarR */
+  let bias=[]; for(let k=0;k<o;k++) bias.push(-XbarR/2 + (o>1?XbarR*k/(o-1):0));
+  for(let i=o-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [bias[i],bias[j]]=[bias[j],bias[i]]; }
+  const q=Math.pow(10,dec), M=[];
+  for(let k=0;k<o;k++){
+    const rows=[];
+    for(let tr=0;tr<t;tr++){
+      const row=[];
+      for(let i=0;i<p;i++) row.push(Math.round((pv[i]+bias[k]+nrand()*EV)*q)/q);
+      rows.push(row);
+    }
+    M.push(rows);
+  }
+  return M;
+}
+/* 목표 등급에 맞을 때까지 반복 시도 후 최적안 선택 */
+function genGroup(g,lvName,center,TOL,dec){
+  const ops=opsOf(g), p=vParts(), t=vTrials(), o=ops.length;
+  if(o<2) return null;
+  const want = lvName==='우수' ? '우수' : '양호';
+  const L=LEVELS[lvName], mid=(L.t[0]+L.t[1])/2;
+  let best=null, bs=1e9;
+  for(let k=0;k<120;k++){
+    const M=genOnce(p,t,o,center,TOL,dec,lvName);
+    const r=evalM(M,p,t,o,TOL);
+    if(r.grade==='부족') continue;
+    let s=Math.abs((r.pctT==null?mid:r.pctT)-mid);
+    if(r.grade!==want) s+=100;
+    if(s<bs){ bs=s; best={M,r}; }
+    if(s<1.5) break;
+  }
+  return best;
+}
+function admGenerate(){
+  const center=num($('admTarget').value), half=num($('admTol').value);
+  if(center===null || half===null || half<=0) return toast('기준값과 공차를 입력하세요');
+  const TOL=2*half, dec=parseInt($('admDec').value)||3;
+  const gs=autoGroups();
+  if(!gs.length) return toast('먼저 인원을 선택하세요');
+  const out=[]; let made=0;
+  gs.forEach((mem,i)=>{
+    const g=i+1;
+    if(mem.length<2){ out.push({g,skip:true,mem}); return; }
+    const res=genGroup(g,GLV[g]||'양호',center,TOL,dec);
+    if(!res){ out.push({g,skip:true,mem}); return; }
+    /* 측정값 반영 */
+    mem.forEach((op,oi)=>{
+      VD[op.employee_id]={};
+      for(let tr=1;tr<=vTrials();tr++)
+        VD[op.employee_id][tr]=res.M[oi][tr-1].map(v=>v.toFixed(dec));
+    });
+    /* 규격·계측기 정보 반영 */
+    const d=gi(g);
+    d.usl=(center+half).toFixed(dec); d.lsl=(center-half).toFixed(dec);
+    d.tol=+TOL.toFixed(dec+1);
+    d.gage=($('admGage').value||'')+String(g).padStart(2,'0');
+    out.push({g,mem,lv:GLV[g],r:res.r});
+    made++;
+  });
+  loadGInfo(); renderVarInput(); admPreview(out);
+  toast(made+'개 조 데이터를 생성했습니다');
+}
+function admPreview(out){
+  if(!out.length){ $('admPreview').innerHTML='<div class="empty">생성된 데이터가 없습니다</div>'; return; }
+  const pc=g=>g==='우수'?'p-ok':g==='양호'?'p-wa':'p-ng';
+  let h='<table><thead><tr><th>조</th><th>측정자</th><th>생성 수준</th><th>EV</th><th>AV</th>'+
+    '<th>GRR</th><th>PV</th><th>%Contrib</th><th>%Tol</th><th>ndc</th><th>등급</th><th>판정</th></tr></thead><tbody>';
+  out.forEach(o=>{
+    if(o.skip){
+      h+='<tr><td><b>'+o.g+'조</b></td><td style="text-align:left">'+
+        o.mem.map(m=>esc(shortName(m.name))).join(', ')+'</td>'+
+        '<td colspan="10"><span class="pill p-ng">측정자 2명 미만 — 생성 제외</span></td></tr>';
+      return;
+    }
+    const r=o.r;
+    h+='<tr><td><b>'+o.g+'조</b></td><td style="text-align:left">'+
+      o.mem.map(m=>esc(shortName(m.name))).join(', ')+'</td>'+
+      '<td>'+o.lv+'</td><td>'+r.EV.toFixed(4)+'</td><td>'+r.AV.toFixed(4)+'</td>'+
+      '<td>'+r.GRR.toFixed(4)+'</td><td>'+r.PV.toFixed(4)+'</td>'+
+      '<td>'+r.pctC.toFixed(2)+'%</td><td>'+(r.pctT==null?'—':r.pctT.toFixed(2)+'%')+'</td>'+
+      '<td>'+r.ndc+'</td><td><span class="pill '+pc(r.grade)+'">'+r.grade+'</span></td>'+
+      '<td>'+r.result+'</td></tr>';
+  });
+  $('admPreview').innerHTML=h+'</tbody></table>'+
+    '<p class="note">계량형 탭에서 그래프와 상세 결과를 확인한 뒤 저장하세요.</p>';
+}
+function admClear(){
+  autoGroups().forEach((mem,i)=>{
+    mem.forEach(op=>{ delete VD[op.employee_id]; });
+  });
+  renderVarInput(); admPreview([]); toast('생성 데이터를 삭제했습니다');
+}
+
+async function saveVar(){
+  saveGInfo();
+  const rs=allResults();
+  if(!rs.length) return toast('저장할 조 결과가 없습니다');
+  let ok=0;
+  try{
+    for(const V of rs){
+      const d=gi(V.g);
+      const s=await sb('msa_var_sessions',{method:'POST',headers:{'Prefer':'return=representation'},
+        body:JSON.stringify([{
+          factory:$('fFactory').value, team:$('fTeam').value||(V.ops[0]&&V.ops[0].team)||null,
+          title:$('vTitle').value||null, group_name:V.g+'grupo',
+          gage_no:d.gage||null, eval_date:$('vDate').value||today(),
+          period:periodOf('vYear','vQtr'),
+          usl:num(d.usl), lsl:num(d.lsl), tolerance:V.TOL,
+          n_parts:V.p, n_ops:V.o, n_trials:V.t,
+          ev:+V.EV.toFixed(6), av:+V.AV.toFixed(6), grr:+V.GRR.toFixed(6),
+          pv:+V.PV.toFixed(6), tv:+V.TV.toFixed(6),
+          pct_contrib:+V.pctC.toFixed(4), pct_study:+V.pctS.toFixed(4),
+          pct_tol:V.pctT===null?null:+V.pctT.toFixed(4), ndc:V.ndc,
+          grade:V.grade, result:V.result, action_plan:d.action||null
+        }])});
+      const sid=s[0].id, recs=[];
+      V.ops.forEach((op,oi)=>{ for(let tr=1;tr<=V.t;tr++){
+        recs.push({session_id:sid, employee_id:op.employee_id, employee_name:op.name,
+          op_index:oi+1, trial:tr, vals:V.M[oi][tr-1], updated_at:new Date().toISOString()});
+      }});
+      await sb('msa_var_measures',{method:'POST',body:JSON.stringify(recs)});
+      ok++;
+    }
+    toast('계량형 저장 완료 · '+ok+'개 조');
+  }catch(e){ toast('저장 실패('+ok+'개 저장됨): '+e.message); }
+}
+function exportVarXlsx(){
+  const rs=allResults(); if(!rs.length) return toast('결과가 없습니다');
+  const d=$('vDate').value||today();
+  const s1=[['계량형 Gage R&R 결과 · Variable (Método Xbar-R)'],[],
+    ['평가주기',periodLabel(periodOf('vYear','vQtr'))],['평가일',d],
+    ['평가명',$('vTitle').value],['팀',$('fTeam').value],
+    ['공장',plantLabel()],['시료수',vParts()],['측정횟수',vTrials()],[],
+    ['조','측정자1','측정자2','측정자3','계측기NO','규격공차',
+     'EV','AV','GRR','PV','TV','%Contribution','%StudyVar','%Tolerance','ndc','등급','판정','조치계획']];
+  rs.forEach(V=>{
+    const g=gi(V.g);
+    s1.push([V.g+'조', V.ops[0]?V.ops[0].name:'', V.ops[1]?V.ops[1].name:'', V.ops[2]?V.ops[2].name:'',
+      g.gage, V.TOL||'', +V.EV.toFixed(4), +V.AV.toFixed(4), +V.GRR.toFixed(4),
+      +V.PV.toFixed(4), +V.TV.toFixed(4), +V.pctC.toFixed(3), +V.pctS.toFixed(3),
+      V.pctT===null?'':+V.pctT.toFixed(3), V.ndc, V.grade, V.result, g.action]);
+  });
+  s1.push([],['[용어]'],
+    ['EV','Equipment Variation · 반복성 — 같은 사람이 반복 측정할 때의 흔들림 (계측기 오차)'],
+    ['AV','Appraiser Variation · 재현성 — 측정자가 바뀔 때의 평균 차이'],
+    ['GRR','√(EV²+AV²) — 측정시스템 총오차'],
+    ['PV','Part Variation · 시료가 실제로 갖는 치수 차이'],
+    ['TV','√(GRR²+PV²) — 전체 산포'],
+    ['ndc','1.41 × PV / GRR — 시료를 몇 단계로 구분해 낼 수 있는지 (10초과 우수 · 4~10 양호 · 4미만 부족)'],
+    ['%Contribution','GRR 분산 ÷ TV 분산 (1미만 우수 · 1~9 양호 · 9초과 부족)'],
+    ['%Tolerance','5.15 × GRR ÷ 규격공차 (10미만 우수 · 10~30 양호 · 30초과 부족)']);
+
+  const sheets=[{name:'요약',aoa:s1,
+    cols:[{wch:8},{wch:26},{wch:26},{wch:26},{wch:14},{wch:10}].concat(Array(12).fill({wch:12}))}];
+  rs.forEach(V=>{
+    const hdr=['측정자','회차'].concat(Array.from({length:V.p},(_,i)=>'시료'+(i+1))).concat(['평균','R']);
+    const a=[hdr];
+    V.ops.forEach((op,oi)=>{
+      for(let tr=1;tr<=V.t;tr++){
+        const v=V.M[oi][tr-1];
+        const mean=v.reduce((x,y)=>x+y,0)/v.length, rg=Math.max(...v)-Math.min(...v);
+        a.push([op.name,tr+'차'].concat(v).concat([+mean.toFixed(4),+rg.toFixed(4)]));
+      }
+    });
+    a.push([],['Xbar / Rbar'],['측정자','Xbar','Rbar']);
+    V.ops.forEach((op,i)=>a.push([op.name,+V.Xbars[i].toFixed(4),+V.Rbars[i].toFixed(4)]));
+    a.push(['전체',+V.Xbb.toFixed(4),+V.Rbb.toFixed(4)]);
+    a.push([],['UCL X',+V.UCLX.toFixed(4)],['LCL X',+V.LCLX.toFixed(4)],['UCL R',+V.UCLR.toFixed(4)]);
+    sheets.push({name:V.g+'조 측정데이터',aoa:a,
+      cols:[{wch:26},{wch:7}].concat(Array(V.p+2).fill({wch:9}))});
+  });
+  saveWorkbook(sheets,'MSA_계량형_'+d+'.xlsx');
+}
+
+/* ══════════ 이력 ══════════ */
+let HV=[], HA=[];
+/* 세션에 딸린 측정 기록에서 측정자 이름을 op_index 순으로 중복 없이 추출 */
+function measurerNames(r){
+  const m=r.msa_var_measures||[], seen={}, out=[];
+  m.slice().sort((a,b)=>(a.op_index||0)-(b.op_index||0)).forEach(x=>{
+    const nm=shortName(x.employee_name);
+    if(nm && !seen[nm]){ seen[nm]=1; out.push(nm); }
+  });
+  return out;
+}
+async function loadHist(){
+  const f=$('hFrom').value||'2000-01-01', t=$('hTo').value||'2999-12-31';
+  const fac=$('fFactory').value, tm=$('fTeam').value;
+  const tq=(tm?'&team=eq.'+encodeURIComponent(tm):'')+periodFilter('hYear','hQtr');
+
+  $('histVar').innerHTML='<div class="empty">불러오는 중…</div>';
+  try{
+    HV=await sb('msa_var_sessions?select=*,msa_var_measures(employee_name,op_index)&factory=eq.'+fac+tq+
+      '&eval_date=gte.'+f+'&eval_date=lte.'+t+'&order=eval_date.desc,group_name.asc&limit=300')||[];
+    if(!HV.length) $('histVar').innerHTML='<div class="empty">데이터가 없습니다</div>';
+    else{
+      let h='<table><thead><tr><th>평가주기</th><th>평가일</th><th>평가명</th><th>조</th>'+
+        '<th>측정자<br><small>Medido por</small></th>'+
+        '<th>계측기</th><th>시료/측정자/횟수</th><th>%Contrib</th><th>%Tol</th><th>ndc</th>'+
+        '<th>등급</th><th>판정</th><th>삭제</th></tr></thead><tbody>';
+      HV.forEach(r=>{
+        const c=r.grade==='우수'?'p-ok':r.grade==='양호'?'p-wa':'p-ng';
+        h+='<tr class="clickrow" data-vid="'+esc(r.id)+'">'+
+          '<td>'+esc(periodLabel(r.period))+'</td>'+
+          '<td>'+esc(r.eval_date)+'</td><td style="text-align:left">'+esc(r.title)+'</td>'+
+          '<td>'+esc(r.group_name)+'</td>'+
+          '<td style="text-align:left">'+esc(measurerNames(r).join(', '))+'</td>'+
+          '<td>'+esc(r.gage_no)+'</td>'+
+          '<td>'+r.n_parts+' / '+r.n_ops+' / '+r.n_trials+'</td>'+
+          '<td>'+(r.pct_contrib!=null?(+r.pct_contrib).toFixed(2)+'%':'')+'</td>'+
+          '<td>'+(r.pct_tol!=null?(+r.pct_tol).toFixed(2)+'%':'—')+'</td>'+
+          '<td>'+(r.ndc==null?'':r.ndc)+'</td><td><span class="pill '+c+'">'+esc(r.grade)+'</span></td>'+
+          '<td>'+esc(r.result)+'</td>'+
+          '<td><button class="delbtn" data-del="'+esc(r.id)+'" data-lab="'+
+            esc(periodLabel(r.period)+' · '+(r.group_name||''))+'">삭제</button></td></tr>';
+      });
+      $('histVar').innerHTML=h+'</tbody></table>';
+      $('histVar').querySelectorAll('button[data-del]').forEach(b=>{
+        b.onclick=e=>{ e.stopPropagation(); delRecord('var',b.dataset.del,b.dataset.lab); };
+      });
+      $('histVar').querySelectorAll('tr[data-vid]').forEach(tr=>{
+        tr.onclick=()=>openVarDetail(tr.dataset.vid);
+      });
+    }
+  }catch(e){ $('histVar').innerHTML='<div class="empty">'+esc(e.message)+'</div>'; }
+
+  $('histAtt').innerHTML='<div class="empty">불러오는 중…</div>';
+  try{
+    const s=await sb('msa_sessions?select=*,msa_evaluations(employee_name)&factory=eq.'+fac+tq+
+      '&eval_date=gte.'+f+'&eval_date=lte.'+t+'&order=eval_date.desc&limit=300')||[];
+    HA=s;
+    if(!s.length){ $('histAtt').innerHTML='<div class="empty">데이터가 없습니다</div>'; return; }
+    let h='<table><thead><tr><th>평가주기</th><th>평가일</th><th>평가명</th><th>공정</th><th>팀</th>'+
+      '<th>평가자<br><small>Operadores</small></th><th>시료/반복</th><th>평가인원</th>'+
+      '<th>기준 E</th><th>삭제</th></tr></thead><tbody>';
+    s.forEach(r=>{
+      const nm=[...new Set((r.msa_evaluations||[]).map(e=>shortName(e.employee_name)).filter(Boolean))];
+      h+='<tr class="clickrow" data-aid="'+esc(r.id)+'">'+
+        '<td>'+esc(periodLabel(r.period))+'</td>'+
+        '<td>'+esc(r.eval_date)+'</td><td style="text-align:left">'+esc(r.title)+'</td>'+
+        '<td>'+esc(r.process_name)+'</td><td style="text-align:left">'+esc(r.team)+'</td>'+
+        '<td style="text-align:left">'+esc(nm.join(', '))+'</td>'+
+        '<td>'+r.sample_count+' / '+r.trial_count+'</td><td>'+nm.length+'명</td>'+
+        '<td>'+r.crit_e+'</td>'+
+        '<td><button class="delbtn" data-del="'+esc(r.id)+'" data-lab="'+
+          esc(periodLabel(r.period)+' · '+(r.title||r.eval_date))+'">삭제</button></td></tr>';
+    });
+    $('histAtt').innerHTML=h+'</tbody></table>';
+    $('histAtt').querySelectorAll('button[data-del]').forEach(b=>{
+      b.onclick=e=>{ e.stopPropagation(); delRecord('att',b.dataset.del,b.dataset.lab); };
+    });
+    $('histAtt').querySelectorAll('tr[data-aid]').forEach(tr=>{
+      tr.onclick=()=>openAttDetail(tr.dataset.aid);
+    });
+  }catch(e){ $('histAtt').innerHTML='<div class="empty">'+esc(e.message)+'</div>'; }
+}
+/* ══════════ 평가 세부내역 모달 ══════════ */
+function openModal(t){ $('modalTitle').textContent=t;
+  $('modalBody').innerHTML='<div class="empty">불러오는 중…</div>';
+  $('modal').classList.add('on'); }
+function closeModal(){ $('modal').classList.remove('on'); }
+$('modal').onclick=e=>{ if(e.target.id==='modal') closeModal(); };
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeModal(); });
+
+function kv(rows){
+  return '<div class="scroll"><table><tbody>'+rows.map(r=>
+    '<tr><th style="width:130px;text-align:left">'+r[0]+'</th><td style="text-align:left">'+
+    (r[1]==null||r[1]===''?'—':r[1])+'</td></tr>').join('')+'</tbody></table></div>';
+}
+
+/* 저장된 측정기록(msa_var_measures)으로 그래프용 데이터 재구성 */
+function rebuildFromMeasures(r, ms){
+  const p=r.n_parts||10, t=r.n_trials||3;
+  const byOp={};
+  ms.forEach(m=>{
+    const k=m.op_index||1;
+    byOp[k]=byOp[k]||{name:m.employee_name, tr:{}};
+    byOp[k].tr[m.trial]=(m.vals||[]).map(Number);
+  });
+  const keys=Object.keys(byOp).map(Number).sort((a,b)=>a-b);
+  if(keys.length<2) return null;
+  const ops=keys.map(k=>({name:byOp[k].name}));
+  const M=[];
+  for(const k of keys){
+    const rows=[];
+    for(let i=1;i<=t;i++){
+      const v=byOp[k].tr[i];
+      if(!v || v.length<p || v.some(x=>!isFinite(x))) return null;
+      rows.push(v.slice(0,p));
+    }
+    M.push(rows);
+  }
+  const o=M.length;
+  const Rbars=[],Xbars=[],opPartMean=[],rangesByOp=[],partSum=Array(p).fill(0);
+  M.forEach(tr=>{
+    let rs=0,xs=0; const pm=[],rgs=[];
+    for(let i=0;i<p;i++){
+      const col=tr.map(x=>x[i]);
+      const rg=Math.max(...col)-Math.min(...col); rs+=rg; rgs.push(rg);
+      pm.push(col.reduce((a,b)=>a+b,0)/t);
+      col.forEach(v=>{ xs+=v; partSum[i]+=v; });
+    }
+    Rbars.push(rs/p); Xbars.push(xs/(p*t)); opPartMean.push(pm); rangesByOp.push(rgs);
+  });
+  const Rbb=Rbars.reduce((a,b)=>a+b,0)/o;
+  const Xbb=Xbars.reduce((a,b)=>a+b,0)/o;
+  const partAvg=partSum.map(s=>s/(o*t));
+  return {g:r.group_name, ops, p, t, o, M, Rbars, Xbars, Rbb, Xbb, partAvg, opPartMean, rangesByOp,
+    EV:+r.ev, AV:+r.av, GRR:+r.grr, PV:+r.pv, TV:+r.tv,
+    TOL: r.tolerance!=null ? +r.tolerance : 0,
+    UCLX: Xbb+A2[t]*Rbb, LCLX: Xbb-A2[t]*Rbb, UCLR: D4[t]*Rbb};
+}
+
+/* ── 계량형 상세 ── */
+async function openVarDetail(id){
+  openModal('계량형 Gage R&R 세부내역');
+  try{
+    const rs=await sb('msa_var_sessions?id=eq.'+encodeURIComponent(id)+'&select=*,msa_var_measures(*)');
+    if(!rs||!rs.length){ $('modalBody').innerHTML='<div class="empty">기록을 찾을 수 없습니다</div>'; return; }
+    const r=rs[0], ms=(r.msa_var_measures||[]).slice()
+      .sort((a,b)=>(a.op_index-b.op_index)||(a.trial-b.trial));
+    const p=r.n_parts||10;
+    const spec = (r.usl!=null&&r.lsl!=null) ? (+r.lsl)+' ~ '+(+r.usl) : '—';
+    const gcls = r.grade==='우수'?'p-ok':r.grade==='양호'?'p-wa':'p-ng';
+
+    let h='<div style="margin-bottom:12px"><span class="pill" style="background:var(--navy);'+
+      'color:#fff;font-size:12px;padding:4px 12px">계량형 Gage R&amp;R · Variable (Método Xbar-R)</span></div>';
+    h+='<h4>평가 정보</h4>'+kv([
+      ['구분', '<span class="pill p-mut">계량형 / Variable</span>'],
+      ['평가주기', esc(periodLabel(r.period))], ['평가일', esc(r.eval_date)], ['평가명', esc(r.title)], ['조 (Grupo)', esc(r.group_name)],
+      ['계측기 NO', esc(r.gage_no)], ['규격 (LSL~USL)', spec],
+      ['규격공차', r.tolerance!=null?+r.tolerance:'미입력'],
+      ['시료 / 측정자 / 측정횟수', r.n_parts+' / '+r.n_ops+' / '+r.n_trials],
+      ['조치계획', esc(r.action_plan)]
+    ]);
+
+    h+='<h4>분석 결과</h4><div class="scroll"><table><thead><tr>'+
+      '<th>EV</th><th>AV</th><th>GRR</th><th>PV</th><th>TV</th>'+
+      '<th>%Contribution</th><th>%Study Var</th><th>%Tolerance</th><th>ndc</th>'+
+      '<th>등급</th><th>판정</th></tr></thead><tbody><tr>'+
+      '<td>'+(+r.ev).toFixed(4)+'</td><td>'+(+r.av).toFixed(4)+'</td><td>'+(+r.grr).toFixed(4)+'</td>'+
+      '<td>'+(+r.pv).toFixed(4)+'</td><td>'+(+r.tv).toFixed(4)+'</td>'+
+      '<td>'+(r.pct_contrib!=null?(+r.pct_contrib).toFixed(3)+'%':'—')+'</td>'+
+      '<td>'+(r.pct_study!=null?(+r.pct_study).toFixed(3)+'%':'—')+'</td>'+
+      '<td>'+(r.pct_tol!=null?(+r.pct_tol).toFixed(3)+'%':
+        '<span style="color:#c0392b">규격 미입력</span>')+'</td>'+
+      '<td>'+(r.ndc==null?'—':r.ndc)+'</td>'+
+      '<td><span class="pill '+gcls+'">'+esc(r.grade)+'</span></td>'+
+      '<td>'+esc(r.result)+'</td></tr></tbody></table></div>';
+    h+=varGlossary({EV:+r.ev, AV:+r.av, GRR:+r.grr, PV:+r.pv, TV:+r.tv,
+      ndc:r.ndc, TOL:(r.tolerance!=null?+r.tolerance:0)});
+
+    h+='<h4>측정 데이터</h4><div class="scroll"><table><thead><tr>'+
+      '<th>측정자</th><th>회차</th>';
+    for(let i=0;i<p;i++) h+='<th>'+(i+1)+'</th>';
+    h+='<th>평균</th><th>R</th></tr></thead><tbody>';
+    ms.forEach(m=>{
+      const v=(m.vals||[]).map(Number);
+      const mean=v.length?v.reduce((a,b)=>a+b,0)/v.length:null;
+      const rng=v.length?Math.max(...v)-Math.min(...v):null;
+      h+='<tr><td style="text-align:left">'+esc(m.employee_name)+'</td><td>'+m.trial+'차</td>';
+      for(let i=0;i<p;i++) h+='<td>'+(v[i]!=null?v[i]:'')+'</td>';
+      h+='<td><b>'+(mean===null?'—':mean.toFixed(4))+'</b></td>'+
+         '<td>'+(rng===null?'—':rng.toFixed(4))+'</td></tr>';
+    });
+    h+='</tbody></table></div>';
+
+    const MV=rebuildFromMeasures(r,ms);
+    if(MV){
+      h+='<h4>그래프</h4><div class="chartgrid">'+
+         [1,2,3,4,5,6].map(i=>'<div class="chartbox"><canvas id="mv'+i+'" height="200"></canvas></div>').join('')+
+         '</div>';
+    }
+    h+='<div class="row" style="margin-top:16px"><button class="btn-danger" onclick="delRecord(\'var\',\''+
+       esc(r.id)+'\',\''+esc(periodLabel(r.period)+' · '+(r.group_name||''))+'\')">이 기록 삭제</button></div>';
+    $('modalBody').innerHTML=h;
+    if(MV) setTimeout(()=>drawSet(MV,'mv'),30);
+  }catch(e){ $('modalBody').innerHTML='<div class="empty">'+esc(e.message)+'</div>'; }
+}
+
+/* ── 계수형 상세 ── */
+async function openAttDetail(id){
+  openModal('계수형 Gage R&R 세부내역');
+  try{
+    const rs=await sb('msa_sessions?id=eq.'+encodeURIComponent(id)+'&select=*,msa_evaluations(*)');
+    if(!rs||!rs.length){ $('modalBody').innerHTML='<div class="empty">기록을 찾을 수 없습니다</div>'; return; }
+    const r=rs[0], refs=r.refs||[], n=r.sample_count||refs.length;
+    const evs=(r.msa_evaluations||[]).slice().sort((a,b)=>
+      String(a.employee_name).localeCompare(String(b.employee_name))||(a.trial-b.trial));
+    const okN=refs.filter(v=>v==='OK').length, ngN=refs.filter(v=>v==='NG').length;
+    const cE=+r.crit_e, cFa=+r.crit_pfa, cMs=+r.crit_pmiss;
+
+    let h='<div style="margin-bottom:12px"><span class="pill" style="background:var(--ok);'+
+      'color:#fff;font-size:12px;padding:4px 12px">계수형 Gage R&amp;R · Atributos (OK/NG 판정)</span></div>';
+    h+='<h4>평가 정보</h4>'+kv([
+      ['구분', '<span class="pill p-mut">계수형 / Atributos</span>'],
+      ['평가주기', esc(periodLabel(r.period))], ['평가일', esc(r.eval_date)], ['평가명', esc(r.title)], ['공정', esc(r.process_name)],
+      ['팀', esc(r.team)], ['시료 / 반복', r.sample_count+' / '+r.trial_count],
+      ['OK / NG 시료', okN+' / '+ngN],
+      ['판정기준', 'E ≥ '+cE+' · PFA ≤ '+cFa+' · PMISS ≤ '+cMs]
+    ]);
+
+    /* 평가자별 집계 */
+    const byOp={};
+    evs.forEach(e=>{
+      const k=e.employee_id||e.employee_name;
+      byOp[k]=byOp[k]||{name:e.employee_name, id:e.employee_id, trials:[]};
+      byOp[k].trials.push(e);
+    });
+    const ops=Object.values(byOp);
+    h+='<h4>평가자별 결과</h4><div class="scroll"><table><thead><tr>'+
+      '<th>평가자</th><th>사번</th><th>일치수</th><th>FALSE<br>(OK→NG)</th><th>MISS<br>(NG→OK)</th>'+
+      '<th>E</th><th>PFA</th><th>PMISS</th><th>판정</th></tr></thead><tbody>';
+    ops.forEach(o=>{
+      let hit=0,tot=0,fa=0,ms=0;
+      o.trials.forEach(t=>{
+        (t.answers||[]).forEach((v,i)=>{
+          if(!v) return; tot++;
+          if(v===refs[i]) hit++; else if(refs[i]==='OK') fa++; else ms++;
+        });
+      });
+      const E=tot?hit/tot:null, Pfa=okN?fa/okN:0, Pms=ngN?ms/ngN:0;
+      const pass=(E!==null && E>=cE && Pfa<=cFa && Pms<=cMs);
+      o._stat={hit,tot,fa,ms,E,Pfa,Pms,pass};
+      h+='<tr><td style="text-align:left">'+esc(o.name)+'</td><td>'+esc(o.id)+'</td>'+
+        '<td><b>'+hit+'</b> / '+tot+'</td><td>'+fa+'</td><td>'+ms+'</td>'+
+        '<td>'+(E===null?'—':E.toFixed(3))+'</td><td>'+Pfa.toFixed(3)+'</td><td>'+Pms.toFixed(3)+'</td>'+
+        '<td>'+(pass?'<span class="pill p-ok">합격</span>':'<span class="pill p-ng">불합격</span>')+
+        '</td></tr>';
+    });
+    h+='</tbody></table></div>';
+
+    /* 참값 + 판정 그리드 */
+    h+='<h4>판정 내역 (금색 테두리 = 참값과 불일치)</h4><div class="scroll">';
+    h+='<div class="cellrow"><div class="cell hd">시료</div>';
+    for(let i=0;i<n;i++) h+='<div class="cell hd">'+(i+1)+'</div>';
+    h+='</div><div class="cellrow"><div class="cell hd">참값</div>';
+    for(let i=0;i<n;i++) h+='<div class="cell '+(refs[i]==='OK'?'ok':'ng')+'">'+esc(refs[i]||'')+'</div>';
+    h+='</div>';
+    ops.forEach(o=>{
+      h+='<div style="margin-top:8px;font-size:12px;font-weight:700;color:#0f2b4c">'+esc(o.name)+'</div>';
+      o.trials.slice().sort((a,b)=>a.trial-b.trial).forEach(t=>{
+        h+='<div class="cellrow"><div class="cell hd">'+t.trial+'차</div>';
+        for(let i=0;i<n;i++){
+          const v=(t.answers||[])[i], cls=v==='OK'?'ok':v==='NG'?'ng':'';
+          h+='<div class="cell '+cls+(v&&v!==refs[i]?' miss':'')+'">'+(v||'·')+'</div>';
+        }
+        h+='</div>';
+      });
+    });
+    h+='</div><p class="note">PFA·PMISS 는 시료수 기준(현행 엑셀 방식)으로 재계산한 값입니다.</p>';
+    h+='<div class="row" style="margin-top:16px"><button class="btn-danger" onclick="delRecord(\'att\',\''+
+       esc(r.id)+'\',\''+esc(periodLabel(r.period)+' · '+(r.title||r.eval_date))+'\')">이 기록 삭제</button></div>';
+    $('modalBody').innerHTML=h;
+  }catch(e){ $('modalBody').innerHTML='<div class="empty">'+esc(e.message)+'</div>'; }
+}
+
+function exportHistXlsx(){
+  if(!HV.length && !HA.length) return toast('조회된 데이터가 없습니다');
+  const sheets=[];
+  if(HV.length){
+    const a=[['계량형 Gage R&R 이력 · Variable'],[],
+      ['평가주기','평가일','평가명','조','측정자','계측기','시료수','측정자수','측정횟수',
+       'EV','AV','GRR','PV','TV','%Contribution','%Tolerance','ndc','등급','판정','조치계획']];
+    HV.forEach(r=>a.push([periodLabel(r.period),r.eval_date,r.title,r.group_name,measurerNames(r).join(' / '),
+      r.gage_no,r.n_parts,r.n_ops,r.n_trials,r.ev,r.av,r.grr,r.pv,r.tv,
+      r.pct_contrib,r.pct_tol,r.ndc,r.grade,r.result,r.action_plan]));
+    sheets.push({name:'계량형이력',aoa:a,
+      cols:[{wch:12},{wch:20},{wch:9},{wch:34},{wch:14}].concat(Array(14).fill({wch:11}))});
+  }
+  if(HA.length){
+    const a=[['계수형 Gage R&R 이력 · Atributos'],[],
+      ['평가주기','평가일','평가명','공정','팀','평가자','시료수','반복수','평가인원','기준E','기준PFA','기준PMISS']];
+    HA.forEach(r=>{
+      const nm=[...new Set((r.msa_evaluations||[]).map(e=>shortName(e.employee_name)).filter(Boolean))];
+      a.push([periodLabel(r.period),r.eval_date,r.title,r.process_name,r.team,nm.join(' / '),
+        r.sample_count,r.trial_count,nm.length,r.crit_e,r.crit_pfa,r.crit_pmiss]);
+    });
+    sheets.push({name:'계수형이력',aoa:a,
+      cols:[{wch:12},{wch:20},{wch:16},{wch:26},{wch:38}].concat(Array(6).fill({wch:10}))});
+  }
+  saveWorkbook(sheets,'MSA_이력_'+today()+'.xlsx');
+}
+
+/* ══════════════════════════════════════════
+   한국어 ⇄ Español 전환
+   화면은 항상 한국어로 렌더링되고, ES 모드에서는 표시 직전에 치환됩니다.
+   ══════════════════════════════════════════ */
+let LANG='ko';
+
+/* 텍스트 전체가 정확히 일치할 때만 치환 (짧은 단어용) */
+const EXACT={
+'조':'Grupo','확인':'Confirmar','계산':'Calcular','인쇄':'Imprimir','조회':'Consultar',
+'엑셀':'Excel','닫기':'Cerrar','합격':'Aprobado','불합격':'Rechazado','미입력':'Sin dato',
+'우수':'Excelente','양호':'Bueno','부족':'Insuficiente','경계':'Límite','전체':'Total',
+'평균':'Media','판정':'Decisión','값':'Valor','수준':'Nivel','기준':'Criterio',
+'시료':'Muestra','회차':'Ensayo','측정자':'Operador','작업자':'Operador','사번':'No. emp.',
+'그래프':'Gráficas','관리자':'Administrador','일치수':'Aciertos','비고':'Nota',
+'약어':'Sigla','의미':'Significado','구분':'Tipo','등급':'Grado','공정':'Proceso',
+'팀':'Equipo','평가일':'Fecha','평가명':'Evaluación','계측기':'Medidor','순번':'No.'
+};
+
+/* 부분 문자열 치환 (긴 문구 우선) */
+const SUB={
+/* 헤더 · 탭 */
+'측정시스템 분석':'Análisis del Sistema de Medición',
+'계수형 Gage R&R':'Gage R&R por Atributos','계량형 Gage R&R':'Gage R&R Variable',
+'이력 조회':'Historial','계수형':'Atributos','계량형':'Variable',
+/* 인원 */
+'평가자 선정':'Selección de personal','공장 (Planta)':'Planta','팀 (Equipo)':'Equipo',
+'검색 (Buscar)':'Buscar','이름 / 사번':'Nombre / No. empleado',
+'1공장 (Monclova)':'Planta 1 (Monclova)','2공장 (Torreón)':'Planta 2 (Torreón)',
+'선택 인원':'Personal seleccionado','전체해제':'Quitar todo','전체 팀':'Todos los equipos',
+'이름 / Nombre':'Nombre','조 (계량형)':'Grupo','개 조 자동편성':' grupos formados',
+'해당 인원이 없습니다':'No hay personal','불러오는 중…':'Cargando…',
+'인원을 불러오지 못했습니다.':'No se pudo cargar el personal.',
+'이름을 누르면 선택·해제됩니다.':'Toque un nombre para seleccionar o quitar.',
+'선택 순서대로 3명씩 1개 조':'se forman grupos de 3 en orden de selección',
+'가 자동 편성되며, 오른쪽 「조」 칸에 배정 결과가 표시됩니다. 계수형은 선택된 인원 전체가 평가 대상입니다.':
+ '; el grupo asignado aparece en la columna «Grupo». En Atributos se evalúa a todo el personal seleccionado.',
+'계량형은 ':'En Variable ',
+/* 계수형 */
+'평가 조건':'Condiciones de evaluación','공정 (Proceso)':'Proceso',
+'시료수 (Muestras)':'No. de muestras','반복수 (Ensayos)':'No. de ensayos',
+'E 기준 (≥)':'Criterio E (≥)','PFA 기준 (≤)':'Criterio PFA (≤)','PMISS 기준 (≤)':'Criterio PMISS (≤)',
+'PFA / PMISS 분모 기준':'Denominador de PFA / PMISS',
+'시료수 기준 (현행 엑셀과 동일)':'Por número de muestras (igual que Excel)',
+'시료수 × 반복수 기준 (AIAG)':'Muestras × ensayos (AIAG)',
+'시료 참값':'Valor de referencia','전체 OK':'Todo OK','전체 NG':'Todo NG',
+'OK/NG 반반 무작위':'Mitad OK / NG aleatorio',
+'셀을 누르면 OK ↔ NG 로 바뀝니다.':'Toque una celda para alternar OK ↔ NG.',
+'작업자별 판정 입력':'Evaluación por operador','참값 일괄입력':'Copiar referencia','지우기':'Borrar',
+'판정 결과':'Resultado','평가자를 먼저 선택하세요':'Seleccione primero a los evaluadores',
+'판정을 입력하면 자동 계산됩니다':'El cálculo es automático al capturar',
+'Supabase 저장':'Guardar en Supabase','엑셀 내려받기':'Descargar Excel',
+'평가 인원':'Evaluadores','평균 효율 E':'Eficacia media E',
+'총평가수':'Total evaluado','OK시료':'Muestras OK','NG시료':'Muestras NG',
+'참값(기준)':'Referencia','판정내역':'Detalle de decisiones','판정결과':'Resultados',
+/* 계량형 */
+'공통 조건':'Condiciones comunes','계산 방식':'Método de cálculo',
+'엑셀과 동일 (EV·AV·GRR·PV·TV 소수 4자리 반올림)':'Igual que Excel (redondeo a 4 decimales)',
+'반올림 없이 정밀 계산':'Cálculo exacto sin redondeo',
+'측정횟수':'No. de ensayos','시료수':'No. de muestras',
+'조 선택':'Selección de grupo','계측기 NO (N.º de medidor)':'N.º de medidor',
+'규격상한 USL':'USL','규격하한 LSL':'LSL','규격공차 (Tolerancia)':'Tolerancia',
+'조치계획 (Plan de acción)':'Plan de acción','선택된 인원이 없습니다':'No hay personal seleccionado',
+'위 목록에서 인원을 고르면 3명씩 자동으로 조가 만들어집니다':
+ 'Al seleccionar personal arriba se forman grupos de 3 automáticamente',
+'계측기·규격·조치계획은':'El medidor, la especificación y el plan de acción se guardan',
+'조별로 따로':'por grupo','저장됩니다.':'de forma independiente.',
+'USL·LSL을 넣으면 공차가 자동 계산됩니다.':'Al capturar USL y LSL, la tolerancia se calcula sola.',
+'규격공차가 비어 있어 % Tolerance 를 계산할 수 없습니다.':
+ 'Sin tolerancia no se puede calcular el % Tolerance.',
+'USL·LSL 또는 공차를 입력하세요.':'Capture USL y LSL, o la tolerancia.',
+'공차 없이는 % Contribution 과 ndc 두 항목만으로 등급이 매겨집니다.':
+ 'Sin tolerancia el grado se determina solo con % Contribution y ndc.',
+'측정값 입력':'Captura de mediciones','이 조 지우기':'Borrar este grupo',
+'일괄 붙여넣기 (한 줄 = 한 측정자·한 회차, 시료 순서대로)':
+ 'Pegado masivo (una línea = un operador y ensayo, en orden de muestra)',
+'붙여넣기 적용':'Aplicar pegado',
+'조 분석 결과':'Resultados del grupo','전체 조 요약':'Resumen de todos los grupos',
+'전체 조 저장':'Guardar todos los grupos','계산된 조가 없습니다':'Ningún grupo calculado',
+'계산이 완료된 조가 없습니다':'Ningún grupo con cálculo completo',
+'측정값을 입력하면 자동 계산됩니다':'El cálculo es automático al capturar',
+'인원을 선택하면 조가 자동 편성됩니다':'Los grupos se forman al seleccionar personal',
+'조에 측정자가 2명 이상이어야 합니다':': se requieren al menos 2 operadores',
+'계량형 분석에는 한 조에 2~3명이 필요합니다.':'El análisis Variable requiere 2 o 3 operadores por grupo.',
+'명입니다.':' operador(es).','규격 미입력':'Sin especificación',
+'판정 기준':'Criterios de aceptación','판정 항목':'Concepto',
+'미만':'menos de','초과':'más de',
+'세 항목 중 가장 낮은 수준이 최종 등급이며, 우수·양호는 Aprobado(합격), 부족은 No aprobado(불합격)입니다.':
+ 'El grado final es el más bajo de los tres. Excelente y Bueno son Aprobado; Insuficiente es No aprobado.',
+'규격공차를 입력하지 않으면 % Tolerance 는 제외되고 나머지 두 항목으로만 판정합니다.':
+ 'Sin tolerancia se excluye el % Tolerance y se juzga con los otros dos.',
+/* 용어 설명 */
+'변동 성분이란?':'¿Qué son los componentes de variación?',
+'측정값의 산포를 원인별로 쪼갠 표준편차이며, 단위는 측정값과 같습니다.':
+ 'Son desviaciones estándar que separan la dispersión por causa; la unidad es la misma que la medición.',
+'정식 명칭':'Nombre completo',
+'같은 사람이 같은 시료를 여러 번 재도 값이 흔들리는 정도 — 계측기 자체 오차':
+ 'Variación al medir la misma pieza repetidamente — error propio del instrumento',
+'측정자가 바뀌면 평균이 달라지는 정도 — 사람 간 측정 방법 차이':
+ 'Diferencia de media entre operadores — variación del método entre personas',
+'사람과 계측기를 합친 측정오차 전체':'Error total del sistema de medición',
+'시료들이 실제로 갖고 있는 치수 차이':'Diferencia real de dimensión entre las piezas',
+'측정오차와 부품 차이를 합친 전체 산포':'Dispersión total (medición + piezas)',
+'이번 결과 해석':'Interpretación de este resultado',
+'측정오차':'error de medición','시료 간 실제 차이':'diferencia real entre piezas',
+'배':' veces','큽니다.':'.',
+'시료를 구분하는 데 충분한 분해능입니다':'Resolución suficiente para distinguir las piezas',
+'구분은 가능하지만 여유가 크지 않습니다':'Distingue las piezas, pero con poco margen',
+'측정오차에 시료 차이가 묻혀 합격·불합격 구분이 어렵습니다':
+ 'El error oculta la diferencia entre piezas; cuesta separar aprobado de rechazado',
+'사람 간 차이보다 계측기 반복오차가 큽니다.':'El error del instrumento supera la diferencia entre operadores.',
+'개선이 필요하면 측정자 교육보다':'Si se requiere mejora, antes que capacitar al operador revise',
+'계측기 상태·측정 방법(고정 방식, 프로브 압력, 측정 위치)':
+ 'el estado del medidor y el método (sujeción, presión de palpador, punto de medición)',
+'을 먼저 점검하세요.':'.',
+'측정자 간 편차가 계측기 오차보다 큽니다.':'La variación entre operadores supera el error del instrumento.',
+'측정 방법 표준화와 작업자 교육':'Estandarizar el método y capacitar a los operadores',
+'이 우선입니다.':' es la prioridad.',
+'가 비슷한 수준입니다. 계측기와 측정자 양쪽을 함께 점검하세요.':
+ ' están en niveles similares. Revise tanto el medidor como a los operadores.',
+'측정오차 폭(5.15σ)이 규격공차의':'El ancho del error (5.15σ) ocupa el',
+'를 차지합니다.':' de la tolerancia.',
+'규격 대비 충분히 정밀합니다.':'Suficientemente preciso frente a la especificación.',
+'사용 가능한 수준입니다.':'Nivel utilizable.',
+'규격을 판정하기에 오차가 너무 큽니다.':'El error es demasiado grande para juzgar la especificación.',
+'규격공차가 입력되지 않아 % Tolerance 판정은 빠져 있습니다.':
+ 'Sin tolerancia capturada, el juicio de % Tolerance queda excluido.',
+/* 이력 · 상세 */
+'기간 조회':'Consulta por periodo','시작일':'Fecha inicial','종료일':'Fecha final',
+'상단에서 선택한 공장·팀 기준으로 조회합니다.':'Se consulta según la planta y el equipo elegidos arriba.',
+'표의 행을 클릭하면 평가 세부내역':'Haga clic en una fila para ver el detalle',
+'이 열립니다.':'.',
+'계량형 이력':'Historial — Variable','계수형 이력':'Historial — Atributos',
+'조회 버튼을 누르세요':'Pulse Consultar','데이터가 없습니다':'Sin datos',
+'평가인원':'Evaluadores','기준 E':'Criterio E','평가자':'Evaluadores',
+'상세 내역':'Detalle','세부내역':'Detalle',
+'평가 정보':'Información de la evaluación','분석 결과':'Resultados del análisis',
+'측정 데이터':'Datos de medición','평가자별 결과':'Resultado por evaluador',
+'판정 내역 (금색 테두리 = 참값과 불일치)':'Detalle de decisiones (borde dorado = difiere de la referencia)',
+'기록을 찾을 수 없습니다':'No se encontró el registro',
+'PFA·PMISS 는 시료수 기준(현행 엑셀 방식)으로 재계산한 값입니다.':
+ 'PFA y PMISS se recalculan por número de muestras (método actual de Excel).',
+'조 (Grupo)':'Grupo','규격 (LSL~USL)':'Especificación (LSL~USL)','규격공차':'Tolerancia',
+'시료 / 측정자 / 측정횟수':'Muestras / Operadores / Ensayos','조치계획':'Plan de acción',
+'시료 / 반복':'Muestras / Ensayos','OK / NG 시료':'Muestras OK / NG','판정기준':'Criterios',
+/* 관리자 */
+'관리자 인증':'Acceso de administrador','비밀번호 (Contraseña)':'Contraseña',
+'관리자 비밀번호':'Contraseña de administrador',
+'관리자 전용 기능입니다. 비밀번호는 파일 상단':'Función exclusiva del administrador. La contraseña se cambia en',
+'값에서 변경할 수 있습니다.':'al inicio del archivo.',
+'계량형 시험데이터 생성':'Generador de datos Variable',
+'기준값 (중심 · Nominal)':'Valor nominal','공차 ± (Tolerancia)':'Tolerancia ±',
+'측정 소수 자릿수':'Decimales de medición','계측기 NO (접두)':'Prefijo de N.º de medidor',
+'자리':' decimales','조별 생성 수준':'Nivel por grupo',
+'인원을 선택하면 조가 표시됩니다':'Los grupos aparecen al seleccionar personal',
+'전체 조 데이터 생성':'Generar datos de todos los grupos',
+'수준 무작위 재배정':'Reasignar niveles al azar','생성 데이터 삭제':'Borrar datos generados',
+'생성 수준':'Nivel','목표':'Objetivo','인원부족':'Faltan operadores',
+'측정자 2명 미만 — 생성 제외':'Menos de 2 operadores — excluido',
+'생성 결과 미리보기':'Vista previa','아직 생성된 데이터가 없습니다':'Aún no hay datos generados',
+'생성된 데이터가 없습니다':'No hay datos generados',
+'계량형 탭에서 그래프와 상세 결과를 확인한 뒤 저장하세요.':
+ 'Revise las gráficas y el detalle en la pestaña Variable antes de guardar.',
+'시료수·측정횟수는':'El número de muestras y ensayos se toma de',
+'계량형 탭의 공통 조건':'Condiciones comunes de la pestaña Variable',
+'값을 사용합니다':'','현재':'actual','생성 후 계량형 탭에서 결과와 그래프를 확인하고 저장하세요.':
+ 'Tras generar, revise el resultado y las gráficas en la pestaña Variable y guarde.',
+'여유 있게 합격':'aprobado con margen','무난한 합격':'aprobado sin problema',
+'합격이나 다소 미흡':'aprobado pero justo',
+/* 공통 안내 */
+'데이터 없음':'Sin datos','결과가 없습니다':'No hay resultados',
+'조회된 데이터가 없습니다':'No hay datos consultados','먼저 계산하세요':'Calcule primero',
+'평가자를 선택하세요':'Seleccione evaluadores','저장 실패':'Error al guardar',
+'저장 완료':'Guardado','엑셀 파일을 내려받았습니다':'Archivo Excel descargado',
+'엑셀 모듈을 못 불러와 CSV로 저장했습니다':'Sin módulo Excel: se guardó como CSV',
+'붙여넣을 내용이 없습니다':'No hay contenido que pegar','줄 적용':' líneas aplicadas',
+'데이터를 지웠습니다':': datos borrados','비밀번호가 올바르지 않습니다':'Contraseña incorrecta',
+'관리자 모드':'Modo administrador','수준을 무작위로 재배정했습니다':'Niveles reasignados al azar',
+'개 조 데이터를 생성했습니다':' grupos generados','생성 데이터를 삭제했습니다':'Datos generados borrados',
+'먼저 인원을 선택하세요':'Seleccione personal primero',
+'기준값과 공차를 입력하세요':'Capture el valor nominal y la tolerancia',
+'이 조에 측정자가 2명 이상이어야 합니다':'Este grupo requiere al menos 2 operadores',
+'저장할 조 결과가 없습니다':'No hay resultados de grupo para guardar',
+'개 저장됨':' guardados','개 조':' grupos','건':' registros',
+'규격':'Especificación','전폭':'ancho total','공차':'Tolerancia',
+'우수 (Excelente)':'Excelente','양호 (Bueno)':'Bueno','부족 (Insuficiente)':'Insuficiente',
+'— 선택 —':'— Seleccionar —','— 전체 팀 —':'— Todos los equipos —',
+'전체 변동 중 측정시스템(사람+계측기)이 차지하는':'Proporción de la variación total que aporta el sistema de medición',
+'분산':'(varianza)','비율. 낮을수록 좋습니다.':'. Cuanto menor, mejor.',
+'측정오차 폭(5.15σ)이 제품 규격공차의 몇 %를 잡아먹는지. 규격 대비 계측기가 쓸 만한지를 봅니다.':
+ 'Qué porcentaje de la tolerancia consume el ancho del error (5.15σ). Indica si el medidor sirve para esa especificación.',
+'ndc (distinct categories, 구분 범주 수)':'ndc (número de categorías distintas)',
+'— 이 측정시스템이 부품 간 차이를':'— cuántos niveles distintos puede separar el sistema de medición entre piezas.',
+'몇 단계로 구분해 낼 수 있는지':'','를 뜻합니다.':'',
+'로 계산하며, ndc = 9 라면 시료들을 9개 등급으로 나눠 볼 수 있을 만큼 분해능이 있다는 의미입니다.':
+ '. Un ndc = 9 significa que puede separar las piezas en 9 categorías.',
+'는 최소 5 이상을 요구하고, 이 기준표에서는 10 초과 우수 · 4~10 양호 · 4 미만 부족으로 봅니다.':
+ ' exige al menos 5; en esta tabla: más de 10 Excelente, 4~10 Bueno, menos de 4 Insuficiente.',
+'값이 작으면 측정오차가 부품 편차에 묻혀 합격/불합격 구분이 어려워집니다.':
+ 'Si el valor es bajo, el error oculta la diferencia entre piezas y cuesta separar aprobado de rechazado.',
+'Gage R&R 판정결과':'Resultados Gage R&R','계량형 Gage R&R 결과':'Resultados Gage R&R Variable',
+'Gage R&R 이력':'Historial Gage R&R','측정데이터':'Datos de medición','요약':'Resumen',
+'용어':'Glosario','측정자1':'Operador 1','측정자2':'Operador 2','측정자3':'Operador 3',
+'반복수':'Ensayos','측정자수':'Operadores','조치계획':'Plan de acción',
+'평가주기 (Periodo)':'Periodo','평가주기':'Periodo','전체 연도':'Todos los años',
+'전체 주기':'Todos los periodos','1분기':'1er trimestre','2분기':'2.º trimestre',
+'3분기':'3er trimestre','4분기':'4.º trimestre','상반기':'1er semestre',
+'하반기':'2.º semestre','수시':'Extraordinario','년':'',
+'평가주기별 기록 일괄 삭제':'Borrado de registros por periodo',
+'계량형 + 계수형':'Variable + Atributos','계량형만':'Solo Variable','계수형만':'Solo Atributos',
+'건수 확인':'Ver cantidad','일괄 삭제':'Borrar en lote','삭제':'Borrar',
+'이 기록 삭제':'Borrar este registro',
+'선택한 공장·평가주기에 해당하는 저장 기록을 지웁니다. 되돌릴 수 없습니다.':
+ 'Borra los registros de la planta y periodo elegidos. No se puede deshacer.',
+'선택 조건에 해당하는 기록':'Registros que cumplen la condición',
+'삭제했습니다':'Registro borrado','일괄 삭제했습니다':'Borrado en lote realizado',
+'삭제 실패':'Error al borrar','조회 실패':'Error de consulta',
+/* 차트 */
+'변동성분':'Componentes de variación','측정값(시료)':'Mediciones por muestra',
+'R관리도(측정자기준)':'Carta R (por operador)','XBAR관리도':'Carta X̄',
+'시료*측정자 교호작용':'Interacción muestra × operador',
+'반복':'Repetibilidad','재현성':'Reproducibilidad','부품-부품':'Pieza a pieza'
+};
+
+const SUBK=Object.keys(SUB).sort((a,b)=>b.length-a.length);
+const RE_RULES=[[/(\d+)조/g,'Grupo $1'],[/(\d+)차/g,'$1ª'],[/(\d+)명/g,'$1 pers.']];
+
+function trText(n){
+  const s=n.nodeValue;
+  if(!s || !/[가-힣]/.test(s)) return;
+  const k=s.trim();
+  if(EXACT[k]){ n.nodeValue=s.replace(k,EXACT[k]); return; }
+  let out=s;
+  for(const key of SUBK) if(out.indexOf(key)>=0) out=out.split(key).join(SUB[key]);
+  RE_RULES.forEach(r=>{ out=out.replace(r[0],r[1]); });
+  if(out!==s) n.nodeValue=out;
+}
+function trNode(root){
+  if(!root) return;
+  if(root.nodeType===3){ trText(root); return; }
+  if(root.nodeType!==1) return;
+  const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);
+  const list=[]; while(w.nextNode()) list.push(w.currentNode);
+  list.forEach(trText);
+  const ph=el=>{ const v=el.getAttribute('placeholder');
+    if(v && /[가-힣]/.test(v)){ let o=v;
+      for(const key of SUBK) if(o.indexOf(key)>=0) o=o.split(key).join(SUB[key]);
+      if(EXACT[v.trim()]) o=EXACT[v.trim()];
+      el.setAttribute('placeholder',o); } };
+  if(root.hasAttribute && root.hasAttribute('placeholder')) ph(root);
+  root.querySelectorAll && root.querySelectorAll('[placeholder]').forEach(ph);
+}
+/* ES 모드에서 새로 그려지는 내용도 자동 치환 */
+new MutationObserver(ms=>{
+  if(LANG!=='es') return;
+  ms.forEach(m=>m.addedNodes.forEach(trNode));
+}).observe(document.documentElement,{childList:true,subtree:true});
+
+/* 정적 화면 문구 원본 보관 */
+let SNAP=[], SNAP_PH=[];
+function snapStatic(){
+  const w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);
+  while(w.nextNode()){ const n=w.currentNode;
+    if(/[가-힣]/.test(n.nodeValue)) SNAP.push([n,n.nodeValue]); }
+  document.querySelectorAll('[placeholder]').forEach(el=>{
+    if(/[가-힣]/.test(el.getAttribute('placeholder')))
+      SNAP_PH.push([el,el.getAttribute('placeholder')]); });
+}
+function toggleLang(){
+  LANG = LANG==='ko' ? 'es' : 'ko';
+  $('langBtn').textContent = LANG==='ko' ? 'ES' : '한국어';
+  document.documentElement.lang = LANG==='ko' ? 'ko' : 'es';
+  /* 정적 문구를 한국어 원본으로 되돌린 뒤 */
+  SNAP.forEach(a=>{ if(a[0].isConnected) a[0].nodeValue=a[1]; });
+  SNAP_PH.forEach(a=>a[0].setAttribute('placeholder',a[1]));
+  /* 동적 영역 재렌더 (항상 한국어로 생성됨) */
+  renderEmp(); renderAttInput(); renderGTabs(); renderVarInput();
+  if(adminOK) admRender();
+  if(LANG==='es') trNode(document.body);
+  drawAll();
+}
+/* 캔버스에 그려지는 제목용 */
+const tw = s => (LANG==='es' && SUB[s]) ? SUB[s] : s;
+
+/* ══════════════════════════════════════════
+   평가주기 (Periodo)
+   ══════════════════════════════════════════ */
+const QTRS=[['Q1','1분기'],['Q2','2분기'],['Q3','3분기'],['Q4','4분기'],
+            ['H1','상반기'],['H2','하반기'],['ETC','수시']];
+const QTR_ES={Q1:'1er trimestre',Q2:'2.º trimestre',Q3:'3er trimestre',Q4:'4.º trimestre',
+              H1:'1er semestre',H2:'2.º semestre',ETC:'Extraordinario'};
+
+function curPeriod(){
+  const d=new Date();
+  const y=Math.max(START_YEAR, d.getFullYear());
+  return y+'-Q'+(Math.floor(d.getMonth()/3)+1);
+}
+function periodLabel(p){
+  if(!p) return '—';
+  const m=String(p).match(/^(\d{4})-(\w+)$/);
+  if(!m) return p;
+  return LANG==='es' ? (QTR_ES[m[2]]||m[2])+' '+m[1]
+                     : m[1]+'년 '+((QTRS.find(q=>q[0]===m[2])||[,m[2]])[1]);
+}
+const START_YEAR = 2026;   /* 시스템 운영 시작 연도 — 이 이전 연도는 표시하지 않음 */
+
+function fillPeriod(yId,qId,withAll){
+  const y=$(yId), q=$(qId);
+  const now=Math.max(START_YEAR, new Date().getFullYear());   /* 평가 당해년도 */
+  let yh = withAll ? '<option value="">전체 연도</option>' : '';
+  /* 입력용: 당해년도 + 다음해 / 조회용: 시작연도부터 다음해까지 */
+  const from = withAll ? START_YEAR : now;
+  for(let v=from; v<=now+1; v++) yh+='<option value="'+v+'">'+v+'년</option>';
+  y.innerHTML=yh;
+  q.innerHTML=(withAll?'<option value="">전체 주기</option>':'')+
+    QTRS.map(t=>'<option value="'+t[0]+'">'+t[1]+'</option>').join('');
+  if(!withAll){
+    const c=curPeriod().split('-');
+    y.value=c[0]; q.value=c[1];
+  }
+}
+const periodOf=(yId,qId)=>{
+  const y=$(yId).value, q=$(qId).value;
+  return (y&&q) ? y+'-'+q : null;
+};
+/* PostgREST 필터 조각 생성 */
+function periodFilter(yId,qId){
+  const y=$(yId).value, q=$(qId).value;
+  if(y&&q) return '&period=eq.'+y+'-'+q;
+  if(y)     return '&period=like.'+y+'-*';
+  if(q)     return '&period=like.*-'+q;
+  return '';
+}
+
+/* ══════════════════════════════════════════
+   저장 기록 삭제
+   ══════════════════════════════════════════ */
+async function delRecord(kind,id,label){
+  const tbl = kind==='var' ? 'msa_var_sessions' : 'msa_sessions';
+  const nm  = kind==='var' ? '계량형' : '계수형';
+  if(!confirm(nm+' 평가 기록을 삭제합니다.\n\n'+label+'\n\n측정값·판정 내역도 함께 지워지며 되돌릴 수 없습니다.\n계속하시겠습니까?'))
+    return;
+  try{
+    await sb(tbl+'?id=eq.'+encodeURIComponent(id),{method:'DELETE'});
+    toast('삭제했습니다');
+    closeModal(); loadHist();
+  }catch(e){ toast('삭제 실패: '+e.message); }
+}
+async function admCount(){
+  const f=$('fFactory').value, pf=periodFilter('dYear','dQtr'), k=$('dKind').value;
+  try{
+    let v=0,a=0;
+    if(k!=='att') v=(await sb('msa_var_sessions?select=id&factory=eq.'+f+pf+'&limit=2000')||[]).length;
+    if(k!=='var') a=(await sb('msa_sessions?select=id&factory=eq.'+f+pf+'&limit=2000')||[]).length;
+    $('dNote').innerHTML='선택 조건에 해당하는 기록: <b>계량형 '+v+'건 · 계수형 '+a+'건</b> '+
+      '(공장 '+f+' · '+(periodFilter('dYear','dQtr')?periodLabel(periodOf('dYear','dQtr'))||'조건부':'전체 주기')+')';
+  }catch(e){ $('dNote').textContent='조회 실패: '+e.message; }
+}
+async function admPurge(){
+  const f=$('fFactory').value, pf=periodFilter('dYear','dQtr'), k=$('dKind').value;
+  if(!pf && !confirm('평가주기를 지정하지 않았습니다.\n해당 공장의 모든 기록이 삭제됩니다. 계속하시겠습니까?')) return;
+  if(!confirm('선택한 조건의 저장 기록을 모두 삭제합니다.\n되돌릴 수 없습니다. 계속하시겠습니까?')) return;
+  try{
+    if(k!=='att') await sb('msa_var_sessions?factory=eq.'+f+pf,{method:'DELETE'});
+    if(k!=='var') await sb('msa_sessions?factory=eq.'+f+pf,{method:'DELETE'});
+    toast('일괄 삭제했습니다'); admCount(); loadHist();
+  }catch(e){ toast('삭제 실패: '+e.message); }
+}
+
+/* ══════════ 초기화 ══════════ */
+(function init(){
+  fillPeriod('aYear','aQtr',false); fillPeriod('vYear','vQtr',false);
+  fillPeriod('hYear','hQtr',true);  fillPeriod('dYear','dQtr',true);
+  snapStatic();
+  $('aDate').value=today(); $('vDate').value=today();
+  const d=new Date(); d.setMonth(d.getMonth()-3);
+  $('hFrom').value=d.toISOString().slice(0,10); $('hTo').value=today();
+  initRefs(); renderGTabs(); loadEmployees();
+  let rt; window.addEventListener('resize',()=>{ clearTimeout(rt); rt=setTimeout(drawAll,150); });
+})();
+</script>
+</body>
+</html>
