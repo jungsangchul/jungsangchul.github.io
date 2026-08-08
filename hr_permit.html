@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>인사 허가서 / Permisos RH - YURA HARNESS MÉXICO</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+  :root{
+    --navy:#16283f; --navy2:#1f3a5c; --navy3:#2c4d78;
+    --gold:#c9a227; --bg:#f2f4f7; --card:#ffffff;
+    --line:#d8dee8; --txt:#1a2433; --sub:#6b7788;
+    --green:#1d7a4f; --red:#b3382e; --amber:#b07a12; --blue:#1c5da8;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;font-family:'Malgun Gothic','Segoe UI',sans-serif;-webkit-tap-highlight-color:transparent;}
+  body{background:var(--bg);color:var(--txt);min-height:100vh;}
+  header{background:linear-gradient(135deg,var(--navy),var(--navy3));color:#fff;padding:12px 14px;position:sticky;top:0;z-index:50;box-shadow:0 2px 8px rgba(0,0,0,.25);}
+  .hwrap{max-width:960px;margin:0 auto;}
+  .htitle{font-size:15px;font-weight:700;letter-spacing:.3px;}
+  .hsub{font-size:10px;opacity:.75;margin-top:2px;}
+  main{max-width:960px;margin:0 auto;padding:12px 10px 70px;}
+  .tabs{display:flex;gap:6px;margin-top:10px;}
+  .tab{flex:1;text-align:center;padding:9px 2px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.28);border-radius:10px;font-size:12.5px;font-weight:700;color:rgba(255,255,255,.75);cursor:pointer;line-height:1.35;}
+  .tab.on{background:#fff;color:var(--navy2);border-color:#fff;}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px;}
+  .stitle{font-size:13px;font-weight:700;color:var(--navy2);margin-bottom:10px;border-left:4px solid var(--gold);padding-left:8px;}
+  .typegrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;}
+  @media(max-width:480px){.typegrid{grid-template-columns:1fr 1fr;}}
+  .typecard{border:1.5px solid var(--line);border-radius:10px;padding:12px 8px;cursor:pointer;text-align:center;background:#fbfcfe;}
+  .typecard.sel{border-color:var(--navy2);background:#eaf0f8;box-shadow:0 0 0 2px rgba(31,58,92,.15);}
+  .typecard .ko{font-size:13px;font-weight:700;}
+  .typecard .es{font-size:10.5px;color:var(--sub);margin-top:3px;}
+  label.f{display:block;font-size:12px;font-weight:700;color:var(--sub);margin:12px 0 5px;}
+  input[type=text],input[type=date],input[type=password],select,textarea{
+    width:100%;padding:11px 10px;border:1px solid var(--line);border-radius:8px;font-size:15px;background:#fff;}
+  textarea{min-height:70px;resize:vertical;}
+  input:focus,select:focus,textarea:focus{outline:2px solid var(--navy3);border-color:var(--navy3);}
+  .chkgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:6px;}
+  @media(max-width:480px){.chkgrid{grid-template-columns:1fr;}}
+  .chk{display:flex;align-items:flex-start;gap:8px;padding:10px;border:1px solid var(--line);border-radius:8px;font-size:13.5px;cursor:pointer;background:#fbfcfe;}
+  .chk input{margin-top:2px;flex-shrink:0;width:18px;height:18px;}
+  .chk.on{border-color:var(--navy2);background:#eaf0f8;}
+  .chk .es2{display:block;font-size:11px;color:var(--sub);}
+  .radios{display:flex;flex-wrap:wrap;gap:6px;}
+  .radios .chk{flex:1 1 auto;justify-content:center;}
+  .btn{display:inline-block;border:none;border-radius:9px;padding:13px 18px;font-size:14px;font-weight:700;cursor:pointer;}
+  .btn.pri{background:var(--navy2);color:#fff;width:100%;}
+  .btn.gold{background:var(--gold);color:#fff;}
+  .btn.grn{background:var(--green);color:#fff;}
+  .btn.red{background:var(--red);color:#fff;}
+  .btn.gry{background:#e3e7ee;color:var(--txt);}
+  .btn:disabled{opacity:.45;cursor:not-allowed;}
+  .emprow{display:flex;align-items:center;justify-content:space-between;padding:11px 10px;border-bottom:1px solid var(--line);cursor:pointer;font-size:13.5px;gap:6px;}
+  .emprow:hover{background:#eef2f8;}
+  .emprow .tm{font-size:10.5px;color:var(--sub);text-align:right;flex-shrink:0;max-width:38%;}
+  #empResults{max-height:280px;overflow-y:auto;border:1px solid var(--line);border-radius:8px;margin-top:6px;display:none;background:#fff;}
+  #empResults.show{display:block;}
+  mark{background:#ffe9a8;padding:0 1px;border-radius:2px;}
+  .selemp{display:flex;align-items:center;gap:10px;background:#eaf0f8;border:1px solid var(--navy3);border-radius:8px;padding:10px;margin-top:6px;font-size:13px;}
+  .selemp b{color:var(--navy2);}
+  .selemp .x{margin-left:auto;background:none;border:none;color:var(--red);font-size:18px;cursor:pointer;font-weight:700;padding:4px 8px;}
+  .badge{display:inline-block;padding:3px 9px;border-radius:12px;font-size:10.5px;font-weight:700;white-space:nowrap;}
+  .b-pending{background:#fdf3dc;color:var(--amber);}
+  .b-team_approved{background:#e0ecfa;color:var(--blue);}
+  .b-approved{background:#e2f3ea;color:var(--green);}
+  .b-rejected{background:#fae4e2;color:var(--red);}
+  table{width:100%;border-collapse:collapse;font-size:12px;}
+  th{background:var(--navy2);color:#fff;padding:8px 6px;text-align:left;font-size:11px;white-space:nowrap;}
+  td{padding:9px 6px;border-bottom:1px solid var(--line);vertical-align:top;}
+  tr.row:hover{background:#eef2f8;cursor:pointer;}
+  .filters{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;}
+  .filters select,.filters input{width:auto;flex:1;min-width:105px;font-size:13px;padding:9px 8px;}
+  .modal{position:fixed;inset:0;background:rgba(10,18,30,.55);display:none;align-items:flex-start;justify-content:center;z-index:100;padding:16px 10px;overflow-y:auto;}
+  .modal.show{display:flex;}
+  .mbox{background:#fff;border-radius:14px;max-width:560px;width:100%;padding:16px;margin:auto 0;}
+  .mhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:8px;}
+  .mhead h3{font-size:14.5px;color:var(--navy2);}
+  .mclose{background:none;border:none;font-size:22px;cursor:pointer;color:var(--sub);padding:2px 8px;}
+  .dl{display:grid;grid-template-columns:106px 1fr;gap:7px 10px;font-size:13px;}
+  .dl dt{color:var(--sub);font-weight:700;font-size:11.5px;}
+  .dl dd{word-break:break-word;}
+  .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;padding:11px 20px;border-radius:24px;font-size:13px;z-index:300;display:none;box-shadow:0 4px 14px rgba(0,0,0,.3);max-width:92vw;text-align:center;}
+  .cnt{font-size:12px;color:var(--sub);margin:6px 2px;}
+  .empt{text-align:center;color:var(--sub);padding:26px 10px;font-size:13px;}
+  .loginrow{display:flex;flex-direction:column;gap:8px;}
+  .roleon{font-size:13px;color:var(--green);font-weight:700;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  /* 승인 목록 카드 */
+  .preq{border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:8px;cursor:pointer;background:#fbfcfe;}
+  .preq:hover{background:#eef2f8;}
+  .preq .top{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:4px;}
+  .preq .nm{font-weight:700;font-size:14px;}
+  .preq .meta{font-size:11.5px;color:var(--sub);}
+  /* QR */
+  .qrgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;}
+  @media(max-width:480px){.qrgrid{grid-template-columns:1fr 1fr;}}
+  .qritem{border:1px solid var(--line);border-radius:10px;padding:10px;text-align:center;cursor:pointer;background:#fff;}
+  .qritem:hover{border-color:var(--navy3);}
+  .qritem .qbox{display:flex;justify-content:center;margin-bottom:6px;}
+  .qritem .qbox img,.qritem .qbox canvas{width:100px!important;height:100px!important;}
+  .qritem .ql{font-size:12px;font-weight:700;}
+  .qritem .ql2{font-size:10px;color:var(--sub);}
+  #bigQrBox{display:flex;justify-content:center;padding:12px 0;}
+  #bigQrBox img,#bigQrBox canvas{width:min(80vw,360px)!important;height:min(80vw,360px)!important;}
+  .stephint{font-size:11.5px;color:var(--sub);background:#f6f8fb;border:1px dashed var(--line);border-radius:8px;padding:9px 10px;margin-bottom:10px;line-height:1.5;}
+  /* 사진 첨부 */
+  .pthumbs{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0;}
+  .pthumb{position:relative;width:76px;height:76px;}
+  .pthumb img{width:100%;height:100%;object-fit:cover;border-radius:8px;border:1px solid var(--line);cursor:pointer;}
+  .pthumb .pdel{position:absolute;top:-7px;right:-7px;width:22px;height:22px;border-radius:50%;background:var(--red);color:#fff;border:2px solid #fff;font-size:12px;font-weight:700;cursor:pointer;line-height:1;padding:0;}
+  .pupbtn{width:100%;border:1.5px dashed var(--navy3);background:#f2f6fb;color:var(--navy2);border-radius:9px;padding:12px;font-size:13.5px;font-weight:700;cursor:pointer;}
+  .pupbtn:disabled{opacity:.5;}
+</style>
+</head>
+<body>
+<header>
+  <div class="hwrap">
+    <div class="htitle">📋 인사 허가서 / Permisos RH</div>
+    <div class="hsub">YURA HARNESS MÉXICO · Planta 1 Monclova</div>
+  </div>
+  <div class="hwrap">
+    <div class="tabs">
+      <div class="tab on" id="tabApply" onclick="showTab('apply')">✍️ 신청<br><span style="font-weight:400;font-size:10.5px">Solicitar</span></div>
+      <div class="tab" id="tabTeam" onclick="showTab('team')">✅ 팀 승인<br><span style="font-weight:400;font-size:10.5px">Aprob. Equipo</span></div>
+      <div class="tab" id="tabList" onclick="showTab('list')">📑 내역/인사<br><span style="font-weight:400;font-size:10.5px">Historial/RH</span></div>
+    </div>
+  </div>
+</header>
+<main>
+
+  <!-- ============ ① 신청 탭 ============ -->
+  <section id="secApply">
+    <div class="card">
+      <div class="stitle">1. 양식 선택 / Tipo de solicitud</div>
+      <div class="typegrid" id="typeGrid"></div>
+    </div>
+
+    <!-- 양식별 QR (양식 선택 바로 아래) -->
+    <div class="card">
+      <div class="stitle">📱 양식별 QR / Códigos QR por formulario</div>
+      <div class="qrgrid" id="qrGridForms"></div>
+    </div>
+
+    <div class="card" id="empCard" style="display:none">
+      <div class="stitle">2. 대상 직원 / Empleado</div>
+      <label class="f">팀 선택 / Seleccionar equipo</label>
+      <select id="teamSel" onchange="teamChanged()">
+        <option value="">-- 팀 선택 / Seleccione equipo --</option>
+      </select>
+      <label class="f">직원 선택 / Seleccionar empleado</label>
+      <input type="text" id="empSearch" placeholder="이름·사번 입력 시 자동완성 / Nombre o No." oninput="filterEmpList()" autocomplete="off" disabled>
+      <div id="empResults"></div>
+      <div id="selEmpBox"></div>
+    </div>
+
+    <div class="card" id="formCard" style="display:none">
+      <div class="stitle">3. 상세 내용 / Detalles</div>
+      <div id="formFields"></div>
+      <label class="f">작성자 (신청자) / Solicitante</label>
+      <input type="text" id="requester" placeholder="이름 / Nombre">
+      <div style="margin-top:16px">
+        <button class="btn pri" id="submitBtn" onclick="submitForm()">신청하기 / Enviar solicitud</button>
+      </div>
+    </div>
+    <!-- 신청 탭 하단: 전체 앱 QR -->
+    <div class="card">
+      <div class="stitle">📱 전체 앱 QR / QR de la App</div>
+      <div class="stephint">QR을 누르면 크게 표시됩니다. 스캔하면 앱이 열립니다.<br>Toque el QR para ampliarlo. Al escanear, se abre la app.</div>
+      <div class="qrgrid" id="qrGridApp"></div>
+    </div>
+  </section>
+
+  <!-- ============ ② 팀 승인 탭 ============ -->
+  <section id="secTeam" style="display:none">
+    <div class="card">
+      <div class="stitle">팀 승인 / Aprobación de Equipo (1차)</div>
+      <div class="stephint">📌 신청 건은 <b>팀 승인(1차)</b> 후 <b>인사 승인(2차)</b>을 거쳐 최종 확정됩니다.<br>La solicitud requiere aprobación del equipo (1°) y de RH (2°).</div>
+      <div class="loginrow" id="teamLoginBox">
+        <select id="tApprTeam"><option value="">-- 팀 선택 / Equipo --</option></select>
+        <input type="text" id="tApprName" placeholder="승인자 이름 / Nombre del aprobador">
+        <input type="password" id="tApprPw" placeholder="팀 승인 비밀번호 / Contraseña">
+        <button class="btn gold" onclick="teamLogin()">팀 승인 로그인 / Iniciar sesión</button>
+      </div>
+      <div class="roleon" id="teamRoleOn" style="display:none">
+        <span id="teamRoleLabel"></span>
+        <button class="btn gry" style="padding:6px 12px;font-size:12px" onclick="teamLogout()">로그아웃</button>
+      </div>
+    </div>
+    <div class="card" id="teamPendCard" style="display:none">
+      <div class="stitle">승인 대기 건 / Pendientes <span id="teamPendCnt" style="color:var(--red)"></span></div>
+      <div id="teamPendList"></div>
+      <div class="empt" id="teamPendEmpty" style="display:none">대기 건이 없습니다 / Sin pendientes 🎉</div>
+    </div>
+  </section>
+
+  <!-- ============ ③ 내역 / 인사 승인 탭 ============ -->
+  <section id="secList" style="display:none">
+    <div class="card">
+      <div class="stitle">인사 승인 / Aprobación RH (2차·최종)</div>
+      <div class="loginrow" id="hrLoginBox">
+        <input type="password" id="hrPw" placeholder="인사 담당 비밀번호 / Contraseña RH">
+        <button class="btn gold" onclick="hrLogin()">인사 로그인 / Iniciar sesión RH</button>
+      </div>
+      <div class="roleon" id="hrRoleOn" style="display:none">
+        🔓 인사 담당 모드 / Modo RH
+        <button class="btn gry" style="padding:6px 12px;font-size:12px" onclick="hrLogout()">로그아웃</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="filters">
+        <select id="fType" onchange="loadList()">
+          <option value="">전체 양식 / Todos</option>
+        </select>
+        <select id="fStatus" onchange="loadList()">
+          <option value="">전체 상태 / Todos</option>
+          <option value="pending">팀승인 대기 / Pend. Equipo</option>
+          <option value="team_approved">인사승인 대기 / Pend. RH</option>
+          <option value="approved">승인완료 / Aprobado</option>
+          <option value="rejected">반려 / Rechazado</option>
+        </select>
+        <input type="date" id="fFrom" onchange="loadList()">
+        <input type="date" id="fTo" onchange="loadList()">
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+        <button class="btn grn" style="flex:1" onclick="downloadExcel()">⬇ 엑셀 다운로드 (승인완료) / Excel</button>
+        <button class="btn gry" onclick="loadList()">🔄</button>
+      </div>
+      <div class="cnt" id="listCnt"></div>
+      <div style="overflow-x:auto">
+        <table>
+          <thead><tr>
+            <th>신청일<br>Fecha</th><th>양식<br>Tipo</th>
+            <th>사번<br>No.</th><th>이름<br>Nombre</th>
+            <th>상태<br>Estado</th>
+          </tr></thead>
+          <tbody id="listBody"></tbody>
+        </table>
+      </div>
+      <div class="empt" id="listEmpty" style="display:none">데이터가 없습니다 / Sin datos</div>
+    </div>
+
+    <!-- QR 코드 -->
+    <div class="card">
+      <div class="stitle">📱 양식별 QR 코드 / Códigos QR</div>
+      <div class="stephint">QR을 누르면 크게 표시됩니다. 직원이 휴대폰으로 스캔하면 해당 양식이 바로 열립니다.<br>Toque el QR para ampliarlo. Al escanear, se abre el formulario directamente.</div>
+      <div class="qrgrid" id="qrGrid"></div>
+    </div>
+  </section>
+</main>
+
+<!-- 상세 모달 -->
+<div class="modal" id="detailModal">
+  <div class="mbox">
+    <div class="mhead"><h3 id="mTitle"></h3><button class="mclose" onclick="closeModal()">✕</button></div>
+    <div id="mView">
+      <dl class="dl" id="mBody"></dl>
+      <div id="mActions" style="display:none;margin-top:16px">
+        <button class="btn gry" style="width:100%;margin-bottom:8px" id="btnEdit" onclick="openEdit()">✏️ 내용 수정 / Editar contenido</button>
+        <textarea id="rejectReason" placeholder="반려 사유 (반려 시 필수) / Motivo de rechazo"></textarea>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button class="btn grn" style="flex:1" id="btnApprove" onclick="decide('approve')">✔ 승인 / Aprobar</button>
+          <button class="btn red" style="flex:1" onclick="decide('reject')">✖ 반려 / Rechazar</button>
+        </div>
+      </div>
+    </div>
+    <div id="mEdit" style="display:none">
+      <div class="stephint">✏️ 수정 후 저장하면 신청 내용이 변경됩니다. / Los cambios se guardan en la solicitud.</div>
+      <div id="mEditFields"></div>
+      <div style="display:flex;gap:8px;margin-top:14px">
+        <button class="btn pri" style="flex:1" onclick="saveEdit()">💾 저장 / Guardar</button>
+        <button class="btn gry" style="flex:1" onclick="cancelEdit()">취소 / Cancelar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- QR 확대 모달 -->
+<div class="modal" id="qrModal">
+  <div class="mbox" style="max-width:420px;text-align:center">
+    <div class="mhead"><h3 id="qrTitle"></h3><button class="mclose" onclick="closeQr()">✕</button></div>
+    <div id="bigQrBox"></div>
+    <div style="font-size:11px;color:var(--sub);word-break:break-all;margin-top:6px" id="qrUrl"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ================= 설정 ================= */
+const SB_URL = 'https://lrjurjhavlalhlwaplxd.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxyanVyamhhdmxhbGhsd2FwbHhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNzUxNDAsImV4cCI6MjA5NTY1MTE0MH0.DVFmZaT37R9CXSMHdnLx4YAVNTnlBGijkOIaoUo7Qsk';
+const TEAM_PW = 'yura2026';     // ★ 팀 승인(1차) 비밀번호 - 전 팀 공용
+const HR_PW   = 'yura 2026';    // ★ 인사 담당(2차·최종) 비밀번호 - 가운데 한 칸 공백
+const EMP_TABLE = 'att_employees';
+const PERMIT_TABLE = 'hr_permits';
+const FACTORY = '1';
+
+const HDRS = {'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json'};
+async function sb(path, opt={}){
+  const r = await fetch(`${SB_URL}/rest/v1/${path}`, {headers:{...HDRS, ...(opt.headers||{})}, method:opt.method||'GET', body:opt.body?JSON.stringify(opt.body):undefined});
+  if(!r.ok){throw new Error(await r.text());}
+  const t = await r.text();
+  return t ? JSON.parse(t) : null;
+}
+
+/* ================= 양식 정의 ================= */
+const PAGO_CONCEPTS = [
+  ['dias','Días','일수'],['puntualidad','Premio Puntualidad','정근수당'],
+  ['asistencia','Premio Asistencia','만근수당'],['vales','Vales de Despensa','식대 쿠폰'],
+  ['extras','Horas Extras','연장근무수당'],['bono','Bono','보너스'],
+  ['descanso','Descanso','휴무'],['comedor','Comedor','식당']
+];
+const AMON_CAUSES = [
+  ['falta','Falta sin autorización','무단 결근'],['tarde','Llegar tarde sin permiso','무단 지각'],
+  ['salir','Salir sin permiso','무단 조퇴'],['calidad','Baja calidad en su trabajo','업무 품질 저하'],
+  ['product','Baja productividad','생산성 저하'],['negligencia','Negligencia en el trabajo','근무 태만'],
+  ['normas','Incumplimiento de normas','근무 규율 위반'],['instrucciones','No acatar instrucciones','상급자 지시 불이행'],
+  ['material','Dañar material','자재 훼손'],['seguridad','Falta de equipo de seguridad','안전보호구 미착용'],
+  ['otros','Otros','기타']
+];
+const SALIDA_TYPES = [
+  ['VAC','Vacaciones','휴가'],['TE','T.E.','시간외'],['ST','S.T.','무급'],['SP','S.P.','유급'],['OTRO','Otro','기타']
+];
+const FORM_TYPES = {
+  pago:        {ko:'급여 정정 요청', es:'Corrección de Pago', icon:'💰'},
+  amonestacion:{ko:'경고장', es:'Amonestación', icon:'⚠️'},
+  suspension:  {ko:'정직 통보서', es:'Aviso de Suspensión', icon:'⛔'},
+  ausencia:    {ko:'결근 허가서', es:'Permiso de Ausencia', icon:'🏠'},
+  salida:      {ko:'외출 신청서', es:'Permiso de Salida', icon:'🚪'}
+};
+const STATUS_LABEL={
+  pending:'팀승인 대기 / Pend. Equipo',
+  team_approved:'인사승인 대기 / Pend. RH',
+  approved:'승인완료 / Aprobado',
+  rejected:'반려 / Rechazado'
+};
+
+/* ================= 상태 ================= */
+let selType=null, selEmp=null, listData=[], curDetail=null, curStage=null;
+let teamRole = JSON.parse(sessionStorage.getItem('hr_team_role')||'null'); // {team,name}
+let hrOn = sessionStorage.getItem('hr_hr')==='1';
+let teamMembers=[];
+
+function fname(t){const f=FORM_TYPES[t];return f?f.ko:t;}
+function fnameBoth(t){const f=FORM_TYPES[t];return f?`${f.ko} / ${f.es}`:t;}
+
+/* ================= 탭 ================= */
+function showTab(t){
+  document.getElementById('secApply').style.display = t==='apply'?'':'none';
+  document.getElementById('secTeam').style.display = t==='team'?'':'none';
+  document.getElementById('secList').style.display = t==='list'?'':'none';
+  document.getElementById('tabApply').classList.toggle('on',t==='apply');
+  document.getElementById('tabTeam').classList.toggle('on',t==='team');
+  document.getElementById('tabList').classList.toggle('on',t==='list');
+  if(t==='team'){renderTeamRole(); fillTeamOptions('tApprTeam'); if(teamRole) loadTeamPending();}
+  if(t==='list'){renderHrRole(); loadList(); renderQrGrid('qrGrid',QR_ALL);}
+}
+
+/* ================= 팀 목록 공용 ================= */
+let teamsCache=null;
+async function getTeams(){
+  if(teamsCache) return teamsCache;
+  const rows = await sb(`${EMP_TABLE}?factory=eq.${FACTORY}&active=eq.true&select=team&order=team`);
+  teamsCache = [...new Set(rows.map(r=>r.team).filter(t=>t))].sort();
+  return teamsCache;
+}
+async function fillTeamOptions(selId){
+  const sel=document.getElementById(selId);
+  if(sel.options.length>1) return;
+  try{
+    (await getTeams()).forEach(t=>{
+      const o=document.createElement('option');o.value=t;o.textContent=t;sel.appendChild(o);
+    });
+  }catch(err){toast('팀 목록 오류 / Error: '+err.message);}
+}
+
+/* ================= ① 신청: 양식 선택 ================= */
+function renderTypeGrid(){
+  document.getElementById('typeGrid').innerHTML = Object.entries(FORM_TYPES).map(([k,v])=>`
+    <div class="typecard ${selType===k?'sel':''}" onclick="pickType('${k}')">
+      <div style="font-size:20px">${v.icon}</div>
+      <div class="ko">${v.ko}</div><div class="es">${v.es}</div>
+    </div>`).join('');
+}
+function pickType(k){
+  selType=k; renderTypeGrid();
+  document.getElementById('empCard').style.display='';
+  fillTeamOptions('teamSel');
+  document.getElementById('formCard').style.display = selEmp?'':'none';
+  if(selEmp) renderFormFields();
+}
+
+/* ================= ① 신청: 팀→직원 (자동완성) ================= */
+async function teamChanged(){
+  const team=document.getElementById('teamSel').value;
+  const box=document.getElementById('empResults');
+  const search=document.getElementById('empSearch');
+  search.value=''; teamMembers=[];
+  if(!team){box.classList.remove('show');search.disabled=true;return;}
+  search.disabled=false;
+  box.classList.add('show');
+  box.innerHTML=`<div class="empt" style="padding:14px">불러오는 중... / Cargando...</div>`;
+  try{
+    teamMembers = await sb(`${EMP_TABLE}?factory=eq.${FACTORY}&active=eq.true&team=eq.${encodeURIComponent(team)}&select=employee_id,name,team&order=name`);
+    renderEmpList(teamMembers);
+  }catch(err){toast('인원 조회 오류 / Error: '+err.message);}
+}
+function filterEmpList(){
+  const q=document.getElementById('empSearch').value.trim().toLowerCase();
+  renderEmpList(!q?teamMembers:teamMembers.filter(e=>
+    (e.name||'').toLowerCase().includes(q)||(e.employee_id||'').toLowerCase().includes(q)),q);
+}
+function hl(text,q){
+  if(!q)return text;
+  const i=String(text).toLowerCase().indexOf(q);
+  if(i<0)return text;
+  return text.slice(0,i)+'<mark>'+text.slice(i,i+q.length)+'</mark>'+text.slice(i+q.length);
+}
+function renderEmpList(rows,q=''){
+  const box=document.getElementById('empResults');
+  box.classList.add('show');
+  box.innerHTML = rows.length ? rows.map((e,i)=>`
+    <div class="emprow" onclick="pickEmpIdx(${i})">
+      <span><b>${hl(e.employee_id,q)}</b> · ${hl(e.name,q)}</span>
+      <span class="tm">${e.team||''}</span>
+    </div>`).join('')
+    : `<div class="empt" style="padding:14px">인원 없음 / Sin resultados</div>`;
+  box._rows=rows;
+}
+function pickEmpIdx(i){const r=document.getElementById('empResults')._rows||[];if(r[i])pickEmp(r[i]);}
+function pickEmp(e){
+  selEmp=e;
+  document.getElementById('empResults').classList.remove('show');
+  document.getElementById('selEmpBox').innerHTML=`
+    <div class="selemp">
+      <span>👤</span>
+      <span><b>${e.employee_id}</b> ${e.name}<br><span style="font-size:11px;color:var(--sub)">${e.team||''}</span></span>
+      <button class="x" onclick="clearEmp()">✕</button>
+    </div>`;
+  if(selType){document.getElementById('formCard').style.display='';renderFormFields();}
+}
+function clearEmp(){
+  selEmp=null;
+  document.getElementById('selEmpBox').innerHTML='';
+  document.getElementById('formCard').style.display='none';
+  if(teamMembers.length)filterEmpList();
+}
+
+/* ================= ① 신청: 멕시코식 날짜/시간 ================= */
+const MESES=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+function dateSel(id,preset){
+  const now=new Date(),y=now.getFullYear();
+  let pd=now.getDate(),pm=now.getMonth()+1,py=y;
+  if(preset&&/^\d{4}-\d{2}-\d{2}$/.test(preset)){
+    const[a,b,c]=preset.split('-');py=+a;pm=+b;pd=+c;
+  }
+  const dOpts=Array.from({length:31},(_,i)=>i+1).map(d=>`<option value="${d}" ${d===pd?'selected':''}>${d}</option>`).join('');
+  const mOpts=MESES.map((m,i)=>`<option value="${i+1}" ${i+1===pm?'selected':''}>${String(i+1).padStart(2,'0')} - ${m}</option>`).join('');
+  const years=[...new Set([y-1,y,y+1,py])].sort();
+  const yOpts=years.map(yy=>`<option value="${yy}" ${yy===py?'selected':''}>${yy}</option>`).join('');
+  return `<div style="display:flex;gap:6px">
+    <select id="${id}_d" style="flex:1">${dOpts}</select>
+    <select id="${id}_m" style="flex:2">${mOpts}</select>
+    <select id="${id}_y" style="flex:1.2">${yOpts}</select>
+  </div>`;
+}
+function getDate(id){
+  const d=val(id+'_d'),m=val(id+'_m'),y=val(id+'_y');
+  if(!d||!m||!y)return'';
+  return `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+}
+function timeSel(id,preset){
+  let ph='',pm='';
+  if(preset&&/^\d{2}:\d{2}$/.test(preset)){[ph,pm]=preset.split(':');}
+  const hOpts=Array.from({length:24},(_,h)=>{const v=String(h).padStart(2,'0');return `<option value="${v}" ${v===ph?'selected':''}>${v}</option>`;}).join('');
+  const mins=Array.from({length:12},(_,i)=>String(i*5).padStart(2,'0'));
+  if(pm&&!mins.includes(pm))mins.push(pm);
+  const mOpts=mins.sort().map(m=>`<option value="${m}" ${m===pm?'selected':''}>${m}</option>`).join('');
+  return `<div style="display:flex;gap:6px;align-items:center">
+    <select id="${id}_h" style="flex:1"><option value="">Hora</option>${hOpts}</select>
+    <b>:</b>
+    <select id="${id}_mm" style="flex:1"><option value="">Min</option>${mOpts}</select>
+  </div>`;
+}
+function getTime(id){
+  const h=val(id+'_h'),m=val(id+'_mm');
+  if(!h)return'';
+  return `${h}:${m||'00'}`;
+}
+function validDate(s){
+  if(!s)return false;
+  const d=new Date(s+'T00:00:00');
+  return !isNaN(d)&&s===`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function dmy(s){
+  if(!s||!/^\d{4}-\d{2}-\d{2}$/.test(s))return s;
+  const[y,m,d]=s.split('-');return `${d}/${m}/${y}`;
+}
+
+/* ================= 사진 첨부 (경고장·정직통보서 증빙) ================= */
+const PHOTO_BUCKET='hr-permit-photos';
+const PHOTO_FORMS=['amonestacion','suspension'];
+const MAX_PHOTOS=4;
+const photoState={};
+function photoHtml(p){
+  return `
+    <label class="f">📷 증빙 사진 / Fotos de evidencia (최대 ${MAX_PHOTOS}장 / máx. ${MAX_PHOTOS})</label>
+    <div class="pthumbs" id="${p}pthumbs"></div>
+    <button type="button" class="pupbtn" id="${p}pbtn" onclick="pickPhoto('${p}')">📷 사진 추가 / Agregar foto</button>
+    <input type="file" id="${p}pfile" accept="image/*" style="display:none" onchange="photoSelected('${p}')">`;
+}
+function renderThumbs(p){
+  const box=document.getElementById(p+'pthumbs');
+  if(!box)return;
+  const arr=photoState[p]||[];
+  box.innerHTML=arr.map((u,i)=>`
+    <div class="pthumb">
+      <img src="${u}" onclick="window.open('${u}','_blank')" alt="foto ${i+1}">
+      <button type="button" class="pdel" onclick="removePhoto('${p}',${i})">✕</button>
+    </div>`).join('');
+  const btn=document.getElementById(p+'pbtn');
+  if(btn)btn.style.display=arr.length>=MAX_PHOTOS?'none':'';
+}
+function pickPhoto(p){
+  if((photoState[p]||[]).length>=MAX_PHOTOS){toast(`최대 ${MAX_PHOTOS}장 / Máximo ${MAX_PHOTOS} fotos`);return;}
+  document.getElementById(p+'pfile').click();
+}
+function removePhoto(p,i){
+  (photoState[p]||[]).splice(i,1);
+  renderThumbs(p);
+}
+function compressImage(file){
+  return new Promise((res,rej)=>{
+    const img=new Image();
+    const url=URL.createObjectURL(file);
+    img.onload=()=>{
+      URL.revokeObjectURL(url);
+      const MAX=1280;
+      let w=img.width,h=img.height;
+      if(w>MAX||h>MAX){const r=Math.min(MAX/w,MAX/h);w=Math.round(w*r);h=Math.round(h*r);}
+      const c=document.createElement('canvas');c.width=w;c.height=h;
+      c.getContext('2d').drawImage(img,0,0,w,h);
+      c.toBlob(b=>b?res(b):rej(new Error('compress fail')),'image/jpeg',0.75);
+    };
+    img.onerror=()=>{URL.revokeObjectURL(url);rej(new Error('이미지를 읽을 수 없습니다 / No se pudo leer la imagen'));};
+    img.src=url;
+  });
+}
+async function photoSelected(p){
+  const input=document.getElementById(p+'pfile');
+  const file=input.files[0];
+  input.value='';
+  if(!file)return;
+  const btn=document.getElementById(p+'pbtn');
+  btn.disabled=true;btn.textContent='⏳ 업로드 중... / Subiendo...';
+  try{
+    const blob=await compressImage(file);
+    const name=`hr_${Date.now()}_${Math.random().toString(36).slice(2,8)}.jpg`;
+    const r=await fetch(`${SB_URL}/storage/v1/object/${PHOTO_BUCKET}/${name}`,{
+      method:'POST',
+      headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'image/jpeg'},
+      body:blob
+    });
+    if(!r.ok)throw new Error(await r.text());
+    const url=`${SB_URL}/storage/v1/object/public/${PHOTO_BUCKET}/${name}`;
+    (photoState[p]=photoState[p]||[]).push(url);
+    renderThumbs(p);
+    toast('📷 사진 추가됨 / Foto agregada');
+  }catch(err){toast('업로드 오류 / Error: '+err.message);}
+  btn.disabled=false;btn.textContent='📷 사진 추가 / Agregar foto';
+}
+
+/* ================= 양식 필드 (신청 p='f_', 수정 p='e_') ================= */
+function chkHtml(name,items,type='checkbox'){
+  return `<div class="${type==='radio'?'radios':'chkgrid'}">`+items.map(([v,es,ko])=>`
+    <label class="chk"><input type="${type}" name="${name}" value="${v}" onchange="syncChk('${name}')">
+      <span>${es}<span class="es2">(${ko})</span></span></label>`).join('')+`</div>`;
+}
+function syncChk(name){
+  document.querySelectorAll(`[name=${name}]`).forEach(r=>r.closest('.chk').classList.toggle('on',r.checked));
+}
+function fieldsHtml(t,p,d={}){
+  if(t==='pago'){
+    return `
+      <label class="f">정정 대상 급여기간 / Periodo de nómina a corregir</label>
+      <input type="text" id="${p}periodo" placeholder="Ej: 27/07/2026 ~ 02/08/2026">
+      <label class="f">누락 항목 / Conceptos faltantes</label>
+      ${chkHtml(p+'pago_c',PAGO_CONCEPTS)}
+      <label class="f">수정 사유 / Motivo de corrección</label>
+      <textarea id="${p}motivo"></textarea>`;
+  }else if(t==='amonestacion'){
+    return `
+      <label class="f">발생일 / Fecha del incidente (Día / Mes / Año)</label>
+      ${dateSel(p+'fecha',d.fecha)}
+      <label class="f">사유 / Causa</label>
+      ${chkHtml(p+'amon_c',AMON_CAUSES)}
+      <label class="f">상세 내용 / Descripción</label>
+      <textarea id="${p}motivo"></textarea>
+      ${photoHtml(p)}`;
+  }else if(t==='suspension'){
+    return `
+      <label class="f">징계 시작일 / Desde (Día / Mes / Año)</label>${dateSel(p+'desde',d.desde)}
+      <label class="f">징계 종료일 / Hasta (Día / Mes / Año)</label>${dateSel(p+'hasta',d.hasta)}
+      <label class="f">징계 사유 / Motivo</label><textarea id="${p}motivo"></textarea>
+      ${photoHtml(p)}`;
+  }else if(t==='ausencia'){
+    return `
+      <label class="f">결근일 / Día del permiso (Día / Mes / Año)</label>${dateSel(p+'fecha',d.fecha)}
+      <label class="f">유급 여부 / Goce de sueldo</label>
+      ${chkHtml(p+'goce',[['si','Sí','유급'],['no','No','무급']],'radio')}
+      <label class="f">사유 / Motivo del permiso</label><textarea id="${p}motivo"></textarea>
+      <label class="f">비고 / Observaciones</label><textarea id="${p}obs"></textarea>`;
+  }else if(t==='salida'){
+    return `
+      <label class="f">구분 / Tipo</label>
+      ${chkHtml(p+'sal_t',SALIDA_TYPES,'radio')}
+      <input type="text" id="${p}otro" placeholder="기타 내용 / Especificar otro" style="margin-top:6px">
+      <label class="f">날짜 / Fecha (Día / Mes / Año)</label>${dateSel(p+'fecha',d.fecha)}
+      <label class="f">외출 시간 / Hora de salida (24 hrs)</label>${timeSel(p+'salida',d.salida)}
+      <label class="f">복귀 시간 / Hora de entrada (24 hrs)</label>${timeSel(p+'entrada',d.entrada)}
+      <label class="f">사유 / Razón</label><textarea id="${p}motivo"></textarea>`;
+  }
+  return '';
+}
+function setVal(id,v){const e=document.getElementById(id);if(e&&v!=null)e.value=v;}
+function setChecks(name,vals){
+  const arr=Array.isArray(vals)?vals:(vals?[vals]:[]);
+  document.querySelectorAll(`[name=${name}]`).forEach(c=>{
+    c.checked=arr.includes(c.value);
+    c.closest('.chk').classList.toggle('on',c.checked);
+  });
+}
+function fillFields(t,p,d){
+  photoState[p]=PHOTO_FORMS.includes(t)?((d&&d.photos)||[]).slice():[];
+  renderThumbs(p);
+  if(!d)return;
+  if(t==='pago'){setVal(p+'periodo',d.periodo);setChecks(p+'pago_c',d.conceptos);setVal(p+'motivo',d.motivo);}
+  else if(t==='amonestacion'){setChecks(p+'amon_c',d.causas);setVal(p+'motivo',d.motivo);}
+  else if(t==='suspension'){setVal(p+'motivo',d.motivo);}
+  else if(t==='ausencia'){setChecks(p+'goce',d.goce);setVal(p+'motivo',d.motivo);setVal(p+'obs',d.obs);}
+  else if(t==='salida'){setChecks(p+'sal_t',d.tipo);setVal(p+'otro',d.otro);setVal(p+'motivo',d.motivo);}
+}
+function collectForm(t,p){
+  let d={};
+  if(t==='pago'){
+    d={periodo:val(p+'periodo'),conceptos:checked(p+'pago_c'),motivo:val(p+'motivo')};
+    if(!d.periodo||!d.conceptos.length)return{err:'기간과 항목을 입력하세요 / Complete periodo y conceptos'};
+  }else if(t==='amonestacion'){
+    d={fecha:getDate(p+'fecha'),causas:checked(p+'amon_c'),motivo:val(p+'motivo')};
+    if(!validDate(d.fecha))return{err:'올바른 날짜를 선택하세요 / Fecha inválida'};
+    if(!d.causas.length)return{err:'사유를 선택하세요 / Seleccione la causa'};
+  }else if(t==='suspension'){
+    d={desde:getDate(p+'desde'),hasta:getDate(p+'hasta'),motivo:val(p+'motivo')};
+    if(!validDate(d.desde)||!validDate(d.hasta))return{err:'올바른 날짜를 선택하세요 / Fecha inválida'};
+    if(d.hasta<d.desde)return{err:'종료일이 시작일보다 빠릅니다 / Hasta es antes de Desde'};
+    if(!d.motivo)return{err:'사유를 입력하세요 / Ingrese el motivo'};
+  }else if(t==='ausencia'){
+    d={fecha:getDate(p+'fecha'),goce:checked(p+'goce')[0]||'',motivo:val(p+'motivo'),obs:val(p+'obs')};
+    if(!validDate(d.fecha))return{err:'올바른 날짜를 선택하세요 / Fecha inválida'};
+    if(!d.goce||!d.motivo)return{err:'필수 항목을 입력하세요 / Complete los campos'};
+  }else if(t==='salida'){
+    d={tipo:checked(p+'sal_t')[0]||'',otro:val(p+'otro'),fecha:getDate(p+'fecha'),salida:getTime(p+'salida'),entrada:getTime(p+'entrada'),motivo:val(p+'motivo')};
+    if(!d.tipo)return{err:'구분을 선택하세요 / Seleccione el tipo'};
+    if(!validDate(d.fecha))return{err:'올바른 날짜를 선택하세요 / Fecha inválida'};
+    if(!d.salida)return{err:'외출 시간을 선택하세요 / Seleccione hora de salida'};
+  }
+  if(PHOTO_FORMS.includes(t))d.photos=(photoState[p]||[]).slice();
+  return{d};
+}
+function renderFormFields(){
+  document.getElementById('formFields').innerHTML = fieldsHtml(selType,'f_');
+  photoState['f_']=[];
+  renderThumbs('f_');
+}
+function val(id){const e=document.getElementById(id);return e?e.value.trim():'';}
+function checked(name){return [...document.querySelectorAll(`[name=${name}]:checked`)].map(c=>c.value);}
+
+/* ================= ① 신청: 제출 ================= */
+async function submitForm(){
+  if(!selType||!selEmp){toast('양식과 직원을 선택하세요 / Seleccione tipo y empleado');return;}
+  const req=val('requester');
+  if(!req){toast('작성자를 입력하세요 / Ingrese solicitante');return;}
+  const{d,err}=collectForm(selType,'f_');
+  if(err){toast(err);return;}
+  const btn=document.getElementById('submitBtn');btn.disabled=true;
+  try{
+    await sb(PERMIT_TABLE,{method:'POST',body:{
+      form_type:selType,employee_id:selEmp.employee_id,employee_name:selEmp.name,
+      team:selEmp.team||'',factory:FACTORY,form_data:d,requester:req,status:'pending'
+    }});
+    toast('✅ 신청 완료! 팀 승인 대기 / Enviado. Pendiente de equipo');
+    selType=null;clearEmp();renderTypeGrid();
+    document.getElementById('teamSel').value='';
+    const s=document.getElementById('empSearch');s.value='';s.disabled=true;
+    document.getElementById('empResults').classList.remove('show');teamMembers=[];
+    document.getElementById('empCard').style.display='none';
+    document.getElementById('formCard').style.display='none';
+    document.getElementById('requester').value='';
+  }catch(err){toast('오류 / Error: '+err.message);}
+  btn.disabled=false;
+}
+
+/* ================= ② 팀 승인 (1차) ================= */
+function teamLogin(){
+  const team=val('tApprTeam'),name=val('tApprName'),pw=document.getElementById('tApprPw').value;
+  if(!team||!name){toast('팀과 이름을 입력하세요 / Seleccione equipo y nombre');return;}
+  if(pw!==TEAM_PW){toast('비밀번호 오류 / Contraseña incorrecta');return;}
+  teamRole={team,name};
+  sessionStorage.setItem('hr_team_role',JSON.stringify(teamRole));
+  document.getElementById('tApprPw').value='';
+  renderTeamRole();loadTeamPending();
+  toast(`🔓 ${name} — 팀 승인 모드`);
+}
+function teamLogout(){teamRole=null;sessionStorage.removeItem('hr_team_role');renderTeamRole();}
+function renderTeamRole(){
+  document.getElementById('teamLoginBox').style.display=teamRole?'none':'flex';
+  document.getElementById('teamRoleOn').style.display=teamRole?'flex':'none';
+  document.getElementById('teamPendCard').style.display=teamRole?'':'none';
+  if(teamRole)document.getElementById('teamRoleLabel').textContent=`🔓 ${teamRole.name} — ${teamRole.team}`;
+}
+async function loadTeamPending(){
+  if(!teamRole)return;
+  try{
+    const rows=await sb(`${PERMIT_TABLE}?status=eq.pending&team=eq.${encodeURIComponent(teamRole.team)}&select=*&order=created_at.asc`);
+    document.getElementById('teamPendCnt').textContent=rows.length?`(${rows.length})`:'';
+    document.getElementById('teamPendEmpty').style.display=rows.length?'none':'';
+    document.getElementById('teamPendList').innerHTML=rows.map((r,i)=>`
+      <div class="preq" onclick="openDetailFrom('team',${i})">
+        <div class="top">
+          <span class="nm">${FORM_TYPES[r.form_type]?.icon||''} ${fname(r.form_type)}</span>
+          <span class="badge b-pending">${STATUS_LABEL.pending}</span>
+        </div>
+        <div class="meta"><b>${r.employee_id}</b> ${r.employee_name} · ${(r.created_at||'').slice(0,10)} · 작성: ${r.requester||'-'}</div>
+      </div>`).join('');
+    window._teamPendRows=rows;
+  }catch(err){toast('목록 오류 / Error: '+err.message);}
+}
+
+/* ================= ③ 내역 / 인사 승인 (2차) ================= */
+function hrLogin(){
+  if(document.getElementById('hrPw').value!==HR_PW){toast('비밀번호 오류 / Contraseña incorrecta');return;}
+  hrOn=true;sessionStorage.setItem('hr_hr','1');
+  document.getElementById('hrPw').value='';
+  renderHrRole();
+  document.getElementById('fStatus').value='team_approved'; // 인사 승인 대기 기본 표시
+  loadList();
+  toast('🔓 인사 담당 모드 / Modo RH');
+}
+function hrLogout(){hrOn=false;sessionStorage.removeItem('hr_hr');renderHrRole();renderList();}
+function renderHrRole(){
+  document.getElementById('hrLoginBox').style.display=hrOn?'none':'flex';
+  document.getElementById('hrRoleOn').style.display=hrOn?'flex':'none';
+}
+async function loadList(){
+  let q=`${PERMIT_TABLE}?select=*&order=created_at.desc&limit=500`;
+  const ft=val('fType'),fs=val('fStatus');
+  const f1=val('fFrom'),f2=val('fTo');
+  if(ft)q+=`&form_type=eq.${ft}`;
+  if(fs)q+=`&status=eq.${fs}`;
+  if(f1)q+=`&created_at=gte.${f1}T00:00:00`;
+  if(f2)q+=`&created_at=lte.${f2}T23:59:59`;
+  try{listData=await sb(q);renderList();}
+  catch(err){toast('목록 오류 / Error: '+err.message);}
+}
+function renderList(){
+  const tb=document.getElementById('listBody');
+  document.getElementById('listCnt').textContent=`${listData.length}건 / registros`;
+  document.getElementById('listEmpty').style.display=listData.length?'none':'';
+  tb.innerHTML=listData.map((r,i)=>`
+    <tr class="row" onclick="openDetailFrom('list',${i})">
+      <td>${(r.created_at||'').slice(0,10)}</td>
+      <td>${fname(r.form_type)}</td>
+      <td>${r.employee_id}</td><td>${r.employee_name}</td>
+      <td><span class="badge b-${r.status}">${STATUS_LABEL[r.status]||r.status}</span></td></tr>`).join('');
+}
+
+/* ================= 상세 모달 & 승인 처리 ================= */
+const FD_LABELS={
+  periodo:['급여기간','Periodo'],conceptos:['누락 항목','Conceptos'],motivo:['사유','Motivo'],
+  fecha:['날짜','Fecha'],causas:['사유 항목','Causas'],desde:['시작일','Desde'],hasta:['종료일','Hasta'],
+  goce:['유급 여부','Goce sueldo'],obs:['비고','Observaciones'],tipo:['구분','Tipo'],otro:['기타','Otro'],
+  salida:['외출 시간','Salida'],entrada:['복귀 시간','Entrada'],photos:['사진 URL','Fotos']
+};
+function fdVal(k,v){
+  if(k==='photos')return (v||[]).join('\n');
+  if(k==='conceptos')return v.map(c=>{const it=PAGO_CONCEPTS.find(p=>p[0]===c);return it?`${it[1]}(${it[2]})`:c;}).join(', ');
+  if(k==='causas')return v.map(c=>{const it=AMON_CAUSES.find(p=>p[0]===c);return it?`${it[1]}(${it[2]})`:c;}).join(', ');
+  if(k==='tipo'){const it=SALIDA_TYPES.find(p=>p[0]===v);return it?`${it[1]}(${it[2]})`:v;}
+  if(k==='goce')return v==='si'?'Sí (유급)':'No (무급)';
+  if(['fecha','desde','hasta'].includes(k))return dmy(v);
+  return Array.isArray(v)?v.join(', '):(v||'-');
+}
+function openDetailFrom(src,i){
+  const r = src==='team' ? (window._teamPendRows||[])[i] : listData[i];
+  if(!r)return;
+  curDetail=r;
+  // 승인 가능 단계 판단
+  curStage=null;
+  if(src==='team'&&teamRole&&r.status==='pending'&&r.team===teamRole.team)curStage='team';
+  if(src==='list'&&hrOn&&r.status==='team_approved')curStage='hr';
+  document.getElementById('mTitle').textContent=`${FORM_TYPES[r.form_type]?.icon||''} ${fnameBoth(r.form_type)}`;
+  let rows=`
+    <dt>상태 / Estado</dt><dd><span class="badge b-${r.status}">${STATUS_LABEL[r.status]||r.status}</span></dd>
+    <dt>신청일 / Fecha</dt><dd>${(r.created_at||'').replace('T',' ').slice(0,16)}</dd>
+    <dt>사번 / No.</dt><dd>${r.employee_id}</dd>
+    <dt>이름 / Nombre</dt><dd>${r.employee_name}</dd>
+    <dt>팀 / Depto</dt><dd>${r.team||'-'}</dd>
+    <dt>작성자 / Solicitante</dt><dd>${r.requester||'-'}</dd>`;
+  Object.entries(r.form_data||{}).forEach(([k,v])=>{
+    if(k==='photos')return; // 사진은 아래에서 썸네일로
+    if(v===''||v==null||(Array.isArray(v)&&!v.length))return;
+    const lb=FD_LABELS[k]||[k,k];
+    rows+=`<dt>${lb[0]} / ${lb[1]}</dt><dd>${fdVal(k,v)}</dd>`;
+  });
+  const photos=(r.form_data&&r.form_data.photos)||[];
+  if(photos.length){
+    rows+=`<dt>📷 사진 / Fotos</dt><dd><div class="pthumbs" style="margin:0">${
+      photos.map(u=>`<div class="pthumb"><img src="${u}" onclick="window.open('${u}','_blank')"></div>`).join('')
+    }</div></dd>`;
+  }
+  if(r.team_approved_by)rows+=`<dt>팀 승인 / Aprob. Equipo</dt><dd>${r.team_approved_by} (${(r.team_approved_at||'').slice(0,10)})</dd>`;
+  if(r.status==='approved')rows+=`<dt>인사 승인 / Aprob. RH</dt><dd>${r.approved_by||'-'} (${(r.approved_at||'').slice(0,10)})</dd>`;
+  if(r.status==='rejected')rows+=`<dt>반려 사유 / Motivo rechazo</dt><dd>${r.reject_reason||'-'}</dd>`;
+  document.getElementById('mBody').innerHTML=rows;
+  const act=document.getElementById('mActions');
+  act.style.display=curStage?'':'none';
+  if(curStage)document.getElementById('btnApprove').textContent = curStage==='team'?'✔ 팀 승인 / Aprobar (Equipo)':'✔ 최종 승인 / Aprobar (RH)';
+  document.getElementById('btnEdit').style.display = curStage==='team'?'':'none'; // 수정은 팀 승인 단계에서만
+  document.getElementById('rejectReason').value='';
+  document.getElementById('mView').style.display='';
+  document.getElementById('mEdit').style.display='none';
+  document.getElementById('detailModal').classList.add('show');
+}
+function closeModal(){document.getElementById('detailModal').classList.remove('show');}
+
+/* --- 팀 승인 단계 내용 수정 --- */
+function openEdit(){
+  if(!curDetail||curStage!=='team')return;
+  const t=curDetail.form_type, d=curDetail.form_data||{};
+  document.getElementById('mEditFields').innerHTML = fieldsHtml(t,'e_',d);
+  fillFields(t,'e_',d);
+  document.getElementById('mView').style.display='none';
+  document.getElementById('mEdit').style.display='';
+}
+function cancelEdit(){
+  document.getElementById('mEdit').style.display='none';
+  document.getElementById('mView').style.display='';
+}
+async function saveEdit(){
+  if(!curDetail||curStage!=='team')return;
+  const{d,err}=collectForm(curDetail.form_type,'e_');
+  if(err){toast(err);return;}
+  try{
+    await sb(`${PERMIT_TABLE}?id=eq.${curDetail.id}&status=eq.pending`,{method:'PATCH',body:{form_data:d}});
+    curDetail.form_data=d;
+    toast('💾 수정 저장됨 / Cambios guardados');
+    // 목록 갱신 후 수정된 내용으로 상세 다시 열기
+    await loadTeamPending();
+    const idx=(window._teamPendRows||[]).findIndex(r=>r.id===curDetail.id);
+    if(idx>=0)openDetailFrom('team',idx);else closeModal();
+  }catch(err2){toast('오류 / Error: '+err2.message);}
+}
+async function decide(act){
+  if(!curDetail||!curStage)return;
+  const reason=document.getElementById('rejectReason').value.trim();
+  if(act==='reject'&&!reason){toast('반려 사유를 입력하세요 / Ingrese motivo de rechazo');return;}
+  let body={};
+  const now=new Date().toISOString();
+  if(act==='reject'){
+    body={status:'rejected',reject_reason:reason};
+    if(curStage==='team')body.team_approved_by=teamRole.name;
+    else body.approved_by='RH';
+  }else if(curStage==='team'){
+    body={status:'team_approved',team_approved_by:teamRole.name,team_approved_at:now};
+  }else{ // hr
+    body={status:'approved',approved_by:'RH(인사)',approved_at:now};
+  }
+  try{
+    await sb(`${PERMIT_TABLE}?id=eq.${curDetail.id}&status=eq.${curDetail.status}`,{method:'PATCH',body});
+    toast(act==='reject'?'✖ 반려 완료 / Rechazado':(curStage==='team'?'✔ 팀 승인 → 인사 대기 / Aprobado (Equipo)':'✅ 최종 승인 완료 / Aprobado (Final)'));
+    closeModal();
+    if(curStage==='team')loadTeamPending();else loadList();
+  }catch(err){toast('오류 / Error: '+err.message);}
+}
+
+/* ================= 엑셀 다운로드 (최종 승인건) ================= */
+function downloadExcel(){
+  const approved=listData.filter(r=>r.status==='approved');
+  if(!approved.length){toast('승인완료 내역이 없습니다 / No hay registros aprobados');return;}
+  const wb=XLSX.utils.book_new();
+  Object.keys(FORM_TYPES).forEach(t=>{
+    const rows=approved.filter(r=>r.form_type===t);
+    if(!rows.length)return;
+    const data=rows.map(r=>{
+      const base={
+        '신청일 Fecha':(r.created_at||'').replace('T',' ').slice(0,16),
+        '사번 No.Emp':r.employee_id,'이름 Nombre':r.employee_name,
+        '팀 Depto':r.team||'','작성자 Solicitante':r.requester||'',
+      };
+      Object.entries(r.form_data||{}).forEach(([k,v])=>{
+        const lb=FD_LABELS[k]||[k,k];
+        base[`${lb[0]} ${lb[1]}`]=fdVal(k,v);
+      });
+      base['팀승인자 Aprob.Equipo']=r.team_approved_by||'';
+      base['팀승인일 F.Equipo']=(r.team_approved_at||'').slice(0,10);
+      base['인사승인자 Aprob.RH']=r.approved_by||'';
+      base['최종승인일 F.Final']=(r.approved_at||'').slice(0,10);
+      return base;
+    });
+    const ws=XLSX.utils.json_to_sheet(data);
+    ws['!cols']=Object.keys(data[0]).map(k=>({wch:Math.max(12,k.length+2)}));
+    XLSX.utils.book_append_sheet(wb,ws,FORM_TYPES[t].ko.slice(0,28));
+  });
+  XLSX.writeFile(wb,`인사허가서_승인내역_${new Date().toISOString().slice(0,10)}.xlsx`);
+  toast('⬇ 다운로드 완료 / Descargado');
+}
+
+/* ================= QR 코드 ================= */
+function baseUrl(){
+  return location.origin+location.pathname;
+}
+const QR_ALL=[['','전체 앱','App completa'],...Object.keys(FORM_TYPES).map(k=>[k,FORM_TYPES[k].ko,FORM_TYPES[k].es])];
+const QR_FORMS=QR_ALL.slice(1);
+const QR_APP=[QR_ALL[0]];
+const qrDone={};
+function renderQrGrid(gridId,items){
+  if(qrDone[gridId])return;
+  const grid=document.getElementById(gridId);
+  if(!grid)return;
+  qrDone[gridId]=true;
+  grid.innerHTML=items.map(([k,ko,es],i)=>`
+    <div class="qritem" onclick="showBigQr('${k}')">
+      <div class="qbox" id="${gridId}_q${i}"></div>
+      <div class="ql">${k?FORM_TYPES[k].icon+' ':''}${ko}</div>
+      <div class="ql2">${es}</div>
+    </div>`).join('');
+  items.forEach(([k],i)=>{
+    const url=k?`${baseUrl()}?type=${k}`:baseUrl();
+    // 내부 400px 렌더 후 100px 표시 → 고해상도 화면에서도 선명
+    new QRCode(document.getElementById(`${gridId}_q${i}`),{text:url,width:400,height:400,correctLevel:QRCode.CorrectLevel.M});
+  });
+}
+function showBigQr(k){
+  const url=k?`${baseUrl()}?type=${k}`:baseUrl();
+  document.getElementById('qrTitle').textContent = k?`${FORM_TYPES[k].icon} ${fnameBoth(k)}`:'📋 인사 허가서 앱 / App';
+  const box=document.getElementById('bigQrBox');
+  box.innerHTML='';
+  // 내부 1000px 렌더 → 화면 크기에 맞춰 축소 표시 (인쇄·스캔용 선명도 확보)
+  new QRCode(box,{text:url,width:1000,height:1000,correctLevel:QRCode.CorrectLevel.H});
+  document.getElementById('qrUrl').textContent=url;
+  document.getElementById('qrModal').classList.add('show');
+}
+function closeQr(){document.getElementById('qrModal').classList.remove('show');}
+
+/* ================= 초기화 ================= */
+let toastTimer=null;
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.style.display='block';
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.style.display='none',2800);
+}
+document.getElementById('detailModal').addEventListener('click',e=>{if(e.target.id==='detailModal')closeModal();});
+document.getElementById('qrModal').addEventListener('click',e=>{if(e.target.id==='qrModal')closeQr();});
+
+(function init(){
+  // 양식 필터 옵션
+  const s=document.getElementById('fType');
+  Object.entries(FORM_TYPES).forEach(([k,v])=>{
+    const o=document.createElement('option');o.value=k;o.textContent=`${v.ko} / ${v.es}`;s.appendChild(o);
+  });
+  renderTypeGrid();
+  renderQrGrid('qrGridForms',QR_FORMS);
+  renderQrGrid('qrGridApp',QR_APP);
+  // QR 링크로 진입: ?type=xxx → 해당 양식 자동 선택
+  const p=new URLSearchParams(location.search).get('type');
+  if(p&&FORM_TYPES[p]){pickType(p);}
+})();
+</script>
+</body>
+</html>
