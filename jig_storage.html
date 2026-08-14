@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>치구 보관함 조회 · Plant 1 | Consulta de Ubicación</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=Nanum+Gothic+Coding:wght@400;700&family=Barlow+Condensed:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0B0C0F; --panel:#141519; --panel2:#1B1D23; --line:#26282F; --line2:#33363F;
+  --txt:#E6E3DC; --dim:#8A8D96; --gold:#D9A62E; --accent:#E8853D;
+  --teal:#4FC8B8; --red:#E05B5B; --green:#57C878; --ink:#0B0C0F;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--txt);font-family:'Noto Sans KR',sans-serif;min-height:100vh}
+.mono{font-family:'Nanum Gothic Coding',monospace}
+.wrap{max-width:900px;margin:0 auto;padding:0 16px 60px}
+
+/* ===== top bar (portal style) ===== */
+.topbar{display:flex;align-items:center;gap:14px;padding:16px 2px 12px;border-bottom:1px solid var(--line)}
+.brand{font-family:'Nanum Gothic Coding',monospace;font-weight:700;font-size:13px;letter-spacing:.28em;color:var(--txt)}
+.brand small{display:block;font-size:9px;letter-spacing:.2em;color:var(--dim);font-weight:400;margin-top:2px}
+.top-right{margin-left:auto;display:flex;gap:8px;align-items:center}
+.tbtn{font-family:'Nanum Gothic Coding',monospace;font-size:11px;letter-spacing:.12em;background:var(--panel);
+  border:1px solid var(--line2);color:var(--dim);padding:8px 14px;border-radius:4px;cursor:pointer;text-decoration:none}
+.tbtn:hover{color:var(--txt);border-color:var(--gold)}
+.tbtn.gold{color:var(--gold);border-color:var(--gold)}
+
+/* module header */
+.modhead{display:flex;align-items:flex-end;gap:14px;padding:22px 2px 14px;border-bottom:2px solid var(--accent)}
+.plantdot{width:9px;height:9px;border-radius:50%;background:var(--accent);margin-bottom:9px}
+.modhead .mod{font-family:'Nanum Gothic Coding',monospace;font-size:10px;letter-spacing:.25em;color:var(--dim)}
+.modhead h1{font-size:22px;font-weight:900;letter-spacing:-.01em;line-height:1.15}
+.modhead .sub{font-family:'Nanum Gothic Coding',monospace;font-size:10px;letter-spacing:.22em;color:var(--dim);margin-top:3px}
+.plant-badge{margin-left:auto;font-family:'Nanum Gothic Coding',monospace;font-weight:700;font-size:14px;
+  letter-spacing:.15em;color:var(--accent);border:1px solid var(--accent);padding:7px 14px;border-radius:4px;margin-bottom:2px}
+.count-chip{font-family:'Nanum Gothic Coding',monospace;font-size:11px;color:var(--dim);letter-spacing:.08em;
+  background:var(--panel);border:1px solid var(--line2);padding:7px 12px;border-radius:4px;margin-bottom:2px}
+.count-chip b{color:var(--teal)}
+
+/* tabs */
+.tabs{display:flex;gap:8px;margin:16px 0}
+.tab{flex:1;padding:12px;background:var(--panel);border:1px solid var(--line2);color:var(--dim);font-weight:700;
+  font-size:14px;cursor:pointer;border-radius:5px;font-family:inherit}
+.tab .es{font-family:'Nanum Gothic Coding',monospace;font-weight:400;font-size:10px;letter-spacing:.12em;opacity:.7}
+.tab.on{background:var(--gold);color:var(--ink);border-color:var(--gold)}
+.tab.on .es{opacity:.75}
+.page{display:none}
+.page.on{display:block}
+
+/* panels */
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:18px;margin-bottom:12px}
+.flabel{font-family:'Nanum Gothic Coding',monospace;font-size:10px;color:var(--dim);font-weight:700;display:block;
+  margin-bottom:8px;letter-spacing:.22em}
+.scan-row{display:flex;gap:8px;position:relative}
+input[type=text],input[type=number]{background:var(--bg);border:1.5px solid var(--line2);border-radius:5px;color:var(--txt);
+  padding:12px 14px;font-size:16px;font-family:'Nanum Gothic Coding',monospace;outline:none;width:100%}
+input:focus{border-color:var(--gold)}
+.btn{padding:12px 22px;border:none;border-radius:5px;font-weight:700;font-size:14px;cursor:pointer;font-family:inherit}
+.btn-gold{background:var(--gold);color:var(--ink)}
+.btn-ghost{background:var(--panel2);color:var(--txt);border:1px solid var(--line2)}
+.btn-red{background:var(--red);color:#fff}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+.hint{font-size:11px;color:var(--dim);margin-top:9px}
+
+/* autocomplete */
+.ac{position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--panel2);border:1px solid var(--gold);
+  border-radius:5px;z-index:50;max-height:320px;overflow-y:auto;display:none;box-shadow:0 10px 30px rgba(0,0,0,.5)}
+.ac.show{display:block}
+.ac-item{padding:10px 14px;cursor:pointer;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--line)}
+.ac-item:last-child{border-bottom:none}
+.ac-item:hover,.ac-item.sel{background:rgba(217,166,46,.12)}
+.ac-item .n{font-family:'Barlow Condensed';font-weight:700;font-size:19px;color:var(--gold);min-width:52px}
+.ac-item .c{font-family:'Nanum Gothic Coding',monospace;font-size:13px;font-weight:700}
+.ac-item .b{font-family:'Nanum Gothic Coding',monospace;font-size:10px;color:var(--dim);letter-spacing:.05em}
+.ac-item .w{margin-left:auto;font-family:'Nanum Gothic Coding',monospace;font-size:12px;color:var(--teal)}
+
+/* bin tag result */
+.tag{position:relative;background:var(--gold);color:var(--ink);border-radius:8px;padding:24px 22px 18px;margin-bottom:10px}
+.tag::before{content:"";position:absolute;top:13px;left:50%;transform:translateX(-50%);width:40px;height:8px;
+  background:var(--bg);border-radius:4px}
+.tag-top{display:flex;justify-content:space-between;align-items:flex-start;margin-top:8px}
+.tag-no{font-family:'Barlow Condensed';font-weight:700;font-size:78px;line-height:1}
+.tag-no small{font-size:15px;display:block;font-weight:600;letter-spacing:.15em;opacity:.6}
+.tag-loc{text-align:right}
+.tag-loc .loc{font-family:'Barlow Condensed';font-weight:700;font-size:46px;line-height:1.05}
+.tag-loc small{display:block;font-size:10px;font-weight:700;opacity:.6;letter-spacing:.15em}
+.tag-mid{border-top:2px dashed rgba(11,12,15,.35);margin-top:14px;padding-top:12px;display:flex;flex-wrap:wrap;gap:6px 24px}
+.tag-mid .kv small{display:block;font-size:9px;font-weight:700;opacity:.55;letter-spacing:.12em}
+.tag-mid .kv span{font-family:'Nanum Gothic Coding',monospace;font-weight:700;font-size:14px}
+
+/* print settings */
+.print-set{display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;margin-bottom:16px}
+.print-set .fld{width:110px}
+.print-set .fld input{padding:10px 12px;font-size:14px}
+.print-set .flabel{margin-bottom:5px}
+
+.multi-note{font-size:12px;color:var(--gold);margin:4px 2px 8px;font-weight:700}
+.result-list{display:flex;flex-direction:column;gap:8px}
+.rrow{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:5px;
+  padding:12px 14px;display:flex;align-items:center;gap:14px;cursor:pointer}
+.rrow:hover{background:var(--panel2)}
+.rrow .no{font-family:'Barlow Condensed';font-weight:700;font-size:28px;color:var(--gold);min-width:74px}
+.rrow .code{font-family:'Nanum Gothic Coding',monospace;font-size:14px;font-weight:700}
+.rrow .sub{font-size:11px;color:var(--dim);margin-top:2px;font-family:'Nanum Gothic Coding',monospace}
+.rrow .where{margin-left:auto;text-align:right}
+.rrow .where b{color:var(--teal);font-size:16px;font-family:'Nanum Gothic Coding',monospace}
+.rrow .where small{display:block;color:var(--dim);font-size:11px;font-family:'Nanum Gothic Coding',monospace}
+.empty{background:var(--panel);border:1px dashed var(--line2);border-radius:6px;padding:28px;text-align:center;color:var(--dim);font-size:14px}
+.empty b{color:var(--red)}
+
+/* master */
+textarea{width:100%;min-height:170px;background:var(--bg);border:1.5px solid var(--line2);border-radius:5px;color:var(--txt);
+  padding:12px;font-size:12px;font-family:'Nanum Gothic Coding',monospace;outline:none;resize:vertical}
+textarea:focus{border-color:var(--gold)}
+.mrow{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.pill{font-family:'Nanum Gothic Coding',monospace;font-size:10px;background:var(--panel2);border:1px solid var(--line2);
+  color:var(--dim);padding:5px 9px;border-radius:3px;letter-spacing:.04em}
+.preview-wrap{overflow-x:auto;margin-top:12px;border:1px solid var(--line);border-radius:5px;max-height:340px;overflow-y:auto}
+table.grid{width:100%;border-collapse:collapse;font-size:12px;min-width:720px}
+.grid th{background:var(--panel2);color:var(--dim);text-align:left;padding:8px;position:sticky;top:0;
+  font-family:'Nanum Gothic Coding',monospace;font-size:10px;letter-spacing:.1em;z-index:2}
+.grid td{padding:7px 8px;border-top:1px solid var(--line);font-family:'Nanum Gothic Coding',monospace;font-size:12px}
+.grid td.k{color:var(--gold);font-weight:700}
+.msg{margin-top:10px;padding:10px 12px;border-radius:5px;font-size:13px;font-weight:700;display:none}
+.msg.ok{display:block;background:rgba(87,200,120,.1);color:var(--green);border:1px solid rgba(87,200,120,.35)}
+.msg.err{display:block;background:rgba(224,91,91,.1);color:var(--red);border:1px solid rgba(224,91,91,.35)}
+.sec-title{font-size:14px;font-weight:900;margin:22px 0 8px}
+.sec-title span{font-family:'Nanum Gothic Coding',monospace;color:var(--dim);font-weight:400;font-size:10px;
+  letter-spacing:.18em;margin-left:8px}
+.mtools{display:flex;gap:8px;margin-bottom:8px}
+.mtools input{flex:1;font-size:13px;padding:10px 12px}
+.del-btn{background:none;border:none;color:var(--red);cursor:pointer;font-size:14px;padding:2px 6px}
+.loading{display:inline-block;width:14px;height:14px;border:2px solid var(--dim);border-top-color:var(--gold);
+  border-radius:50%;animation:sp .7s linear infinite;vertical-align:-2px;margin-right:6px}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* ===== label preview (화면) — 인쇄는 전용 iframe에서 수행, 동일한 grid 구조 ===== */
+.lblbox .lbl{display:grid;border:0.4mm solid #000;box-sizing:border-box;background:#fff;
+  font-family:'Noto Sans KR','Malgun Gothic',sans-serif;color:#000}
+.lblbox .lc{box-sizing:border-box;display:flex;align-items:center;justify-content:center;
+  overflow:hidden;line-height:1;font-weight:900;min-height:0;min-width:0}
+.lblbox .lh{background:#D9D9D9;border-bottom:0.4mm solid #000}
+.lblbox .llft{border-left:0.4mm solid #000}
+.lblbox .lno{grid-row:2/4}
+.lblbox .lnm{border-bottom:0.4mm solid #000}
+.lblbox .lbc svg{display:block}
+.lblbox{background:#fff;border-radius:6px;padding:14px;display:inline-block;margin-bottom:16px;max-width:100%;overflow-x:auto}
+.lbl-preview-label{font-family:'Nanum Gothic Coding',monospace;font-size:10px;color:var(--dim);
+  letter-spacing:.2em;font-weight:700;margin-bottom:6px}
+
+.tag-loc .pos{font-family:'Nanum Gothic Coding',monospace;font-weight:700;font-size:14px;margin-top:6px;opacity:.75}
+
+@media(max-width:600px){
+  .wrap{padding:0 12px 50px}
+  .topbar{flex-wrap:wrap;gap:10px}
+  .brand{font-size:11px;letter-spacing:.16em}
+  .brand small{font-size:8px;letter-spacing:.12em}
+  .top-right{margin-left:auto}
+  .tbtn{padding:7px 10px;font-size:10px}
+  .modhead{flex-wrap:wrap;gap:10px;padding:16px 2px 12px}
+  .modhead h1{font-size:18px}
+  .modhead .mod,.modhead .sub{font-size:9px;letter-spacing:.15em}
+  .plant-badge{margin-left:0;font-size:12px;padding:6px 11px}
+  .count-chip{font-size:10px;padding:6px 9px}
+  .tab{padding:11px 8px;font-size:13px}
+  .panel{padding:14px}
+  .scan-row{flex-wrap:nowrap}
+  .scan-row .btn{padding:12px 14px;flex-shrink:0}
+  input[type=text]{font-size:15px;padding:11px 12px;min-width:0}
+  /* 태그: 세로 배치로 전환 */
+  .tag{padding:20px 16px 14px}
+  .tag-top{flex-direction:column;gap:16px;margin-top:10px}
+  .tag-no{font-size:58px}
+  .tag-no small{font-size:13px}
+  .tag-loc{text-align:left}
+  .tag-loc .loc{font-size:40px;word-break:break-all}
+  .tag-loc .pos{font-size:13px}
+  .tag-mid{gap:8px 18px;padding-top:10px}
+  .tag-mid .kv span{font-size:13px;word-break:break-all}
+  /* 결과 목록 */
+  .rrow{flex-wrap:wrap;gap:8px 12px;padding:11px 12px}
+  .rrow .no{font-size:24px;min-width:60px}
+  .rrow .where{margin-left:auto}
+  /* 자동완성 */
+  .ac-item{padding:10px 11px;gap:9px}
+  .ac-item .n{font-size:16px;min-width:44px}
+  .ac-item .c{font-size:12px}
+  .ac-item .b{font-size:9px}
+  .ac-item .w{font-size:11px;text-align:right}
+  /* 인쇄 설정·미리보기 */
+  .print-set{gap:6px}
+  .print-set .fld{width:31%;min-width:88px}
+  .print-set .btn{flex:1;padding:11px 10px}
+  .lblbox{padding:10px}
+  /* 마스터 */
+  .mrow .btn{flex:1;padding:11px 8px;font-size:13px}
+  .mtools{flex-wrap:wrap}
+  .mtools input{min-width:0}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <div class="brand">YURA HARNESS MÉXICO<small>SISTEMA DE GESTIÓN DE PRODUCCIÓN</small></div>
+    <div class="top-right">
+      <button class="tbtn gold" id="langBtn" onclick="toggleLang()">ESPAÑOL</button>
+      <a class="tbtn" href="index.html">◂ MAIN</a>
+    </div>
+  </div>
+
+  <div class="modhead">
+    <div class="plantdot"></div>
+    <div>
+      <div class="mod">MODULE 11 · JIG STORAGE LOOKUP</div>
+      <h1 data-i18n="title">치구 보관함 조회</h1>
+      <div class="sub" data-i18n="subtitle">CONSULTA DE UBICACIÓN DE HERRAMENTALES</div>
+    </div>
+    <div class="plant-badge">PLANT 1</div>
+    <div class="count-chip"><span data-i18n="master">마스터</span> <b id="totalCount">-</b></div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab on" data-page="search">🔍 <span data-i18n="tabSearch">조회</span> <span class="es">BUSCAR</span></button>
+    <button class="tab" data-page="master">⚙ <span data-i18n="tabMaster">마스터 관리</span> <span class="es">MASTER</span></button>
+  </div>
+
+  <!-- ===== 조회 ===== -->
+  <div class="page on" id="page-search">
+    <div class="panel">
+      <label class="flabel" data-i18n="scanLabel">금형바코드 스캔 · ESCANEAR CÓDIGO</label>
+      <div class="scan-row">
+        <input type="text" id="scanInput" placeholder="$267230006" autocomplete="off" autofocus>
+        <button class="btn btn-gold" onclick="doScan()" data-i18n="btnSearch">조회</button>
+        <div class="ac" id="acBox"></div>
+      </div>
+      <div class="hint" data-i18n="scanHint">바코드 스캔 후 Enter 자동 조회 · 금형코드 2자 이상 입력 시 자동완성</div>
+    </div>
+    <div id="searchResult"></div>
+  </div>
+
+  <!-- ===== 마스터 ===== -->
+  <div class="page" id="page-master">
+    <div class="panel">
+      <label class="flabel" data-i18n="pasteLabel">엑셀 A~G열 복사 → 붙여넣기 · PEGAR DESDE EXCEL</label>
+      <textarea id="pasteArea"></textarea>
+      <div class="mrow">
+        <button class="btn btn-ghost" onclick="parsePaste()" data-i18n="btnPreview">미리보기</button>
+        <button class="btn btn-gold" id="btnUpsert" onclick="saveMaster(false)" disabled data-i18n="btnUpsert">추가 / 업데이트</button>
+        <button class="btn btn-red" id="btnReplace" onclick="saveMaster(true)" disabled data-i18n="btnReplace">전체 교체</button>
+      </div>
+      <div class="mrow">
+        <span class="pill" data-i18n="pill1">번호 자동생성 = 엑셀 H열 함수 로직</span>
+        <span class="pill" data-i18n="pill2">4자리 형식 (0001)</span>
+        <span class="pill" data-i18n="pill3">바코드 = 텍스트 형식</span>
+      </div>
+      <div class="msg" id="masterMsg"></div>
+      <div class="preview-wrap" id="previewWrap" style="display:none">
+        <table class="grid" id="previewTable"></table>
+      </div>
+    </div>
+
+    <div class="sec-title"><span data-i18n="registered">등록된 마스터</span><span>DATOS REGISTRADOS</span></div>
+    <div class="mtools">
+      <input type="text" id="masterFilter" oninput="renderMasterList()">
+      <button class="btn btn-ghost" onclick="loadMaster(true)" data-i18n="btnRefresh">새로고침</button>
+    </div>
+    <div class="preview-wrap" style="display:block">
+      <table class="grid" id="masterTable"></table>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ================== CONFIG ================== */
+const PLANT = "1";
+const TABLE = "jig_storage";
+const SB_URL = "https://lrjurjhavlalhlwaplxd.supabase.co";
+const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxyanVyamhhdmxhbGhsd2FwbHhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNzUxNDAsImV4cCI6MjA5NTY1MTE0MH0.DVFmZaT37R9CXSMHdnLx4YAVNTnlBGijkOIaoUo7Qsk";
+const HEAD = {"apikey": SB_KEY, "Authorization": "Bearer " + SB_KEY, "Content-Type": "application/json"};
+
+/* ================== i18n ================== */
+const I18N = {
+  ko: {
+    title: "치구 보관함 조회", subtitle: "CONSULTA DE UBICACIÓN DE HERRAMENTALES", master: "마스터",
+    tabSearch: "조회", tabMaster: "마스터 관리",
+    scanLabel: "금형바코드 스캔 · ESCANEAR CÓDIGO", btnSearch: "조회",
+    scanHint: "바코드 스캔 후 Enter 자동 조회 · 금형코드 2자 이상 입력 시 자동완성",
+    pasteLabel: "엑셀 A~G열 복사 → 붙여넣기 · PEGAR DESDE EXCEL",
+    pastePh: "엑셀 A~G열을 복사하여 여기에 붙여넣기 (번호는 자동생성)\n\nA: 금형바코드   B: 금형코드   C: 관리번호   D: 금형명\nE: 보관장소   F: 지정장소   G: X\n\n· H열(번호)은 엑셀 함수와 동일하게 자동생성됩니다\n  → 같은 금형명(D열) = 같은 번호, 새 금형명 = 최대번호+1\n· 번호는 4자리 형식(0001)으로 저장됩니다\n· 금형바코드는 텍스트 그대로 저장됩니다 ($ 유지)",
+    btnPreview: "미리보기", btnUpsert: "추가 / 업데이트", btnReplace: "전체 교체", btnRefresh: "새로고침",
+    pill1: "번호 자동생성 = 엑셀 H열 함수 로직", pill2: "4자리 형식 (0001)", pill3: "바코드 = 텍스트 형식",
+    registered: "등록된 마스터", filterPh: "바코드 / 금형코드 / 번호 검색",
+    thBarcode: "금형바코드", thCode: "금형코드", thMgmt: "관리번호", thName: "금형명",
+    thLoc: "보관장소", thPos: "지정장소", thNum: "번호", thNumAuto: "번호 (자동)",
+    locLabel: "보관장소 · UBICACIÓN", posLabel: "지정장소 · POSICIÓN", labelPrint: "🖨 라벨 인쇄", printW: "가로 (mm)", printH: "세로 (mm)", printGo: "인쇄",
+    previewLbl: "라벨 미리보기 · 실제 크기(mm)",
+    noResult: "결과 없음", noResultDesc: "마스터에 등록되지 않았습니다.<br>마스터 관리 탭에서 데이터를 확인하세요.",
+    multiFound: n => `⚠ ${n}건 검색됨 — 항목을 누르면 상세 표시`,
+    parseOk: (n, s) => `${n}건 파싱 · 번호 자동생성 완료` + (s ? ` (${s}건 제외)` : ''),
+    parseNote: "추가/업데이트 = 기존 번호 이어서 부여 · 전체 교체 = 0001부터 재부여",
+    parseMax: "미리보기는 300건까지 표시",
+    parseErr: "유효한 행이 없습니다. 엑셀 A~G열을 복사하여 붙여넣으세요 (탭 구분).",
+    saving: "저장 중...", saveOk: (n, r) => `✅ ${n}건 저장 완료` + (r ? ' (전체 교체)' : ' (추가/업데이트)'),
+    delFail: "삭제 실패", saveFail: "저장 실패",
+    confirmReplace: (o, n) => `⚠ 전체 교체\n\n기존 마스터 ${o}건을 모두 삭제하고\n붙여넣은 ${n}건으로 교체합니다.\n\n계속하시겠습니까?`,
+    confirmDel: b => `삭제하시겠습니까?\n${b}`, deleted: b => `${b} 삭제됨`,
+    loaded: n => `마스터 ${n}건 로드 완료`, more: n => `… 외 ${n}건 (검색으로 좁혀보세요)`
+  },
+  es: {
+    title: "Consulta de Ubicación", subtitle: "치구 보관함 조회 · JIG STORAGE LOOKUP", master: "Master",
+    tabSearch: "Buscar", tabMaster: "Gestión Master",
+    scanLabel: "ESCANEAR CÓDIGO DE BARRAS", btnSearch: "Buscar",
+    scanHint: "Escanear y Enter para buscar · Autocompletado con 2+ caracteres del código",
+    pasteLabel: "COPIAR COLUMNAS A~G DE EXCEL → PEGAR AQUÍ",
+    pastePh: "Pegar columnas A~G de Excel (el número se genera automáticamente)\n\nA: Código de barras   B: Código de molde   C: No. de gestión   D: Nombre de molde\nE: Ubicación   F: Posición   G: X\n\n· El número (columna H) se genera igual que la fórmula de Excel\n  → Mismo nombre de molde = mismo número, nuevo = máximo+1\n· Formato de 4 dígitos (0001)\n· El código de barras se guarda como texto ($ incluido)",
+    btnPreview: "Vista previa", btnUpsert: "Agregar / Actualizar", btnReplace: "Reemplazar todo", btnRefresh: "Actualizar",
+    pill1: "Número automático = fórmula columna H", pill2: "Formato 4 dígitos (0001)", pill3: "Código de barras = texto",
+    registered: "Datos registrados", filterPh: "Buscar código / número",
+    thBarcode: "Cód. barras", thCode: "Cód. molde", thMgmt: "No. gestión", thName: "Nombre molde",
+    thLoc: "Ubicación", thPos: "Posición", thNum: "No.", thNumAuto: "No. (auto)",
+    locLabel: "UBICACIÓN · 보관장소", posLabel: "POSICIÓN · 지정장소", labelPrint: "🖨 Imprimir etiqueta", printW: "Ancho (mm)", printH: "Alto (mm)", printGo: "Imprimir",
+    previewLbl: "VISTA PREVIA DE ETIQUETA · TAMAÑO REAL (mm)",
+    noResult: "Sin resultados", noResultDesc: "No está registrado en el master.<br>Verifique los datos en la pestaña Gestión Master.",
+    multiFound: n => `⚠ ${n} resultados — toque un elemento para ver detalles`,
+    parseOk: (n, s) => `${n} filas procesadas · números generados` + (s ? ` (${s} excluidas)` : ''),
+    parseNote: "Agregar = continúa numeración existente · Reemplazar todo = desde 0001",
+    parseMax: "Vista previa muestra hasta 300 filas",
+    parseErr: "No hay filas válidas. Copie las columnas A~G de Excel (separadas por tabulación).",
+    saving: "Guardando...", saveOk: (n, r) => `✅ ${n} filas guardadas` + (r ? ' (reemplazo total)' : ' (agregar/actualizar)'),
+    delFail: "Error al eliminar", saveFail: "Error al guardar",
+    confirmReplace: (o, n) => `⚠ REEMPLAZAR TODO\n\nSe eliminarán los ${o} registros existentes\ny se reemplazarán con ${n} filas pegadas.\n\n¿Continuar?`,
+    confirmDel: b => `¿Eliminar?\n${b}`, deleted: b => `${b} eliminado`,
+    loaded: n => `${n} registros cargados`, more: n => `… ${n} más (use el buscador)`
+  }
+};
+let lang = 'ko';
+function t(key, ...args) {
+  const v = I18N[lang][key];
+  return typeof v === 'function' ? v(...args) : v;
+}
+function applyLang() {
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const v = I18N[lang][el.dataset.i18n];
+    if (typeof v === 'string') el.innerHTML = v;
+  });
+  document.getElementById('pasteArea').placeholder = t('pastePh');
+  document.getElementById('masterFilter').placeholder = t('filterPh');
+  document.getElementById('langBtn').textContent = lang === 'ko' ? 'ESPAÑOL' : '한국어';
+  renderMasterList();
+}
+function toggleLang() {
+  lang = lang === 'ko' ? 'es' : 'ko';
+  applyLang();
+}
+
+/* ================== state ================== */
+let masterCache = [];
+let parsedRows = [];
+let printW = 100, printH = 30;   // label size in mm
+
+/* ================== tabs ================== */
+document.querySelectorAll('.tab').forEach(tb => tb.onclick = () => {
+  document.querySelectorAll('.tab').forEach(x => x.classList.remove('on'));
+  document.querySelectorAll('.page').forEach(x => x.classList.remove('on'));
+  tb.classList.add('on');
+  document.getElementById('page-' + tb.dataset.page).classList.add('on');
+  if (tb.dataset.page === 'search') setTimeout(() => document.getElementById('scanInput').focus(), 50);
+});
+
+/* ================== data ================== */
+async function loadMaster(showMsg) {
+  const rows = [];
+  let from = 0;
+  while (true) {
+    const r = await fetch(`${SB_URL}/rest/v1/${TABLE}?select=*&order=num.asc,mgmt_no.asc&limit=1000&offset=${from}`, {headers: HEAD});
+    const d = await r.json();
+    if (!Array.isArray(d)) break;
+    rows.push(...d);
+    if (d.length < 1000) break;
+    from += 1000;
+  }
+  masterCache = rows;
+  document.getElementById('totalCount').textContent = rows.length.toLocaleString();
+  renderMasterList();
+  if (showMsg) flash('ok', t('loaded', rows.length));
+}
+
+/* ================== autocomplete ================== */
+const scanInput = document.getElementById('scanInput');
+const acBox = document.getElementById('acBox');
+let acItems = [], acSel = -1;
+
+scanInput.addEventListener('input', () => {
+  const q = scanInput.value.trim().toUpperCase();
+  if (q.length < 2 || q.startsWith('$')) { hideAc(); return; }   // 스캔값($..)은 자동완성 생략
+  const seen = new Set();
+  acItems = [];
+  for (const r of masterCache) {
+    const code = (r.mold_code || '').toUpperCase();
+    const name = (r.mold_name || '').toUpperCase();
+    const bc = (r.barcode || '').toUpperCase();
+    if (code.includes(q) || name.includes(q) || bc.includes(q)) {
+      const key = r.barcode;
+      if (!seen.has(key)) { seen.add(key); acItems.push(r); }
+      if (acItems.length >= 8) break;
+    }
+  }
+  acSel = -1;
+  if (!acItems.length) { hideAc(); return; }
+  acBox.innerHTML = acItems.map((r, i) =>
+    `<div class="ac-item" data-i="${i}" onmousedown="acPick(${i})">
+       <span class="n">${esc(r.num || '')}</span>
+       <span><div class="c">${esc(r.mold_code || '')}</div><div class="b">${esc(r.barcode)} · ${esc(r.mgmt_no || '')}</div></span>
+       <span class="w">${esc(r.location || '')}${r.position ? ' · ' + esc(r.position) : ''}</span>
+     </div>`).join('');
+  acBox.classList.add('show');
+});
+scanInput.addEventListener('keydown', e => {
+  if (acBox.classList.contains('show')) {
+    if (e.key === 'ArrowDown') { e.preventDefault(); acMove(1); return; }
+    if (e.key === 'ArrowUp')   { e.preventDefault(); acMove(-1); return; }
+    if (e.key === 'Escape')    { hideAc(); return; }
+    if (e.key === 'Enter' && acSel >= 0) { e.preventDefault(); acPick(acSel); return; }
+  }
+  if (e.key === 'Enter') { hideAc(); doScan(); }
+});
+scanInput.addEventListener('blur', () => setTimeout(hideAc, 150));
+function acMove(d) {
+  acSel = (acSel + d + acItems.length) % acItems.length;
+  acBox.querySelectorAll('.ac-item').forEach((el, i) => el.classList.toggle('sel', i === acSel));
+}
+function acPick(i) {
+  const r = acItems[i];
+  scanInput.value = r.barcode;
+  hideAc();
+  doScan();
+}
+function hideAc() { acBox.classList.remove('show'); acSel = -1; }
+
+/* ================== search ================== */
+function doScan() {
+  const q = scanInput.value.trim();
+  if (!q) return;
+  const box = document.getElementById('searchResult');
+
+  let hits = masterCache.filter(r => (r.barcode || '') === q);
+  if (!hits.length) hits = masterCache.filter(r => (r.mold_code || '') === q);
+  if (!hits.length && q.length >= 2) {
+    const uq = q.toUpperCase();
+    hits = masterCache.filter(r =>
+      (r.mold_code || '').toUpperCase().includes(uq) ||
+      (r.mold_name || '').toUpperCase().includes(uq));
+  }
+
+  if (!hits.length) {
+    currentLabelRow = null;
+    box.innerHTML = `<div class="empty"><b>${t('noResult')}</b><br><br>"${esc(q)}" — ${t('noResultDesc')}</div>`;
+  } else if (hits.length === 1) {
+    currentLabelRow = hits[0];
+    box.innerHTML = renderTag(hits[0]);
+    updateLblPreview();
+  } else {
+    currentLabelRow = null;
+    box.innerHTML = `<div class="multi-note">${t('multiFound', hits.length)}</div>` +
+      `<div class="result-list">` + hits.slice(0, 50).map(r =>
+        `<div class="rrow" onclick="showOne('${esc(r.barcode)}')">
+           <div class="no">${esc(r.num || '-')}</div>
+           <div><div class="code">${esc(r.mold_code || '')}</div>
+                <div class="sub">${esc(r.barcode)} · ${esc(r.mgmt_no || '')}</div></div>
+           <div class="where"><b>${esc(r.location || '-')}</b><small>${esc(r.position || '')}</small></div>
+         </div>`).join('') + `</div>`;
+  }
+  scanInput.select(); scanInput.focus();
+}
+function showOne(barcode) {
+  const r = masterCache.find(x => x.barcode === barcode);
+  if (r) {
+    currentLabelRow = r;
+    document.getElementById('searchResult').innerHTML = renderTag(r);
+    updateLblPreview();
+  }
+}
+function renderTag(r) {
+  const mainLoc = r.position || r.location || '-';           // 지정장소 우선, 없으면 보관장소
+  return `
+  <div class="tag">
+    <div class="tag-top">
+      <div class="tag-no"><small>NO.</small>${esc(r.num || '-')}</div>
+      <div class="tag-loc">
+        <small>${t('posLabel')}</small>
+        <div class="loc">${esc(mainLoc)}</div>
+      </div>
+    </div>
+    <div class="tag-mid">
+      <div class="kv"><small>${t('thCode')}</small><span>${esc(r.mold_code || '-')}</span></div>
+      <div class="kv"><small>${t('thMgmt')}</small><span>${esc(r.mgmt_no || '-')}</span></div>
+      <div class="kv"><small>${t('thName')}</small><span>${esc(r.mold_name || '-')}</span></div>
+      <div class="kv"><small>${t('thBarcode')}</small><span>${esc(r.barcode)}</span></div>
+    </div>
+  </div>
+  <div class="print-set">
+    <div class="fld"><label class="flabel">${t('printW')}</label><input type="number" id="pw" value="${printW}" min="30" max="300" step="1" oninput="updateLblPreview()"></div>
+    <div class="fld"><label class="flabel">${t('printH')}</label><input type="number" id="ph" value="${printH}" min="15" max="200" step="1" oninput="updateLblPreview()"></div>
+    <button class="btn btn-gold" onclick="printLabel()">${t('labelPrint')}</button>
+  </div>
+  <div class="lbl-preview-label">${t('previewLbl')}</div>
+  <div class="lblbox" id="lblPreview"></div>`;
+}
+
+/* ================== label build / preview / print ================== */
+let currentLabelRow = null;
+
+/*
+ * CSS Grid 기반 라벨 — box-sizing:border-box + mm 고정 크기라서
+ * 테이블과 달리 브라우저 높이 계산 오차가 없음 (항상 1페이지, 테두리 완전 표시)
+ */
+function buildLabelHTML(r, pw, ph) {
+  const tw = pw - 1.6, th = ph - 1.6;      // 용지 안쪽 0.8mm 여백
+  const inner = th - 0.8;                  // 외곽 테두리(0.4mm×2) 제외한 내부 높이
+  const headH = inner * 0.28;
+  const nameH = inner * 0.375;
+  const bcH   = inner - headH - nameH;
+  const noColW = 32;                       // %
+
+  const headFs = Math.min(headH * 0.60, 9);
+  const noFs   = (nameH + bcH) * 0.48;
+  const code = r.mold_code || '';
+  const nameFs = Math.min(nameH * 0.68, (tw * 0.62) / Math.max(code.length, 6) * 1.7);
+  const numDisp = /^\d+$/.test(r.num || '') ? String(parseInt(r.num, 10)) : (r.num || '');  // 라벨은 앞자리 0 제거 (835)
+
+  return `
+  <div class="lbl" style="width:${tw}mm;height:${th}mm;grid-template-columns:${noColW}% 1fr;grid-template-rows:${headH}mm ${nameH}mm 1fr">
+    <div class="lc lh" style="font-size:${headFs}mm">NO</div>
+    <div class="lc lh llft" style="font-size:${headFs}mm">NAME</div>
+    <div class="lc lno" style="font-size:${noFs}mm">${esc(numDisp)}</div>
+    <div class="lc lnm llft" style="font-size:${nameFs}mm">${esc(code)}</div>
+    <div class="lc lbc llft" style="padding:${bcH * 0.12}mm ${tw * 0.03}mm">${code39svg(code, tw * 0.55, bcH * 0.68)}</div>
+  </div>`;
+}
+
+const LABEL_CSS = `
+  html,body{margin:0;padding:0;background:#fff;overflow:hidden}
+  body{padding:0.8mm}
+  .lbl{display:grid;border:0.4mm solid #000;box-sizing:border-box;background:#fff;
+    font-family:'Malgun Gothic',Arial,sans-serif;color:#000}
+  .lc{box-sizing:border-box;display:flex;align-items:center;justify-content:center;
+    overflow:hidden;line-height:1;font-weight:900;min-height:0;min-width:0}
+  .lh{background:#D9D9D9;-webkit-print-color-adjust:exact;print-color-adjust:exact;
+    border-bottom:0.4mm solid #000}
+  .llft{border-left:0.4mm solid #000}
+  .lno{grid-row:2/4}
+  .lnm{border-bottom:0.4mm solid #000}
+  .lbc svg{display:block}`;
+
+function updateLblPreview() {
+  if (!currentLabelRow) return;
+  const pw = parseFloat(document.getElementById('pw')?.value) || 100;
+  const ph = parseFloat(document.getElementById('ph')?.value) || 30;
+  printW = pw; printH = ph;
+  const box = document.getElementById('lblPreview');
+  if (box) box.innerHTML = buildLabelHTML(currentLabelRow, pw, ph);
+}
+
+/*
+ * 전용 iframe으로 인쇄:
+ * - @page { size: [가로]mm [세로]mm; margin: 0 } → 용지 = 라벨 크기, 여백 0
+ * - 여백이 0이면 브라우저 머릿글/바닥글(날짜·URL·페이지번호)이 인쇄되지 않음
+ * - 본문 페이지 CSS의 간섭 없이 항상 동일하게 출력됨
+ */
+function printLabel() {
+  if (!currentLabelRow) return;
+  const pw = printW, ph = printH;
+  const old = document.getElementById('printFrame');
+  if (old) old.remove();
+
+  const f = document.createElement('iframe');
+  f.id = 'printFrame';
+  f.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden';
+  document.body.appendChild(f);
+
+  const doc = f.contentDocument;
+  doc.open();
+  doc.write(`<!DOCTYPE html><html><head><meta charset="utf-8">
+    <style>@page{size:${pw}mm ${ph}mm;margin:0}${LABEL_CSS}</style>
+    </head><body>${buildLabelHTML(currentLabelRow, pw, ph)}</body></html>`);
+  doc.close();
+
+  setTimeout(() => {
+    f.contentWindow.focus();
+    f.contentWindow.print();
+  }, 200);
+}
+
+/* ================== Code39 barcode ================== */
+const C39 = {'0':'nnnwwnwnn','1':'wnnwnnnnw','2':'nnwwnnnnw','3':'wnwwnnnnn','4':'nnnwwnnnw','5':'wnnwwnnnn','6':'nnwwwnnnn','7':'nnnwnnwnw','8':'wnnwnnwnn','9':'nnwwnnwnn','A':'wnnnnwnnw','B':'nnwnnwnnw','C':'wnwnnwnnn','D':'nnnnwwnnw','E':'wnnnwwnnn','F':'nnwnwwnnn','G':'nnnnnwwnw','H':'wnnnnwwnn','I':'nnwnnwwnn','J':'nnnnwwwnn','K':'wnnnnnnww','L':'nnwnnnnww','M':'wnwnnnnwn','N':'nnnnwnnww','O':'wnnnwnnwn','P':'nnwnwnnwn','Q':'nnnnnnwww','R':'wnnnnnwwn','S':'nnwnnnwwn','T':'nnnnwnwwn','U':'wwnnnnnnw','V':'nwwnnnnnw','W':'wwwnnnnnn','X':'nwnnwnnnw','Y':'wwnnwnnnn','Z':'nwwnwnnnn','-':'nwnnnnwnw','.':'wwnnnnwnn',' ':'nwwnnnwnn','$':'nwnwnwnnn','/':'nwnwnnnwn','+':'nwnnnwnwn','%':'nnnwnwnwn','*':'nwnnwnwnn'};
+function code39svg(text, wmm, hmm) {
+  const full = '*' + text.toUpperCase().replace(/[^0-9A-Z\-\. \$\/\+\%]/g, '-') + '*';
+  let units = 0;
+  for (let i = 0; i < full.length; i++) units += (3 * 2.5 + 6) + 1;  // 3 wide(2.5u) + 6 narrow + gap
+  let x = 0, bars = '';
+  const N = 1, W = 2.5, H = 100;
+  for (const ch of full) {
+    const pat = C39[ch] || C39['-'];
+    for (let i = 0; i < 9; i++) {
+      const w = pat[i] === 'w' ? W : N;
+      if (i % 2 === 0) bars += `<rect x="${x}" y="0" width="${w}" height="${H}" fill="#000"/>`;
+      x += w;
+    }
+    x += N;
+  }
+  return `<svg xmlns="http://www.w3.org/2000/svg" style="width:${wmm}mm;height:${hmm}mm" viewBox="0 0 ${x} ${H}" preserveAspectRatio="none">${bars}</svg>`;
+}
+
+/* ================== master paste ================== */
+/*
+ * 번호 자동생성 — 엑셀 H열 함수와 동일:
+ * =IF($D2="","",IFERROR(INDEX($H$1:H1,MATCH($D2,$D$1:D1,0)),MAX($H$1:H1)+1))
+ */
+function assignNums(rows, mode) {
+  const map = {};
+  let mx = 0;
+  if (mode === 'append') {
+    for (const r of masterCache) {
+      const n = parseInt(r.num, 10);
+      if (r.mold_name && !isNaN(n)) {
+        if (!(r.mold_name in map)) map[r.mold_name] = n;
+        if (n > mx) mx = n;
+      }
+    }
+  }
+  for (const r of rows) {
+    const d = r.mold_name || '';
+    if (d in map) r.num = String(map[d]).padStart(4, '0');
+    else { mx++; map[d] = mx; r.num = String(mx).padStart(4, '0'); }
+  }
+}
+
+function parsePaste() {
+  const raw = document.getElementById('pasteArea').value;
+  const lines = raw.split(/\r?\n/).filter(l => l.trim());
+  parsedRows = [];
+  const seen = new Set();
+  let skipped = 0;
+
+  for (const line of lines) {
+    const c = line.split('\t').map(x => x.trim());
+    if (c.some(x => x.includes('금형바코드') || x === '번호' || x.includes('금형명칭') || x === '금형명')) continue;
+    if (c.length < 4) { skipped++; continue; }
+    const row = {barcode: c[0], mold_code: c[1] || null, mgmt_no: c[2] || null,
+                 mold_name: c[3] || null, location: c[4] || null, position: c[5] || null};
+    if (!row.barcode) { skipped++; continue; }
+    if (seen.has(row.barcode)) { skipped++; continue; }
+    seen.add(row.barcode);
+    parsedRows.push(row);
+  }
+  assignNums(parsedRows, 'append');
+
+  const wrap = document.getElementById('previewWrap');
+  const tbl = document.getElementById('previewTable');
+  if (!parsedRows.length) {
+    wrap.style.display = 'none';
+    flash('err', t('parseErr'));
+    setBtns(false);
+    return;
+  }
+  tbl.innerHTML = `<tr><th>${t('thBarcode')}</th><th>${t('thCode')}</th><th>${t('thMgmt')}</th><th>${t('thName')}</th><th>${t('thLoc')}</th><th>${t('thPos')}</th><th style="color:var(--gold)">${t('thNumAuto')}</th></tr>` +
+    parsedRows.slice(0, 300).map(r =>
+      `<tr><td class="k">${esc(r.barcode)}</td><td>${esc(r.mold_code)}</td><td>${esc(r.mgmt_no)}</td>
+       <td>${esc(r.mold_name)}</td><td>${esc(r.location)}</td><td>${esc(r.position)}</td><td class="k">${esc(r.num)}</td></tr>`).join('');
+  wrap.style.display = 'block';
+  flash('ok', t('parseOk', parsedRows.length, skipped) +
+    `<br><span style="font-weight:500;font-size:11px;color:var(--dim)">${t('parseNote')}</span>` +
+    (parsedRows.length > 300 ? `<br><span style="font-weight:500;font-size:11px;color:var(--dim)">${t('parseMax')}</span>` : ''));
+  setBtns(true);
+}
+
+async function saveMaster(replaceAll) {
+  if (!parsedRows.length) return;
+  if (replaceAll && !confirm(t('confirmReplace', masterCache.length, parsedRows.length))) return;
+  setBtns(false);
+  flash('ok', '<span class="loading"></span>' + t('saving'));
+  assignNums(parsedRows, replaceAll ? 'replace' : 'append');
+  try {
+    if (replaceAll) {
+      const del = await fetch(`${SB_URL}/rest/v1/${TABLE}?barcode=neq.___none___`, {method: 'DELETE', headers: HEAD});
+      if (!del.ok) throw new Error(t('delFail') + ': HTTP ' + del.status);
+    }
+    for (let i = 0; i < parsedRows.length; i += 500) {
+      const batch = parsedRows.slice(i, i + 500);
+      const r = await fetch(`${SB_URL}/rest/v1/${TABLE}?on_conflict=barcode`, {
+        method: 'POST',
+        headers: {...HEAD, "Prefer": "resolution=merge-duplicates,return=minimal"},
+        body: JSON.stringify(batch.map(x => ({...x, updated_at: new Date().toISOString()})))
+      });
+      if (!r.ok) throw new Error(t('saveFail') + ': HTTP ' + r.status + ' — ' + (await r.text()).slice(0, 150));
+    }
+    flash('ok', t('saveOk', parsedRows.length, replaceAll));
+    document.getElementById('pasteArea').value = '';
+    document.getElementById('previewWrap').style.display = 'none';
+    parsedRows = [];
+    await loadMaster(false);
+  } catch (e) {
+    flash('err', '❌ ' + e.message);
+    setBtns(true);
+  }
+}
+
+async function deleteRow(barcode) {
+  if (!confirm(t('confirmDel', barcode))) return;
+  const r = await fetch(`${SB_URL}/rest/v1/${TABLE}?barcode=eq.${encodeURIComponent(barcode)}`, {method: 'DELETE', headers: HEAD});
+  if (r.ok) { flash('ok', t('deleted', barcode)); loadMaster(false); }
+  else flash('err', t('delFail') + ': HTTP ' + r.status);
+}
+
+function renderMasterList() {
+  const q = (document.getElementById('masterFilter').value || '').trim().toUpperCase();
+  let rows = masterCache;
+  if (q) rows = rows.filter(r =>
+    (r.barcode || '').toUpperCase().includes(q) ||
+    (r.mold_code || '').toUpperCase().includes(q) ||
+    (r.num || '').includes(q));
+  const tbl = document.getElementById('masterTable');
+  tbl.innerHTML = `<tr><th>${t('thNum')}</th><th>${t('thBarcode')}</th><th>${t('thCode')}</th><th>${t('thMgmt')}</th><th>${t('thLoc')}</th><th>${t('thPos')}</th><th></th></tr>` +
+    rows.slice(0, 200).map(r =>
+      `<tr><td class="k">${esc(r.num || '')}</td><td>${esc(r.barcode)}</td><td>${esc(r.mold_code || '')}</td>
+       <td>${esc(r.mgmt_no || '')}</td><td>${esc(r.location || '')}</td><td>${esc(r.position || '')}</td>
+       <td><button class="del-btn" onclick="deleteRow('${esc(r.barcode)}')">✕</button></td></tr>`).join('') +
+    (rows.length > 200 ? `<tr><td colspan="7" style="color:var(--dim)">${t('more', rows.length - 200)}</td></tr>` : '');
+}
+
+/* ================== utils ================== */
+function setBtns(on) {
+  document.getElementById('btnUpsert').disabled = !on;
+  document.getElementById('btnReplace').disabled = !on;
+}
+function flash(type, html) {
+  const m = document.getElementById('masterMsg');
+  m.className = 'msg ' + type;
+  m.innerHTML = html;
+}
+function esc(s) {
+  return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+applyLang();
+loadMaster(false);
+</script>
+</body>
+</html>
