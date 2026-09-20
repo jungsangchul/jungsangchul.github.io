@@ -4890,33 +4890,60 @@ var PASTE_DEFS={
 
 var pasteKind=null, pasteRows=[];
 
-/* [v31] 붙여넣기 양식 = MES 고장이력 그리드 28열 그대로. 윗줄: 프로그램 항목 / 아랫줄: MES 머릿글 */
+/* [v32] 붙여넣기 양식 = 첨부 엑셀(고장이력.xlsx) 형식
+   1행: 프로그램 항목(매핑표) · 2행: 빈 행 · 3행: MES 머릿글 28열 · 4행~: 데이터
+   1행에 적힌 항목명이 그 열의 매핑을 결정한다 (1행이 없으면 아래 defMap = 첨부 양식과 동일한 기본 매핑) */
 var MES_HDR=['신고번호','호기','설비코드','이상코드','고장현상','금형바코드','금형코드','관리번호','고장부위','신고일자','신고시간','신고자','처리일자','처리시간','비가동시간(분)','처리자','고장원인','조치내용','교체','터미널','WIRE굵기','재질','W2','I2','CCH','ICH','고착력','처리 비고'];
 var MES_FORM={
-  records:{map:{0:'신고번호',1:'호기',2:'설비코드',8:'고장부위 (코드 제외)',9:'신고일자',10:'신고시간',11:'신고자',12:'처리일자',13:'처리시간',14:'비가동(분)',15:'처리자',16:'고장원인',17:'조치내용',27:'조치세부내용'},
-           key:[0,1,8,9,14,15,16,17,27],strip:[8,16,17],req:[1,9]},
-  moldRecords:{map:{0:'신고번호',5:'금형 연결키',6:'금형명',7:'관리번호',9:'신고일자',10:'신고시간',11:'신고자',12:'처리일자',14:'수리시간(분)',15:'처리자',16:'고장원인 (코드 제외)',17:'처리 비고',27:'조치내용'},
-           key:[0,6,7,9,14,15,16,27],strip:[16],req:[5,9]}
+  records:{
+    labels:['신고번호','호기','설비코드','고장부위','신고일자','신고시간','신고자','처리일자','처리시간','비가동(분)','처리자','고장원인','조치내용','조치세부내용','처리 비고'],
+    key:[0,1,3,4,9,10,11,12,13],strip:[3,11,12],
+    defMap:[0,1,2,8,9,10,11,12,13,14,15,16,17,27,-1],
+    row1:{0:'신고번호',1:'호기',8:'고장부위',9:'신고일자',14:'비가동(분)',15:'처리자',16:'고장원인',17:'조치내용',27:'조치세부내용'},
+    alias:{'신고번호':0,'호기':1,'설비코드':2,'고장부위':3,'신고일자':4,'신고시간':5,'신고자':6,'처리일자':7,'처리시간':8,'비가동시간(분)':9,'비가동(분)':9,'비가동':9,'처리자':10,'고장원인':11,'조치내용':12,'조치세부내용':13,'처리비고':14,'비고':14}},
+  moldRecords:{
+    labels:['신고번호','금형 연결키','금형명','관리번호','신고일자','신고시간','신고자','처리일자','수리시간(분)','처리자','고장원인','조치내용','처리 비고'],
+    key:[0,2,3,4,8,9,10,11],strip:[10],
+    defMap:[0,5,6,7,9,10,11,12,14,15,16,27,17],
+    row1:{0:'신고번호',6:'금형명',7:'관리번호',9:'신고일자',14:'수리시간(분)',15:'처리자',16:'고장원인',27:'조치내용'},
+    alias:{'신고번호':0,'금형바코드':1,'금형명':2,'금형코드':2,'관리번호':3,'신고일자':4,'신고시간':5,'신고자':6,'처리일자':7,'수리시간(분)':8,'수리시간':8,'비가동시간(분)':8,'비가동(분)':8,'비가동':8,'처리자':9,'고장원인':10,'조치내용':11,'처리비고':12,'비고':12}}
 };
-function renderPasteHead(mes){
+function pasteNormKey(x){return clean(x).toLowerCase().replace(/\s+/g,'');}
+/* 1행 매핑표 셀 → 프로그램 항목 번호 (가장 긴 항목명 우선, "고장부위. 앞에코드 제거" 같은 메모가 붙어도 인식) */
+function matchRow1(kind,cell){
+  var F=MES_FORM[kind],best=null,bl=0;if(!F||!cell)return null;
+  Object.keys(F.alias).forEach(function(k){var n=pasteNormKey(k);if(cell.indexOf(n)===0&&n.length>bl){bl=n.length;best=F.alias[k];}});
+  return best;
+}
+function buildPasteView(kind,m,hdrNames){
+  var byCol={};m.forEach(function(c,j){if(c>-1&&byCol[c]==null)byCol[c]=j;});
+  return {hdr:hdrNames,byCol:byCol};
+}
+function defaultPasteView(kind){return buildPasteView(kind,MES_FORM[kind].defMap,MES_HDR);}
+function renderPasteHead(view){
   var def=PASTE_DEFS[pasteKind],F=MES_FORM[pasteKind];
-  if(mes&&F){
+  if(view&&F){
     $('pasteHead').innerHTML=
-      '<tr>'+MES_HDR.map(function(_,i){var l=F.map[i];return '<th class="mp'+(l?(F.key.indexOf(i)>-1?' key':''):' none')+'">'+(l?esc(l)+(F.req.indexOf(i)>-1?' <span style="color:#f08c8c">*</span>':''):'·')+'</th>';}).join('')+'</tr>'+
-      '<tr>'+MES_HDR.map(function(h,i){return '<th class="mh'+(F.map[i]?'':' u')+'">'+esc(h)+'</th>';}).join('')+'</tr>';
-    return MES_HDR.length;
+      '<tr>'+view.hdr.map(function(_,i){var j=view.byCol[i];if(j==null)return '<th class="mp none">·</th>';
+        return '<th class="mp'+(F.key.indexOf(j)>-1?' key':'')+'">'+esc(F.labels[j])+(def.required.indexOf(j)>-1?' <span style="color:#f08c8c">*</span>':'')+(F.strip.indexOf(j)>-1?' <span style="font-weight:500;opacity:.75">(코드 제외)</span>':'')+'</th>';}).join('')+'</tr>'+
+      '<tr>'+view.hdr.map(function(h,i){return '<th class="mh'+(view.byCol[i]!=null?'':' u')+'">'+esc(h||'·')+'</th>';}).join('')+'</tr>';
+    return view.hdr.length;
   }
   $('pasteHead').innerHTML='<tr>'+def.cols.map(function(c,i){
     return '<th>'+esc(c)+(def.required.indexOf(i)>-1?' <span style="color:#f08c8c">*</span>':'')+'</th>';
   }).join('')+'</tr>';
   return def.cols.length;
 }
+/* 양식 복사: 첨부 엑셀과 동일한 3행(1행 매핑표 · 2행 빈 행 · 3행 MES 머릿글) */
 window.copyMesHeader=function(){
-  var t=MES_HDR.join('\t');
-  var done=function(){toast('📑 MES 머릿글(28열)을 복사했습니다. 엑셀 1행에 붙여넣으세요','ok');};
+  var F=MES_FORM[pasteKind];if(!F)return;
+  var r1=MES_HDR.map(function(_,i){return F.row1[i]||'';}).join('\t');
+  var t=r1+'\r\n'+MES_HDR.map(function(){return '';}).join('\t')+'\r\n'+MES_HDR.join('\t');
+  var done=function(){toast('📑 양식(1행 매핑표 + 3행 MES 머릿글)을 복사했습니다. 엑셀 A1에 붙여넣으세요','ok');};
   if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(done,function(){fallback();});}else fallback();
   function fallback(){var ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');done();}catch(e){toast('복사 실패','err');}document.body.removeChild(ta);}
 };
+
 function ensurePasteModal(){
   if($('pasteOverlay'))return;
   var d=document.createElement('div');
@@ -4933,7 +4960,7 @@ function ensurePasteModal(){
         '<div class="paste-tblwrap"><table class="paste-tbl"><thead id="pasteHead"></thead><tbody id="pastePrev"></tbody></table></div>'+
       '</div>'+
       '<div class="paste-foot">'+
-        '<button class="abtn" id="pasteCopyHdrBtn" style="margin-right:auto" onclick="copyMesHeader()">📑 MES 머릿글 복사</button>'+
+        '<button class="abtn" id="pasteCopyHdrBtn" style="margin-right:auto" onclick="copyMesHeader()">📑 양식 복사 (엑셀용)</button>'+
         '<button class="abtn" onclick="closePasteModal()">취소</button>'+
         '<button class="abtn primary" id="pasteSaveBtn" onclick="savePaste()">💾 서버에 저장</button>'+
       '</div>'+
@@ -4948,16 +4975,17 @@ window.openPasteModal=function(kind){
   pasteKind=kind;pasteRows=[];
   var def=PASTE_DEFS[kind];
   var isMesKind=!!MES_FORM[kind];
-  $('pasteTitle').innerHTML='📋 '+esc(def.title)+' <span class="pill">'+(isMesKind?'MES 양식 (28열)':'머릿글 고정')+'</span>';
+  $('pasteTitle').innerHTML='📋 '+esc(def.title)+' <span class="pill">'+(isMesKind?'고장이력.xlsx 양식':'머릿글 고정')+'</span>';
   $('pasteGuide').innerHTML=isMesKind?
-    ('<b>양식 = MES 고장이력 엑셀 그대로</b>입니다. MES에서 내려받은 엑셀을 <b>머릿글 행 포함</b>해서 복사(Ctrl+C) → 아래 칸에 붙여넣기(Ctrl+V) 하세요. 열을 지우거나 순서를 바꿀 필요 없습니다.<br>'+
-     '아래 표의 <b>윗줄 = 프로그램에 들어가는 항목</b>, <b>아랫줄 = MES 머릿글</b>입니다. 머릿글 위의 메모 행·빈 행은 자동으로 무시되고, 머릿글 없이 데이터만 붙여넣어도 28열 순서로 인식합니다.<br>'+
-     '같은 신고번호가 이미 있으면 <b>덮어쓰기(갱신)</b>, 없으면 <b>신규 추가</b>됩니다. 저장 즉시 서버에 반영됩니다.')
+    ('<b>양식: 1행 = 프로그램 항목(매핑표) · 2행 = 빈 행 · 3행 = MES 머릿글(28열) · 4행~ = 데이터</b><br>'+
+     '엑셀 시트에서 <b>1행부터 데이터 끝까지</b> 복사(Ctrl+C) → 아래 칸에 붙여넣기(Ctrl+V) 하세요. <b>1행에 적힌 항목명이 그 열의 매핑</b>이 됩니다 (1행을 옮기면 매핑도 따라 바뀝니다).<br>'+
+     '1행 없이 3행(머릿글)부터, 또는 데이터만 붙여넣어도 아래 표의 기본 매핑으로 인식합니다. 같은 신고번호는 <b>덮어쓰기(갱신)</b>, 없으면 <b>신규 추가</b>되며 저장 즉시 서버에 반영됩니다.')
    :('엑셀에서 데이터 영역을 복사(Ctrl+C)한 뒤 아래 입력칸에 붙여넣기(Ctrl+V) 하세요. 머릿글까지 함께 붙여넣어도 자동으로 건너뜁니다.<br>'+
      '동일한 키(바코드)가 이미 있으면 <b>덮어쓰기(갱신)</b>, 없으면 <b>신규 추가</b>됩니다. 저장 즉시 서버에 반영됩니다.');
-  $('pasteFormNote').innerHTML=isMesKind?'<span><i style="background:rgba(245,179,1,.55)"></i>목록에 표시되는 항목</span><span><i style="background:rgba(141,240,173,.55)"></i>함께 저장되는 항목</span><span><i style="background:rgba(255,255,255,.15)"></i>사용 안 함 (그대로 두면 됨)</span>':'';
+  $('pasteFormNote').innerHTML=isMesKind?'<span><i style="background:rgba(245,179,1,.55)"></i>1행 매핑 항목 (고장이력 화면 표시)</span><span><i style="background:rgba(141,240,173,.55)"></i>함께 저장되는 항목</span><span><i style="background:rgba(255,255,255,.15)"></i>사용 안 함 (그대로 두면 됨)</span>':'';
   $('pasteCopyHdrBtn').style.display=isMesKind?'':'none';
-  var nCol=renderPasteHead(isMesKind);
+  var pm=$('pasteOverlay').querySelector('.paste-modal');if(pm)pm.style.width=isMesKind?'min(1780px,98vw)':'';
+  var nCol=renderPasteHead(isMesKind?defaultPasteView(kind):null);
   $('pastePrev').innerHTML='<tr><td colspan="'+nCol+'" style="text-align:center;color:var(--t3);padding:18px">붙여넣은 데이터가 여기에 미리보기로 표시됩니다</td></tr>';
   $('pasteArea').value='';$('pasteCntOk').textContent='0';$('pasteCntBad').textContent='0';
   $('pasteOverlay').classList.add('show');
@@ -4965,12 +4993,32 @@ window.openPasteModal=function(kind){
 };
 window.closePasteModal=function(){var el=$('pasteOverlay');if(el)el.classList.remove('show');};
 
+/* [v32] 엑셀 클립보드 분해: 셀 안에 줄바꿈이 있으면 엑셀이 "…"로 감싸 보내므로, 따옴표 안의 줄바꿈은 공백으로 합쳐 한 행으로 유지 */
+function splitPasteLines(txt){
+  txt=String(txt||'');
+  if(txt.indexOf('"')<0)return txt.split(/\r?\n/);
+  var out=[],cur='',cell='',inQ=false,atStart=true;
+  for(var i=0;i<txt.length;i++){var ch=txt[i];
+    if(inQ){
+      if(ch==='"'){if(txt[i+1]==='"'){cell+='"';i++;}else inQ=false;}
+      else if(ch==='\r'){}
+      else if(ch==='\n'||ch==='\t')cell+=' ';
+      else cell+=ch;
+      continue;}
+    if(ch==='"'&&atStart){inQ=true;atStart=false;continue;}
+    if(ch==='\t'){cur+=cell+'\t';cell='';atStart=true;continue;}
+    if(ch==='\r')continue;
+    if(ch==='\n'){out.push(cur+cell);cur='';cell='';atStart=true;continue;}
+    cell+=ch;atStart=false;}
+  if(cur!==''||cell!=='')out.push(cur+cell);
+  return out;
+}
 function parsePaste(){
   var def=PASTE_DEFS[pasteKind];if(!def)return;
   var txt=$('pasteArea').value;
-  var lines=txt.split(/\r?\n/).filter(function(l){return clean(l)!=='';});
+  var lines=splitPasteLines(txt).filter(function(l){return clean(l)!=='';});
   var ok=[],bad=0,html='';pasteNewMolds=[];window.pasteMode='기본 순서';
-  var F=MES_FORM[pasteKind],hdrIsMes=false,mesHtml='',mesAll=!!F;
+  var F=MES_FORM[pasteKind],hdrIsMes=false,mesHtml='',mesAll=!!F,memo=[],row1Used=false,view=F?defaultPasteView(pasteKind):null;
   /* 머릿글 행이 있으면 머릿글 이름으로 열 순서 자동 매핑 (붙여넣은 열 순서가 달라도 OK) */
   var colMap=null;
   if(lines.length){
@@ -4983,7 +5031,7 @@ function parsePaste(){
       return n;};
     var hIdx=0,hBest=-1;
     for(var li=0;li<Math.min(lines.length,8);li++){var sc=scoreH(normH(lines[li]));if(sc>hBest){hBest=sc;hIdx=li;}}
-    if(hBest>=3&&hIdx>0)lines=lines.slice(hIdx);
+    if(hBest>=3&&hIdx>0){memo=lines.slice(0,hIdx);lines=lines.slice(hIdx);}
     var hdr=normH(lines[0]);
     var hits=0,m=def.cols.map(function(c){
       var keys=[c].concat(PASTE_ALIAS[c]||[]).map(function(k){return String(k).toLowerCase().replace(/\s+/g,'');});
@@ -5001,8 +5049,6 @@ function parsePaste(){
         var pi=hdr.indexOf('처리자'),qi=hdr.indexOf('고장원인');
         if(pi>-1)m[def.cols.indexOf('처리자')]=pi;
         if(qi>-1)m[def.cols.indexOf('고장원인')]=qi;
-        if(bi>-1&&ci>-1){lines.slice(1).forEach(function(ln){var r=ln.split('\t'),bar=mesClean(r[bi]),code=mesClean(r[ci]),mg=gi>-1?mesClean(r[gi]):'';
-          if(bar&&code&&typeof findMoldByKey==='function'&&!findMoldByKey(bar)&&!pasteNewMolds.some(function(x){return x.barcode===bar;}))pasteNewMolds.push({barcode:bar,code:code,mgmt:mg||'P01',name:code,storage:'',pos:''});});}
       }
       if(pasteKind==='records'){
         var rNb=hdr.indexOf('처리비고'),rDi=def.cols.indexOf('조치세부내용'),rNi=def.cols.indexOf('처리 비고');
@@ -5010,10 +5056,26 @@ function parsePaste(){
         rEx('호기','호기');rEx('고장부위','고장부위');rEx('처리자','처리자');rEx('고장원인','고장원인');rEx('조치내용','조치내용');rEx('비가동시간(분)','비가동시간(분)');
         if(m[rDi]<0&&rNb>-1){m[rDi]=rNb;m[rNi]=-1;}   /* MES: 처리 비고(자유텍스트)=조치세부내용 */
       }
-      if(F)hdrIsMes=Object.keys(F.map).every(function(k){return hdr[k]===MES_HDR[k].toLowerCase().replace(/\s+/g,'');});
-      colMap=m;lines=lines.slice(1);window.pasteMode='머릿글 매핑';
+      /* [v32] 1행 매핑표 적용: 머릿글 위 메모 행의 항목명 → 그 열을 해당 프로그램 항목으로 */
+      if(F&&memo.length){
+        var ov={},nOv=0;
+        memo.forEach(function(ln){normH(ln).forEach(function(c,i){if(!c)return;var j=matchRow1(pasteKind,c);if(j!=null&&ov[j]==null){ov[j]=i;nOv++;}});});
+        if(nOv>=3){
+          var used=Object.keys(ov).map(function(j){return ov[j];});
+          m.forEach(function(c,j){if(ov[j]==null&&c>-1&&used.indexOf(c)>-1)m[j]=-1;});
+          Object.keys(ov).forEach(function(j){m[j]=ov[j];});
+          row1Used=true;
+        }
+      }
+      if(F){hdrIsMes=hdr.length>=17&&hdr.indexOf('금형바코드')>-1;
+        if(hdrIsMes)view=buildPasteView(pasteKind,m,lines[0].split('\t').map(function(x){return clean(x);}));}
+      if(pasteKind==='moldRecords'&&hdr.indexOf('금형바코드')>-1&&m[1]>-1&&m[2]>-1){
+        lines.slice(1).forEach(function(ln){var r=ln.split('\t'),bar=mesClean(r[m[1]]),code=mesClean(r[m[2]]),mg=m[3]>-1?mesClean(r[m[3]]):'';
+          if(bar&&code&&typeof findMoldByKey==='function'&&!findMoldByKey(bar)&&!pasteNewMolds.some(function(x){return x.barcode===bar;}))pasteNewMolds.push({barcode:bar,code:code,mgmt:mg||'P01',name:code,storage:'',pos:''});});
+      }
+      colMap=m;lines=lines.slice(1);window.pasteMode=row1Used?'1행 매핑표 + 머릿글':'머릿글 매핑';
       var miss=def.cols.filter(function(c,i){return m[i]<0;});
-      if(typeof toast==='function')toast(hdrIsMes?'MES 양식 인식 (머릿글 '+hdr.length+'열)':('머릿글 인식: '+hits+'개 열 매핑'+(miss.length?' (없는 열: '+miss.join(', ')+')':'')),'info');
+      if(typeof toast==='function')toast(hdrIsMes?((row1Used?'1행 매핑표 적용 · ':'기본 매핑 · ')+'MES 머릿글 '+hdr.length+'열 인식'):('머릿글 인식: '+hits+'개 열 매핑'+(miss.length?' (없는 열: '+miss.join(', ')+')':'')),'info');
     }
   }
   lines.forEach(function(line){
@@ -5030,14 +5092,14 @@ function parsePaste(){
     if(F){
       var rc=raw.map(mesClean),isM=colMap?hdrIsMes:(rc.length>=17&&/^\d{4}-\d{2}-\d{2}$/.test(rc[9]||''));
       if(!isM)mesAll=false;
-      else mesHtml+='<tr'+(missing?' class="bad"':'')+'>'+MES_HDR.map(function(_,i){var v=rc[i]||'';if(F.strip.indexOf(i)>-1)v=stripCode(v);
-        return '<td class="'+(F.map[i]?(F.key.indexOf(i)>-1?'k':''):'u')+'"'+(v.length>34?' title="'+esc(v)+'"':'')+'>'+esc(v.length>34?v.slice(0,34)+'…':v)+'</td>';}).join('')+'</tr>';
+      else mesHtml+='<tr'+(missing?' class="bad"':'')+'>'+view.hdr.map(function(_,i){var j=view.byCol[i],v=rc[i]||'';if(j!=null&&F.strip.indexOf(j)>-1)v=stripCode(v);
+        return '<td class="'+(j!=null?(F.key.indexOf(j)>-1?'k':''):'u')+'"'+(v.length>34?' title="'+esc(v)+'"':'')+'>'+esc(v.length>34?v.slice(0,34)+'…':v)+'</td>';}).join('')+'</tr>';
     }
     if(missing){bad++;return;}
     ok.push(cells);
   });
   var useMes=!!F&&(lines.length===0||(mesAll&&mesHtml!==''));
-  var nCol=renderPasteHead(useMes);
+  var nCol=renderPasteHead(useMes?view:null);
   if(useMes&&mesHtml)html=mesHtml;
   pasteRows=ok;
   /* [v30] 설비/금형 데이터를 반대 창에 붙여넣은 경우 경고 (MES 그리드가 동일 형식이라 혼동 방지) */
