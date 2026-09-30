@@ -491,6 +491,10 @@ const CONFIG = {
   ],
   /* ✅ 근무시간 계산용 고정 공제 (분): 휴게 20 + 점심 30 */
   WORKTIME: { breakMin:20, lunchMin:30 },
+  /* ✅ Horas-hombre 붙여넣기용: 출근일 1일 기준 시간값 */
+  HH_VALUE: 8.46,
+  /* ✅ Horas-hombre 원본 명단에서 맨 아래로 보낼 사번 (조장·리더 등) */
+  HH_LAST_IDS: ["M026050030","M026050031","M026050032"],
   TZ_OFFSET_HOURS:-6, DASHBOARD_PIN:"yura2026", MANAGE_PIN:"yurahr2026!", AUTO_SECONDS:30, EXCLUDE_PREFIX:"ZZTEST"
 };
 /* ============================================================ */
@@ -514,6 +518,9 @@ const I18N={
     qUnitEmp:"개인별", qUnitTeam:"팀별", qRun:"조회", qLoading:"조회 중…", qNoData:"결과 없음",
     qItemAtt:"출근 일수", qItemLate:"지각", qItemNoout:"퇴근 미타각", qItemEarly:"조퇴", qItemMeal:"식사 신청",
     qItemIn:"출근 시간", qItemWork:"근무시간(일별)", qColTotal:"합계", qColTotalH:"합계(h)", qAbsent:"결석", qResigned:"퇴사",
+    qItemHH:"Horas-hombre(붙여넣기용)", hhAbsent:"결근", hhNo:"Número", hhOp:"Operador", hhChkId:"확인:사번", hhChkName:"풀네임", hhChkSt:"상태", hhHire:"입사일", hhResign:"퇴사일", hhAtt:"출근일", hhAbs:"결근일", hhMealOnly:"식수만",
+    hhActive:"재직", hhOff:"퇴사",
+    qSumHH:(n,wd,att,abs,mo)=>`대상 ${n}명 · 근무일 ${wd}일 · 출근 ${att} · 결근 ${abs}${mo?` · 타각 없이 식수신청만 ${mo}건(출근 인정)`:""} · 8.46=출근(타각 또는 식수신청), 결근=재직중 근무일 미출근, 빈칸=휴무/입사전·퇴사후 · Excel 받아서 C열부터 원본에 값 붙여넣기`,
     qSumWork:(n,tot,avg,noout)=>`대상 ${n}명 · 총 ${tot} · 1인·1일 평균 ${avg} · 공제 50분/일${noout?` · 퇴근 미타각 ${noout}건(종료기준으로 계산)`:""}`,
     wdShort:["일","월","화","수","목","금","토"],
     qColDays:"출근일수", qColAvgIn:"평균 출근", qColMinIn:"가장 이른", qColMaxIn:"가장 늦은",
@@ -545,6 +552,9 @@ const I18N={
     qUnitEmp:"Por persona", qUnitTeam:"Por equipo", qRun:"Consultar", qLoading:"Consultando…", qNoData:"Sin resultados",
     qItemAtt:"Días asistidos", qItemLate:"Tardanzas", qItemNoout:"Sin salida", qItemEarly:"Salidas anticipadas", qItemMeal:"Comidas",
     qItemIn:"Hora de entrada", qItemWork:"Horas trabajadas (diario)", qColTotal:"Total", qColTotalH:"Total(h)", qAbsent:"Falta", qResigned:"Baja",
+    qItemHH:"Horas-hombre (para pegar)", hhAbsent:"결근", hhNo:"Número", hhOp:"Operador", hhChkId:"Ver:N°", hhChkName:"Nombre completo", hhChkSt:"Estado", hhHire:"Ingreso", hhResign:"Baja", hhAtt:"Asist.", hhAbs:"Faltas", hhMealOnly:"Solo comida",
+    hhActive:"Activo", hhOff:"Baja",
+    qSumHH:(n,wd,att,abs,mo)=>`${n} personas · ${wd} días laborables · Asist. ${att} · Faltas ${abs}${mo?` · ${mo} solo con comida (cuenta asistencia)`:""} · 8.46=asistió (checada o comida), 결근=falta en día laboral, vacío=descanso/antes de ingreso/después de baja · Descargue Excel y pegue valores desde la col. C`,
     qSumWork:(n,tot,avg,noout)=>`${n} personas · Total ${tot} · Prom. ${avg}/día · Descuento 50 min/día${noout?` · ${noout} sin salida (hasta hora oficial)`:""}`,
     wdShort:["Do","Lu","Ma","Mi","Ju","Vi","Sá"],
     qColDays:"Días", qColAvgIn:"Entrada prom.", qColMinIn:"Más temprano", qColMaxIn:"Más tarde",
@@ -677,7 +687,7 @@ async function refresh(){
     const hiredBy=e=>!e.hire_date || String(e.hire_date).slice(0,10)<=date;
     state.employees=noTest(emp).filter(hiredBy); state.att=noTest(att); state.meal=noTest(meal);
     compute();
-    $("updated").textContent=t("updated")+new Date().toLocaleTimeString(lang==="ko"?"ko-KR":"es-MX")+" · v7.15";
+    $("updated").textContent=t("updated")+new Date().toLocaleTimeString(lang==="ko"?"ko-KR":"es-MX")+" · v7.16";
   }catch(e){ $("updated").textContent=t("queryErr"); console.error(e); }
 }
 
@@ -1081,7 +1091,7 @@ function localDate(iso){ const dt=new Date(new Date(iso).getTime()+CONFIG.TZ_OFF
 let queryResult=null; // 마지막 조회 결과 {item,unit,from,to,cols,rows,valUnit}
 function buildQueryControls(){
   const itemCur=$("qItem").value, unitCur=$("qUnit").value, facCur=$("qFactory").value, teamCur=$("qTeam").value;
-  $("qItem").innerHTML=[["att",t("qItemAtt")],["work",t("qItemWork")],["intime",t("qItemIn")],["late",t("qItemLate")],["noout",t("qItemNoout")],["early",t("qItemEarly")],["meal",t("qItemMeal")]]
+  $("qItem").innerHTML=[["hh",t("qItemHH")],["att",t("qItemAtt")],["work",t("qItemWork")],["intime",t("qItemIn")],["late",t("qItemLate")],["noout",t("qItemNoout")],["early",t("qItemEarly")],["meal",t("qItemMeal")]]
     .map(([v,l])=>`<option value="${v}">${l}</option>`).join("");
   $("qUnit").innerHTML=[["emp",t("qUnitEmp")],["team",t("qUnitTeam")]].map(([v,l])=>`<option value="${v}">${l}</option>`).join("");
   $("qFactory").innerHTML=`<option value="">${t("all")}</option>`+Object.keys(CONFIG.FACTORIES).map(k=>`<option value="${k}">${CONFIG.FACTORIES[k][lang]}</option>`).join("");
@@ -1138,6 +1148,71 @@ async function runQuery(){
         const cell=(byEmpDate[k][d]=byEmpDate[k][d]||{inMin:null,out:false,outMin:null,fac:r.factory});
         if(r.type==="in"){ const m=localMin(r.created_at); if(cell.inMin==null||m<cell.inMin) cell.inMin=m; if(cell.fac==null) cell.fac=r.factory; }
         if(r.type==="out"){ cell.out=true; const m=localMin(r.created_at); if(cell.outMin==null||m>cell.outMin) cell.outMin=m; }
+      }
+      /* ▼ Horas-hombre 붙여넣기용: 출근(타각 or 식수신청)=HH_VALUE, 근무일 미출근=결근, 그 외 빈칸 · 사번순 */
+      if(item==="hh"){
+        const HHV=CONFIG.HH_VALUE||8.46;
+        const WD=t("wdShort");
+        const dates=[]; { let d=new Date(from+"T00:00:00Z"); const end=new Date(to+"T00:00:00Z");
+          while(d<=end && dates.length<93){ dates.push(d.toISOString().slice(0,10)); d=new Date(d.getTime()+86400000); } }
+        const dLabel=d=>{ const dt=new Date(d+"T00:00:00Z"); return (dt.getUTCMonth()+1)+"/"+dt.getUTCDate()+"("+WD[dt.getUTCDay()]+")"; };
+        const isWkday=d=>{ const w=new Date(d+"T00:00:00Z").getUTCDay(); return w>=1&&w<=5; };
+        /* 식수신청(meal_requests, applied) — 기간 전체 */
+        const mealSet={};
+        for(let off=0; off<100000; off+=1000){
+          let ch; try{ ch=await getJson(REST(`${CONFIG.T_MEALS}?select=employee_id,meal_date,factory&meal_date=gte.${from}&meal_date=lte.${to}&status=eq.applied${factory?`&factory=eq.${encodeURIComponent(factory)}`:""}&order=meal_date.asc&limit=1000&offset=${off}`)); }catch(e){ break; }
+          if(!ch||!ch.length) break;
+          ch.forEach(m=>{ if(!isTestId(m.employee_id)) (mealSet[m.employee_id]=mealSet[m.employee_id]||{})[String(m.meal_date).slice(0,10)]=1; });
+          if(ch.length<1000) break;
+        }
+        /* 근무일 = 평일 중 (해당 공장) 타각 기록이 있는 날 → 공휴일 자동 제외 */
+        const recDays=new Set(); for(const id in byEmpDate) for(const d in byEmpDate[id]) recDays.add(d);
+        const workDays=new Set(dates.filter(d=>isWkday(d)&&recDays.has(d)));
+        /* 퇴사자 포함 직원 마스터 */
+        let master=[];
+        try{ master=await getJson(REST(`${CONFIG.T_EMPLOYEES}?select=employee_id,name,team,factory,active,hire_date,resigned_at&limit=5000`)); }
+        catch(e){ try{ master=await getJson(REST(`${CONFIG.T_EMPLOYEES}?select=employee_id,name,team,factory,active,hire_date&limit=5000`)); }catch(e2){ master=state.employees.slice(); } }
+        master=(master||[]).filter(m=>!isTestId(m.employee_id));
+        if(factory) master=master.filter(m=>String(m.factory)===String(factory));
+        if(teamSel) master=master.filter(m=>(m.team||"").trim()===teamSel);
+        const LAST=CONFIG.HH_LAST_IDS||[]; const rk=id=>{ const i=LAST.indexOf(id); return i<0?0:1+i; };
+        master.sort((a,b)=>(rk(a.employee_id)-rk(b.employee_id))||(a.employee_id<b.employee_id?-1:1));
+        const today=todayDate();
+        let hrows=[], gAtt=0, gAbs=0, gMo=0;
+        for(const m of master){
+          const id=m.employee_id;
+          const hire=m.hire_date?String(m.hire_date).slice(0,10):null;
+          const resd=m.resigned_at?String(m.resigned_at).slice(0,10):null;
+          const recs=byEmpDate[id]||{}, meals=mealSet[id]||{};
+          const hasAny=Object.keys(recs).length||Object.keys(meals).length;
+          if(resd && resd<from && !hasAny) continue;   // 기간 전 퇴사
+          if(hire && hire>to && !hasAny) continue;     // 기간 후 입사
+          const row={ no:"", op:String(m.name||id).trim().split(/\s+/)[0], _id:id, _name:m.name||id,
+                      _st:(m.active===false||(resd&&resd<=to))?t("hhOff"):t("hhActive"), _hire:hire||"", _res:resd||"", _a:0, _b:0, _mo:0 };
+          dates.forEach((d,j)=>{
+            let v="";
+            if(d<=today){
+              const c=recs[d]; const scan=!!(c&&(c.inMin!=null||c.out)); const meal=!!meals[d];
+              const on=(!hire||hire<=d)&&(!resd||d<resd);
+              if(scan||meal){ v=HHV; row._a++; if(!scan) row._mo++; }
+              else if(workDays.has(d) && on && !(hire===d)){ v=t("hhAbsent"); row._b++; }  // 입사 당일 미기록은 빈칸
+            }
+            row["d"+j]=v;
+          });
+          gAtt+=row._a; gAbs+=row._b; gMo+=row._mo;
+          hrows.push(row);
+        }
+        hrows.forEach((r,i)=>r.no=String(i+1).padStart(3,"0"));
+        const cols=[["no",t("hhNo")],["op",t("hhOp")],
+          ...dates.map((d,j)=>["d"+j,dLabel(d),true]),
+          ["_id",t("hhChkId")],["_name",t("hhChkName")],["_st",t("hhChkSt")],["_hire",t("hhHire")],["_res",t("hhResign")],
+          ["_a",t("hhAtt"),true],["_b",t("hhAbs"),true],["_mo",t("hhMealOnly"),true]];
+        queryResult={item,unit,from,to,cols,rows:hrows};
+        renderQuery();
+        $("qSum").textContent = hrows.length ? t("qSumHH")(hrows.length, workDays.size, gAtt, gAbs, gMo) : "";
+        if(!hrows.length){ $("qTable").querySelector("tbody").innerHTML=`<tr><td>${t("qNoData")}</td></tr>`; }
+        $("qExp").disabled=!hrows.length;
+        return;
       }
       /* ▼ 근무시간(일별): min(퇴근,종료기준)−max(출근,시작기준)−휴게50분 · 숫자셀(8.46=8시간46분) · 결석/퇴사 표기 */
       if(item==="work"){
@@ -1306,7 +1381,8 @@ function renderQuery(){
   const {cols,rows}=queryResult;
   $("qTable").querySelector("thead").innerHTML="<tr>"+cols.map(c=>`<th class="${c[2]?"n":""}">${escapeHtml(c[1])}</th>`).join("")+"</tr>";
   $("qTable").querySelector("tbody").innerHTML=rows.map(r=>"<tr>"+cols.map(c=>{
-    const v=r[c[0]]; return `<td class="${c[2]?"n":""}">${escapeHtml(v!=null?String(v):"")}</td>`;
+    const v=r[c[0]]; const hl=(queryResult.item==="hh"&&v===t("hhAbsent"))?' style="background:#fff2cc;color:#b45309;font-weight:600"':'';
+    return `<td class="${c[2]?"n":""}"${hl}>${escapeHtml(v!=null?(typeof v==="number"&&queryResult.item==="hh"?v.toFixed(2):String(v)):"")}</td>`;
   }).join("")+"</tr>").join("");
 }
 function exportQuery(){
@@ -1314,7 +1390,7 @@ function exportQuery(){
   const {cols,rows,item,unit,from,to}=queryResult;
   const aoa=[cols.map(c=>c[1])];
   for(const r of rows){ aoa.push(cols.map(c=>{ const v=r[c[0]]; return v==null?"":v; })); }
-  const sheet=`${item}_${unit}_${from}_${to}`;
+  const sheet=item==="hh"?`HorasHombre_${from}_${to}`:`${item}_${unit}_${from}_${to}`;
   const u8=makeXlsx(sheet.slice(0,31), aoa);
   const blob=new Blob([u8],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
   const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=sheet+".xlsx";
