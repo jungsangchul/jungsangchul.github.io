@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>회로 조회 (2공장) · Consulta de circuitos P2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=Space+Mono:wght@700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0E1114; --panel:#171B1F; --ink:#E8ECEF; --sub:#8A949C; --line:#2A3036;
+  --accent:#4FA9C9; --accent-ink:#06222D; --tag:#C9A84C; --tag-ink:#1E1806; --hit:#1C2C35; --danger:#F2867E; --gold:#C9A84C;
+  color-scheme:dark;
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 "IBM Plex Sans KR","Malgun Gothic","Apple SD Gothic Neo",system-ui,sans-serif;font-variant-numeric:tabular-nums}
+button,input,select,textarea{font:inherit;color:inherit}
+header{background:#111417!important;display:flex;align-items:center;gap:16px;padding:14px 20px;background:var(--panel);border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:5;flex-wrap:wrap}
+a.brand{font-family:'Space Mono',Consolas,'Courier New',monospace;font-weight:700;font-size:16px;letter-spacing:.12em;color:var(--gold);text-decoration:none;white-space:nowrap;padding-right:16px;border-right:1px solid var(--line)}
+a.brand:hover{color:#E3C46A}
+a.brand:focus-visible{outline:2px solid var(--gold);outline-offset:4px}
+.plant{font-size:12px;font-weight:600;color:var(--gold);border:1px solid var(--gold);border-radius:4px;padding:2px 8px;white-space:nowrap}
+h1{font-size:18px;margin:0;font-weight:700;letter-spacing:-.01em}
+h1 small{font-weight:400;color:var(--sub);font-size:13px;margin-left:6px}
+.tabs{display:flex;gap:4px;margin-left:auto}
+#netStat{display:inline-flex;align-items:center;gap:6px}
+#netStat::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--sub)}
+#netStat.ok::before{background:#2e9b4f}
+#netStat.off::before{background:var(--danger)}
+.btn:disabled{opacity:.5;cursor:wait}
+.tabs button{border:1px solid var(--line);background:transparent;padding:7px 16px;border-radius:6px;cursor:pointer;font-weight:500}
+.tabs button.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.lang{border:1px solid var(--line);background:transparent;border-radius:6px;padding:7px 10px;cursor:pointer}
+main{padding:18px 20px;max-width:1500px;margin:0 auto}
+.hidden{display:none!important}
+.status{font-size:13px;color:var(--sub)}
+/* lookup layout */
+.lookup{display:grid;grid-template-columns:300px 1fr;gap:18px;align-items:start}
+@media (max-width:860px){.lookup{grid-template-columns:1fr}}
+.filters{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:14px}
+fieldset{border:0;border-top:1px solid var(--line);margin:0;padding:12px 0 4px}
+fieldset:first-of-type{border-top:0;padding-top:0}
+legend{font-weight:700;font-size:13px;padding:0;margin-bottom:8px;color:var(--accent)}
+label.f{display:block;font-size:12px;color:var(--sub);margin:0 0 8px}
+label.f > input,label.f > select{display:block;width:100%;margin-top:3px;padding:7px 9px;border:1px solid var(--line);border-radius:6px;background:var(--bg)}
+label.f > input:focus,label.f > select:focus,textarea:focus{outline:2px solid var(--accent);outline-offset:0}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.chk{display:flex;gap:6px;align-items:center;font-size:12px;color:var(--sub);margin:-2px 0 8px;cursor:pointer}
+.row-btns{display:flex;gap:8px;margin-top:10px}
+.btn{border:1px solid var(--line);background:var(--panel);padding:8px 14px;border-radius:6px;cursor:pointer;font-weight:500}
+.btn.pri{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.warn{color:var(--danger)}
+.btn:focus-visible,.tabs button:focus-visible,tbody tr:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.results{background:var(--panel);border:1px solid var(--line);border-radius:8px;min-width:0}
+.res-head{display:flex;justify-content:space-between;align-items:baseline;padding:12px 14px;border-bottom:1px solid var(--line)}
+.res-head b{font-size:20px}
+.scroll{overflow-x:auto;max-height:calc(100vh - 200px)}
+table{border-collapse:collapse;width:100%;white-space:nowrap}
+th,td{padding:7px 10px;text-align:left;border-bottom:1px solid var(--line);font-size:13px}
+th{position:sticky;top:0;background:var(--panel);color:var(--sub);font-weight:600;font-size:12px;z-index:1}
+tbody tr{cursor:pointer}
+tbody tr:hover{background:var(--hit)}
+td.wn{font-weight:700}
+td.sym{font-family:"Segoe UI Symbol","Noto Sans Symbols 2",sans-serif;letter-spacing:.05em}
+.empty{padding:40px 16px;text-align:center;color:var(--sub)}
+/* wire color chip */
+.chip{display:inline-flex;align-items:center;gap:6px}
+.chip i{display:inline-block;width:28px;height:10px;border-radius:5px;border:1px solid rgba(255,255,255,.3);position:relative;overflow:hidden}
+.chip i b{position:absolute;left:0;right:0;top:3px;height:3px}
+/* drawer */
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:20}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(640px,100%);background:var(--panel);z-index:21;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);border-left:1px solid var(--line)}
+.dr-head{display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--line)}
+.dr-head h2{margin:0;font-size:22px}
+.dr-head .sub{color:var(--sub);font-size:13px}
+.dr-head .x{margin-left:auto}
+.dr-body{overflow:auto;padding:16px 18px}
+.wire-svg{width:100%;height:auto;display:block;margin-bottom:14px}
+.kv{display:grid;grid-template-columns:minmax(150px,42%) 1fr;border-top:1px solid var(--line)}
+.kv div{padding:6px 8px;border-bottom:1px solid var(--line);font-size:13px;word-break:break-all}
+.kv .k{color:var(--sub);font-size:12px}
+.kv .v.key{font-weight:700;background:var(--hit)}
+.kv .v.blank{color:var(--line)}
+.dr-tools{display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
+/* master */
+.master{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:16px}
+.master h2{margin:0 0 4px;font-size:16px}
+.master p{margin:0 0 12px;color:var(--sub);font-size:13px}
+textarea{width:100%;min-height:260px;padding:10px;border:1px solid var(--line);border-radius:6px;background:var(--bg);font:12px/1.4 Consolas,"D2Coding",monospace;white-space:pre;overflow:auto}
+.stats{display:flex;gap:24px;flex-wrap:wrap;margin:14px 0 0;padding:12px 0 0;border-top:1px solid var(--line)}
+.stats div{font-size:12px;color:var(--sub)}
+.stats b{display:block;font-size:20px;color:var(--ink)}
+.pn-list{margin-top:12px;font-size:13px}
+.pn-list span{display:inline-block;background:var(--tag);color:var(--tag-ink);border-radius:4px;padding:2px 8px;margin:0 6px 6px 0;font-weight:600}
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--panel);padding:10px 18px;border-radius:6px;z-index:40;font-size:13px}
+@media (prefers-reduced-motion:no-preference){.drawer{animation:slide .18s ease-out}@keyframes slide{from{transform:translateX(30px);opacity:.6}}}
+</style>
+</head>
+<body>
+<header>
+  <a class="brand" href="https://jungsangchul.github.io/" title="YURA HARNESS MÉXICO">YURA HARNESS MÉXICO</a>
+  <h1 data-i="title">회로 조회<small data-i="sub">와이어 · 단자 · 부품 · 심볼</small></h1>
+  <span class="plant">PLANT 2 · 라하트</span>
+  <nav class="tabs">
+    <button id="tabLookup" class="on" data-i="tLookup">조회</button>
+    <button id="tabMaster" data-i="tMaster">마스터</button>
+  </nav>
+  <span class="status" id="netStat"></span>
+  <button class="lang" id="reloadBtn" title="새로고침">⟳</button>
+  <button class="lang" id="langBtn">ES</button>
+</header>
+
+<main>
+  <!-- LOOKUP -->
+  <section id="viewLookup" class="lookup">
+    <form class="filters" id="filters" onsubmit="return false">
+      <fieldset>
+        <legend data-i="gBasic">품번 / 선번</legend>
+        <label class="f"><span data-i="pn">품번</span><select id="fPn"></select></label>
+        <label class="f"><span data-i="wn">선번</span><input id="fWn" autocomplete="off" placeholder="예) AA300"></label>
+      </fieldset>
+      <fieldset>
+        <legend data-i="gWire">와이어 기준</legend>
+        <div class="pair">
+          <label class="f"><span data-i="mat">재질</span><select id="fMat"></select></label>
+          <label class="f">SQ<select id="fSq"></select></label>
+        </div>
+        <label class="f"><span data-i="col">색상</span><select id="fCol"></select></label>
+        <div class="pair">
+          <label class="f"><span data-i="len">길이(mm)</span><input id="fLen" inputmode="numeric" autocomplete="off"></label>
+          <label class="f"><span data-i="tol">허용 ±mm</span><input id="fTol" inputmode="numeric" value="0" autocomplete="off"></label>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend data-i="gTerm">터미널 기준</legend>
+        <div class="pair">
+          <label class="f"><span data-i="tL">좌측 단자</span><input id="fTL" list="dlTL" autocomplete="off"></label>
+          <label class="f"><span data-i="tR">우측 단자</span><input id="fTR" list="dlTR" autocomplete="off"></label>
+        </div>
+        <label class="chk"><input type="checkbox" id="fTSwap"><span data-i="swap">좌·우 구분 없이 찾기</span></label>
+      </fieldset>
+      <fieldset>
+        <legend data-i="gPart">압착전 부품 1</legend>
+        <div class="pair">
+          <label class="f"><span data-i="pL">좌측</span><input id="fPL" list="dlPL" autocomplete="off"></label>
+          <label class="f"><span data-i="pR">우측</span><input id="fPR" list="dlPR" autocomplete="off"></label>
+        </div>
+        <label class="chk"><input type="checkbox" id="fPSwap"><span data-i="swap">좌·우 구분 없이 찾기</span></label>
+      </fieldset>
+      <fieldset>
+        <legend data-i="gSym">심볼 기준</legend>
+        <div class="pair">
+          <label class="f"><span data-i="symCol">심볼 칸</span><select id="fSymCol"></select></label>
+          <label class="f"><span data-i="sym">심볼</span><select id="fSym"></select></label>
+        </div>
+      </fieldset>
+      <div class="row-btns">
+        <button type="button" class="btn" id="resetBtn" data-i="reset">조건 초기화</button>
+      </div>
+      <datalist id="dlTL"></datalist><datalist id="dlTR"></datalist>
+      <datalist id="dlPL"></datalist><datalist id="dlPR"></datalist>
+    </form>
+
+    <div class="results">
+      <div class="res-head">
+        <div><b id="resCount">0</b> <span data-i="rows">건</span></div>
+        <div class="status" id="resNote"></div>
+      </div>
+      <div class="scroll">
+        <table>
+          <thead><tr id="resHead"></tr></thead>
+          <tbody id="resBody"></tbody>
+        </table>
+        <div class="empty hidden" id="resEmpty"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MASTER -->
+  <section id="viewMaster" class="hidden">
+    <div class="master">
+      <h2 data-i="mTitle">마스터 붙여넣기</h2>
+      <p data-i="mDesc">엑셀에서 머리글 행부터 데이터까지 선택해 복사(Ctrl+C)한 뒤 아래에 붙여넣으세요(Ctrl+V). 머리글 행이 없어도 기본 69열 양식으로 읽습니다.</p>
+      <textarea id="pasteBox" spellcheck="false" placeholder="품번	서브그룹번호	선번	재질	자재번호	SQ	색상	길이	..."></textarea>
+      <div class="status" id="pasteInfo" style="margin-top:6px"></div>
+      <div class="row-btns" style="flex-wrap:wrap">
+        <button class="btn pri" id="saveMerge" data-i="saveMerge">품번별 교체 저장</button>
+        <button class="btn" id="saveAll" data-i="saveAll">전체 교체 저장</button>
+        <button class="btn warn" id="clearAll" data-i="clearAll">마스터 전체 삭제</button>
+      </div>
+      <p class="status" style="margin-top:8px" data-i="mHelp">품번별 교체: 붙여넣은 품번의 기존 행만 지우고 새로 넣습니다. 다른 품번은 그대로 유지됩니다. 저장 내용은 모든 PC에 공유됩니다.</p>
+      <div class="stats">
+        <div><span data-i="sRows">저장된 회로</span><b id="stRows">0</b></div>
+        <div><span data-i="sPn">품번 수</span><b id="stPn">0</b></div>
+        <div><span data-i="sUpd">최종 저장</span><b id="stUpd" style="font-size:15px">-</b></div>
+      </div>
+      <div class="pn-list" id="pnList"></div>
+    </div>
+  </section>
+</main>
+
+<div id="drawerWrap" class="hidden">
+  <div class="scrim" id="scrim"></div>
+  <aside class="drawer" role="dialog" aria-modal="true" aria-labelledby="drTitle">
+    <div class="dr-head">
+      <div><h2 id="drTitle"></h2><div class="sub" id="drSub"></div></div>
+      <button class="btn x" id="drClose" data-i="close">닫기</button>
+    </div>
+    <div class="dr-body">
+      <svg class="wire-svg" id="wireSvg" viewBox="0 0 600 150" role="img"></svg>
+      <div class="dr-tools">
+        <label class="chk" style="margin:0"><input type="checkbox" id="hideBlank" checked><span data-i="hideBlank">빈 칸 숨기기</span></label>
+        <button class="btn" id="copyRow" style="margin-left:auto" data-i="copyRow">행 복사</button>
+      </div>
+      <div class="kv" id="drKv"></div>
+    </div>
+  </aside>
+</div>
+<div id="toast" class="toast hidden"></div>
+
+<script>
+/* ---------- 기본 양식 (69열) ---------- */
+const DEFAULT_HEADERS=['품번','서브그룹번호','선번','재질','자재번호','SQ','색상','길이','중간스트립 위치점,1','중간스트립 위치점,2','중간스트립 위치점,3','중간스트립 위치점,4','전선의 스트립 길이 - 좌측','전선의 스트립 길이 - 우측','단자에 납땜 유무 - 좌측단자','단자소요량 계산시 count 유무 표기(좌)','단자번호 - 좌측','단자에 납땜 유무 - 우측단자','단자소요량 계산시 count 유무 표기(우)','단자번호 - 우측','조인트,쌍압착의 경우에 전선간의 연결관계','압착전 부품 1 - 좌측','압착전 부품 2 - 좌측','압착전 부품 3 - 좌측','압착전 부품 1 - 우측','압착전 부품 2 - 우측','압착전 부품 3 - 우측','조립판도 커넥터 순번(좌)','단자가 삽입되는 커넥터의 HOLE 번호 - 좌측','조립판도 커넥터 순번(우)','단자가 삽입되는 커넥터의 HOLE 번호 - 우측','좌측 단자가 삽입되는 커넥터의 자재번호 - 좌','우측 단자가 삽입되는 커넥터의 자재번호 - 우','트위스트,쉴드선 인 경우에 동일한 값이면 한쌍의 전선','조인트,쌍압착 연결관계 표기-형식 2','심볼1','심볼2','심볼3','심볼4','심볼5','심볼6','심볼7','사용안함','OEM도면 상의 WIRE길이','관계도 표시참조용','Sh/Tw 구분','Sh/Tw 연결','기준선여부','중간스트립여부','재질코드','좌단자 자동/반자동 구분(M:자동,H:반자동)','우단자 자동/반자동 구분(M:자동,H:반자동)','JSB원본','좌 연결번호','우 연결번호','결속갯수','특수단자 뒤 기호표시','좌 단자가 씰인지(1:씰)','우 단자가 씰인지(1:씰)','와이어 걸이수(좌)','와이어 걸이수(우)','FPC 수량','FPC1 수량','FPC2 수량','TPC 수량','TPC1 수량','TPC2 수량','USM단자 가지선 HMT표기(좌)','USM단자 가지선 HMT표기(우)'];
+const C={pn:0,sub:1,wn:2,mat:3,matNo:4,sq:5,col:6,len:7,stL:12,stR:13,tL:16,tR:19,p1L:21,p2L:22,p3L:23,p1R:24,p2R:25,p3R:26,holeL:28,holeR:30,conL:31,conR:32,sym:[35,36,37,38,39,40,41]};
+const KEY_COLS=new Set([C.pn,C.sub,C.wn,C.mat,C.sq,C.col,C.len,C.tL,C.tR,C.p1L,C.p1R,...C.sym]);
+
+/* ---------- 언어 ---------- */
+const ES={title:'Consulta de circuitos',sub:'Cable · Terminal · Pieza · Símbolo',tLookup:'Consulta',tMaster:'Maestro',gBasic:'No. parte / Circuito',pn:'No. de parte',wn:'No. de circuito',gWire:'Por cable',mat:'Material',col:'Color',len:'Longitud (mm)',tol:'Tolerancia ±mm',gTerm:'Por terminal',tL:'Terminal izq.',tR:'Terminal der.',swap:'Buscar sin importar izq./der.',gPart:'Pieza pre-crimpado 1',pL:'Izquierda',pR:'Derecha',gSym:'Por símbolo',symCol:'Columna',sym:'Símbolo',reset:'Limpiar filtros',rows:'circuitos',mTitle:'Pegar maestro',mDesc:'Copie en Excel desde la fila de encabezados hasta los datos (Ctrl+C) y péguelos abajo (Ctrl+V). Sin encabezados se usa el formato estándar de 69 columnas.',saveMerge:'Guardar reemplazando por No. parte',saveAll:'Reemplazar todo',clearAll:'Borrar maestro',mHelp:'Reemplazar por No. parte: solo se borran las filas de los números de parte pegados; los demás se conservan. Los datos se comparten en todas las PC.',sRows:'Circuitos guardados',sPn:'No. de parte',sUpd:'Último guardado',close:'Cerrar',hideBlank:'Ocultar vacíos',copyRow:'Copiar fila',all:'Todos',anyCol:'Cualquiera',noMaster:'No hay maestro. Pegue los datos en la pestaña Maestro.',noHit:'No hay circuitos con estas condiciones. Quite un filtro.',showing:'Mostrando los primeros 500',copied:'Fila copiada',saved:'Guardado',parsed:'filas leídas',cleared:'Maestro borrado',confirmClear:'¿Borrar todo el maestro?',confirmAll:'Se reemplazará todo el maestro. ¿Continuar?',nothing:'No hay filas para guardar.',symAny:'★ Solo con símbolo',online:'Servidor',offline:'Sin conexión (caché)',saving:'Guardando…',loading:'Cargando…',saveErr:'Error al guardar en el servidor'};
+const KO={all:'전체',anyCol:'전체 칸',noMaster:'마스터가 없습니다. 마스터 탭에서 엑셀 내용을 붙여넣으세요.',noHit:'조건에 맞는 회로가 없습니다. 조건을 하나 줄여 보세요.',showing:'앞 500건만 표시',copied:'행을 복사했습니다',saved:'저장했습니다',parsed:'행 읽음',cleared:'마스터를 삭제했습니다',confirmClear:'마스터 전체를 삭제할까요?',confirmAll:'기존 마스터를 모두 지우고 새로 저장합니다. 계속할까요?',nothing:'저장할 행이 없습니다.',symAny:'★ 심볼 있는 것만',online:'서버 연결',offline:'오프라인 (캐시 사용)',saving:'저장 중…',loading:'불러오는 중…',saveErr:'서버 저장 실패'};
+let lang='ko';
+const koText={};document.querySelectorAll('[data-i]').forEach(el=>koText[el.dataset.i]=el.innerHTML);
+const T=k=>lang==='es'?(ES[k]??KO[k]??k):(KO[k]??k);
+function applyLang(){
+  document.querySelectorAll('[data-i]').forEach(el=>{const k=el.dataset.i;el.innerHTML=lang==='es'&&ES[k]?(k==='title'?ES.title+'<small>'+ES.sub+'</small>':ES[k]):koText[k];});
+  document.getElementById('langBtn').textContent=lang==='ko'?'ES':'KO';
+  document.documentElement.lang=lang;
+  if(document.getElementById('netStat').className.includes('ok')||document.getElementById('netStat').className.includes('off'))setNet(online);
+  refreshOptions();render();
+}
+document.getElementById('langBtn').onclick=()=>{lang=lang==='ko'?'es':'ko';try{localStorage.setItem('circ_lang',lang)}catch(e){}applyLang();};
+
+/* ---------- 저장소 (IndexedDB) ---------- */
+let db=null, MASTER={headers:DEFAULT_HEADERS.slice(),rows:[],updated:null};
+function idbOpen(){return new Promise(res=>{try{const r=indexedDB.open('circuit_lookup_2',1);r.onupgradeneeded=()=>r.result.createObjectStore('kv');r.onsuccess=()=>res(r.result);r.onerror=()=>res(null);}catch(e){res(null)}});}
+function idbGet(k){return new Promise(res=>{if(!db)return res(null);try{const q=db.transaction('kv').objectStore('kv').get(k);q.onsuccess=()=>res(q.result||null);q.onerror=()=>res(null);}catch(e){res(null)}});}
+function idbSet(k,v){return new Promise(res=>{if(!db)return res(false);try{const tx=db.transaction('kv','readwrite');tx.objectStore('kv').put(v,k);tx.oncomplete=()=>res(true);tx.onerror=()=>res(false);}catch(e){res(false)}});}
+
+/* ---------- Supabase ---------- */
+const SB_URL='https://lrjurjhavlalhlwaplxd.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxyanVyamhhdmxhbGhsd2FwbHhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNzUxNDAsImV4cCI6MjA5NTY1MTE0MH0.DVFmZaT37R9CXSMHdnLx4YAVNTnlBGijkOIaoUo7Qsk';
+async function sb(path,opt={}){
+  const r=await fetch(SB_URL+'/rest/v1/'+path,{...opt,headers:{apikey:SB_KEY,Authorization:'Bearer '+SB_KEY,'Content-Type':'application/json',...(opt.headers||{})}});
+  if(!r.ok)throw new Error(r.status+' '+(await r.text()).slice(0,200));
+  return r;
+}
+let online=false;
+function setNet(ok){online=ok;const el=document.getElementById('netStat');el.className=ok?'status ok':'status off';el.textContent=T(ok?'online':'offline');}
+async function loadRemote(){
+  const rows=[];const PAGE=1000;
+  for(let off=0;;off+=PAGE){
+    const r=await sb(`circuit_master_2?select=cells&order=pn.asc,id.asc&limit=${PAGE}&offset=${off}`);
+    const d=await r.json();d.forEach(x=>rows.push(x.cells));if(d.length<PAGE)break;
+  }
+  const m=await (await sb('circuit_meta_2?select=headers,updated_at&id=eq.1')).json();
+  const n=DEFAULT_HEADERS.length;
+  return {headers:(m[0]&&m[0].headers)||DEFAULT_HEADERS.slice(),rows:rows.map(c=>{const a=(c||[]).map(v=>v==null?'':String(v));while(a.length<n)a.push('');return a;}),updated:m[0]?m[0].updated_at:null};
+}
+async function loadMaster(){
+  setStat(T('loading'));
+  try{MASTER=await loadRemote();setNet(true);await idbSet('master',MASTER);}
+  catch(e){console.warn(e);setNet(false);const c=await idbGet('master');if(c&&c.rows)MASTER=c;}
+  sortMaster();afterLoad();
+}
+function sortMaster(){MASTER.rows.sort((a,b)=>a[C.pn].localeCompare(b[C.pn])||a[C.sub].localeCompare(b[C.sub],undefined,{numeric:true}));}
+function setStat(m){const el=document.getElementById('netStat');el.textContent=m;}
+
+/* ---------- 붙여넣기 파싱 (엑셀 TSV, 따옴표 셀 지원) ---------- */
+function parseTSV(text){
+  const out=[];let row=[],cell='',q=false;
+  for(let i=0;i<text.length;i++){
+    const ch=text[i];
+    if(q){ if(ch==='"'){ if(text[i+1]==='"'){cell+='"';i++;} else q=false; } else cell+=ch; continue; }
+    if(ch==='"'&&cell==='') q=true;
+    else if(ch==='\t'){row.push(cell);cell='';}
+    else if(ch==='\n'||ch==='\r'){ if(ch==='\r'&&text[i+1]==='\n')i++; row.push(cell);out.push(row);row=[];cell='';}
+    else cell+=ch;
+  }
+  if(cell!==''||row.length){row.push(cell);out.push(row);}
+  return out.map(r=>r.map(c=>c.trim())).filter(r=>r.some(c=>c!==''));
+}
+function readPaste(){
+  const rows=parseTSV(document.getElementById('pasteBox').value);
+  let headers=null;
+  if(rows.length&&rows[0][0].replace(/\s/g,'')==='품번'){headers=rows.shift();}
+  const n=Math.max(DEFAULT_HEADERS.length,headers?headers.length:0);
+  const data=rows.filter(r=>r[0]).map(r=>{const a=r.slice(0,n);while(a.length<n)a.push('');return a;});
+  if(headers){headers=headers.slice(0,n);while(headers.length<n)headers.push(DEFAULT_HEADERS[headers.length]||'');
+    headers=headers.map((h,i)=>h||DEFAULT_HEADERS[i]||('열'+(i+1)));
+    // 중복 머리글 구분 (좌/우)
+    const seen={};headers=headers.map((h,i)=>{if(seen[h]){const alt=DEFAULT_HEADERS[i];return alt&&alt!==h?alt:h+' ('+(i+1)+')';}seen[h]=1;return h;});
+  }
+  return {headers,data};
+}
+document.getElementById('pasteBox').addEventListener('input',()=>{
+  const {data}=readPaste();const pns=[...new Set(data.map(r=>r[C.pn]))];
+  document.getElementById('pasteInfo').textContent=data.length?`${data.length} ${T('parsed')} · ${pns.join(', ')}`:'';
+});
+async function save(mode){
+  const {headers,data}=readPaste();
+  if(!data.length){toast(T('nothing'));return;}
+  if(mode==='all'&&MASTER.rows.length&&!confirm(T('confirmAll')))return;
+  await push(data,headers,mode==='all');
+  document.getElementById('pasteBox').value='';document.getElementById('pasteInfo').textContent='';
+}
+async function push(data,headers,all){
+  const btns=document.querySelectorAll('#viewMaster .btn');btns.forEach(b=>b.disabled=true);setStat(T('saving'));
+  try{
+    const r=await sb('rpc/circuit_replace_2',{method:'POST',body:JSON.stringify({p_rows:data,p_headers:headers||null,p_all:all})});
+    const n=await r.json();toast(`${T('saved')} · ${n}`);
+  }catch(e){console.error(e);setNet(false);alert(T('saveErr')+'\n'+e.message);btns.forEach(b=>b.disabled=false);throw e;}
+  btns.forEach(b=>b.disabled=false);
+  await loadMaster();
+}
+document.getElementById('saveMerge').onclick=()=>save('merge').catch(()=>{});
+document.getElementById('saveAll').onclick=()=>save('all').catch(()=>{});
+document.getElementById('clearAll').onclick=async()=>{if(!confirm(T('confirmClear')))return;try{await push([],null,true);toast(T('cleared'));}catch(e){}};
+document.getElementById('reloadBtn').onclick=()=>loadMaster();
+
+function renderMasterStats(){
+  const pnCount={};MASTER.rows.forEach(r=>pnCount[r[C.pn]]=(pnCount[r[C.pn]]||0)+1);
+  document.getElementById('stRows').textContent=MASTER.rows.length.toLocaleString();
+  document.getElementById('stPn').textContent=Object.keys(pnCount).length;
+  document.getElementById('stUpd').textContent=MASTER.updated?new Date(MASTER.updated).toLocaleString():'-';
+  document.getElementById('pnList').innerHTML=Object.entries(pnCount).map(([p,n])=>`<span>${esc(p)} · ${n}</span>`).join('');
+}
+
+/* ---------- 조회 ---------- */
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const num=s=>{const v=parseFloat(String(s).replace(/,/g,''));return isNaN(v)?null:v;};
+const U=s=>String(s||'').trim().toUpperCase();
+const F=()=>({pn:$('fPn').value,wn:U($('fWn').value),mat:$('fMat').value,sq:$('fSq').value,col:$('fCol').value,
+  len:num($('fLen').value),tol:num($('fTol').value)||0,tL:U($('fTL').value),tR:U($('fTR').value),tSwap:$('fTSwap').checked,
+  pL:U($('fPL').value),pR:U($('fPR').value),pSwap:$('fPSwap').checked,symCol:$('fSymCol').value,sym:$('fSym').value});
+
+function pairMatch(l,r,qL,qR,swap){
+  const has=(v,q)=>!q||U(v).includes(q);
+  if(!swap)return has(l,qL)&&has(r,qR);
+  if(qL&&qR)return (has(l,qL)&&has(r,qR))||(has(l,qR)&&has(r,qL));
+  const q=qL||qR;return !q||has(l,q)||has(r,q);
+}
+function symVals(r,col){return col===''?C.sym.map(i=>r[i]).filter(Boolean):[r[+col]].filter(Boolean);}
+function match(r,f,skip){
+  if(skip!=='pn'&&f.pn&&r[C.pn]!==f.pn)return false;
+  if(f.wn&&!U(r[C.wn]).includes(f.wn))return false;
+  if(skip!=='mat'&&f.mat&&r[C.mat]!==f.mat)return false;
+  if(skip!=='sq'&&f.sq&&r[C.sq]!==f.sq)return false;
+  if(skip!=='col'&&f.col&&r[C.col]!==f.col)return false;
+  if(f.len!==null){const v=num(r[C.len]);if(v===null||Math.abs(v-f.len)>f.tol)return false;}
+  if(skip!=='t'&&!pairMatch(r[C.tL],r[C.tR],f.tL,f.tR,f.tSwap))return false;
+  if(skip!=='p'&&!pairMatch(r[C.p1L],r[C.p1R],f.pL,f.pR,f.pSwap))return false;
+  if(skip!=='sym'&&f.sym){const sv=symVals(r,f.symCol);if(f.sym==='__ANY__'?!sv.length:!sv.includes(f.sym))return false;}
+  return true;
+}
+function fillSelect(el,vals,cur,sorter){
+  vals=[...new Set(vals.filter(Boolean))].sort(sorter||((a,b)=>a.localeCompare(b)));
+  if(cur&&!vals.includes(cur))vals.unshift(cur);
+  el.innerHTML=`<option value="">${T('all')}</option>`+vals.map(v=>`<option>${esc(v)}</option>`).join('');
+  el.value=cur||'';
+}
+function fillList(id,vals){$(id).innerHTML=[...new Set(vals.filter(Boolean))].sort().map(v=>`<option value="${esc(v)}">`).join('');}
+function refreshOptions(){
+  const f=F(),R=MASTER.rows;
+  const sub=k=>R.filter(r=>match(r,f,k));
+  fillSelect($('fPn'),sub('pn').map(r=>r[C.pn]),f.pn);
+  fillSelect($('fMat'),sub('mat').map(r=>r[C.mat]),f.mat);
+  fillSelect($('fSq'),sub('sq').map(r=>r[C.sq]),f.sq,(a,b)=>num(a)-num(b));
+  fillSelect($('fCol'),sub('col').map(r=>r[C.col]),f.col);
+  const t=sub('t');fillList('dlTL',t.map(r=>r[C.tL]).concat(f.tSwap?t.map(r=>r[C.tR]):[]));fillList('dlTR',t.map(r=>r[C.tR]).concat(f.tSwap?t.map(r=>r[C.tL]):[]));
+  const p=sub('p');fillList('dlPL',p.map(r=>r[C.p1L]).concat(f.pSwap?p.map(r=>r[C.p1R]):[]));fillList('dlPR',p.map(r=>r[C.p1R]).concat(f.pSwap?p.map(r=>r[C.p1L]):[]));
+  const sc=$('fSymCol');const curCol=sc.value;
+  sc.innerHTML=`<option value="">${T('anyCol')}</option>`+C.sym.map(i=>`<option value="${i}">${esc(MASTER.headers[i]||'심볼')}</option>`).join('');
+  sc.value=curCol;
+  fillSelect($('fSym'),sub('sym').flatMap(r=>symVals(r,f.symCol)),f.sym==='__ANY__'?'':f.sym);
+  $('fSym').querySelector('option').insertAdjacentHTML('afterend',`<option value="__ANY__">${T('symAny')}</option>`);
+  $('fSym').value=f.sym;
+}
+
+/* 색상 칩: B,W,R,G,Y,L,O,Br,Gr,P ... 첫 글자=바탕, 다음=줄무늬 */
+const CMAP={B:'#1a1a1a',W:'#f7f7f7',R:'#d32f2f',G:'#2e8b3a',Y:'#f5d000',L:'#1f5fd1',O:'#f08a1c',Br:'#7a4a22',Gr:'#8d9399',P:'#e586b4',V:'#7b3fb5',Lg:'#7fd36b',Sb:'#6cc6f0',Pu:'#7b3fb5'};
+function splitColor(c){const out=[];let s=c||'';while(s){const two=s.slice(0,2);if(CMAP[two]){out.push(two);s=s.slice(2);}else{out.push(s[0]);s=s.slice(1);}}return out;}
+function chip(c){if(!c)return '';const p=splitColor(c);const base=CMAP[p[0]]||'#ccc';const st=p[1]?`<b style="background:${CMAP[p[1]]||'#ccc'}"></b>`:'';return `<span class="chip"><i style="background:${base}">${st}</i>${esc(c)}</span>`;}
+
+let lastHits=[];
+const COLS=()=>[['품번',C.pn],['서브',C.sub],['선번',C.wn],['재질',C.mat],['SQ',C.sq],['색상',C.col],['길이',C.len],['좌단자',C.tL],['우단자',C.tR],['부품1 좌',C.p1L],['부품1 우',C.p1R],['심볼','sym']].map(([k,i])=>[lang==='es'?({'품번':'No. parte','서브':'Sub','선번':'Circuito','재질':'Material','색상':'Color','길이':'Long.','좌단자':'Term. izq.','우단자':'Term. der.','부품1 좌':'Pieza1 izq.','부품1 우':'Pieza1 der.','심볼':'Símbolo'}[k]||k):k,i]);
+function render(){
+  const f=F();
+  lastHits=MASTER.rows.map((r,i)=>[r,i]).filter(([r])=>match(r,f));
+  $('resCount').textContent=lastHits.length.toLocaleString();
+  $('resHead').innerHTML=COLS().map(([k])=>`<th>${esc(k)}</th>`).join('');
+  const shown=lastHits.slice(0,500);
+  $('resNote').textContent=lastHits.length>500?T('showing'):'';
+  $('resBody').innerHTML=shown.map(([r,i])=>'<tr tabindex="0" data-i="'+i+'">'+COLS().map(([,c])=>{
+    if(c==='sym')return `<td class="sym">${esc(C.sym.map(j=>r[j]).filter(Boolean).join(' '))}</td>`;
+    if(c===C.col)return `<td>${chip(r[c])}</td>`;
+    return `<td${c===C.wn?' class="wn"':''}>${esc(r[c])}</td>`;}).join('')+'</tr>').join('');
+  const empty=$('resEmpty');
+  if(!MASTER.rows.length){empty.textContent=T('noMaster');empty.classList.remove('hidden');}
+  else if(!lastHits.length){empty.textContent=T('noHit');empty.classList.remove('hidden');}
+  else empty.classList.add('hidden');
+}
+$('resBody').addEventListener('click',e=>{const tr=e.target.closest('tr');if(tr)openDetail(+tr.getAttribute('data-i'));});
+$('resBody').addEventListener('keydown',e=>{if(e.key==='Enter'){const tr=e.target.closest('tr');if(tr)openDetail(+tr.getAttribute('data-i'));}});
+
+let timer;
+function onChange(){clearTimeout(timer);timer=setTimeout(()=>{refreshOptions();render();},120);}
+$('filters').addEventListener('input',onChange);$('filters').addEventListener('change',onChange);
+$('resetBtn').onclick=()=>{$('filters').reset();$('fTol').value='0';refreshOptions();render();};
+
+/* ---------- 상세 (한 행) ---------- */
+let curRow=null;
+function openDetail(idx){
+  const r=MASTER.rows[idx];if(!r)return;curRow=r;
+  $('drTitle').textContent=r[C.wn];
+  $('drSub').textContent=`${r[C.pn]} · ${r[C.sub]}`;
+  drawWire(r);renderKv();
+  $('drawerWrap').classList.remove('hidden');$('drClose').focus();
+}
+function renderKv(){
+  const r=curRow,hide=$('hideBlank').checked;
+  $('drKv').innerHTML=MASTER.headers.map((h,i)=>{const v=r[i]??'';if(hide&&v==='')return '';
+    return `<div class="k">${esc(h)}</div><div class="v${KEY_COLS.has(i)&&v?' key':''}${v===''?' blank':''}">${v===''?'—':esc(v)}</div>`;}).join('');
+}
+function drawWire(r){
+  const p=splitColor(r[C.col]);const base=CMAP[p[0]]||'#9aa';const st=p[1]?CMAP[p[1]]:null;
+  const partsL=[r[C.p1L],r[C.p2L],r[C.p3L]].filter(Boolean),partsR=[r[C.p1R],r[C.p2R],r[C.p3R]].filter(Boolean);
+  const syms=C.sym.map(j=>r[j]).filter(Boolean).join(' ');
+  const t=(x,y,s,a,cls)=>`<text x="${x}" y="${y}" text-anchor="${a||'start'}" style="${cls||''}" fill="currentColor">${esc(s)}</text>`;
+  $('wireSvg').innerHTML=`
+  <g style="font:12px 'IBM Plex Sans KR',sans-serif;color:var(--ink)">
+    <rect x="18" y="58" width="74" height="30" rx="3" fill="var(--tag)"/>
+    <rect x="508" y="58" width="74" height="30" rx="3" fill="var(--tag)"/>
+    <text x="55" y="78" text-anchor="middle" style="font-weight:700;font-size:12px" fill="var(--tag-ink)">L</text>
+    <text x="545" y="78" text-anchor="middle" style="font-weight:700;font-size:12px" fill="var(--tag-ink)">R</text>
+    <rect x="92" y="66" width="416" height="14" rx="7" fill="${base}" stroke="rgba(255,255,255,.3)"/>
+    ${st?`<rect x="92" y="71" width="416" height="4" fill="${st}"/>`:''}
+    ${t(300,56,`${r[C.mat]}  ${r[C.sq]}SQ  ${r[C.col]}  ·  ${r[C.len]} mm`,'middle','font-weight:700;font-size:14px')}
+    ${syms?t(300,104,syms,'middle','font-size:15px'):''}
+    ${t(18,22,r[C.tL]||'-','start','font-weight:700;font-size:13px')}
+    ${t(18,40,partsL.join(' / ')||'','start','font-size:11px;opacity:.75')}
+    ${t(582,22,r[C.tR]||'-','end','font-weight:700;font-size:13px')}
+    ${t(582,40,partsR.join(' / ')||'','end','font-size:11px;opacity:.75')}
+    ${t(18,112,`strip ${r[C.stL]||'-'}`,'start','font-size:11px;opacity:.75')}
+    ${t(582,112,`strip ${r[C.stR]||'-'}`,'end','font-size:11px;opacity:.75')}
+    ${t(18,132,`${r[C.conL]||''} ${r[C.holeL]?'#'+r[C.holeL]:''}`,'start','font-size:11px;opacity:.75')}
+    ${t(582,132,`${r[C.conR]||''} ${r[C.holeR]?'#'+r[C.holeR]:''}`,'end','font-size:11px;opacity:.75')}
+  </g>`;
+}
+function closeDetail(){$('drawerWrap').classList.add('hidden');}
+$('drClose').onclick=closeDetail;$('scrim').onclick=closeDetail;
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDetail();});
+$('hideBlank').onchange=renderKv;
+$('copyRow').onclick=async()=>{
+  const txt=MASTER.headers.join('\t')+'\n'+curRow.join('\t');
+  try{await navigator.clipboard.writeText(txt);}catch(e){const ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();try{document.execCommand('copy')}catch(_){}ta.remove();}
+  toast(T('copied'));
+};
+
+/* ---------- 공통 ---------- */
+function toast(m){const t=$('toast');t.textContent=m;t.classList.remove('hidden');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.add('hidden'),1800);}
+function show(v){$('viewLookup').classList.toggle('hidden',v!=='l');$('viewMaster').classList.toggle('hidden',v!=='m');$('tabLookup').classList.toggle('on',v==='l');$('tabMaster').classList.toggle('on',v==='m');}
+$('tabLookup').onclick=()=>show('l');$('tabMaster').onclick=()=>show('m');
+function afterLoad(){renderMasterStats();refreshOptions();render();}
+
+(async()=>{
+  try{lang=localStorage.getItem('circ_lang')||'ko'}catch(e){}
+  db=await idbOpen();
+  applyLang();
+  await loadMaster();
+  if(!MASTER.rows.length)show('m');
+})();
+</script>
+</body>
+</html>
