@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>부족회로 신청 · Circuitos faltantes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=Space+Mono:wght@700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0E1114; --panel:#171B1F; --ink:#E8ECEF; --sub:#8A949C; --line:#2A3036;
+  --accent:#4FA9C9; --accent-ink:#06222D; --tag:#C9A84C; --tag-ink:#1E1806; --hit:#1C2C35; --danger:#F2867E; --gold:#C9A84C;
+  --ok:#5BBE7A; --req:#E3A84F; --rcv:#4FA9C9;
+  --g-dbl:#E07FB0; --g-bind:#9C8CF0; --g-tw:#E3C46A; --g-sh:#7CC7E0;
+  color-scheme:dark;
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 "IBM Plex Sans KR","Malgun Gothic","Apple SD Gothic Neo",system-ui,sans-serif;font-variant-numeric:tabular-nums}
+button,input,select,textarea{font:inherit;color:inherit}
+header{background:#111417;display:flex;align-items:center;gap:16px;padding:14px 20px;border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:5;flex-wrap:wrap}
+a.brand{font-family:'Space Mono',Consolas,'Courier New',monospace;font-weight:700;font-size:16px;letter-spacing:.12em;color:var(--gold);text-decoration:none;white-space:nowrap;padding-right:16px;border-right:1px solid var(--line)}
+a.brand:hover{color:#E3C46A}
+a.brand:focus-visible{outline:2px solid var(--gold);outline-offset:4px}
+.plant{font-size:12px;font-weight:600;color:var(--gold);border:1px solid var(--gold);border-radius:4px;padding:2px 8px;white-space:nowrap}
+h1{font-size:18px;margin:0;font-weight:700;letter-spacing:-.01em}
+h1 small{font-weight:400;color:var(--sub);font-size:13px;margin-left:6px}
+.tabs{display:flex;gap:4px;margin-left:auto}
+.tabs button{border:1px solid var(--line);background:transparent;padding:7px 16px;border-radius:6px;cursor:pointer;font-weight:500;position:relative}
+.tabs button.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.tabs .cnt{display:inline-block;min-width:20px;margin-left:6px;padding:0 6px;border-radius:10px;background:var(--req);color:#231503;font-size:12px;font-weight:700;text-align:center}
+.tabs .cnt:empty{display:none}
+#netStat{display:inline-flex;align-items:center;gap:6px}
+#netStat::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--sub)}
+#netStat.ok::before{background:#2e9b4f}
+#netStat.off::before{background:var(--danger)}
+.lang{border:1px solid var(--line);background:transparent;border-radius:6px;padding:7px 10px;cursor:pointer}
+main{padding:18px 20px;max-width:1600px;margin:0 auto}
+.hidden{display:none!important}
+.status{font-size:13px;color:var(--sub)}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:8px}
+.ph{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 14px;border-bottom:1px solid var(--line)}
+.ph h2{margin:0;font-size:15px}
+.ph .grow{flex:1}
+label.f{display:block;font-size:12px;color:var(--sub);margin:0}
+label.f > input,label.f > select{display:block;width:100%;margin-top:3px;padding:7px 9px;border:1px solid var(--line);border-radius:6px;background:var(--bg)}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--accent);outline-offset:0}
+.btn{border:1px solid var(--line);background:var(--panel);padding:8px 14px;border-radius:6px;cursor:pointer;font-weight:500;white-space:nowrap}
+.btn.pri{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:700}
+.btn.ok{background:var(--ok);color:#06210f;border-color:var(--ok);font-weight:700}
+.btn.warn{color:var(--danger)}
+.btn.sm{padding:4px 10px;font-size:12px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn:focus-visible,.tabs button:focus-visible,.seg button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.seg button{border:0;background:transparent;padding:6px 12px;cursor:pointer;font-size:13px}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button.on{background:var(--hit);color:var(--accent);font-weight:700}
+.scroll{overflow:auto}
+table{border-collapse:collapse;width:100%;white-space:nowrap}
+th,td{padding:6px 9px;text-align:left;border-bottom:1px solid var(--line);font-size:13px}
+th{position:sticky;top:0;background:var(--panel);color:var(--sub);font-weight:600;font-size:12px;z-index:1}
+td.wn{font-weight:700}
+td.num,th.num{text-align:right}
+.empty{padding:36px 16px;text-align:center;color:var(--sub)}
+.chip{display:inline-flex;align-items:center;gap:6px}
+.chip i{display:inline-block;width:24px;height:9px;border-radius:5px;border:1px solid rgba(255,255,255,.3);position:relative;overflow:hidden}
+.chip i b{position:absolute;left:0;right:0;top:3px;height:3px}
+/* group badge */
+.gb{display:inline-flex;gap:3px;align-items:center;font-size:11px;font-weight:700;border-radius:4px;padding:1px 6px;border:1px solid currentColor;white-space:nowrap}
+.gb.dbl{color:var(--g-dbl)}.gb.bind{color:var(--g-bind)}.gb.tw{color:var(--g-tw)}.gb.sh{color:var(--g-sh)}
+.gb.miss{color:var(--danger)}
+tr.g td:first-child{box-shadow:inset 3px 0 0 var(--gc,transparent)}
+/* assembly */
+.asm-top{display:grid;grid-template-columns:repeat(4,minmax(120px,200px)) 1fr;gap:10px;align-items:end;padding:12px 14px}
+.asm{display:grid;grid-template-columns:minmax(0,1fr) 420px;gap:16px;align-items:start;margin-top:16px}
+@media (max-width:1050px){.asm{grid-template-columns:1fr}.asm-top{grid-template-columns:1fr 1fr}}
+.pick tbody tr{cursor:pointer}
+.pick tbody tr:hover{background:var(--hit)}
+.pick tbody tr.sel{background:#173341}
+.pick input[type=checkbox]{pointer-events:none;accent-color:var(--accent);width:16px;height:16px}
+.pick .scroll{max-height:calc(100vh - 330px);min-height:260px}
+.legend{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.direct{display:grid;grid-template-columns:1.4fr 1fr 70px auto;gap:8px;align-items:end;padding:12px 14px;border-bottom:1px solid var(--line)}
+.cart .scroll{max-height:calc(100vh - 470px);min-height:160px}
+.cart td{padding:5px 8px}
+.cart input.q{width:68px;padding:4px 6px;border:1px solid var(--line);border-radius:5px;background:var(--bg);text-align:right}
+.cart .gstart td{border-top:1px solid var(--sub)}
+.x{border:0;background:transparent;color:var(--sub);cursor:pointer;font-size:16px;padding:0 4px}
+.x:hover{color:var(--danger)}
+.cart-foot{padding:12px 14px;border-top:1px solid var(--line);display:grid;gap:10px}
+.cart-foot textarea{width:100%;min-height:44px;padding:7px 9px;border:1px solid var(--line);border-radius:6px;background:var(--bg);resize:vertical}
+.cart-sum{display:flex;justify-content:space-between;align-items:baseline}
+.cart-sum b{font-size:20px}
+/* status */
+.st{display:inline-block;font-size:12px;font-weight:700;border-radius:4px;padding:1px 8px}
+.st.s1{background:var(--req);color:#231503}.st.s2{background:var(--rcv);color:var(--accent-ink)}.st.s3{background:transparent;color:var(--ok);border:1px solid var(--ok)}.st.s4{background:var(--ok);color:#06210f}
+.st.s5{background:transparent;color:var(--danger);border:1px solid var(--danger)}.st.s6{background:transparent;color:var(--sub);border:1px solid var(--line)}
+.rfilter{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.rfilter input[type=date]{padding:5px 8px;border:1px solid var(--line);border-radius:6px;background:var(--bg)}
+/* processing */
+.proc-bar{display:flex;flex-wrap:wrap;gap:10px;align-items:end;padding:12px 14px;border-bottom:1px solid var(--line)}
+.proc-bar label.f{min-width:130px}
+.stchips{display:flex;gap:6px;flex-wrap:wrap}
+.stchips button{border:1px solid var(--line);background:transparent;border-radius:16px;padding:5px 12px;cursor:pointer;font-size:13px}
+.stchips button.on{border-color:var(--accent);background:var(--hit);color:var(--accent);font-weight:700}
+.stchips button b{margin-left:4px}
+.act{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:10px 14px;border-bottom:1px solid var(--line);background:#13171a}
+.act .selinfo{font-weight:700;margin-right:6px}
+.proc .scroll{max-height:calc(100vh - 330px)}
+.proc tr.rq td{background:#12181c;color:var(--sub);font-size:12px;border-bottom:1px solid var(--line)}
+.proc tr.rq td b{color:var(--ink);font-size:13px}
+.proc tbody tr.it{cursor:pointer}
+.proc tbody tr.it:hover{background:var(--hit)}
+.proc tbody tr.it.sel{background:#173341}
+.proc input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px}
+.recent{margin-top:16px}
+.recent .scroll{max-height:360px}
+/* master */
+.master{padding:16px}
+.master h2{margin:0 0 4px;font-size:16px}
+.master p{margin:0 0 12px;color:var(--sub);font-size:13px}
+textarea#pasteBox{width:100%;min-height:260px;padding:10px;border:1px solid var(--line);border-radius:6px;background:var(--bg);font:12px/1.4 Consolas,"D2Coding",monospace;white-space:pre;overflow:auto}
+.row-btns{display:flex;gap:8px;margin-top:10px}
+.stats{display:flex;gap:24px;flex-wrap:wrap;margin:14px 0 0;padding:12px 0 0;border-top:1px solid var(--line)}
+.stats div{font-size:12px;color:var(--sub)}
+.stats b{display:block;font-size:20px;color:var(--ink)}
+.pn-list{margin-top:12px;font-size:13px}
+.pn-list span{display:inline-block;background:var(--tag);color:var(--tag-ink);border-radius:4px;padding:2px 8px;margin:0 6px 6px 0;font-weight:600}
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--panel);padding:10px 18px;border-radius:6px;z-index:40;font-size:13px}
+</style>
+</head>
+<body>
+<header>
+  <a class="brand" href="https://jungsangchul.github.io/" title="YURA HARNESS MÉXICO">YURA HARNESS MÉXICO</a>
+  <h1 data-i="title">부족회로 신청<small data-i="sub">조립 신청 → 가공 접수 → MES 추가선 → 선재출고</small></h1>
+  <span class="plant">PLANT 1 · 몽클로바</span>
+  <nav class="tabs">
+    <button id="tabAsm" class="on"><span data-i="tAsm">조립생산</span></button>
+    <button id="tabProc"><span data-i="tProc">가공생산</span><span class="cnt" id="newCnt"></span></button>
+    <button id="tabMaster"><span data-i="tMaster">서브리스트</span></button>
+  </nav>
+  <span class="status" id="netStat"></span>
+  <button class="lang" id="reloadBtn" title="새로고침">⟳</button>
+  <button class="lang" id="langBtn">ES</button>
+</header>
+
+<main>
+<!-- ============ 조립생산 ============ -->
+<section id="viewAsm">
+  <div class="panel">
+    <div class="asm-top">
+      <label class="f"><span data-i="line">조립 라인</span><input id="aLine" autocomplete="off" placeholder="예) L-03"></label>
+      <label class="f"><span data-i="requester">신청자</span><input id="aName" autocomplete="off"></label>
+      <label class="f"><span data-i="pn">품번</span><select id="aPn"></select></label>
+      <label class="f"><span data-i="defQty">기본 부족수량</span><input id="aDefQty" inputmode="numeric" value="1" autocomplete="off"></label>
+      <div class="legend">
+        <span class="status" data-i="legend">함께 선택되는 선:</span>
+        <span class="gb dbl" data-i="gDbl">쌍압착</span><span class="gb bind" data-i="gBind">결속</span><span class="gb tw" data-i="gTw">트위스트</span><span class="gb sh" data-i="gSh">쉴드</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="asm">
+    <div class="panel pick">
+      <div class="ph">
+        <h2 data-i="pickTitle">회로 선택</h2>
+        <input id="aSearch" placeholder="선번 · 단자 · 색상 검색" autocomplete="off" style="padding:6px 9px;border:1px solid var(--line);border-radius:6px;background:var(--bg);min-width:200px">
+        <div class="seg" id="aOnly"><button data-v="" class="on" data-i="onlyAll">전체</button><button data-v="g" data-i="onlyG">그룹선만</button><button data-v="s" data-i="onlySel">선택만</button></div>
+        <span class="grow"></span>
+        <span class="status" id="pickInfo"></span>
+      </div>
+      <div class="scroll">
+        <table>
+          <thead><tr><th></th><th data-i="cWn">선번</th><th data-i="cGrp">함께 만드는 선</th><th data-i="cMat">재질</th><th>SQ</th><th data-i="cCol">색상</th><th class="num" data-i="cLen">길이</th><th data-i="cTL">좌단자</th><th data-i="cTR">우단자</th><th data-i="cSub">서브</th></tr></thead>
+          <tbody id="pickBody"></tbody>
+        </table>
+        <div class="empty hidden" id="pickEmpty"></div>
+      </div>
+    </div>
+
+    <div class="panel cart">
+      <div class="ph"><h2 data-i="cartTitle">신청 목록</h2><span class="grow"></span><button class="btn sm warn" id="cartClear" data-i="cartClear">비우기</button></div>
+      <div class="direct">
+        <label class="f"><span data-i="pn">품번</span><input id="dPn" list="dlPn" autocomplete="off"></label>
+        <label class="f"><span data-i="cWn">선번</span><input id="dWn" list="dlWn" autocomplete="off"></label>
+        <label class="f"><span data-i="qty">수량</span><input id="dQty" inputmode="numeric" autocomplete="off"></label>
+        <button class="btn" id="dAdd" data-i="add">추가</button>
+        <datalist id="dlPn"></datalist><datalist id="dlWn"></datalist>
+      </div>
+      <div class="scroll">
+        <table>
+          <thead><tr><th data-i="pn">품번</th><th data-i="cWn">선번</th><th data-i="cGrp">함께 만드는 선</th><th class="num" data-i="qty">수량</th><th></th></tr></thead>
+          <tbody id="cartBody"></tbody>
+        </table>
+        <div class="empty" id="cartEmpty" data-i="cartEmpty">왼쪽에서 회로를 고르거나, 위에 품번·선번·수량을 직접 입력하세요.</div>
+      </div>
+      <div class="cart-foot">
+        <div class="cart-sum"><span><b id="cartN">0</b> <span data-i="lines">선</span> · <span data-i="total">합계</span> <b id="cartQ">0</b></span></div>
+        <textarea id="aNote" data-ph="notePh" placeholder="메모 (선택) — 예) 오후 2시까지 필요"></textarea>
+        <button class="btn pri" id="aSave" data-i="save">신청 저장</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel recent">
+    <div class="ph"><h2 data-i="recentTitle">신청 · 완료 내역</h2>
+      <div class="seg" id="rView"><button data-v="open" class="on" data-i="rOpen">진행 중</button><button data-v="ship" data-i="rShip">출고 완료</button><button data-v="all" data-i="rAll">전체</button></div>
+      <div class="rfilter hidden" id="rRange"><input type="date" id="rFrom" aria-label="from"><span>~</span><input type="date" id="rTo" aria-label="to"><input id="rSearch" placeholder="품번 · 선번" autocomplete="off" style="padding:5px 8px;border:1px solid var(--line);border-radius:6px;background:var(--bg);width:140px"></div>
+      <span class="status" id="rSum"></span><span class="grow"></span>
+      <label class="chk status" style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="rMine" checked><span data-i="mineOnly">내 라인만</span></label></div>
+    <div class="scroll">
+      <table>
+        <thead><tr><th data-i="cTime">신청시각</th><th data-i="line">라인</th><th data-i="requester">신청자</th><th data-i="pn">품번</th><th data-i="cWn">선번</th><th data-i="cGrp">함께 만드는 선</th><th class="num" data-i="qty">수량</th><th data-i="cSt">상태</th><th data-i="cProc">처리</th><th data-i="cShip">출고</th><th></th></tr></thead>
+        <tbody id="recentBody"></tbody>
+      </table>
+      <div class="empty hidden" id="recentEmpty" data-i="noReq">신청 내역이 없습니다.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 가공생산 ============ -->
+<section id="viewProc" class="hidden">
+  <div class="panel proc">
+    <div class="proc-bar">
+      <div class="stchips" id="stChips"></div>
+      <span style="flex:1"></span>
+      <label class="f"><span data-i="from">시작일</span><input type="date" id="pFrom"></label>
+      <label class="f"><span data-i="to">종료일</span><input type="date" id="pTo"></label>
+      <label class="f"><span data-i="search">검색</span><input id="pSearch" placeholder="품번 · 선번 · 라인" autocomplete="off"></label>
+      <label class="f"><span data-i="worker">처리자</span><input id="pName" autocomplete="off"></label>
+    </div>
+    <div class="act">
+      <span class="selinfo" id="selInfo">0</span>
+      <button class="btn pri" id="pRecv" data-i="recv">접수</button>
+      <button class="btn" id="pDone" data-i="done">MES 등록</button>
+      <button class="btn ok" id="pShip" data-i="ship">선재출고 완료</button>
+      <button class="btn warn" id="pReject" data-i="reject">반려</button>
+      <button class="btn" id="pUndo" data-i="undo">신청 상태로 되돌리기</button>
+      <span style="flex:1"></span>
+      <button class="btn" id="pCopy" data-i="copyMes">MES 입력용 복사</button>
+      <button class="btn" id="pCsv" data-i="csv">CSV 저장</button>
+    </div>
+    <div class="scroll">
+      <table>
+        <thead><tr><th><input type="checkbox" id="pAll" aria-label="all"></th><th data-i="pn">품번</th><th data-i="cWn">선번</th><th data-i="cGrp">함께 만드는 선</th><th data-i="cMat">재질</th><th>SQ</th><th data-i="cCol">색상</th><th class="num" data-i="cLen">길이</th><th data-i="cTL">좌단자</th><th data-i="cTR">우단자</th><th class="num" data-i="qty">수량</th><th data-i="cSt">상태</th><th data-i="cProc">처리</th><th>MES No.</th></tr></thead>
+        <tbody id="procBody"></tbody>
+      </table>
+      <div class="empty hidden" id="procEmpty" data-i="noReq">신청 내역이 없습니다.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 서브리스트 ============ -->
+<section id="viewMaster" class="hidden">
+  <div class="panel master">
+    <h2 data-i="mTitle">서브리스트 붙여넣기</h2>
+    <p data-i="mDesc">엑셀에서 머리글 행부터 데이터까지 선택해 복사(Ctrl+C)한 뒤 아래에 붙여넣으세요(Ctrl+V). 머리글 행이 없어도 기본 69열 양식으로 읽습니다. 회로조회 프로그램과 같은 서브리스트를 사용합니다.</p>
+    <textarea id="pasteBox" spellcheck="false" placeholder="품번	서브그룹번호	선번	재질	자재번호	SQ	색상	길이	..."></textarea>
+    <div class="status" id="pasteInfo" style="margin-top:6px"></div>
+    <div class="row-btns" style="flex-wrap:wrap">
+      <button class="btn pri" id="saveMerge" data-i="saveMerge">품번별 교체 저장</button>
+      <button class="btn" id="saveAll" data-i="saveAll">전체 교체 저장</button>
+      <button class="btn warn" id="clearAll" data-i="clearAll">서브리스트 전체 삭제</button>
+    </div>
+    <p class="status" style="margin-top:8px" data-i="mHelp">품번별 교체: 붙여넣은 품번의 기존 행만 지우고 새로 넣습니다. 다른 품번은 그대로 유지됩니다. 저장 내용은 모든 PC와 회로조회 프로그램에 공유됩니다.</p>
+    <div class="stats">
+      <div><span data-i="sRows">저장된 회로</span><b id="stRows">0</b></div>
+      <div><span data-i="sPn">품번 수</span><b id="stPn">0</b></div>
+      <div><span data-i="sUpd">최종 저장</span><b id="stUpd" style="font-size:15px">-</b></div>
+    </div>
+    <div class="pn-list" id="pnList"></div>
+  </div>
+</section>
+</main>
+<div id="toast" class="toast hidden"></div>
+
+<script>
+const PLANT=1, MT='circuit_master', MM='circuit_meta', MR='circuit_replace', RQ='shortage_request', IDB_NAME='shortage_req_1';
+const DEFAULT_HEADERS=['품번','서브그룹번호','선번','재질','자재번호','SQ','색상','길이','중간스트립 위치점,1','중간스트립 위치점,2','중간스트립 위치점,3','중간스트립 위치점,4','전선의 스트립 길이 - 좌측','전선의 스트립 길이 - 우측','단자에 납땜 유무 - 좌측단자','단자소요량 계산시 count 유무 표기(좌)','단자번호 - 좌측','단자에 납땜 유무 - 우측단자','단자소요량 계산시 count 유무 표기(우)','단자번호 - 우측','조인트,쌍압착의 경우에 전선간의 연결관계','압착전 부품 1 - 좌측','압착전 부품 2 - 좌측','압착전 부품 3 - 좌측','압착전 부품 1 - 우측','압착전 부품 2 - 우측','압착전 부품 3 - 우측','조립판도 커넥터 순번(좌)','단자가 삽입되는 커넥터의 HOLE 번호 - 좌측','조립판도 커넥터 순번(우)','단자가 삽입되는 커넥터의 HOLE 번호 - 우측','좌측 단자가 삽입되는 커넥터의 자재번호 - 좌','우측 단자가 삽입되는 커넥터의 자재번호 - 우','트위스트,쉴드선 인 경우에 동일한 값이면 한쌍의 전선','조인트,쌍압착 연결관계 표기-형식 2','심볼1','심볼2','심볼3','심볼4','심볼5','심볼6','심볼7','사용안함','OEM도면 상의 WIRE길이','관계도 표시참조용','Sh/Tw 구분','Sh/Tw 연결','기준선여부','중간스트립여부','재질코드','좌단자 자동/반자동 구분(M:자동,H:반자동)','우단자 자동/반자동 구분(M:자동,H:반자동)','JSB원본','좌 연결번호','우 연결번호','결속갯수','특수단자 뒤 기호표시','좌 단자가 씰인지(1:씰)','우 단자가 씰인지(1:씰)','와이어 걸이수(좌)','와이어 걸이수(우)','FPC 수량','FPC1 수량','FPC2 수량','TPC 수량','TPC1 수량','TPC2 수량','USM단자 가지선 HMT표기(좌)','USM단자 가지선 HMT표기(우)'];
+const C={pn:0,sub:1,wn:2,mat:3,matNo:4,sq:5,col:6,len:7,tL:16,tR:19,jrel:20,twPair:33,jrel2:34,oemLen:43,shtw:45,shtwLink:46};
+
+/* ---------- 언어 ---------- */
+const ES={title:'Circuitos faltantes',sub:'Ensamble solicita → Corte recibe → MES adicional → Entrega',tAsm:'Ensamble',tProc:'Corte',tMaster:'Sublista',
+line:'Línea',requester:'Solicitante',pn:'No. de parte',defQty:'Cantidad por defecto',legend:'Se seleccionan juntos:',gDbl:'Doble crimpado',gBind:'Unión',gTw:'Trenzado',gSh:'Blindado',
+pickTitle:'Seleccionar circuitos',onlyAll:'Todos',onlyG:'Solo grupos',onlySel:'Seleccionados',cWn:'Circuito',cGrp:'Se hacen juntos',cMat:'Material',cCol:'Color',cLen:'Long.',cTL:'Term. izq.',cTR:'Term. der.',cSub:'Sub',
+cartTitle:'Lista de solicitud',cartClear:'Vaciar',qty:'Cant.',add:'Agregar',cartEmpty:'Elija circuitos a la izquierda o capture No. de parte, circuito y cantidad arriba.',lines:'circuitos',total:'Total',notePh:'Nota (opcional) — ej. se necesita antes de las 2 pm',save:'Guardar solicitud',
+recentTitle:'Solicitudes / completados',recentDesc:'Últimos 3 días + pendientes · solo se puede cancelar en estado Solicitado',mineOnly:'Solo mi línea',cTime:'Hora',cSt:'Estado',cProc:'Proceso',noReq:'No hay solicitudes.',
+from:'Desde',to:'Hasta',search:'Buscar',worker:'Responsable',recv:'Recibir',done:'Registro MES',ship:'Entrega de cable completada',rOpen:'En proceso',rShip:'Entregados',rAll:'Todos',cShip:'Entrega',reject:'Rechazar',undo:'Regresar a Solicitado',copyMes:'Copiar para MES',csv:'Guardar CSV',
+mTitle:'Pegar sublista',mDesc:'Copie en Excel desde la fila de encabezados hasta los datos (Ctrl+C) y péguelos abajo (Ctrl+V). Sin encabezados se usa el formato de 69 columnas. Es la misma sublista del programa de consulta de circuitos.',saveMerge:'Guardar reemplazando por No. parte',saveAll:'Reemplazar todo',clearAll:'Borrar sublista',mHelp:'Reemplazar por No. parte: solo se borran las filas de los números de parte pegados. Los datos se comparten con todas las PC y con la consulta de circuitos.',sRows:'Circuitos guardados',sPn:'No. de parte',sUpd:'Último guardado',
+all:'Todos',st1:'Solicitado',st2:'Recibido',st3:'Reg. MES',st4:'Entregado',st5:'Rechazado',st6:'Cancelado',stAll:'Todos',cancel:'Cancelar',noMaster:'No hay sublista. Péguela en la pestaña Sublista.',choosePn:'Seleccione un No. de parte.',noHit:'Sin resultados.',
+needLine:'Capture línea y solicitante.',needItems:'La lista está vacía.',badQty:'Revise las cantidades (mayor que 0).',saved:'Solicitud guardada',confirmSave:'¿Guardar la solicitud?',notInMaster:'No está en la sublista',addedNoMaster:'No está en la sublista. Se agregó tal cual.',needPnWn:'Capture No. de parte y circuito.',
+needWorker:'Capture el nombre del responsable.',noSel:'Seleccione renglones.',mesNoPh:'No. de registro MES (opcional)',rejectWhy:'Motivo de rechazo',updated:'Actualizado',copied:'Copiado. Péguelo en MES.',confirmCancel:'¿Cancelar esta solicitud?',
+online:'Servidor',offline:'Sin conexión (caché)',saving:'Guardando…',loading:'Cargando…',saveErr:'Error al guardar en el servidor',parsed:'filas leídas',cleared:'Sublista borrada',confirmClear:'¿Borrar toda la sublista?',confirmAll:'Se reemplazará toda la sublista. ¿Continuar?',nothing:'No hay filas para guardar.',
+removeGroup:'Se quitarán también los circuitos del mismo grupo.',sel:'seleccionados',skipped:'Algunos renglones ya habían cambiado de estado y no se modificaron.',reqBy:'Solicitó',note:'Nota',groupOf:'circuitos'};
+const KO={line:'라인',total:'합계',all:'전체',st1:'신청',st2:'접수',st3:'MES등록',st4:'출고완료',st5:'반려',st6:'취소',stAll:'전체',cancel:'취소',noMaster:'서브리스트가 없습니다. 서브리스트 탭에서 붙여넣으세요.',choosePn:'품번을 선택하세요.',noHit:'조건에 맞는 회로가 없습니다.',
+needLine:'라인과 신청자를 입력하세요.',needItems:'신청 목록이 비어 있습니다.',badQty:'수량을 확인하세요 (1 이상).',saved:'신청을 저장했습니다',confirmSave:'신청을 저장할까요?',notInMaster:'서브리스트에 없음',addedNoMaster:'서브리스트에 없는 선번입니다. 입력한 그대로 추가했습니다.',needPnWn:'품번과 선번을 입력하세요.',
+needWorker:'처리자 이름을 입력하세요.',noSel:'행을 선택하세요.',mesNoPh:'MES 등록번호 (선택)',rejectWhy:'반려 사유',updated:'처리했습니다',copied:'복사했습니다. MES에 붙여넣으세요.',confirmCancel:'이 신청을 취소할까요?',
+online:'서버 연결',offline:'오프라인 (캐시 사용)',saving:'저장 중…',loading:'불러오는 중…',saveErr:'서버 저장 실패',parsed:'행 읽음',cleared:'서브리스트를 삭제했습니다',confirmClear:'서브리스트 전체를 삭제할까요?',confirmAll:'기존 서브리스트를 모두 지우고 새로 저장합니다. 계속할까요?',nothing:'저장할 행이 없습니다.',
+removeGroup:'같은 그룹의 선도 함께 빠집니다.',sel:'선택',skipped:'일부 행은 이미 상태가 바뀌어 처리하지 않았습니다.',reqBy:'신청',note:'메모',groupOf:'선',gDbl:'쌍압착',gBind:'결속',gTw:'트위스트',gSh:'쉴드'};
+let lang='ko';
+const koText={};document.querySelectorAll('[data-i]').forEach(el=>koText[el.dataset.i]=el.innerHTML);
+const koPh={};document.querySelectorAll('[data-ph]').forEach(el=>koPh[el.dataset.ph]=el.placeholder);
+const T=k=>lang==='es'?(ES[k]??KO[k]??k):(KO[k]??k);
+function applyLang(){
+  document.querySelectorAll('[data-i]').forEach(el=>{const k=el.dataset.i;el.innerHTML=lang==='es'&&ES[k]?(k==='title'?ES.title+'<small>'+ES.sub+'</small>':ES[k]):koText[k];});
+  document.querySelectorAll('[data-ph]').forEach(el=>{el.placeholder=lang==='es'?ES[el.dataset.ph]:koPh[el.dataset.ph];});
+  $('langBtn').textContent=lang==='ko'?'ES':'KO';document.documentElement.lang=lang;
+  if(netKnown)setNet(online);
+  renderAll();
+}
+
+/* ---------- 공통 ---------- */
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const num=s=>{const v=parseFloat(String(s).replace(/,/g,''));return isNaN(v)?null:v;};
+const U=s=>String(s||'').trim().toUpperCase();
+const LS={get(k,d=''){try{return localStorage.getItem('shreq_'+k)??d}catch(e){return d}},set(k,v){try{localStorage.setItem('shreq_'+k,v)}catch(e){}}};
+function toast(m){const t=$('toast');t.textContent=m;t.classList.remove('hidden');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.add('hidden'),2200);}
+const pad=n=>String(n).padStart(2,'0');
+const fmtT=s=>{if(!s)return '';const d=new Date(s);return `${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;};
+const ymd=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+
+/* ---------- 저장소 (IndexedDB 캐시) ---------- */
+let db=null, MASTER={headers:DEFAULT_HEADERS.slice(),rows:[],updated:null};
+function idbOpen(){return new Promise(res=>{try{const r=indexedDB.open(IDB_NAME,1);r.onupgradeneeded=()=>r.result.createObjectStore('kv');r.onsuccess=()=>res(r.result);r.onerror=()=>res(null);}catch(e){res(null)}});}
+function idbGet(k){return new Promise(res=>{if(!db)return res(null);try{const q=db.transaction('kv').objectStore('kv').get(k);q.onsuccess=()=>res(q.result||null);q.onerror=()=>res(null);}catch(e){res(null)}});}
+function idbSet(k,v){return new Promise(res=>{if(!db)return res(false);try{const tx=db.transaction('kv','readwrite');tx.objectStore('kv').put(v,k);tx.oncomplete=()=>res(true);tx.onerror=()=>res(false);}catch(e){res(false)}});}
+
+/* ---------- Supabase ---------- */
+const SB_URL='https://lrjurjhavlalhlwaplxd.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxyanVyamhhdmxhbGhsd2FwbHhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNzUxNDAsImV4cCI6MjA5NTY1MTE0MH0.DVFmZaT37R9CXSMHdnLx4YAVNTnlBGijkOIaoUo7Qsk';
+async function sb(path,opt={}){
+  const r=await fetch(SB_URL+'/rest/v1/'+path,{...opt,headers:{apikey:SB_KEY,Authorization:'Bearer '+SB_KEY,'Content-Type':'application/json',...(opt.headers||{})}});
+  if(!r.ok)throw new Error(r.status+' '+(await r.text()).slice(0,200));
+  return r;
+}
+let online=false,netKnown=false;
+function setNet(ok){online=ok;netKnown=true;const el=$('netStat');el.className=ok?'status ok':'status off';el.textContent=T(ok?'online':'offline');}
+function setStat(m){$('netStat').textContent=m;}
+async function loadRemote(){
+  const rows=[];const PAGE=1000;
+  for(let off=0;;off+=PAGE){
+    const d=await (await sb(`${MT}?select=cells&order=pn.asc,id.asc&limit=${PAGE}&offset=${off}`)).json();
+    d.forEach(x=>rows.push(x.cells));if(d.length<PAGE)break;
+  }
+  const m=await (await sb(`${MM}?select=headers,updated_at&id=eq.1`)).json();
+  const n=DEFAULT_HEADERS.length;
+  return {headers:(m[0]&&m[0].headers)||DEFAULT_HEADERS.slice(),rows:rows.map(c=>{const a=(c||[]).map(v=>v==null?'':String(v));while(a.length<n)a.push('');return a;}),updated:m[0]?m[0].updated_at:null};
+}
+async function loadMaster(){
+  setStat(T('loading'));
+  try{MASTER=await loadRemote();setNet(true);idbSet('master',MASTER);}
+  catch(e){console.warn(e);setNet(false);const c=await idbGet('master');if(c&&c.rows)MASTER=c;}
+  MASTER.rows.sort((a,b)=>a[C.pn].localeCompare(b[C.pn])||a[C.sub].localeCompare(b[C.sub],undefined,{numeric:true}));
+  indexMaster();renderMasterStats();fillPnSelects();renderPick();
+}
+
+/* ---------- 붙여넣기 파싱 (엑셀 TSV, 따옴표 셀 지원) ---------- */
+function parseTSV(text){
+  const out=[];let row=[],cell='',q=false;
+  for(let i=0;i<text.length;i++){
+    const ch=text[i];
+    if(q){ if(ch==='"'){ if(text[i+1]==='"'){cell+='"';i++;} else q=false; } else cell+=ch; continue; }
+    if(ch==='"'&&cell==='') q=true;
+    else if(ch==='\t'){row.push(cell);cell='';}
+    else if(ch==='\n'||ch==='\r'){ if(ch==='\r'&&text[i+1]==='\n')i++; row.push(cell);out.push(row);row=[];cell='';}
+    else cell+=ch;
+  }
+  if(cell!==''||row.length){row.push(cell);out.push(row);}
+  return out.map(r=>r.map(c=>c.trim())).filter(r=>r.some(c=>c!==''));
+}
+function readPaste(){
+  const rows=parseTSV(document.getElementById('pasteBox').value);
+  let headers=null;
+  if(rows.length&&rows[0][0].replace(/\s/g,'')==='품번'){headers=rows.shift();}
+  const n=Math.max(DEFAULT_HEADERS.length,headers?headers.length:0);
+  const data=rows.filter(r=>r[0]).map(r=>{const a=r.slice(0,n);while(a.length<n)a.push('');return a;});
+  if(headers){headers=headers.slice(0,n);while(headers.length<n)headers.push(DEFAULT_HEADERS[headers.length]||'');
+    headers=headers.map((h,i)=>h||DEFAULT_HEADERS[i]||('열'+(i+1)));
+    // 중복 머리글 구분 (좌/우)
+    const seen={};headers=headers.map((h,i)=>{if(seen[h]){const alt=DEFAULT_HEADERS[i];return alt&&alt!==h?alt:h+' ('+(i+1)+')';}seen[h]=1;return h;});
+  }
+  return {headers,data};
+}
+document.getElementById('pasteBox').addEventListener('input',()=>{
+  const {data}=readPaste();const pns=[...new Set(data.map(r=>r[C.pn]))];
+  document.getElementById('pasteInfo').textContent=data.length?`${data.length} ${T('parsed')} · ${pns.join(', ')}`:'';
+});
+async function save(mode){
+  const {headers,data}=readPaste();
+  if(!data.length){toast(T('nothing'));return;}
+  if(mode==='all'&&MASTER.rows.length&&!confirm(T('confirmAll')))return;
+  await push(data,headers,mode==='all');
+  document.getElementById('pasteBox').value='';document.getElementById('pasteInfo').textContent='';
+}
+async function push(data,headers,all){
+  const btns=document.querySelectorAll('#viewMaster .btn');btns.forEach(b=>b.disabled=true);setStat(T('saving'));
+  try{
+    const r=await sb('rpc/'+MR,{method:'POST',body:JSON.stringify({p_rows:data,p_headers:headers||null,p_all:all})});
+    const n=await r.json();toast(`${T('saved')} · ${n}`);
+  }catch(e){console.error(e);setNet(false);alert(T('saveErr')+'\n'+e.message);btns.forEach(b=>b.disabled=false);throw e;}
+  btns.forEach(b=>b.disabled=false);
+  await loadMaster();
+}
+document.getElementById('saveMerge').onclick=()=>save('merge').catch(()=>{});
+document.getElementById('saveAll').onclick=()=>save('all').catch(()=>{});
+document.getElementById('clearAll').onclick=async()=>{if(!confirm(T('confirmClear')))return;try{await push([],null,true);toast(T('cleared'));}catch(e){}};
+document.getElementById('reloadBtn').onclick=()=>loadMaster();
+
+
+function renderMasterStats(){
+  const pnCount={};MASTER.rows.forEach(r=>pnCount[r[C.pn]]=(pnCount[r[C.pn]]||0)+1);
+  $('stRows').textContent=MASTER.rows.length.toLocaleString();
+  $('stPn').textContent=Object.keys(pnCount).length;
+  $('stUpd').textContent=MASTER.updated?new Date(MASTER.updated).toLocaleString():'-';
+  $('pnList').innerHTML=Object.entries(pnCount).map(([p,n])=>`<span>${esc(p)} · ${n}</span>`).join('');
+}
+
+/* 색상 칩: B,W,R,G,Y,L,O,Br,Gr,P ... 첫 글자=바탕, 다음=줄무늬 */
+const CMAP={B:'#1a1a1a',W:'#f7f7f7',R:'#d32f2f',G:'#2e8b3a',Y:'#f5d000',L:'#1f5fd1',O:'#f08a1c',Br:'#7a4a22',Gr:'#8d9399',P:'#e586b4',V:'#7b3fb5',Lg:'#7fd36b',Sb:'#6cc6f0',Pu:'#7b3fb5'};
+function splitColor(c){const out=[];let s=c||'';while(s){const two=s.slice(0,2);if(CMAP[two]){out.push(two);s=s.slice(2);}else{out.push(s[0]);s=s.slice(1);}}return out;}
+function chip(c){if(!c)return '';const p=splitColor(c);const base=CMAP[p[0]]||'#ccc';const st=p[1]?`<b style="background:${CMAP[p[1]]||'#ccc'}"></b>`:'';return `<span class="chip"><i style="background:${base}">${st}</i>${esc(c)}</span>`;}
+
+
+
+/* ---------- 그룹 (쌍압착 · 결속 · 트위스트/쉴드) ---------- */
+let BYPN={},GC={};
+function indexMaster(){BYPN={};GC={};MASTER.rows.forEach((r,i)=>(BYPN[r[C.pn]]=BYPN[r[C.pn]]||[]).push(i));}
+function groupsFor(pn){
+  if(GC[pn])return GC[pn];
+  const idxs=BYPN[pn]||[],par={};idxs.forEach(i=>par[i]=i);
+  const find=x=>par[x]===x?x:(par[x]=find(par[x]));
+  const uni=(a,b)=>{a=find(a);b=find(b);if(a!==b)par[b]=a;};
+  const tok={},tw={};
+  idxs.forEach(i=>{const r=MASTER.rows[i];
+    // 조인트·쌍압착 연결관계: "1a","1b","28b 29a" → 같은 숫자끼리 한 묶음
+    (String(r[C.jrel]).match(/\d+(?=[a-z])/gi)||[]).forEach(n=>{const k=+n;if(tok[k]!=null)uni(tok[k],i);else tok[k]=i;});
+    // 트위스트/쉴드: 같은 구분 + 같은 연결번호
+    const t=U(r[C.shtw]),k=String(r[C.shtwLink]||r[C.twPair]).trim();
+    if(t&&k){const kk=t+'|'+k;if(tw[kk]!=null)uni(tw[kk],i);else tw[kk]=i;}
+  });
+  const comp={};idxs.forEach(i=>(comp[find(i)]=comp[find(i)]||[]).push(i));
+  const byIdx=new Map();let gid=0;
+  Object.values(comp).filter(a=>a.length>1).forEach(a=>{
+    gid++;const types=new Set();
+    a.forEach(i=>{const r=MASTER.rows[i],f2=U(r[C.jrel2]);
+      if(String(r[C.jrel]).trim()){if(/[TW]$/.test(f2))types.add('dbl');if(!/[TW]$/.test(f2)||/M/.test(f2))types.add('bind');}
+      const t=U(r[C.shtw]);if(t==='T')types.add('tw');if(t==='S')types.add('sh');});
+    const order=['dbl','bind','tw','sh'];
+    const g={id:gid,idxs:a,types:order.filter(x=>types.has(x))};a.forEach(i=>byIdx.set(i,g));
+  });
+  return GC[pn]={byIdx};
+}
+const TYPE_KEY={dbl:'gDbl',bind:'gBind',tw:'gTw',sh:'gSh'};
+const TYPE_COLOR={dbl:'var(--g-dbl)',bind:'var(--g-bind)',tw:'var(--g-tw)',sh:'var(--g-sh)'};
+function badge(types,n,partners){
+  if(!types||!types.length)return '';
+  return types.map(t=>`<span class="gb ${t}">${esc(T(TYPE_KEY[t]))}</span>`).join(' ')+(partners?` <span class="status">${esc(partners)}</span>`:(n?` <span class="status">${n}${T('groupOf')}</span>`:''));
+}
+/* DB 저장값(grp_type: 'dbl+tw') → 배지 */
+const badgeDb=r=>r.in_master===false?`<span class="gb miss">${esc(T('notInMaster'))}</span>`:badge((r.grp_type||'').split('+').filter(Boolean),0,r.grp?r.grp.split(',').filter(w=>w!==r.wn).join(', '):'');
+
+/* ---------- 조립생산: 회로 선택 ---------- */
+let pickPn='',only='',cart=[];// cart item: {pn,sub,wn,mat,sq,col,len,tL,tR,gkey,types,members,inMaster,qty}
+const ckey=(pn,wn)=>pn+'|'+U(wn);
+function fillPnSelects(){
+  const pns=Object.keys(BYPN).sort();
+  if(pickPn&&!BYPN[pickPn])pickPn='';
+  if(!pickPn&&pns.length===1)pickPn=pns[0];
+  $('aPn').innerHTML=`<option value="">—</option>`+pns.map(p=>`<option>${esc(p)}</option>`).join('');$('aPn').value=pickPn;
+  $('dlPn').innerHTML=pns.map(p=>`<option value="${esc(p)}">`).join('');
+  fillWnList();
+}
+function fillWnList(){const p=$('dPn').value.trim();$('dlWn').innerHTML=(BYPN[p]||[]).map(i=>`<option value="${esc(MASTER.rows[i][C.wn])}">`).join('');}
+function defQty(){const v=parseInt($('aDefQty').value,10);return v>0?v:1;}
+function itemFrom(i,g,qty){const r=MASTER.rows[i];
+  return {pn:r[C.pn],sub:r[C.sub],wn:r[C.wn],mat:r[C.mat],sq:r[C.sq],col:r[C.col],len:r[C.len],tL:r[C.tL],tR:r[C.tR],
+    gkey:g?r[C.pn]+'#'+g.id:'',types:g?g.types:[],members:g?g.idxs.map(j=>MASTER.rows[j][C.wn]):[],inMaster:true,qty};}
+function inCart(pn,wn){return cart.some(c=>ckey(c.pn,c.wn)===ckey(pn,wn));}
+function toggleIdx(i,qty){
+  const r=MASTER.rows[i],g=groupsFor(r[C.pn]).byIdx.get(i);
+  const idxs=g?g.idxs:[i];
+  if(inCart(r[C.pn],r[C.wn])){const keys=new Set(idxs.map(j=>ckey(MASTER.rows[j][C.pn],MASTER.rows[j][C.wn])));cart=cart.filter(c=>!keys.has(ckey(c.pn,c.wn)));}
+  else addIdx(i,qty);
+  renderPick();renderCart();
+}
+function addIdx(i,qty){
+  const r=MASTER.rows[i],g=groupsFor(r[C.pn]).byIdx.get(i);
+  const q=qty||defQty();
+  (g?g.idxs:[i]).forEach(j=>{const x=MASTER.rows[j];const ex=cart.find(c=>ckey(c.pn,c.wn)===ckey(x[C.pn],x[C.wn]));
+    if(ex)ex.qty=q;else cart.push(itemFrom(j,g,q));});
+  sortCart();
+}
+function sortCart(){const pos=c=>{const L=BYPN[c.pn];if(!L)return 1e9;const k=L.findIndex(i=>U(MASTER.rows[i][C.wn])===U(c.wn));return k<0?1e9:k;};
+  // 그룹 단위로 붙여서 정렬
+  const gpos={};cart.forEach(c=>{const p=pos(c);const k=c.gkey||ckey(c.pn,c.wn);gpos[k]=Math.min(gpos[k]??1e9,p);});
+  cart.sort((a,b)=>a.pn.localeCompare(b.pn)||(gpos[a.gkey||ckey(a.pn,a.wn)]-gpos[b.gkey||ckey(b.pn,b.wn)])||pos(a)-pos(b));}
+function renderPick(){
+  const body=$('pickBody'),empty=$('pickEmpty');
+  if(!MASTER.rows.length){body.innerHTML='';empty.textContent=T('noMaster');empty.classList.remove('hidden');$('pickInfo').textContent='';return;}
+  if(!pickPn){body.innerHTML='';empty.textContent=T('choosePn');empty.classList.remove('hidden');$('pickInfo').textContent='';return;}
+  const q=U($('aSearch').value),G=groupsFor(pickPn).byIdx;
+  let idxs=BYPN[pickPn]||[];
+  if(q)idxs=idxs.filter(i=>{const r=MASTER.rows[i];return [C.wn,C.tL,C.tR,C.col,C.mat].some(c=>U(r[c]).includes(q));});
+  if(only==='g')idxs=idxs.filter(i=>G.has(i));
+  if(only==='s')idxs=idxs.filter(i=>inCart(pickPn,MASTER.rows[i][C.wn]));
+  // 검색 결과에 그룹 일부만 걸리면 짝도 함께 보이도록
+  if(q){const set=new Set(idxs);idxs.slice().forEach(i=>{const g=G.get(i);if(g)g.idxs.forEach(j=>set.add(j));});const all=BYPN[pickPn];idxs=all.filter(i=>set.has(i));}
+  const nSel=(BYPN[pickPn]||[]).filter(i=>inCart(pickPn,MASTER.rows[i][C.wn])).length;
+  $('pickInfo').textContent=`${idxs.length} / ${(BYPN[pickPn]||[]).length} · ${T('sel')} ${nSel}`;
+  body.innerHTML=idxs.map(i=>{const r=MASTER.rows[i],g=G.get(i),on=inCart(pickPn,r[C.wn]);
+    const partners=g?g.idxs.filter(j=>j!==i).map(j=>MASTER.rows[j][C.wn]).join(', '):'';
+    const tw=U(r[C.shtw])==='T'&&r[C.oemLen]?` <span class="status">→${esc(r[C.oemLen])}</span>`:'';
+    return `<tr data-i="${i}" class="${on?'sel':''}${g?' g':''}" style="${g?'--gc:'+TYPE_COLOR[g.types[0]]:''}" tabindex="0"><td><input type="checkbox" ${on?'checked':''} tabindex="-1" aria-label="${esc(r[C.wn])}"></td><td class="wn">${esc(r[C.wn])}</td><td>${g?badge(g.types,0,partners):''}</td><td>${esc(r[C.mat])}</td><td>${esc(r[C.sq])}</td><td>${chip(r[C.col])}</td><td class="num">${esc(r[C.len])}${tw}</td><td>${esc(r[C.tL])}</td><td>${esc(r[C.tR])}</td><td class="status">${esc(r[C.sub])}</td></tr>`;}).join('');
+  empty.textContent=T('noHit');empty.classList.toggle('hidden',idxs.length>0);
+}
+$('pickBody').addEventListener('click',e=>{const tr=e.target.closest('tr');if(tr)toggleIdx(+tr.dataset.i);});
+$('pickBody').addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){const tr=e.target.closest('tr');if(tr){e.preventDefault();toggleIdx(+tr.dataset.i);}}});
+$('aPn').onchange=()=>{pickPn=$('aPn').value;LS.set('pn'+PLANT,pickPn);$('aSearch').value='';if(!$('dPn').value){$('dPn').value=pickPn;fillWnList();}renderPick();};
+$('aSearch').oninput=renderPick;
+$('aOnly').onclick=e=>{const b=e.target.closest('button');if(!b)return;only=b.dataset.v;[...$('aOnly').children].forEach(x=>x.classList.toggle('on',x===b));renderPick();};
+
+/* 직접 입력 */
+$('dPn').oninput=fillWnList;
+function directAdd(){
+  const pn=$('dPn').value.trim(),wn=$('dWn').value.trim(),q=parseInt($('dQty').value,10)||defQty();
+  if(!pn||!wn){toast(T('needPnWn'));return;}
+  const pnKey=Object.keys(BYPN).find(p=>U(p)===U(pn));
+  const i=pnKey?(BYPN[pnKey]||[]).find(j=>U(MASTER.rows[j][C.wn])===U(wn)):undefined;
+  if(i!=null){addIdx(i,q);}
+  else{const ex=cart.find(c=>ckey(c.pn,c.wn)===ckey(pn,wn));
+    if(ex)ex.qty=q;else cart.push({pn:pnKey||pn,sub:'',wn:U(wn),mat:'',sq:'',col:'',len:'',tL:'',tR:'',gkey:'',types:[],members:[],inMaster:false,qty:q});
+    toast(T('addedNoMaster'));}
+  $('dWn').value='';$('dQty').value='';$('dWn').focus();renderCart();renderPick();
+}
+$('dAdd').onclick=directAdd;
+['dPn','dWn','dQty'].forEach(id=>$(id).addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();if(id==='dPn')$('dWn').focus();else if(id==='dWn')$('dQty').focus();else directAdd();}}));
+
+/* 신청 목록 */
+function renderCart(){
+  let prev='';
+  $('cartBody').innerHTML=cart.map((c,k)=>{const gk=c.gkey||'_'+k;const start=c.gkey&&gk!==prev;prev=gk;
+    const partners=c.members.filter(w=>U(w)!==U(c.wn)).join(', ');
+    return `<tr class="${start?'gstart':''}${c.gkey?' g':''}" style="${c.gkey?'--gc:'+TYPE_COLOR[c.types[0]]:''}"><td class="status">${esc(c.pn)}</td><td class="wn">${esc(c.wn)}</td><td>${c.inMaster?badge(c.types,0,partners):`<span class="gb miss">${esc(T('notInMaster'))}</span>`}</td>
+      <td class="num"><input class="q" data-k="${k}" inputmode="numeric" value="${c.qty}"></td><td><button class="x" data-k="${k}" title="${esc(c.gkey?T('removeGroup'):'')}">×</button></td></tr>`;}).join('');
+  $('cartEmpty').classList.toggle('hidden',cart.length>0);
+  $('cartN').textContent=cart.length;$('cartQ').textContent=cart.reduce((s,c)=>s+(+c.qty||0),0).toLocaleString();
+  $('aSave').disabled=!cart.length;
+}
+$('cartBody').addEventListener('input',e=>{const el=e.target.closest('input.q');if(!el)return;const c=cart[+el.dataset.k];const v=parseInt(el.value,10)||0;c.qty=v;
+  // 같은 그룹은 수량 동일하게
+  if(c.gkey)cart.forEach((x,k)=>{if(x.gkey===c.gkey&&x!==c){x.qty=v;const o=$('cartBody').querySelector(`input.q[data-k="${k}"]`);if(o)o.value=v;}});
+  $('cartQ').textContent=cart.reduce((s,c)=>s+(+c.qty||0),0).toLocaleString();});
+$('cartBody').addEventListener('click',e=>{const b=e.target.closest('button.x');if(!b)return;const c=cart[+b.dataset.k];
+  cart=c.gkey?cart.filter(x=>x.gkey!==c.gkey):cart.filter(x=>x!==c);renderCart();renderPick();});
+$('cartClear').onclick=()=>{if(!cart.length)return;cart=[];renderCart();renderPick();};
+['aLine','aName','aDefQty'].forEach(id=>$(id).addEventListener('change',()=>{LS.set(id,$(id).value.trim());if(id==='aLine')renderRecent();}));
+
+async function saveReq(){
+  const line=$('aLine').value.trim(),name=$('aName').value.trim();
+  if(!line||!name){toast(T('needLine'));(line?$('aName'):$('aLine')).focus();return;}
+  if(!cart.length){toast(T('needItems'));return;}
+  if(cart.some(c=>!(parseInt(c.qty,10)>0))){toast(T('badQty'));return;}
+  const d=new Date();const reqNo=`P${PLANT}-${String(d.getFullYear()).slice(2)}${pad(d.getMonth()+1)}${pad(d.getDate())}-${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}-${Math.random().toString(36).slice(2,5).toUpperCase()}`;
+  const note=$('aNote').value.trim();
+  const rows=cart.map(c=>({plant:PLANT,req_no:reqNo,pn:c.pn,sub_no:c.sub||null,wn:c.wn,mat:c.mat||null,sq:c.sq||null,col:c.col||null,len:c.len||null,t_l:c.tL||null,t_r:c.tR||null,
+    grp:c.members.length?c.members.join(','):null,grp_type:c.types.length?c.types.join('+'):null,in_master:c.inMaster,qty:parseInt(c.qty,10),line,requester:name,req_note:note||null}));
+  $('aSave').disabled=true;setStat(T('saving'));
+  try{await sb(RQ,{method:'POST',body:JSON.stringify(rows),headers:{Prefer:'return=minimal'}});setNet(true);
+    toast(`${T('saved')} · ${rows.length}`);cart=[];$('aNote').value='';renderCart();renderPick();await loadReqs();}
+  catch(e){console.error(e);setNet(false);alert(T('saveErr')+'\n'+e.message);}
+  finally{$('aSave').disabled=!cart.length;}
+}
+$('aSave').onclick=saveReq;
+
+/* ---------- 신청 데이터 ---------- */
+let REQS=[];
+const ST=['신청','접수','완료','출고','반려','취소'];
+const OPEN=['신청','접수','완료'];// 출고 전까지 진행 중
+const isOpen=r=>OPEN.includes(r.status);
+const stTag=s=>{const k=ST.indexOf(s)+1;return `<span class="st s${k}">${esc(T('st'+k))}</span>`;};
+async function loadReqs(){
+  const f=$('pFrom').value,af=$('rFrom').value;
+  const r3=new Date();r3.setDate(r3.getDate()-3);
+  const from=new Date(Math.min(f?new Date(f+'T00:00:00'):Infinity,af?new Date(af+'T00:00:00'):Infinity,r3.setHours(0,0,0,0)));
+  try{
+    const out=[];const PAGE=1000;
+    for(let off=0;;off+=PAGE){
+      const d=await (await sb(`${RQ}?plant=eq.${PLANT}&or=(created_at.gte.${encodeURIComponent(from.toISOString())},status.in.(${encodeURIComponent('"신청","접수","완료"')}))&order=created_at.desc,id.asc&limit=${PAGE}&offset=${off}`)).json();
+      out.push(...d);if(d.length<PAGE)break;
+    }
+    REQS=out;setNet(true);idbSet('reqs',REQS);
+  }catch(e){console.warn(e);setNet(false);const c=await idbGet('reqs');if(c)REQS=c;}
+  renderRecent();renderProc();
+}
+let rView='open';
+function renderRecent(){
+  const line=$('aLine').value.trim(),mine=$('rMine').checked,q=U($('rSearch').value);
+  const lim=new Date();lim.setDate(lim.getDate()-3);lim.setHours(0,0,0,0);
+  const a=$('rFrom').value?new Date($('rFrom').value+'T00:00:00'):null,b=$('rTo').value?new Date($('rTo').value+'T23:59:59.999'):null;
+  // 출고 완료 내역은 출고일 기준으로 기간 조회
+  const inRange=r=>{const d=new Date(r.status==='출고'&&r.ship_at?r.ship_at:r.created_at);return (!a||d>=a)&&(!b||d<=b);};
+  let rows=REQS.filter(r=>(!mine||!line||U(r.line)===U(line))&&(!q||[r.pn,r.wn].some(v=>U(v).includes(q))));
+  if(rView==='open')rows=rows.filter(r=>isOpen(r)||(r.status!=='출고'&&new Date(r.created_at)>=lim));
+  else if(rView==='ship')rows=rows.filter(r=>r.status==='출고'&&inRange(r)).sort((x,y)=>(y.ship_at||'').localeCompare(x.ship_at||''));
+  else rows=rows.filter(r=>isOpen(r)||inRange(r));
+  $('recentBody').innerHTML=rows.map(r=>`<tr><td>${fmtT(r.created_at)}</td><td>${esc(r.line)}</td><td>${esc(r.requester)}</td><td class="status">${esc(r.pn)}</td><td class="wn">${esc(r.wn)}</td><td>${badgeDb(r)}</td><td class="num"><b>${r.qty}</b></td><td>${stTag(r.status)}</td>
+    <td class="status">${esc(r.status==='출고'?'':procText(r,1))}</td><td>${r.status==='출고'?`<b>${fmtT(r.ship_at)}</b> <span class="status">${esc(r.ship_by||'')}</span>`:''}</td><td>${r.status==='신청'?`<button class="btn sm warn" data-cancel="${r.id}">${esc(T('cancel'))}</button>`:''}</td></tr>`).join('');
+  $('recentEmpty').classList.toggle('hidden',rows.length>0);
+  $('rRange').classList.toggle('hidden',rView==='open');
+  $('rSum').textContent=rows.length?`${rows.length}${T('groupOf')} · ${T('total')} ${rows.reduce((t,r)=>t+r.qty,0).toLocaleString()}`:'';
+}
+$('rView').onclick=e=>{const btn=e.target.closest('button');if(!btn)return;rView=btn.dataset.v;[...$('rView').children].forEach(x=>x.classList.toggle('on',x===btn));renderRecent();};
+['rFrom','rTo'].forEach(id=>$(id).addEventListener('change',()=>loadReqs()));
+$('rSearch').addEventListener('input',renderRecent);
+function procText(r,mes){
+  if(r.status==='출고')return `${r.ship_by||''} ${fmtT(r.ship_at)}${mes&&r.mes_no?' · '+r.mes_no:''}`;
+  if(r.status==='완료')return `${r.done_by||''} ${fmtT(r.done_at)}${mes&&r.mes_no?' · '+r.mes_no:''}`;
+  if(r.status==='접수')return `${r.received_by||''} ${fmtT(r.received_at)}`;
+  if(r.status==='반려')return `${r.done_by||''} ${fmtT(r.done_at)}${r.proc_note?' · '+r.proc_note:''}`;
+  return '';
+}
+$('rMine').onchange=renderRecent;
+$('recentBody').addEventListener('click',async e=>{const b=e.target.closest('[data-cancel]');if(!b)return;
+  if(!confirm(T('confirmCancel')))return;
+  await patch([+b.dataset.cancel],['신청'],{status:'취소',done_at:new Date().toISOString(),done_by:$('aName').value.trim()||null});});
+
+async function patch(ids,fromSt,body){
+  if(!ids.length)return 0;
+  try{
+    const q=`${RQ}?id=in.(${ids.join(',')})&status=in.(${fromSt.map(s=>encodeURIComponent('"'+s+'"')).join(',')})`;
+    const r=await sb(q,{method:'PATCH',body:JSON.stringify(body),headers:{Prefer:'return=representation'}});
+    const n=(await r.json()).length;setNet(true);
+    toast(n<ids.length?T('skipped'):`${T('updated')} · ${n}`);
+    await loadReqs();return n;
+  }catch(e){console.error(e);setNet(false);alert(T('saveErr')+'\n'+e.message);return 0;}
+}
+
+/* ---------- 가공생산 ---------- */
+let stFilter='신청',sel=new Set();
+function procRows(){
+  const f=$('pFrom').value,t=$('pTo').value,q=U($('pSearch').value);
+  const a=f?new Date(f+'T00:00:00'):null,b=t?new Date(t+'T23:59:59.999'):null;
+  return REQS.filter(r=>{const d=new Date(r.created_at),open=isOpen(r);if(!open&&a&&d<a)return false;if(!open&&b&&d>b)return false;
+    if(q&&![r.pn,r.wn,r.line,r.requester,r.req_no].some(v=>U(v).includes(q)))return false;return true;});
+}
+function renderProc(){
+  const base=procRows();
+  const cnt={};base.forEach(r=>cnt[r.status]=(cnt[r.status]||0)+1);
+  $('stChips').innerHTML=[...ST,''].map((s,k)=>`<button data-s="${s}" class="${s===stFilter?'on':''}">${esc(s?T('st'+(k+1)):T('stAll'))}<b>${s?(cnt[s]||0):base.length}</b></button>`).join('');
+  const rows=base.filter(r=>!stFilter||r.status===stFilter).sort((x,y)=>x.created_at<y.created_at?-1:x.created_at>y.created_at?1:x.id-y.id);
+  const vis=new Set(rows.map(r=>r.id));[...sel].forEach(id=>{if(!vis.has(id))sel.delete(id);});
+  // 요청번호별 묶음 (오래된 신청이 위)
+  const groups=[];const m={};rows.forEach(r=>{if(!m[r.req_no]){m[r.req_no]={no:r.req_no,items:[]};groups.push(m[r.req_no]);}m[r.req_no].items.push(r);});
+  if(!OPEN.includes(stFilter))groups.reverse();
+  $('procBody').innerHTML=groups.map(g=>{const h=g.items[0];const allOn=g.items.every(r=>sel.has(r.id));const sum=g.items.reduce((s,r)=>s+r.qty,0);
+    return `<tr class="rq"><td><input type="checkbox" data-req="${esc(g.no)}" ${allOn?'checked':''} aria-label="${esc(g.no)}"></td><td colspan="13"><b>${fmtT(h.created_at)}</b> · ${esc(T('line'))} <b>${esc(h.line)}</b> · ${esc(T('reqBy'))} <b>${esc(h.requester)}</b> · ${g.items.length}${esc(T('groupOf'))} / ${sum.toLocaleString()} ${h.req_note?' · '+esc(T('note'))+': <b>'+esc(h.req_note)+'</b>':''} <span style="opacity:.6">${esc(g.no)}</span></td></tr>`+
+      g.items.map(r=>`<tr class="it${sel.has(r.id)?' sel':''}" data-id="${r.id}"><td><input type="checkbox" ${sel.has(r.id)?'checked':''} tabindex="-1" aria-label="${esc(r.wn)}"></td><td class="status">${esc(r.pn)}</td><td class="wn">${esc(r.wn)}</td><td>${badgeDb(r)}</td><td>${esc(r.mat)}</td><td>${esc(r.sq)}</td><td>${chip(r.col)}</td><td class="num">${esc(r.len)}</td><td>${esc(r.t_l)}</td><td>${esc(r.t_r)}</td><td class="num"><b style="font-size:15px">${r.qty}</b></td><td>${stTag(r.status)}</td><td class="status">${esc(procText(r))}</td><td>${esc(r.mes_no||'')}</td></tr>`).join('');}).join('');
+  $('procEmpty').classList.toggle('hidden',rows.length>0);
+  $('pAll').checked=rows.length>0&&rows.every(r=>sel.has(r.id));
+  const sr=REQS.filter(r=>sel.has(r.id));
+  $('selInfo').textContent=`${sr.length} ${T('sel')} · ${sr.reduce((s,r)=>s+r.qty,0).toLocaleString()}`;
+  const has=s=>sr.some(r=>s.includes(r.status));
+  $('pRecv').disabled=!has(['신청']);$('pDone').disabled=!has(['신청','접수']);$('pShip').disabled=!has(['접수','완료']);$('pReject').disabled=!has(['신청','접수']);$('pUndo').disabled=!has(['접수','완료','출고','반려']);
+  $('pCopy').disabled=$('pCsv').disabled=!sr.length&&!rows.length;
+  // 탭 배지: 미접수 신청 건수
+  const n=REQS.filter(r=>r.status==='신청').length;$('newCnt').textContent=n?n:'';
+}
+$('stChips').onclick=e=>{const b=e.target.closest('button');if(!b)return;stFilter=b.dataset.s;sel.clear();renderProc();};
+['pFrom','pTo'].forEach(id=>$(id).onchange=()=>loadReqs());
+$('pSearch').oninput=renderProc;
+$('procBody').addEventListener('click',e=>{
+  const rq=e.target.closest('input[data-req]');
+  if(rq){const ids=REQS.filter(r=>r.req_no===rq.dataset.req&&(!stFilter||r.status===stFilter)).map(r=>r.id);if(rq.checked)ids.forEach(i=>sel.add(i));else ids.forEach(i=>sel.delete(i));renderProc();return;}
+  const tr=e.target.closest('tr.it');if(!tr)return;const id=+tr.dataset.id;sel.has(id)?sel.delete(id):sel.add(id);renderProc();});
+$('pAll').onchange=()=>{const rows=procRows().filter(r=>!stFilter||r.status===stFilter);if($('pAll').checked)rows.forEach(r=>sel.add(r.id));else sel.clear();renderProc();};
+$('pName').onchange=()=>LS.set('pName',$('pName').value.trim());
+function worker(){const n=$('pName').value.trim();if(!n){toast(T('needWorker'));$('pName').focus();}return n;}
+const selIds=st=>REQS.filter(r=>sel.has(r.id)&&st.includes(r.status)).map(r=>r.id);
+$('pRecv').onclick=async()=>{const w=worker();if(!w)return;await patch(selIds(['신청']),['신청'],{status:'접수',received_at:new Date().toISOString(),received_by:w});sel.clear();renderProc();};
+$('pDone').onclick=async()=>{const w=worker();if(!w)return;const ids=selIds(['신청','접수']);if(!ids.length)return;
+  const mes=prompt(T('mesNoPh'),'');if(mes===null)return;const now=new Date().toISOString();
+  // 신청 상태에서 바로 완료하면 접수 정보도 함께 기록
+  const raw=ids.filter(id=>REQS.find(r=>r.id===id).status==='신청');
+  if(raw.length)await sb(`${RQ}?id=in.(${raw.join(',')})&status=eq.${encodeURIComponent('신청')}`,{method:'PATCH',body:JSON.stringify({received_at:now,received_by:w})}).catch(()=>{});
+  await patch(ids,['신청','접수'],{status:'완료',done_at:now,done_by:w,mes_no:mes.trim()||null});sel.clear();renderProc();};
+$('pReject').onclick=async()=>{const w=worker();if(!w)return;const why=prompt(T('rejectWhy'),'');if(why===null)return;
+  await patch(selIds(['신청','접수']),['신청','접수'],{status:'반려',done_at:new Date().toISOString(),done_by:w,proc_note:why.trim()||null});sel.clear();renderProc();};
+$('pUndo').onclick=async()=>{await patch(selIds(['접수','완료','출고','반려']),['접수','완료','출고','반려'],{status:'신청',received_at:null,received_by:null,done_at:null,done_by:null,mes_no:null,proc_note:null,ship_at:null,ship_by:null});sel.clear();renderProc();};
+$('pShip').onclick=async()=>{const w=worker();if(!w)return;await patch(selIds(['접수','완료']),['접수','완료'],{status:'출고',ship_at:new Date().toISOString(),ship_by:w});sel.clear();renderProc();};
+function exportRows(){const s=REQS.filter(r=>sel.has(r.id));return s.length?s:procRows().filter(r=>!stFilter||r.status===stFilter);}
+$('pCopy').onclick=async()=>{
+  const rows=exportRows();const txt=['품번\t선번\t수량'].concat(rows.map(r=>`${r.pn}\t${r.wn}\t${r.qty}`)).join('\n');
+  try{await navigator.clipboard.writeText(txt);}catch(e){const ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();try{document.execCommand('copy')}catch(_){}ta.remove();}
+  toast(`${T('copied')} (${rows.length})`);};
+$('pCsv').onclick=()=>{
+  const rows=exportRows();const H=['신청시각','요청번호','라인','신청자','품번','선번','함께만드는선','구분','재질','SQ','색상','길이','좌단자','우단자','수량','상태','접수자','접수시각','처리자','처리시각','MES번호','출고자','출고시각','메모','처리메모'];
+  const q=v=>{v=v==null?'':String(v);return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};
+  const L=rows.map(r=>[fmtT(r.created_at),r.req_no,r.line,r.requester,r.pn,r.wn,r.grp,r.grp_type,r.mat,r.sq,r.col,r.len,r.t_l,r.t_r,r.qty,r.status,r.received_by,fmtT(r.received_at),r.done_by,fmtT(r.done_at),r.mes_no,r.ship_by,fmtT(r.ship_at),r.req_note,r.proc_note].map(q).join(','));
+  const blob=new Blob(['\ufeff'+[H.join(',')].concat(L).join('\r\n')],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`부족회로_P${PLANT}_${ymd(new Date())}.csv`;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},500);};
+
+/* ---------- 탭 ---------- */
+function show(v){['Asm','Proc','Master'].forEach(k=>{$('view'+k).classList.toggle('hidden',k!==v);$('tab'+k).classList.toggle('on',k===v);});LS.set('tab'+PLANT,v);}
+$('tabAsm').onclick=()=>show('Asm');$('tabProc').onclick=()=>{show('Proc');loadReqs();};$('tabMaster').onclick=()=>show('Master');
+$('reloadBtn').onclick=()=>{loadMaster();loadReqs();};
+$('langBtn').onclick=()=>{lang=lang==='ko'?'es':'ko';LS.set('lang',lang);applyLang();};
+function renderAll(){renderPick();renderCart();renderRecent();renderProc();}
+
+(async()=>{
+  lang=LS.get('lang','ko');
+  $('aLine').value=LS.get('aLine');$('aName').value=LS.get('aName');$('aDefQty').value=LS.get('aDefQty','1')||'1';$('pName').value=LS.get('pName');
+  pickPn=LS.get('pn'+PLANT);$('dPn').value=pickPn;
+  const t=new Date(),f=new Date();f.setDate(f.getDate()-6);$('pFrom').value=ymd(f);$('pTo').value=ymd(t);$('rFrom').value=ymd(f);$('rTo').value=ymd(t);
+  db=await idbOpen();
+  applyLang();
+  const tab=LS.get('tab'+PLANT,'Asm');show(['Asm','Proc','Master'].includes(tab)?tab:'Asm');
+  await Promise.all([loadMaster(),loadReqs()]);
+  if(!MASTER.rows.length)show('Master');
+  setInterval(()=>{if(!document.hidden)loadReqs();},20000);
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)loadReqs();});
+})();
+</script>
+</body>
+</html>
