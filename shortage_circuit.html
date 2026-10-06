@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>부족회로 신청 · Circuitos faltantes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=Space+Mono:wght@700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0E1114; --panel:#171B1F; --ink:#E8ECEF; --sub:#8A949C; --line:#2A3036;
+  --accent:#4FA9C9; --accent-ink:#06222D; --tag:#C9A84C; --tag-ink:#1E1806; --hit:#1C2C35; --danger:#F2867E; --gold:#C9A84C;
+  --ok:#5BBE7A; --req:#E3A84F; --rcv:#4FA9C9;
+  --g-dbl:#E07FB0; --g-bind:#9C8CF0; --g-tw:#E3C46A; --g-sh:#7CC7E0;
+  color-scheme:dark;
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 "IBM Plex Sans KR","Malgun Gothic","Apple SD Gothic Neo",system-ui,sans-serif;font-variant-numeric:tabular-nums}
+button,input,select,textarea{font:inherit;color:inherit}
+header{background:#111417;display:flex;align-items:center;gap:16px;padding:14px 20px;border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:5;flex-wrap:wrap}
+a.brand{font-family:'Space Mono',Consolas,'Courier New',monospace;font-weight:700;font-size:16px;letter-spacing:.12em;color:var(--gold);text-decoration:none;white-space:nowrap;padding-right:16px;border-right:1px solid var(--line)}
+a.brand:hover{color:#E3C46A}
+a.brand:focus-visible{outline:2px solid var(--gold);outline-offset:4px}
+.plant{font-size:12px;font-weight:600;color:var(--gold);border:1px solid var(--gold);border-radius:4px;padding:2px 8px;white-space:nowrap}
+h1{font-size:18px;margin:0;font-weight:700;letter-spacing:-.01em}
+h1 small{font-weight:400;color:var(--sub);font-size:13px;margin-left:6px}
+.tabs{display:flex;gap:4px;margin-left:auto}
+.tabs button{border:1px solid var(--line);background:transparent;padding:7px 16px;border-radius:6px;cursor:pointer;font-weight:500;position:relative}
+.tabs button.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.tabs .cnt{display:inline-block;min-width:20px;margin-left:6px;padding:0 6px;border-radius:10px;background:var(--req);color:#231503;font-size:12px;font-weight:700;text-align:center}
+.tabs .cnt:empty{display:none}
+#apprCnt{background:var(--req);color:#231503}
+#netStat{display:inline-flex;align-items:center;gap:6px}
+#netStat::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--sub)}
+#netStat.ok::before{background:#2e9b4f}
+#netStat.off::before{background:var(--danger)}
+.lang{border:1px solid var(--line);background:transparent;border-radius:6px;padding:7px 10px;cursor:pointer}
+main{padding:18px 20px;max-width:1600px;margin:0 auto}
+.hidden{display:none!important}
+.status{font-size:13px;color:var(--sub)}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:8px}
+.ph{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 14px;border-bottom:1px solid var(--line)}
+.ph h2{margin:0;font-size:15px}
+.ph .grow{flex:1}
+label.f{display:block;font-size:12px;color:var(--sub);margin:0}
+label.f > input,label.f > select{display:block;width:100%;margin-top:3px;padding:7px 9px;border:1px solid var(--line);border-radius:6px;background:var(--bg)}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--accent);outline-offset:0}
+.btn{border:1px solid var(--line);background:var(--panel);padding:8px 14px;border-radius:6px;cursor:pointer;font-weight:500;white-space:nowrap}
+.btn.pri{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:700}
+.btn.ok{background:var(--ok);color:#06210f;border-color:var(--ok);font-weight:700}
+.btn.warn{color:var(--danger)}
+.btn.sm{padding:4px 10px;font-size:12px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn:focus-visible,.tabs button:focus-visible,.seg button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.seg button{border:0;background:transparent;padding:6px 12px;cursor:pointer;font-size:13px}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button.on{background:var(--hit);color:var(--accent);font-weight:700}
+.scroll{overflow:auto}
+table{border-collapse:collapse;width:100%;white-space:nowrap}
+th,td{padding:6px 9px;text-align:left;border-bottom:1px solid var(--line);font-size:13px}
+th{position:sticky;top:0;background:var(--panel);color:var(--sub);font-weight:600;font-size:12px;z-index:1}
+td.wn{font-weight:700}
+td.num,th.num{text-align:right}
+.empty{padding:36px 16px;text-align:center;color:var(--sub)}
+.chip{display:inline-flex;align-items:center;gap:6px}
+.chip i{display:inline-block;width:24px;height:9px;border-radius:5px;border:1px solid rgba(255,255,255,.3);position:relative;overflow:hidden}
+.chip i b{position:absolute;left:0;right:0;top:3px;height:3px}
+/* group badge */
+.gb{display:inline-flex;gap:3px;align-items:center;font-size:11px;font-weight:700;border-radius:4px;padding:1px 6px;border:1px solid currentColor;white-space:nowrap}
+.gb.dbl{color:var(--g-dbl)}.gb.bind{color:var(--g-bind)}.gb.tw{color:var(--g-tw)}.gb.sh{color:var(--g-sh)}
+.gb.miss{color:var(--danger)}
+tr.g td:first-child{box-shadow:inset 3px 0 0 var(--gc,transparent)}
+/* assembly */
+.asm-top{display:grid;grid-template-columns:repeat(4,minmax(120px,200px)) 1fr;gap:10px;align-items:end;padding:12px 14px}
+.asm{display:grid;grid-template-columns:minmax(0,1fr) 420px;gap:16px;align-items:start;margin-top:16px}
+@media (max-width:1050px){.asm{grid-template-columns:1fr}.asm-top{grid-template-columns:1fr 1fr}}
+.pick tbody tr{cursor:pointer}
+.pick tbody tr:hover{background:var(--hit)}
+.pick tbody tr.sel{background:#173341}
+.pick input[type=checkbox]{pointer-events:none;accent-color:var(--accent);width:16px;height:16px}
+.pick .scroll{max-height:calc(100vh - 330px);min-height:260px}
+.legend{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.direct{display:grid;grid-template-columns:1.4fr 1fr 70px auto;gap:8px;align-items:end;padding:12px 14px;border-bottom:1px solid var(--line)}
+.cart .scroll{max-height:calc(100vh - 470px);min-height:160px}
+.cart td{padding:5px 8px}
+.cart input.q{width:68px;padding:4px 6px;border:1px solid var(--line);border-radius:5px;background:var(--bg);text-align:right}
+.cart .gstart td{border-top:1px solid var(--sub)}
+.x{border:0;background:transparent;color:var(--sub);cursor:pointer;font-size:16px;padding:0 4px}
+.x:hover{color:var(--danger)}
+.cart-foot{padding:12px 14px;border-top:1px solid var(--line);display:grid;gap:10px}
+.cart-foot textarea{width:100%;min-height:44px;padding:7px 9px;border:1px solid var(--line);border-radius:6px;background:var(--bg);resize:vertical}
+.cart-sum{display:flex;justify-content:space-between;align-items:baseline}
+.cart-sum b{font-size:20px}
+/* status */
+.st{display:inline-block;font-size:12px;font-weight:700;border-radius:4px;padding:1px 8px}
+.st.s1{background:var(--req);color:#231503}.st.s2{background:#E3C46A;color:#231a03}.st.s3{background:var(--rcv);color:var(--accent-ink)}.st.s4{background:#7CC7E0;color:#06222D}
+.st.s5{background:#B98CF0;color:#1d0a33}.st.s6{background:var(--ok);color:#06210f}.st.s7{background:transparent;color:var(--danger);border:1px solid var(--danger)}.st.s8{background:transparent;color:var(--sub);border:1px solid var(--line)}
+.agrp{display:inline-flex;gap:4px;padding:0 8px;border-left:1px solid var(--line)}
+label.f.inl{min-width:150px}label.f.inl > input{padding:6px 9px}
+.hist{margin-top:16px}
+.hist .ph .stchips{margin-left:8px}
+.hist .scroll{max-height:calc(100vh - 300px)}
+.hist table{white-space:normal}
+.hist td{vertical-align:middle}
+.hist th{white-space:nowrap}
+.hist tr.dt td{background:#1f262c;border-top:2px solid var(--gold);border-bottom:1px solid var(--line);padding:9px 10px}
+.hist tr.dt:first-child td{border-top:0}
+.hist .dd{font-size:15px;font-weight:700;color:var(--gold);letter-spacing:.01em}
+.hist .ds{margin-left:14px;color:var(--sub);font-size:12px}
+.hist .today{display:inline-block;margin-left:6px;font-size:11px;font-weight:700;color:var(--accent-ink);background:var(--accent);border-radius:4px;padding:0 6px}
+.hist tr.rq td{background:#14191d;color:var(--sub);font-size:12px;padding:6px 10px}
+.hist tr.rq td b{color:var(--ink);font-size:12.5px}
+.wn2{font-weight:700;font-size:14px;white-space:nowrap}
+.sub2{font-size:11.5px;color:var(--sub);white-space:nowrap}
+.sub2.lot{color:var(--ink);font-weight:600;margin-top:3px}
+.grp2 .gb{margin:1px 0}
+.fl{display:grid;grid-template-columns:repeat(3,minmax(128px,auto));gap:3px 8px}
+.tl{display:block;font-size:11.5px;color:var(--sub);white-space:nowrap;padding-left:7px;border-left:2px solid var(--line);opacity:.5}
+.tl b{display:inline-block;min-width:48px;font-size:11.5px;color:var(--ink);margin-right:4px}
+.tl em{font-style:normal;color:var(--ink)}
+.tl.on{opacity:1;border-left-color:var(--ok)}
+.tl.bad{border-left-color:var(--danger)}.tl.bad b{color:var(--danger)}
+.lotbox{display:inline-flex;gap:0}
+.lotbox input{width:170px;padding:7px 9px;border:1px solid var(--ok);border-right:0;border-radius:6px 0 0 6px;background:var(--bg)}
+.lotbox .btn{border-radius:0 6px 6px 0}
+/* processing */
+.proc-bar{display:flex;flex-wrap:wrap;gap:10px;align-items:end;padding:12px 14px;border-bottom:1px solid var(--line)}
+.proc-bar label.f{min-width:130px}
+.stchips{display:flex;gap:6px;flex-wrap:wrap}
+.stchips button{border:1px solid var(--line);background:transparent;border-radius:16px;padding:5px 12px;cursor:pointer;font-size:13px}
+.stchips button.on{border-color:var(--accent);background:var(--hit);color:var(--accent);font-weight:700}
+.stchips button b{margin-left:4px}
+.act{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:10px 14px;border-bottom:1px solid var(--line);background:#13171a}
+.act .selinfo{font-weight:700;margin-right:6px}
+.proc .scroll{max-height:calc(100vh - 330px)}
+.proc tr.rq td{background:#12181c;color:var(--sub);font-size:12px;border-bottom:1px solid var(--line)}
+.proc tr.rq td b{color:var(--ink);font-size:13px}
+.proc tbody tr.it{cursor:pointer}
+.proc tbody tr.it:hover{background:var(--hit)}
+.proc tbody tr.it.sel{background:#173341}
+.proc input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px}
+.recent{margin-top:16px}
+.recent .scroll{max-height:360px}
+/* master */
+.master{padding:16px}
+.master h2{margin:0 0 4px;font-size:16px}
+.master p{margin:0 0 12px;color:var(--sub);font-size:13px}
+textarea#pasteBox{width:100%;min-height:260px;padding:10px;border:1px solid var(--line);border-radius:6px;background:var(--bg);font:12px/1.4 Consolas,"D2Coding",monospace;white-space:pre;overflow:auto}
+.row-btns{display:flex;gap:8px;margin-top:10px}
+textarea#lotBox{width:100%;min-height:160px;padding:10px;border:1px solid var(--line);border-radius:6px;background:var(--bg);font:12px/1.4 Consolas,"D2Coding",monospace;white-space:pre;overflow:auto}
+.scan{padding:12px 14px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,rgba(79,169,201,.10),transparent)}
+.scan label.f > input{font:600 16px/1.2 Consolas,"D2Coding",monospace;padding:10px 12px;border-color:var(--accent);letter-spacing:.02em}
+.scan-info{margin-top:8px;font-size:13px;min-height:20px;display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center}
+.scan-info .k{color:var(--sub);font-size:11px;margin-right:3px}
+.scan-info b{font-family:Consolas,"D2Coding",monospace}
+.scan-info .ok{color:var(--ok);font-weight:700}
+.scan-info .bad{color:var(--danger);font-weight:700}
+.cart .lotno{display:block;font-size:11px;color:var(--sub);font-family:Consolas,"D2Coding",monospace}
+@keyframes scanflash{0%{background:rgba(201,168,76,.55)}100%{background:#173341}}
+.pick tbody tr.flash{animation:scanflash 1.4s ease-out}
+.stats{display:flex;gap:24px;flex-wrap:wrap;margin:14px 0 0;padding:12px 0 0;border-top:1px solid var(--line)}
+.stats div{font-size:12px;color:var(--sub)}
+.stats b{display:block;font-size:20px;color:var(--ink)}
+.pn-list{margin-top:12px;font-size:13px}
+.pn-list span{display:inline-block;background:var(--tag);color:var(--tag-ink);border-radius:4px;padding:2px 8px;margin:0 6px 6px 0;font-weight:600}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px}
+.mbox{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:20px;width:min(360px,100%)}
+.mbox h3{margin:0 0 4px;font-size:16px}
+.mbox p{margin:0 0 12px}
+.mbox input{display:block;width:100%;margin:4px 0 10px;padding:9px 10px;border:1px solid var(--line);border-radius:6px;background:var(--bg);font-size:15px;letter-spacing:.1em}
+.mbox label{font-size:12px;color:var(--sub)}
+.mbtns{display:flex;gap:8px;justify-content:flex-end;margin-top:6px}
+.lock{font-size:12px}
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--panel);padding:10px 18px;border-radius:6px;z-index:40;font-size:13px}
+</style>
+</head>
+<body>
+<header>
+  <a class="brand" href="https://jungsangchul.github.io/" title="YURA HARNESS MÉXICO">YURA HARNESS MÉXICO</a>
+  <h1 data-i="title">부족회로 신청<small data-i="sub">조립 신청·승인 → 가공 접수·승인·출고 → 조립 접수</small></h1>
+  <span class="plant">PLANT 1 · 몽클로바</span>
+  <nav class="tabs">
+    <button id="tabAsm" class="on"><span data-i="tAsm">조립생산</span><span class="cnt" id="apprCnt" title="팀장 승인대기"></span><span class="cnt" id="asmCnt" style="background:var(--ok);color:#06210f"></span></button>
+    <button id="tabProc"><span data-i="tProc">가공생산</span><span class="cnt" id="newCnt"></span></button>
+    <button id="tabMaster"><span data-i="tMaster">서브리스트</span></button>
+  </nav>
+  <span class="status" id="netStat"></span>
+  <button class="lang" id="reloadBtn" title="새로고침">⟳</button>
+  <button class="lang" id="langBtn">ES</button>
+</header>
+
+<main>
+<!-- ============ 조립생산 ============ -->
+<section id="viewAsm">
+  <div class="panel">
+    <div class="asm-top">
+      <label class="f"><span data-i="line">조립 라인</span><input id="aLine" autocomplete="off" placeholder="예) L-03"></label>
+      <label class="f"><span data-i="requester">신청자</span><input id="aName" autocomplete="off"></label>
+      <label class="f"><span data-i="pn">품번</span><select id="aPn"></select></label>
+      <label class="f"><span data-i="defQty">기본 부족수량</span><input id="aDefQty" inputmode="numeric" value="1" autocomplete="off"></label>
+      <div class="legend">
+        <span class="status" data-i="legend">함께 선택되는 선:</span>
+        <span class="gb dbl" data-i="gDbl">쌍압착</span><span class="gb bind" data-i="gBind">결속</span><span class="gb tw" data-i="gTw">트위스트</span><span class="gb sh" data-i="gSh">쉴드</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="asm">
+    <div class="panel pick">
+      <div class="ph">
+        <h2 data-i="pickTitle">회로 선택</h2>
+        <input id="aSearch" placeholder="선번 · 단자 · 색상 검색" autocomplete="off" style="padding:6px 9px;border:1px solid var(--line);border-radius:6px;background:var(--bg);min-width:200px">
+        <div class="seg" id="aOnly"><button data-v="" class="on" data-i="onlyAll">전체</button><button data-v="g" data-i="onlyG">그룹선만</button><button data-v="s" data-i="onlySel">선택만</button></div>
+        <span class="grow"></span>
+        <span class="status" id="pickInfo"></span>
+      </div>
+      <div class="scroll">
+        <table>
+          <thead><tr><th></th><th data-i="cWn">선번</th><th data-i="cGrp">함께 만드는 선</th><th data-i="cMat">재질</th><th>SQ</th><th data-i="cCol">색상</th><th class="num" data-i="cLen">길이</th><th data-i="cTL">좌단자</th><th data-i="cTR">우단자</th><th data-i="cSub">서브</th></tr></thead>
+          <tbody id="pickBody"></tbody>
+        </table>
+        <div class="empty hidden" id="pickEmpty"></div>
+      </div>
+    </div>
+
+    <div class="panel cart">
+      <div class="ph"><h2 data-i="cartTitle">신청 목록</h2><span class="grow"></span><button class="btn sm warn" id="cartClear" data-i="cartClear">비우기</button></div>
+      <div class="scan">
+        <label class="f"><span data-i="scanLbl">바코드 스캔 — 품번·선번 자동 선택 후 수량 입력</span><input id="scanIn" autocomplete="off" spellcheck="false" placeholder="!5726A01005;MC24;1;"></label>
+        <div class="scan-info status" id="scanInfo"></div>
+      </div>
+      <div class="direct">
+        <label class="f"><span data-i="pn">품번</span><input id="dPn" list="dlPn" autocomplete="off"></label>
+        <label class="f"><span data-i="cWn">선번</span><input id="dWn" list="dlWn" autocomplete="off"></label>
+        <label class="f"><span data-i="qty">수량</span><input id="dQty" inputmode="numeric" autocomplete="off"></label>
+        <button class="btn" id="dAdd" data-i="add">추가</button>
+        <datalist id="dlPn"></datalist><datalist id="dlWn"></datalist>
+      </div>
+      <div class="scroll">
+        <table>
+          <thead><tr><th data-i="pn">품번</th><th data-i="cWn">선번</th><th data-i="cGrp">함께 만드는 선</th><th class="num" data-i="qty">수량</th><th></th></tr></thead>
+          <tbody id="cartBody"></tbody>
+        </table>
+        <div class="empty" id="cartEmpty" data-i="cartEmpty">왼쪽에서 회로를 고르거나, 위에 품번·선번·수량을 직접 입력하세요.</div>
+      </div>
+      <div class="cart-foot">
+        <div class="cart-sum"><span><b id="cartN">0</b> <span data-i="lines">선</span> · <span data-i="total">합계</span> <b id="cartQ">0</b></span></div>
+        <textarea id="aNote" data-ph="notePh" placeholder="메모 (선택) — 예) 오후 2시까지 필요"></textarea>
+        <button class="btn pri" id="aSave" data-i="save">신청 저장</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel hist">
+    <div class="ph"><h2 data-i="histAsm">신청 · 출고 · 조립접수 이력</h2><div class="stchips" id="haChips"></div></div>
+    <div class="proc-bar">
+      <label class="f"><span data-i="from">시작일</span><input type="date" id="haFrom"></label>
+      <label class="f"><span data-i="to">종료일</span><input type="date" id="haTo"></label>
+      <label class="f"><span data-i="search">검색</span><input id="haQ" data-ph="qPh" placeholder="품번 · 선번 · 라인 · LOT" autocomplete="off"></label>
+      <label class="chk status" style="display:flex;gap:6px;align-items:center;align-self:center;margin-top:16px"><input type="checkbox" id="haMine" checked><span data-i="mineOnly">내 라인만</span></label>
+      <span class="status" style="flex:1;align-self:center" data-i="rangeNote">진행 중(완료·반려·취소 전)은 기간과 관계없이 모두 표시</span>
+    </div>
+    <div class="act">
+      <span class="selinfo" id="haSel">0</span>
+      <label class="f inl"><span data-i="asmWorker">처리자 (팀장·확인자)</span><input id="haName" autocomplete="off"></label>
+      <span class="agrp"><button class="btn pri" id="haAppr" data-i="aAppr">🔒 팀장 승인</button><button class="btn" id="haApprUndo" data-i="aApprUndo">🔒 승인 취소</button><button class="btn warn" id="haReject" data-i="aReject">🔒 반려</button></span>
+      <span class="agrp"><button class="btn ok" id="haRecv" data-i="aRecv">선재 접수 확인</button><button class="btn" id="haRecvUndo" data-i="aRecvUndo">접수 취소</button></span>
+      <button class="btn warn" id="haCancel" data-i="aCancel">신청 취소</button>
+      <span style="flex:1"></span><button class="btn sm lock" id="haPinChg" data-i="pinChg">🔒 팀장 PIN 변경</button>
+    </div>
+    <div class="scroll">
+      <table>
+        <thead><tr><th><input type="checkbox" id="haAll" aria-label="all"></th><th data-i="cWnPn">선번 / 품번</th><th data-i="cGrp">함께 만드는 선</th><th data-i="cSpecTerm">사양 / 좌·우 단자</th><th class="num" data-i="qty">수량</th><th data-i="cStLot">상태 / MES LOT</th><th data-i="cFlow2">진행 이력</th></tr></thead>
+        <tbody id="haBody"></tbody>
+      </table>
+      <div class="empty hidden" id="haEmpty" data-i="noReq">신청 내역이 없습니다.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 가공생산 ============ -->
+<section id="viewProc" class="hidden">
+  <div class="panel hist" style="margin-top:0">
+    <div class="ph"><h2 data-i="histProc">신청 · 출고 · 조립접수 이력</h2><div class="stchips" id="hpChips"></div></div>
+    <div class="proc-bar">
+      <label class="f"><span data-i="from">시작일</span><input type="date" id="hpFrom"></label>
+      <label class="f"><span data-i="to">종료일</span><input type="date" id="hpTo"></label>
+      <label class="f"><span data-i="search">검색</span><input id="hpQ" data-ph="qPh" placeholder="품번 · 선번 · 라인 · LOT" autocomplete="off"></label>
+      <label class="f"><span data-i="worker">처리자</span><input id="hpName" autocomplete="off"></label>
+      <span class="status" style="flex:1;align-self:center" data-i="rangeNote">진행 중(완료·반려·취소 전)은 기간과 관계없이 모두 표시</span>
+    </div>
+    <div class="act">
+      <span class="selinfo" id="hpSel">0</span>
+      <span class="agrp"><button class="btn pri" id="hpRecv" data-i="pRecv">접수</button><button class="btn pri" id="hpAppr" data-i="pAppr">🔒 접수 승인</button></span>
+      <span class="lotbox"><input id="hpLot" data-ph="lotPh" placeholder="투입 MES LOT" autocomplete="off"><button class="btn ok" id="hpShip" data-i="pShip">완료 / 출고</button></span>
+      <button class="btn warn" id="hpReject" data-i="reject">반려</button>
+      <button class="btn" id="hpUndo" data-i="undo">한 단계 되돌리기</button>
+      <span style="flex:1"></span>
+      <button class="btn" id="hpCopy" data-i="copyMes">MES 입력용 복사</button>
+      <button class="btn" id="hpCsv" data-i="csv">CSV 저장</button>
+      <button class="btn sm lock" id="hpPinChg" data-i="pinChg">🔒 팀장 PIN 변경</button>
+    </div>
+    <div class="scroll">
+      <table>
+        <thead><tr><th><input type="checkbox" id="hpAll" aria-label="all"></th><th data-i="cWnPn">선번 / 품번</th><th data-i="cGrp">함께 만드는 선</th><th data-i="cSpecTerm">사양 / 좌·우 단자</th><th class="num" data-i="qty">수량</th><th data-i="cStLot">상태 / MES LOT</th><th data-i="cFlow2">진행 이력</th></tr></thead>
+        <tbody id="hpBody"></tbody>
+      </table>
+      <div class="empty hidden" id="hpEmpty" data-i="noReq">신청 내역이 없습니다.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 서브리스트 ============ -->
+<section id="viewMaster" class="hidden">
+  <div class="panel master">
+    <h2 data-i="mTitle">서브리스트 붙여넣기</h2>
+    <p data-i="mDesc">엑셀에서 머리글 행부터 데이터까지 선택해 복사(Ctrl+C)한 뒤 아래에 붙여넣으세요(Ctrl+V). 머리글 행이 없어도 기본 69열 양식으로 읽습니다. 회로조회 프로그램과 같은 서브리스트를 사용합니다.</p>
+    <textarea id="pasteBox" spellcheck="false" placeholder="품번	서브그룹번호	선번	재질	자재번호	SQ	색상	길이	..."></textarea>
+    <div class="status" id="pasteInfo" style="margin-top:6px"></div>
+    <div class="row-btns" style="flex-wrap:wrap">
+      <button class="btn pri" id="saveMerge" data-i="saveMerge">품번별 교체 저장</button>
+      <button class="btn" id="saveAll" data-i="saveAll">전체 교체 저장</button>
+      <button class="btn warn" id="clearAll" data-i="clearAll">서브리스트 전체 삭제</button>
+    </div>
+    <p class="status" style="margin-top:8px" data-i="mHelp">품번별 교체: 붙여넣은 품번의 기존 행만 지우고 새로 넣습니다. 다른 품번은 그대로 유지됩니다. 저장 내용은 모든 PC와 회로조회 프로그램에 공유됩니다.</p>
+    <div class="stats">
+      <div><span data-i="sRows">저장된 회로</span><b id="stRows">0</b></div>
+      <div><span data-i="sPn">품번 수</span><b id="stPn">0</b></div>
+      <div><span data-i="sUpd">최종 저장</span><b id="stUpd" style="font-size:15px">-</b></div>
+    </div>
+    <div class="pn-list" id="pnList"></div>
+  </div>
+  <div class="panel master" style="margin-top:14px">
+    <h2 data-i="lTitle">LOT 매칭표 붙여넣기 (SAP LOT → 품번)</h2>
+    <p data-i="lDesc">작업지시 엑셀에서 머리글 행(품번·LOT 포함)부터 데이터까지 복사해 붙여넣으세요. 머리글이 없으면 5726으로 시작하는 칸을 LOT, 품번 형식 칸을 품번으로 읽습니다. 바코드 스캔 시 이 표로 품번을 찾습니다.</p>
+    <textarea id="lotBox" spellcheck="false" placeholder="생산반	지시일자	순위	품번	LOT	오더수량	..."></textarea>
+    <div class="status" id="lotInfo" style="margin-top:6px"></div>
+    <div class="row-btns" style="flex-wrap:wrap">
+      <button class="btn pri" id="lotMerge" data-i="lotMerge">추가 · 갱신 저장</button>
+      <button class="btn" id="lotAll" data-i="lotAll">전체 교체 저장</button>
+      <button class="btn warn" id="lotClear" data-i="lotClear">LOT 매칭표 전체 삭제</button>
+    </div>
+    <p class="status" style="margin-top:8px" data-i="lHelp">추가 · 갱신: 같은 LOT는 새 품번으로 덮어쓰고 나머지는 유지합니다. 저장 내용은 모든 PC에 공유됩니다.</p>
+    <div class="stats">
+      <div><span data-i="lRows">저장된 LOT</span><b id="lotRows">0</b></div>
+      <div><span data-i="sUpd">최종 저장</span><b id="lotUpd" style="font-size:15px">-</b></div>
+    </div>
+  </div>
+</section>
+</main>
+<div id="toast" class="toast hidden"></div>
+<div class="modal hidden" id="pinModal" role="dialog" aria-modal="true" aria-labelledby="pinTitle">
+  <div class="mbox">
+    <h3 id="pinTitle"></h3>
+    <p class="status" id="pinDesc"></p>
+    <div id="pinFields"></div>
+    <div class="status" id="pinErr" style="color:var(--danger);min-height:18px"></div>
+    <div class="mbtns"><button class="btn" id="pinCancel" data-i="cancelBtn">취소</button><button class="btn pri" id="pinOk" data-i="okBtn">확인</button></div>
+  </div>
+</div>
+
+<script>
+const LM='shortage_lot_map';
+const PLANT=1, MT='circuit_master', MM='circuit_meta', MR='circuit_replace', RQ='shortage_request', IDB_NAME='shortage_req_1';
+const DEFAULT_HEADERS=['품번','서브그룹번호','선번','재질','자재번호','SQ','색상','길이','중간스트립 위치점,1','중간스트립 위치점,2','중간스트립 위치점,3','중간스트립 위치점,4','전선의 스트립 길이 - 좌측','전선의 스트립 길이 - 우측','단자에 납땜 유무 - 좌측단자','단자소요량 계산시 count 유무 표기(좌)','단자번호 - 좌측','단자에 납땜 유무 - 우측단자','단자소요량 계산시 count 유무 표기(우)','단자번호 - 우측','조인트,쌍압착의 경우에 전선간의 연결관계','압착전 부품 1 - 좌측','압착전 부품 2 - 좌측','압착전 부품 3 - 좌측','압착전 부품 1 - 우측','압착전 부품 2 - 우측','압착전 부품 3 - 우측','조립판도 커넥터 순번(좌)','단자가 삽입되는 커넥터의 HOLE 번호 - 좌측','조립판도 커넥터 순번(우)','단자가 삽입되는 커넥터의 HOLE 번호 - 우측','좌측 단자가 삽입되는 커넥터의 자재번호 - 좌','우측 단자가 삽입되는 커넥터의 자재번호 - 우','트위스트,쉴드선 인 경우에 동일한 값이면 한쌍의 전선','조인트,쌍압착 연결관계 표기-형식 2','심볼1','심볼2','심볼3','심볼4','심볼5','심볼6','심볼7','사용안함','OEM도면 상의 WIRE길이','관계도 표시참조용','Sh/Tw 구분','Sh/Tw 연결','기준선여부','중간스트립여부','재질코드','좌단자 자동/반자동 구분(M:자동,H:반자동)','우단자 자동/반자동 구분(M:자동,H:반자동)','JSB원본','좌 연결번호','우 연결번호','결속갯수','특수단자 뒤 기호표시','좌 단자가 씰인지(1:씰)','우 단자가 씰인지(1:씰)','와이어 걸이수(좌)','와이어 걸이수(우)','FPC 수량','FPC1 수량','FPC2 수량','TPC 수량','TPC1 수량','TPC2 수량','USM단자 가지선 HMT표기(좌)','USM단자 가지선 HMT표기(우)'];
+const C={pn:0,sub:1,wn:2,mat:3,matNo:4,sq:5,col:6,len:7,tL:16,tR:19,jrel:20,twPair:33,jrel2:34,oemLen:43,shtw:45,shtwLink:46};
+
+/* ---------- 언어 ---------- */
+const ES={title:'Circuitos faltantes',sub:'Ensamble solicita y aprueba → Corte recibe, aprueba y entrega → Ensamble confirma',tAsm:'Ensamble',tProc:'Corte',tMaster:'Sublista',
+line:'Línea',requester:'Solicitante',pn:'No. de parte',defQty:'Cantidad por defecto',legend:'Se seleccionan juntos:',gDbl:'Doble crimpado',gBind:'Unión',gTw:'Trenzado',gSh:'Blindado',
+pickTitle:'Seleccionar circuitos',onlyAll:'Todos',onlyG:'Solo grupos',onlySel:'Seleccionados',cWn:'Circuito',cGrp:'Se hacen juntos',cMat:'Material',cCol:'Color',cLen:'Long.',cTL:'Term. izq.',cTR:'Term. der.',cSub:'Sub',
+cartTitle:'Lista de solicitud',cartClear:'Vaciar',qty:'Cant.',add:'Agregar',cartEmpty:'Elija circuitos a la izquierda o capture No. de parte, circuito y cantidad arriba.',lines:'circuitos',total:'Total',notePh:'Nota (opcional) — ej. se necesita antes de las 2 pm',save:'Guardar solicitud',
+recentTitle:'Solicitudes / completados',recentDesc:'Últimos 3 días + pendientes · solo se puede cancelar en estado Solicitado',mineOnly:'Solo mi línea',cTime:'Hora',cSt:'Estado',cProc:'Proceso',noReq:'No hay solicitudes.',
+from:'Desde',to:'Hasta',search:'Buscar',worker:'Responsable',recv:'Recibir',done:'Registro MES',ship:'Entrega de cable completada',rOpen:'En proceso',rShip:'Entregados',rAll:'Todos',cShip:'Entrega',reject:'Rechazar',undo:'Regresar a Solicitado',copyMes:'Copiar para MES',csv:'Guardar CSV',
+mTitle:'Pegar sublista',mDesc:'Copie en Excel desde la fila de encabezados hasta los datos (Ctrl+C) y péguelos abajo (Ctrl+V). Sin encabezados se usa el formato de 69 columnas. Es la misma sublista del programa de consulta de circuitos.',saveMerge:'Guardar reemplazando por No. parte',saveAll:'Reemplazar todo',clearAll:'Borrar sublista',mHelp:'Reemplazar por No. parte: solo se borran las filas de los números de parte pegados. Los datos se comparten con todas las PC y con la consulta de circuitos.',sRows:'Circuitos guardados',sPn:'No. de parte',sUpd:'Último guardado',
+all:'Todos',st1:'Solicitado',st2:'Recibido',st3:'Reg. MES',st4:'Entregado',st5:'Rechazado',st6:'Cancelado',stAll:'Todos',cancel:'Cancelar',noMaster:'No hay sublista. Péguela en la pestaña Sublista.',choosePn:'Seleccione un No. de parte.',noHit:'Sin resultados.',
+needLine:'Capture línea y solicitante.',needItems:'La lista está vacía.',badQty:'Revise las cantidades (mayor que 0).',saved:'Solicitud guardada',confirmSave:'¿Guardar la solicitud?',notInMaster:'No está en la sublista',addedNoMaster:'No está en la sublista. Se agregó tal cual.',needPnWn:'Capture No. de parte y circuito.',
+needWorker:'Capture el nombre del responsable.',noSel:'Seleccione renglones.',mesNoPh:'No. de registro MES (opcional)',rejectWhy:'Motivo de rechazo',updated:'Actualizado',copied:'Copiado. Péguelo en MES.',confirmCancel:'¿Cancelar esta solicitud?',
+online:'Servidor',offline:'Sin conexión (caché)',saving:'Guardando…',loading:'Cargando…',saveErr:'Error al guardar en el servidor',parsed:'filas leídas',cleared:'Sublista borrada',confirmClear:'¿Borrar toda la sublista?',confirmAll:'Se reemplazará toda la sublista. ¿Continuar?',nothing:'No hay filas para guardar.',
+removeGroup:'Se quitarán también los circuitos del mismo grupo.',sel:'seleccionados',skipped:'Algunos renglones ya habían cambiado de estado y no se modificaron.',reqBy:'Solicitó',note:'Nota',groupOf:'circuitos'};
+Object.assign(ES,{scanLbl:'Escanear código — selecciona No. de parte y circuito, luego capture la cantidad',lTitle:'Pegar tabla de LOT (LOT SAP → No. de parte)',
+ lDesc:'Copie de Excel (orden de trabajo) desde el encabezado (No. parte · LOT) hasta los datos y péguelo. Sin encabezado, la celda que empieza con 5726 se toma como LOT y la de formato de No. de parte como No. de parte.',
+ lotMerge:'Agregar · actualizar',lotAll:'Reemplazar todo',lotClear:'Borrar tabla de LOT',lHelp:'Agregar · actualizar: el mismo LOT se sobrescribe y lo demás se conserva. Se comparte con todas las PC.',lRows:'LOT guardados',
+ scanBad:'Código no reconocido',lotMiss:'LOT no está en la tabla — elija el No. de parte',wnMiss:'Circuito no está en la sublista',scanOk:'Capture la cantidad y presione Enter',lotParsed:'LOT leídos',lotCleared:'Tabla de LOT borrada',confirmLotAll:'Se reemplazará toda la tabla de LOT. ¿Continuar?',confirmLotClear:'¿Borrar toda la tabla de LOT?',kLot:'LOT',kPn:'No. parte',kWn:'Circuito'});
+const KO={scanBad:'바코드 형식을 읽을 수 없습니다',lotMiss:'LOT 매칭표에 없는 LOT입니다 — 품번을 직접 선택하세요',wnMiss:'서브리스트에 없는 선번',scanOk:'수량 입력 후 Enter',lotParsed:'개 LOT 읽음',lotCleared:'LOT 매칭표를 삭제했습니다',confirmLotAll:'기존 LOT 매칭표를 모두 지우고 새로 저장합니다. 계속할까요?',confirmLotClear:'LOT 매칭표 전체를 삭제할까요?',kLot:'LOT',kPn:'품번',kWn:'선번',
+line:'라인',total:'합계',all:'전체',st1:'신청',st2:'접수',st3:'MES등록',st4:'출고완료',st5:'반려',st6:'취소',stAll:'전체',cancel:'취소',noMaster:'서브리스트가 없습니다. 서브리스트 탭에서 붙여넣으세요.',choosePn:'품번을 선택하세요.',noHit:'조건에 맞는 회로가 없습니다.',
+needLine:'라인과 신청자를 입력하세요.',needItems:'신청 목록이 비어 있습니다.',badQty:'수량을 확인하세요 (1 이상).',saved:'신청을 저장했습니다',confirmSave:'신청을 저장할까요?',notInMaster:'서브리스트에 없음',addedNoMaster:'서브리스트에 없는 선번입니다. 입력한 그대로 추가했습니다.',needPnWn:'품번과 선번을 입력하세요.',
+needWorker:'처리자 이름을 입력하세요.',noSel:'행을 선택하세요.',mesNoPh:'MES 등록번호 (선택)',rejectWhy:'반려 사유',updated:'처리했습니다',copied:'복사했습니다. MES에 붙여넣으세요.',confirmCancel:'이 신청을 취소할까요?',
+online:'서버 연결',offline:'오프라인 (캐시 사용)',saving:'저장 중…',loading:'불러오는 중…',saveErr:'서버 저장 실패',parsed:'행 읽음',cleared:'서브리스트를 삭제했습니다',confirmClear:'서브리스트 전체를 삭제할까요?',confirmAll:'기존 서브리스트를 모두 지우고 새로 저장합니다. 계속할까요?',nothing:'저장할 행이 없습니다.',
+removeGroup:'같은 그룹의 선도 함께 빠집니다.',sel:'선택',skipped:'일부 행은 이미 상태가 바뀌어 처리하지 않았습니다.',reqBy:'신청',note:'메모',groupOf:'선',gDbl:'쌍압착',gBind:'결속',gTw:'트위스트',gSh:'쉴드'};
+Object.assign(ES,{roleAsm:'Jefe de ensamble',roleProc:'Jefe de corte',pinDesc:'Capture el PIN del jefe. No se volverá a pedir durante 10 minutos.',pinLabel:'PIN',pinEmpty:'Llene todos los campos.',pinWrong:'PIN incorrecto.',pinChgT:'cambio',pinChgDesc:'Confirme el PIN actual y capture el nuevo (mínimo 4 caracteres).',pinCur:'PIN actual',pinNew:'PIN nuevo',pinNew2:'Confirmar PIN nuevo',pinMismatch:'Los PIN nuevos no coinciden.',pinShort:'El PIN nuevo debe tener al menos 4 caracteres.',pinChanged:'PIN cambiado.',pinChg:'🔒 Cambiar PIN de jefe',aAppr:'🔒 Aprobar (jefe)',aApprUndo:'🔒 Deshacer aprobación',aReject:'🔒 Rechazar',pAppr:'🔒 Aprobar recepción',cancelBtn:'Cancelar',okBtn:'Aceptar',st1:'Por aprobar',st2:'Aprobado (ensamble)',st3:'Recibido (corte)',st4:'Aprobado (corte)',st5:'Entregado',st6:'Recibido (ensamble)',st7:'Rechazado',st8:'Cancelado',fReq:'Solicitud',fAppr:'Aprob. ens.',fRcv:'Corte recibe',fPAppr:'Aprob. corte',fShip:'Entrega',fRecv:'Ens. recibe',asmWorker:'Responsable (jefe / confirma)',aAppr:'Aprobar (jefe)',aApprUndo:'Deshacer aprobación',pAppr:'Aprobar recepción',aRecvUndo:'Deshacer recepción',needAsmWorker:'Capture el nombre del responsable.',confirmCancelProc:'Incluye renglones ya recibidos por corte. ¿Cancelar?',savedAppr:'Guardado. Pasa a corte después de la aprobación del jefe.',today:'Hoy',reqCnt:' sol.',cWnPn:'Circuito / No. parte',cSpecTerm:'Especificación / terminales',cStLot:'Estado / LOT MES',cFlow2:'Historial',histAsm:'Historial: solicitud · entrega · recepción',histProc:'Historial: solicitud · entrega · recepción',
+ rangeNote:'Los pendientes (solicitado · recibido · entregado) se muestran sin importar la fecha',qPh:'No. parte · circuito · línea · LOT',aRecv:'Confirmar recepción de cable',aRecvUndo:'Deshacer recepción',aCancel:'Cancelar solicitud',
+ pRecv:'Recibir',lotPh:'LOT MES utilizado',pShip:'Completar / entregar',undo:'Regresar un paso',cSpec:'Especificación',cTerm:'Term. izq. / der.',cFlow:'Historial (solicitud → corte → entrega → ensamble)',
+ fReq:'Solicitud',fRcv:'Corte recibe',fShip:'Entrega',fRecv:'Ensamble recibe',needLot:'Capture el LOT MES.',needName:'Capture el solicitante (confirma la recepción).'});
+Object.assign(KO,{roleAsm:'조립팀장',roleProc:'가공팀장',pinDesc:'팀장 PIN을 입력하세요. 확인 후 10분 동안은 다시 묻지 않습니다.',pinLabel:'PIN',pinEmpty:'모든 칸을 입력하세요.',pinWrong:'PIN이 맞지 않습니다.',pinChgT:'변경',pinChgDesc:'현재 PIN을 확인한 뒤 새 PIN으로 바꿉니다 (4자 이상).',pinCur:'현재 PIN',pinNew:'새 PIN',pinNew2:'새 PIN 확인',pinMismatch:'새 PIN이 서로 다릅니다.',pinShort:'새 PIN은 4자 이상이어야 합니다.',pinChanged:'PIN을 변경했습니다.',st1:'승인대기',st2:'조립승인',st3:'가공접수',st4:'가공승인',st5:'출고',st6:'조립접수완료',st7:'반려',st8:'취소',fAppr:'조립승인',fPAppr:'가공승인',needAsmWorker:'처리자(팀장·확인자) 이름을 입력하세요.',confirmCancelProc:'가공에서 이미 접수한 건이 포함되어 있습니다. 취소할까요?',savedAppr:'저장했습니다. 조립팀장 승인 후 가공에 전달됩니다.',qty:'수량',today:'오늘',reqCnt:'건',fReq:'신청',fRcv:'가공접수',fShip:'출고',fRecv:'조립접수',needLot:'투입 MES LOT를 입력하세요.',needName:'신청자(접수 확인자) 이름을 입력하세요.'});
+let lang='ko';
+const koText={};document.querySelectorAll('[data-i]').forEach(el=>koText[el.dataset.i]=el.innerHTML);
+const koPh={};document.querySelectorAll('[data-ph]').forEach(el=>koPh[el.dataset.ph]=el.placeholder);
+const T=k=>lang==='es'?(ES[k]??KO[k]??k):(KO[k]??k);
+function applyLang(){
+  document.querySelectorAll('[data-i]').forEach(el=>{const k=el.dataset.i;el.innerHTML=lang==='es'&&ES[k]?(k==='title'?ES.title+'<small>'+ES.sub+'</small>':ES[k]):koText[k];});
+  document.querySelectorAll('[data-ph]').forEach(el=>{el.placeholder=lang==='es'?ES[el.dataset.ph]:koPh[el.dataset.ph];});
+  $('langBtn').textContent=lang==='ko'?'ES':'KO';document.documentElement.lang=lang;
+  if(netKnown)setNet(online);
+  renderAll();
+}
+
+/* ---------- 공통 ---------- */
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const num=s=>{const v=parseFloat(String(s).replace(/,/g,''));return isNaN(v)?null:v;};
+const U=s=>String(s||'').trim().toUpperCase();
+const LS={get(k,d=''){try{return localStorage.getItem('shreq_'+k)??d}catch(e){return d}},set(k,v){try{localStorage.setItem('shreq_'+k,v)}catch(e){}}};
+function toast(m){const t=$('toast');t.textContent=m;t.classList.remove('hidden');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.add('hidden'),2200);}
+const pad=n=>String(n).padStart(2,'0');
+const fmtT=s=>{if(!s)return '';const d=new Date(s);return `${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;};
+const ymd=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+
+/* ---------- 저장소 (IndexedDB 캐시) ---------- */
+let db=null, MASTER={headers:DEFAULT_HEADERS.slice(),rows:[],updated:null};
+function idbOpen(){return new Promise(res=>{try{const r=indexedDB.open(IDB_NAME,1);r.onupgradeneeded=()=>r.result.createObjectStore('kv');r.onsuccess=()=>res(r.result);r.onerror=()=>res(null);}catch(e){res(null)}});}
+function idbGet(k){return new Promise(res=>{if(!db)return res(null);try{const q=db.transaction('kv').objectStore('kv').get(k);q.onsuccess=()=>res(q.result||null);q.onerror=()=>res(null);}catch(e){res(null)}});}
+function idbSet(k,v){return new Promise(res=>{if(!db)return res(false);try{const tx=db.transaction('kv','readwrite');tx.objectStore('kv').put(v,k);tx.oncomplete=()=>res(true);tx.onerror=()=>res(false);}catch(e){res(false)}});}
+
+/* ---------- Supabase ---------- */
+const SB_URL='https://lrjurjhavlalhlwaplxd.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxyanVyamhhdmxhbGhsd2FwbHhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNzUxNDAsImV4cCI6MjA5NTY1MTE0MH0.DVFmZaT37R9CXSMHdnLx4YAVNTnlBGijkOIaoUo7Qsk';
+async function sb(path,opt={}){
+  const r=await fetch(SB_URL+'/rest/v1/'+path,{...opt,headers:{apikey:SB_KEY,Authorization:'Bearer '+SB_KEY,'Content-Type':'application/json',...(opt.headers||{})}});
+  if(!r.ok)throw new Error(r.status+' '+(await r.text()).slice(0,200));
+  return r;
+}
+let online=false,netKnown=false;
+function setNet(ok){online=ok;netKnown=true;const el=$('netStat');el.className=ok?'status ok':'status off';el.textContent=T(ok?'online':'offline');}
+function setStat(m){$('netStat').textContent=m;}
+async function loadRemote(){
+  const rows=[];const PAGE=1000;
+  for(let off=0;;off+=PAGE){
+    const d=await (await sb(`${MT}?select=cells&order=pn.asc,id.asc&limit=${PAGE}&offset=${off}`)).json();
+    d.forEach(x=>rows.push(x.cells));if(d.length<PAGE)break;
+  }
+  const m=await (await sb(`${MM}?select=headers,updated_at&id=eq.1`)).json();
+  const n=DEFAULT_HEADERS.length;
+  return {headers:(m[0]&&m[0].headers)||DEFAULT_HEADERS.slice(),rows:rows.map(c=>{const a=(c||[]).map(v=>v==null?'':String(v));while(a.length<n)a.push('');return a;}),updated:m[0]?m[0].updated_at:null};
+}
+async function loadMaster(){
+  setStat(T('loading'));
+  try{MASTER=await loadRemote();setNet(true);idbSet('master',MASTER);}
+  catch(e){console.warn(e);setNet(false);const c=await idbGet('master');if(c&&c.rows)MASTER=c;}
+  MASTER.rows.sort((a,b)=>a[C.pn].localeCompare(b[C.pn])||a[C.sub].localeCompare(b[C.sub],undefined,{numeric:true}));
+  indexMaster();renderMasterStats();fillPnSelects();renderPick();
+}
+
+/* ---------- 붙여넣기 파싱 (엑셀 TSV, 따옴표 셀 지원) ---------- */
+function parseTSV(text){
+  const out=[];let row=[],cell='',q=false;
+  for(let i=0;i<text.length;i++){
+    const ch=text[i];
+    if(q){ if(ch==='"'){ if(text[i+1]==='"'){cell+='"';i++;} else q=false; } else cell+=ch; continue; }
+    if(ch==='"'&&cell==='') q=true;
+    else if(ch==='\t'){row.push(cell);cell='';}
+    else if(ch==='\n'||ch==='\r'){ if(ch==='\r'&&text[i+1]==='\n')i++; row.push(cell);out.push(row);row=[];cell='';}
+    else cell+=ch;
+  }
+  if(cell!==''||row.length){row.push(cell);out.push(row);}
+  return out.map(r=>r.map(c=>c.trim())).filter(r=>r.some(c=>c!==''));
+}
+function readPaste(){
+  const rows=parseTSV(document.getElementById('pasteBox').value);
+  let headers=null;
+  if(rows.length&&rows[0][0].replace(/\s/g,'')==='품번'){headers=rows.shift();}
+  const n=Math.max(DEFAULT_HEADERS.length,headers?headers.length:0);
+  const data=rows.filter(r=>r[0]).map(r=>{const a=r.slice(0,n);while(a.length<n)a.push('');return a;});
+  if(headers){headers=headers.slice(0,n);while(headers.length<n)headers.push(DEFAULT_HEADERS[headers.length]||'');
+    headers=headers.map((h,i)=>h||DEFAULT_HEADERS[i]||('열'+(i+1)));
+    // 중복 머리글 구분 (좌/우)
+    const seen={};headers=headers.map((h,i)=>{if(seen[h]){const alt=DEFAULT_HEADERS[i];return alt&&alt!==h?alt:h+' ('+(i+1)+')';}seen[h]=1;return h;});
+  }
+  return {headers,data};
+}
+document.getElementById('pasteBox').addEventListener('input',()=>{
+  const {data}=readPaste();const pns=[...new Set(data.map(r=>r[C.pn]))];
+  document.getElementById('pasteInfo').textContent=data.length?`${data.length} ${T('parsed')} · ${pns.join(', ')}`:'';
+});
+async function save(mode){
+  const {headers,data}=readPaste();
+  if(!data.length){toast(T('nothing'));return;}
+  if(mode==='all'&&MASTER.rows.length&&!confirm(T('confirmAll')))return;
+  await push(data,headers,mode==='all');
+  document.getElementById('pasteBox').value='';document.getElementById('pasteInfo').textContent='';
+}
+async function push(data,headers,all){
+  const btns=document.querySelectorAll('#viewMaster .btn');btns.forEach(b=>b.disabled=true);setStat(T('saving'));
+  try{
+    const r=await sb('rpc/'+MR,{method:'POST',body:JSON.stringify({p_rows:data,p_headers:headers||null,p_all:all})});
+    const n=await r.json();toast(`${T('saved')} · ${n}`);
+  }catch(e){console.error(e);setNet(false);alert(T('saveErr')+'\n'+e.message);btns.forEach(b=>b.disabled=false);throw e;}
+  btns.forEach(b=>b.disabled=false);
+  await loadMaster();
+}
+document.getElementById('saveMerge').onclick=()=>save('merge').catch(()=>{});
+document.getElementById('saveAll').onclick=()=>save('all').catch(()=>{});
+document.getElementById('clearAll').onclick=async()=>{if(!confirm(T('confirmClear')))return;try{await push([],null,true);toast(T('cleared'));}catch(e){}};
+document.getElementById('reloadBtn').onclick=()=>loadMaster();
+
+
+function renderMasterStats(){
+  const pnCount={};MASTER.rows.forEach(r=>pnCount[r[C.pn]]=(pnCount[r[C.pn]]||0)+1);
+  $('stRows').textContent=MASTER.rows.length.toLocaleString();
+  $('stPn').textContent=Object.keys(pnCount).length;
+  $('stUpd').textContent=MASTER.updated?new Date(MASTER.updated).toLocaleString():'-';
+  $('pnList').innerHTML=Object.entries(pnCount).map(([p,n])=>`<span>${esc(p)} · ${n}</span>`).join('');
+}
+
+/* 색상 칩: B,W,R,G,Y,L,O,Br,Gr,P ... 첫 글자=바탕, 다음=줄무늬 */
+const CMAP={B:'#1a1a1a',W:'#f7f7f7',R:'#d32f2f',G:'#2e8b3a',Y:'#f5d000',L:'#1f5fd1',O:'#f08a1c',Br:'#7a4a22',Gr:'#8d9399',P:'#e586b4',V:'#7b3fb5',Lg:'#7fd36b',Sb:'#6cc6f0',Pu:'#7b3fb5'};
+function splitColor(c){const out=[];let s=c||'';while(s){const two=s.slice(0,2);if(CMAP[two]){out.push(two);s=s.slice(2);}else{out.push(s[0]);s=s.slice(1);}}return out;}
+function chip(c){if(!c)return '';const p=splitColor(c);const base=CMAP[p[0]]||'#ccc';const st=p[1]?`<b style="background:${CMAP[p[1]]||'#ccc'}"></b>`:'';return `<span class="chip"><i style="background:${base}">${st}</i>${esc(c)}</span>`;}
+
+
+
+/* ---------- 그룹 (쌍압착 · 결속 · 트위스트/쉴드) ---------- */
+let BYPN={},GC={};
+function indexMaster(){BYPN={};GC={};MASTER.rows.forEach((r,i)=>(BYPN[r[C.pn]]=BYPN[r[C.pn]]||[]).push(i));}
+function groupsFor(pn){
+  if(GC[pn])return GC[pn];
+  const idxs=BYPN[pn]||[],par={};idxs.forEach(i=>par[i]=i);
+  const find=x=>par[x]===x?x:(par[x]=find(par[x]));
+  const uni=(a,b)=>{a=find(a);b=find(b);if(a!==b)par[b]=a;};
+  const tok={},tw={};
+  idxs.forEach(i=>{const r=MASTER.rows[i];
+    // 조인트·쌍압착 연결관계: "1a","1b","28b 29a" → 같은 숫자끼리 한 묶음
+    (String(r[C.jrel]).match(/\d+(?=[a-z])/gi)||[]).forEach(n=>{const k=+n;if(tok[k]!=null)uni(tok[k],i);else tok[k]=i;});
+    // 트위스트/쉴드: 같은 구분 + 같은 연결번호
+    const t=U(r[C.shtw]),k=String(r[C.shtwLink]||r[C.twPair]).trim();
+    if(t&&k){const kk=t+'|'+k;if(tw[kk]!=null)uni(tw[kk],i);else tw[kk]=i;}
+  });
+  const comp={};idxs.forEach(i=>(comp[find(i)]=comp[find(i)]||[]).push(i));
+  const byIdx=new Map();let gid=0;
+  Object.values(comp).filter(a=>a.length>1).forEach(a=>{
+    gid++;const types=new Set();
+    a.forEach(i=>{const r=MASTER.rows[i],f2=U(r[C.jrel2]);
+      if(String(r[C.jrel]).trim()){if(/[TW]$/.test(f2))types.add('dbl');if(!/[TW]$/.test(f2)||/M/.test(f2))types.add('bind');}
+      const t=U(r[C.shtw]);if(t==='T')types.add('tw');if(t==='S')types.add('sh');});
+    const order=['dbl','bind','tw','sh'];
+    const g={id:gid,idxs:a,types:order.filter(x=>types.has(x))};a.forEach(i=>byIdx.set(i,g));
+  });
+  return GC[pn]={byIdx};
+}
+const TYPE_KEY={dbl:'gDbl',bind:'gBind',tw:'gTw',sh:'gSh'};
+const TYPE_COLOR={dbl:'var(--g-dbl)',bind:'var(--g-bind)',tw:'var(--g-tw)',sh:'var(--g-sh)'};
+function badge(types,n,partners){
+  if(!types||!types.length)return '';
+  return types.map(t=>`<span class="gb ${t}">${esc(T(TYPE_KEY[t]))}</span>`).join(' ')+(partners?` <span class="status">${esc(partners)}</span>`:(n?` <span class="status">${n}${T('groupOf')}</span>`:''));
+}
+/* DB 저장값(grp_type: 'dbl+tw') → 배지 */
+const badgeDb=r=>r.in_master===false?`<span class="gb miss">${esc(T('notInMaster'))}</span>`:badge((r.grp_type||'').split('+').filter(Boolean),0,r.grp?r.grp.split(',').filter(w=>w!==r.wn).join(', '):'');
+
+/* ---------- 조립생산: 회로 선택 ---------- */
+let pickPn='',only='',cart=[];// cart item: {pn,sub,wn,mat,sq,col,len,tL,tR,gkey,types,members,inMaster,qty}
+const ckey=(pn,wn)=>pn+'|'+U(wn);
+function fillPnSelects(){
+  const pns=Object.keys(BYPN).sort();
+  if(pickPn&&!BYPN[pickPn])pickPn='';
+  if(!pickPn&&pns.length===1)pickPn=pns[0];
+  $('aPn').innerHTML=`<option value="">—</option>`+pns.map(p=>`<option>${esc(p)}</option>`).join('');$('aPn').value=pickPn;
+  $('dlPn').innerHTML=pns.map(p=>`<option value="${esc(p)}">`).join('');
+  fillWnList();
+}
+function fillWnList(){const p=$('dPn').value.trim();$('dlWn').innerHTML=(BYPN[p]||[]).map(i=>`<option value="${esc(MASTER.rows[i][C.wn])}">`).join('');}
+function defQty(){const v=parseInt($('aDefQty').value,10);return v>0?v:1;}
+function itemFrom(i,g,qty){const r=MASTER.rows[i];
+  return {pn:r[C.pn],sub:r[C.sub],wn:r[C.wn],mat:r[C.mat],sq:r[C.sq],col:r[C.col],len:r[C.len],tL:r[C.tL],tR:r[C.tR],
+    gkey:g?r[C.pn]+'#'+g.id:'',types:g?g.types:[],members:g?g.idxs.map(j=>MASTER.rows[j][C.wn]):[],inMaster:true,qty};}
+function inCart(pn,wn){return cart.some(c=>ckey(c.pn,c.wn)===ckey(pn,wn));}
+function toggleIdx(i,qty){
+  const r=MASTER.rows[i],g=groupsFor(r[C.pn]).byIdx.get(i);
+  const idxs=g?g.idxs:[i];
+  if(inCart(r[C.pn],r[C.wn])){const keys=new Set(idxs.map(j=>ckey(MASTER.rows[j][C.pn],MASTER.rows[j][C.wn])));cart=cart.filter(c=>!keys.has(ckey(c.pn,c.wn)));}
+  else addIdx(i,qty);
+  renderPick();renderCart();
+}
+function addIdx(i,qty,lot){
+  const r=MASTER.rows[i],g=groupsFor(r[C.pn]).byIdx.get(i);
+  const q=qty||defQty();
+  (g?g.idxs:[i]).forEach(j=>{const x=MASTER.rows[j];const ex=cart.find(c=>ckey(c.pn,c.wn)===ckey(x[C.pn],x[C.wn]));
+    if(ex){ex.qty=q;if(lot)ex.lot=lot;}else{const it=itemFrom(j,g,q);if(lot)it.lot=lot;cart.push(it);}});
+  sortCart();
+}
+function sortCart(){const pos=c=>{const L=BYPN[c.pn];if(!L)return 1e9;const k=L.findIndex(i=>U(MASTER.rows[i][C.wn])===U(c.wn));return k<0?1e9:k;};
+  // 그룹 단위로 붙여서 정렬
+  const gpos={};cart.forEach(c=>{const p=pos(c);const k=c.gkey||ckey(c.pn,c.wn);gpos[k]=Math.min(gpos[k]??1e9,p);});
+  cart.sort((a,b)=>a.pn.localeCompare(b.pn)||(gpos[a.gkey||ckey(a.pn,a.wn)]-gpos[b.gkey||ckey(b.pn,b.wn)])||pos(a)-pos(b));}
+function renderPick(){
+  const body=$('pickBody'),empty=$('pickEmpty');
+  if(!MASTER.rows.length){body.innerHTML='';empty.textContent=T('noMaster');empty.classList.remove('hidden');$('pickInfo').textContent='';return;}
+  if(!pickPn){body.innerHTML='';empty.textContent=T('choosePn');empty.classList.remove('hidden');$('pickInfo').textContent='';return;}
+  const q=U($('aSearch').value),G=groupsFor(pickPn).byIdx;
+  let idxs=BYPN[pickPn]||[];
+  if(q)idxs=idxs.filter(i=>{const r=MASTER.rows[i];return [C.wn,C.tL,C.tR,C.col,C.mat].some(c=>U(r[c]).includes(q));});
+  if(only==='g')idxs=idxs.filter(i=>G.has(i));
+  if(only==='s')idxs=idxs.filter(i=>inCart(pickPn,MASTER.rows[i][C.wn]));
+  // 검색 결과에 그룹 일부만 걸리면 짝도 함께 보이도록
+  if(q){const set=new Set(idxs);idxs.slice().forEach(i=>{const g=G.get(i);if(g)g.idxs.forEach(j=>set.add(j));});const all=BYPN[pickPn];idxs=all.filter(i=>set.has(i));}
+  const nSel=(BYPN[pickPn]||[]).filter(i=>inCart(pickPn,MASTER.rows[i][C.wn])).length;
+  $('pickInfo').textContent=`${idxs.length} / ${(BYPN[pickPn]||[]).length} · ${T('sel')} ${nSel}`;
+  body.innerHTML=idxs.map(i=>{const r=MASTER.rows[i],g=G.get(i),on=inCart(pickPn,r[C.wn]);
+    const partners=g?g.idxs.filter(j=>j!==i).map(j=>MASTER.rows[j][C.wn]).join(', '):'';
+    const tw=U(r[C.shtw])==='T'&&r[C.oemLen]?` <span class="status">→${esc(r[C.oemLen])}</span>`:'';
+    return `<tr data-i="${i}" class="${on?'sel':''}${g?' g':''}" style="${g?'--gc:'+TYPE_COLOR[g.types[0]]:''}" tabindex="0"><td><input type="checkbox" ${on?'checked':''} tabindex="-1" aria-label="${esc(r[C.wn])}"></td><td class="wn">${esc(r[C.wn])}</td><td>${g?badge(g.types,0,partners):''}</td><td>${esc(r[C.mat])}</td><td>${esc(r[C.sq])}</td><td>${chip(r[C.col])}</td><td class="num">${esc(r[C.len])}${tw}</td><td>${esc(r[C.tL])}</td><td>${esc(r[C.tR])}</td><td class="status">${esc(r[C.sub])}</td></tr>`;}).join('');
+  empty.textContent=T('noHit');empty.classList.toggle('hidden',idxs.length>0);
+}
+$('pickBody').addEventListener('click',e=>{const tr=e.target.closest('tr');if(tr)toggleIdx(+tr.dataset.i);});
+$('pickBody').addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){const tr=e.target.closest('tr');if(tr){e.preventDefault();toggleIdx(+tr.dataset.i);}}});
+$('aPn').onchange=()=>{pickPn=$('aPn').value;LS.set('pn'+PLANT,pickPn);$('aSearch').value='';if(!$('dPn').value){$('dPn').value=pickPn;fillWnList();}renderPick();};
+$('aSearch').oninput=renderPick;
+$('aOnly').onclick=e=>{const b=e.target.closest('button');if(!b)return;only=b.dataset.v;[...$('aOnly').children].forEach(x=>x.classList.toggle('on',x===b));renderPick();};
+
+/* 직접 입력 */
+$('dPn').oninput=fillWnList;
+function directAdd(){
+  const pn=$('dPn').value.trim(),wn=$('dWn').value.trim(),q=parseInt($('dQty').value,10)||defQty();
+  if(!pn||!wn){toast(T('needPnWn'));return;}
+  const pnKey=Object.keys(BYPN).find(p=>U(p)===U(pn));
+  const i=pnKey?(BYPN[pnKey]||[]).find(j=>U(MASTER.rows[j][C.wn])===U(wn)):undefined;
+  const lot=scanCtx&&U(scanCtx.wn)===U(wn)&&(!scanCtx.pn||U(scanCtx.pn)===U(pn))?scanCtx.lot:'';
+  if(i!=null){addIdx(i,q,lot);}
+  else{const ex=cart.find(c=>ckey(c.pn,c.wn)===ckey(pn,wn));
+    if(ex){ex.qty=q;if(lot)ex.lot=lot;}else cart.push({pn:pnKey||pn,sub:'',wn:U(wn),mat:'',sq:'',col:'',len:'',tL:'',tR:'',gkey:'',types:[],members:[],inMaster:false,qty:q,lot});
+    toast(T('addedNoMaster'));}
+  $('dWn').value='';$('dQty').value='';
+  if(scanCtx){scanCtx=null;$('scanIn').value='';$('scanIn').focus();}else $('dWn').focus();
+  renderCart();renderPick();
+}
+$('dAdd').onclick=directAdd;
+['dPn','dWn','dQty'].forEach(id=>$(id).addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();if(isScan($(id).value)){const v=$(id).value;$(id).value='';if(id==='dPn')fillWnList();onScan(v);return;}if(id==='dPn')$('dWn').focus();else if(id==='dWn')$('dQty').focus();else directAdd();}}));
+
+/* ---------- 바코드 스캔: !5726A01005;MC24;1; ---------- */
+let LOTMAP={},LOTUPD=null,scanCtx=null;
+const isScan=v=>/^\s*!?\s*5726[0-9A-Z]*\s*;/i.test(v||'');
+function parseScan(v){
+  const parts=String(v||'').replace(/^[\s!]+/,'').split(';').map(x=>x.trim()).filter(Boolean);
+  const k=parts.findIndex(x=>/^5726[0-9A-Z]+$/i.test(x));
+  if(k<0||!parts[k+1])return null;
+  return {lot:U(parts[k]),wn:U(parts[k+1])};
+}
+function scanInfo(html){$('scanInfo').innerHTML=html;}
+function flashRow(i){const tr=$('pickBody').querySelector(`tr[data-i="${i}"]`);if(!tr)return;tr.classList.remove('flash');void tr.offsetWidth;tr.classList.add('flash');tr.scrollIntoView({block:'center',behavior:'smooth'});}
+function onScan(v){
+  const sc=parseScan(v);
+  if(!sc){scanInfo(`<span class="bad">${esc(T('scanBad'))}</span> <b>${esc(v)}</b>`);toast(T('scanBad'));$('scanIn').select();return;}
+  const pnRaw=LOTMAP[sc.lot]||'';
+  const pnKey=pnRaw?Object.keys(BYPN).find(p=>U(p)===U(pnRaw)):undefined;
+  scanCtx={lot:sc.lot,pn:pnKey||pnRaw,wn:sc.wn};
+  const lotTag=`<span><span class="k">${esc(T('kLot'))}</span><b>${esc(sc.lot)}</b></span>`;
+  if(!pnRaw){
+    $('dWn').value=sc.wn;$('dQty').value='';
+    scanInfo(`${lotTag}<span><span class="k">${esc(T('kWn'))}</span><b>${esc(sc.wn)}</b></span><span class="bad">${esc(T('lotMiss'))}</span>`);
+    toast(T('lotMiss'));$('dPn').value='';fillWnList();$('dPn').focus();return;
+  }
+  $('dPn').value=pnKey||pnRaw;fillWnList();
+  let i;
+  if(pnKey){
+    pickPn=pnKey;$('aPn').value=pnKey;LS.set('pn'+PLANT,pnKey);$('aSearch').value='';
+    i=(BYPN[pnKey]||[]).find(j=>U(MASTER.rows[j][C.wn])===sc.wn);
+  }
+  $('dWn').value=i!=null?MASTER.rows[i][C.wn]:sc.wn;$('dQty').value='';
+  renderPick();if(i!=null)flashRow(i);
+  scanInfo(`${lotTag}<span><span class="k">${esc(T('kPn'))}</span><b>${esc(pnKey||pnRaw)}</b></span><span><span class="k">${esc(T('kWn'))}</span><b>${esc(sc.wn)}</b></span>`+
+    (i!=null?`<span class="ok">✔ ${esc(T('scanOk'))}</span>`:`<span class="bad">${esc(T('wnMiss'))}</span>`));
+  $('dQty').focus();
+}
+$('scanIn').addEventListener('keydown',e=>{if(e.key==='Enter'||e.key==='Tab'){const v=$('scanIn').value.trim();if(!v)return;e.preventDefault();onScan(v);}});
+// 입력칸 밖에서 스캔해도 바코드 칸으로
+document.addEventListener('keydown',e=>{
+  if(e.key!=='!'||e.ctrlKey||e.altKey||e.metaKey)return;
+  const a=document.activeElement;if(a&&(a.tagName==='TEXTAREA'||(a.tagName==='INPUT'&&!['checkbox','radio','button'].includes(a.type))||a.tagName==='SELECT'))return;
+  if($('viewAsm').classList.contains('hidden'))return;
+  e.preventDefault();$('scanIn').value='!';$('scanIn').focus();
+});
+
+/* LOT 매칭표 */
+async function loadLots(){
+  try{const m={};let upd=null;const PAGE=1000;
+    for(let off=0;;off+=PAGE){
+      const d=await (await sb(`${LM}?plant=eq.${PLANT}&select=lot,pn,updated_at&order=lot.asc&limit=${PAGE}&offset=${off}`)).json();
+      d.forEach(x=>{m[U(x.lot)]=x.pn;if(!upd||x.updated_at>upd)upd=x.updated_at;});if(d.length<PAGE)break;}
+    LOTMAP=m;LOTUPD=upd;idbSet('lots',{m,upd});
+  }catch(e){console.warn(e);const c=await idbGet('lots');if(c){LOTMAP=c.m||{};LOTUPD=c.upd||null;}}
+  renderLotStats();
+}
+function renderLotStats(){$('lotRows').textContent=Object.keys(LOTMAP).length.toLocaleString();$('lotUpd').textContent=LOTUPD?new Date(LOTUPD).toLocaleString():'-';}
+function readLotPaste(){
+  const rows=parseTSV($('lotBox').value);if(!rows.length)return [];
+  const hk=rows.findIndex(r=>r.some(c=>U(c)==='LOT')&&r.some(c=>c.replace(/\s/g,'')==='품번'));
+  const isLot=c=>/^5726[0-9A-Z]{3,}$/i.test(c);
+  const isPn=c=>/^[0-9A-Z]{4,6}-[0-9A-Z]{3,7}(-[0-9A-Z]{1,4})?$/i.test(c)&&!isLot(c);
+  let out=[];
+  if(hk>=0){const h=rows[hk],li=h.findIndex(c=>U(c)==='LOT'),pi=h.findIndex(c=>c.replace(/\s/g,'')==='품번');
+    out=rows.slice(hk+1).map(r=>[U(r[li]),U(r[pi])]).filter(x=>isLot(x[0])&&x[1]);}
+  else out=rows.map(r=>{const l=r.find(isLot),p=r.find(isPn);return [U(l),U(p)];}).filter(x=>x[0]&&x[1]);
+  const m=new Map();out.forEach(x=>m.set(x[0],x[1]));return [...m.entries()];
+}
+$('lotBox').addEventListener('input',()=>{const d=readLotPaste();$('lotInfo').textContent=d.length?`${d.length.toLocaleString()} ${T('lotParsed')} · ${d.slice(0,3).map(x=>x[0]+'→'+x[1]).join(', ')}${d.length>3?' …':''}`:'';});
+async function saveLots(all,rows){
+  const btns=['lotMerge','lotAll','lotClear'].map($);btns.forEach(b=>b.disabled=true);setStat(T('saving'));
+  try{const r=await sb('rpc/shortage_lot_replace',{method:'POST',body:JSON.stringify({p_plant:PLANT,p_rows:rows,p_all:all})});const n=await r.json();setNet(true);
+    if(rows.length){toast(`${T('saved')} · ${n}`);$('lotBox').value='';$('lotInfo').textContent='';}else toast(T('lotCleared'));
+  }catch(e){console.error(e);setNet(false);alert(T('saveErr')+'\n'+e.message);}
+  finally{btns.forEach(b=>b.disabled=false);}
+  await loadLots();
+}
+$('lotMerge').onclick=()=>{const d=readLotPaste();if(!d.length){toast(T('nothing'));return;}saveLots(false,d);};
+$('lotAll').onclick=()=>{const d=readLotPaste();if(!d.length){toast(T('nothing'));return;}if(Object.keys(LOTMAP).length&&!confirm(T('confirmLotAll')))return;saveLots(true,d);};
+$('lotClear').onclick=()=>{if(!confirm(T('confirmLotClear')))return;saveLots(true,[]);};
+
+/* 신청 목록 */
+function renderCart(){
+  let prev='';
+  $('cartBody').innerHTML=cart.map((c,k)=>{const gk=c.gkey||'_'+k;const start=c.gkey&&gk!==prev;prev=gk;
+    const partners=c.members.filter(w=>U(w)!==U(c.wn)).join(', ');
+    return `<tr class="${start?'gstart':''}${c.gkey?' g':''}" style="${c.gkey?'--gc:'+TYPE_COLOR[c.types[0]]:''}"><td class="status">${esc(c.pn)}${c.lot?`<span class="lotno">${esc(c.lot)}</span>`:''}</td><td class="wn">${esc(c.wn)}</td><td>${c.inMaster?badge(c.types,0,partners):`<span class="gb miss">${esc(T('notInMaster'))}</span>`}</td>
+      <td class="num"><input class="q" data-k="${k}" inputmode="numeric" value="${c.qty}"></td><td><button class="x" data-k="${k}" title="${esc(c.gkey?T('removeGroup'):'')}">×</button></td></tr>`;}).join('');
+  $('cartEmpty').classList.toggle('hidden',cart.length>0);
+  $('cartN').textContent=cart.length;$('cartQ').textContent=cart.reduce((s,c)=>s+(+c.qty||0),0).toLocaleString();
+  $('aSave').disabled=!cart.length;
+}
+$('cartBody').addEventListener('input',e=>{const el=e.target.closest('input.q');if(!el)return;const c=cart[+el.dataset.k];const v=parseInt(el.value,10)||0;c.qty=v;
+  // 같은 그룹은 수량 동일하게
+  if(c.gkey)cart.forEach((x,k)=>{if(x.gkey===c.gkey&&x!==c){x.qty=v;const o=$('cartBody').querySelector(`input.q[data-k="${k}"]`);if(o)o.value=v;}});
+  $('cartQ').textContent=cart.reduce((s,c)=>s+(+c.qty||0),0).toLocaleString();});
+$('cartBody').addEventListener('click',e=>{const b=e.target.closest('button.x');if(!b)return;const c=cart[+b.dataset.k];
+  cart=c.gkey?cart.filter(x=>x.gkey!==c.gkey):cart.filter(x=>x!==c);renderCart();renderPick();});
+$('cartClear').onclick=()=>{if(!cart.length)return;cart=[];renderCart();renderPick();};
+['aLine','aName','aDefQty'].forEach(id=>$(id).addEventListener('change',()=>{LS.set(id,$(id).value.trim());if(id==='aLine')renderRecent();}));
+
+async function saveReq(){
+  const line=$('aLine').value.trim(),name=$('aName').value.trim();
+  if(!line||!name){toast(T('needLine'));(line?$('aName'):$('aLine')).focus();return;}
+  if(!cart.length){toast(T('needItems'));return;}
+  if(cart.some(c=>!(parseInt(c.qty,10)>0))){toast(T('badQty'));return;}
+  const d=new Date();const reqNo=`P${PLANT}-${String(d.getFullYear()).slice(2)}${pad(d.getMonth()+1)}${pad(d.getDate())}-${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}-${Math.random().toString(36).slice(2,5).toUpperCase()}`;
+  const note=$('aNote').value.trim();
+  const rows=cart.map(c=>({plant:PLANT,req_no:reqNo,pn:c.pn,sub_no:c.sub||null,wn:c.wn,mat:c.mat||null,sq:c.sq||null,col:c.col||null,len:c.len||null,t_l:c.tL||null,t_r:c.tR||null,
+    grp:c.members.length?c.members.join(','):null,grp_type:c.types.length?c.types.join('+'):null,in_master:c.inMaster,asm_lot:c.lot||null,qty:parseInt(c.qty,10),line,requester:name,req_note:note||null}));
+  $('aSave').disabled=true;setStat(T('saving'));
+  try{await sb(RQ,{method:'POST',body:JSON.stringify(rows),headers:{Prefer:'return=minimal'}});setNet(true);
+    toast(`${T('savedAppr')} (${rows.length})`);cart=[];$('aNote').value='';renderCart();renderPick();await loadReqs();}
+  catch(e){console.error(e);setNet(false);alert(T('saveErr')+'\n'+e.message);}
+  finally{$('aSave').disabled=!cart.length;}
+}
+$('aSave').onclick=saveReq;
+
+/* ---------- 신청 데이터 ---------- */
+let REQS=[];
+// 신청(조립 승인대기) → 승인(조립팀장) → 접수(가공) → 가공승인 → 출고(MES LOT) → 수령(조립접수)
+const ST=['신청','승인','접수','가공승인','출고','수령','반려','취소'];
+const OPEN=['신청','승인','접수','가공승인','출고'];
+const isOpen=r=>OPEN.includes(r.status);
+const stTag=s=>{const k=ST.indexOf(s)+1;return `<span class="st s${k}">${esc(T('st'+k))}</span>`;};
+const lastAt=r=>r.recv_at||r.done_at||r.ship_at||r.p_approved_at||r.received_at||r.approved_at||r.created_at;
+const procVisible=r=>!(r.status==='신청'||((r.status==='반려'||r.status==='취소')&&!r.approved_at));// 가공은 조립팀장 승인 건부터
+async function loadReqs(){
+  const ds=['haFrom','hpFrom'].map(id=>$(id).value).filter(Boolean).map(v=>new Date(v+'T00:00:00'));
+  const from=new Date(Math.min(...ds,Date.now()-7*864e5));from.setDate(from.getDate()-30);
+  try{
+    const out=[];const PAGE=1000;const open=encodeURIComponent(OPEN.map(s=>'"'+s+'"').join(','));
+    for(let off=0;;off+=PAGE){
+      const d=await (await sb(`${RQ}?plant=eq.${PLANT}&or=(created_at.gte.${encodeURIComponent(from.toISOString())},status.in.(${open}))&order=created_at.desc,id.asc&limit=${PAGE}&offset=${off}`)).json();
+      out.push(...d);if(d.length<PAGE)break;
+    }
+    REQS=out;setNet(true);idbSet('reqs',REQS);
+  }catch(e){console.warn(e);setNet(false);const c=await idbGet('reqs');if(c)REQS=c;}
+  renderRecent();renderProc();
+}
+async function patchRaw(ids,fromSt,body){
+  if(!ids.length)return 0;
+  const q=`${RQ}?id=in.(${ids.join(',')})&status=in.(${fromSt.map(s=>encodeURIComponent('"'+s+'"')).join(',')})`;
+  const r=await sb(q,{method:'PATCH',body:JSON.stringify(body),headers:{Prefer:'return=representation'}});
+  return (await r.json()).length;
+}
+async function run(jobs){// jobs: [[ids,fromSt,body],...]
+  const total=jobs.reduce((t,j)=>t+j[0].length,0);if(!total){toast(T('noSel'));return false;}
+  let ok=true;
+  try{let n=0;for(const j of jobs)n+=await patchRaw(...j);setNet(true);toast(n<total?T('skipped'):`${T('updated')} · ${n}`);}
+  catch(e){ok=false;console.error(e);setNet(false);alert(T('saveErr')+'\n'+e.message);}
+  H.ha.sel.clear();H.hp.sel.clear();await loadReqs();return ok;
+}
+
+/* ---------- 이력 (조립·가공 공통) ---------- */
+const H={ha:{st:'',sel:new Set()},hp:{st:'승인',sel:new Set()}};
+function histRows(p){
+  const a=$(p+'From').value?new Date($(p+'From').value+'T00:00:00'):null,b=$(p+'To').value?new Date($(p+'To').value+'T23:59:59.999'):null;
+  const q=U($(p+'Q').value),line=$('aLine').value.trim(),mine=p==='ha'&&$('haMine').checked&&line;
+  return REQS.filter(r=>{
+    if(p==='hp'&&!procVisible(r))return false;
+    if(mine&&r.line&&U(r.line)!==U(line))return false;
+    if(!isOpen(r)){const d=new Date(lastAt(r));if(a&&d<a)return false;if(b&&d>b)return false;}
+    if(q&&![r.pn,r.wn,r.line,r.requester,r.req_no,r.mes_no,r.approved_by,r.asm_lot].some(v=>U(v).includes(q)))return false;
+    return true;});
+}
+function step(lbl,at,by){return `<span class="tl${at?' on':''}"><b>${esc(lbl)}</b>${at?`${fmtT(at)}${by?` <em>${esc(by)}</em>`:''}`:'—'}</span>`;}
+function flow(r){
+  const S=[[T('fReq'),r.created_at,r.requester],[T('fAppr'),r.approved_at,r.approved_by],[T('fRcv'),r.received_at,r.received_by],
+           [T('fPAppr'),r.p_approved_at,r.p_approved_by],[T('fShip'),r.ship_at,r.ship_by],[T('fRecv'),r.recv_at,r.recv_by]];
+  if(r.status==='반려'||r.status==='취소'){
+    const done=S.filter(x=>x[1]);
+    return `<div class="fl">${done.map(x=>step(...x)).join('')}<span class="tl bad on"><b>${esc(T(r.status==='반려'?'st7':'st8'))}</b>${fmtT(r.done_at)}${r.done_by?` <em>${esc(r.done_by)}</em>`:''}${r.proc_note?` · ${esc(r.proc_note)}`:''}</span></div>`;
+  }
+  return `<div class="fl">${S.map(x=>step(...x)).join('')}</div>`;
+}
+const WD={ko:['일','월','화','수','목','금','토'],es:['dom','lun','mar','mié','jue','vie','sáb']};
+const dkey=s=>ymd(new Date(s));
+const dlabel=k=>{const d=new Date(k+'T12:00:00');return `${k} (${WD[lang][d.getDay()]})`;};
+const CHIPS={ha:ST,hp:ST.filter(s=>s!=='신청')};
+function renderHist(p){
+  const S=H[p],base=histRows(p),cnt={};base.forEach(r=>cnt[r.status]=(cnt[r.status]||0)+1);
+  $(p+'Chips').innerHTML=['',...CHIPS[p]].map(s=>`<button data-s="${s}" class="${s===S.st?'on':''}">${esc(s?T('st'+(ST.indexOf(s)+1)):T('stAll'))}<b>${s?(cnt[s]||0):base.length}</b></button>`).join('');
+  const rows=base.filter(r=>!S.st||r.status===S.st);
+  const vis=new Set(rows.map(r=>r.id));[...S.sel].forEach(id=>{if(!vis.has(id))S.sel.delete(id);});
+  const groups=[],m={};
+  rows.slice().sort((x,y)=>x.created_at<y.created_at?-1:x.created_at>y.created_at?1:x.id-y.id)
+    .forEach(r=>{if(!m[r.req_no]){m[r.req_no]={no:r.req_no,items:[]};groups.push(m[r.req_no]);}m[r.req_no].items.push(r);});
+  if(!(S.st&&isOpen({status:S.st})))groups.reverse();// 진행 중은 오래된 것부터, 그 외는 최근부터
+  const days=[];let cur=null;groups.forEach(g=>{const k=dkey(g.items[0].created_at);if(!cur||cur.k!==k){cur={k,gs:[]};days.push(cur);}cur.gs.push(g);});
+  const today=ymd(new Date());
+  $(p+'Body').innerHTML=days.map(d=>{const its=d.gs.flatMap(g=>g.items),dOn=its.every(r=>S.sel.has(r.id));
+    return `<tr class="dt"><td><input type="checkbox" data-day="${d.k}" ${dOn?'checked':''} aria-label="${d.k}"></td><td colspan="6"><span class="dd">${esc(dlabel(d.k))}</span>${d.k===today?` <span class="today">${esc(T('today'))}</span>`:''}<span class="ds">${d.gs.length}${esc(T('reqCnt'))} · ${its.length}${esc(T('groupOf'))} · ${esc(T('qty'))} ${its.reduce((t,r)=>t+r.qty,0).toLocaleString()}</span></td></tr>`+
+    d.gs.map(g=>{const h=g.items[0],allOn=g.items.every(r=>S.sel.has(r.id)),sum=g.items.reduce((t,r)=>t+r.qty,0);
+    return `<tr class="rq"><td><input type="checkbox" data-req="${esc(g.no)}" ${allOn?'checked':''} aria-label="${esc(g.no)}"></td><td colspan="6"><b>${fmtT(h.created_at).slice(6)}</b> · ${esc(T('line'))} <b>${esc(h.line||'-')}</b> · ${esc(T('reqBy'))} <b>${esc(h.requester||'')}</b> · ${g.items.length}${esc(T('groupOf'))} / ${sum.toLocaleString()}${h.req_note?' · '+esc(T('note'))+': <b>'+esc(h.req_note)+'</b>':''} <span style="opacity:.5">${esc(g.no)}</span></td></tr>`+
+      g.items.map(r=>`<tr class="it${S.sel.has(r.id)?' sel':''}" data-id="${r.id}"><td><input type="checkbox" ${S.sel.has(r.id)?'checked':''} tabindex="-1" aria-label="${esc(r.wn)}"></td>
+        <td><div class="wn2">${esc(r.wn)}</div><div class="sub2">${esc(r.pn)}</div>${r.asm_lot?`<div class="sub2 lot">${esc(r.asm_lot)}</div>`:''}</td><td class="grp2">${badgeDb(r)}</td>
+        <td>${r.mat?`<div>${esc(r.mat)} ${esc(r.sq)} ${chip(r.col)} <span class="status">· ${esc(r.len)}</span></div>`:''}<div class="sub2">${esc(r.t_l||'')}${r.t_r?' / '+esc(r.t_r):''}</div></td>
+        <td class="num"><b style="font-size:16px">${r.qty}</b></td><td><div>${stTag(r.status)}</div><div class="sub2 lot">${esc(r.mes_no||'')}</div></td><td>${flow(r)}</td></tr>`).join('');}).join('');}).join('');
+  $(p+'Empty').classList.toggle('hidden',rows.length>0);
+  $(p+'All').checked=rows.length>0&&rows.every(r=>S.sel.has(r.id));
+  const sr=REQS.filter(r=>S.sel.has(r.id)),has=s=>sr.some(r=>s.includes(r.status));
+  $(p+'Sel').textContent=`${sr.length} ${T('sel')} · ${sr.reduce((t,r)=>t+r.qty,0).toLocaleString()}`;
+  if(p==='hp'){
+    $('hpRecv').disabled=!has(['승인']);$('hpAppr').disabled=!has(['접수']);$('hpShip').disabled=!has(['가공승인']);
+    $('hpReject').disabled=!has(['승인','접수','가공승인']);$('hpUndo').disabled=!has(['접수','가공승인','출고']);
+  }else{
+    $('haAppr').disabled=!has(['신청']);$('haApprUndo').disabled=!has(['승인']);$('haReject').disabled=!has(['신청']);
+    $('haRecv').disabled=!has(['출고']);$('haRecvUndo').disabled=!has(['수령']);$('haCancel').disabled=!has(['신청','승인','접수','가공승인']);
+  }
+  // 탭 배지: 조립=팀장 승인대기·접수대기(출고), 가공=가공접수 대기(조립승인)
+  const ln=$('aLine').value.trim(),myLine=r=>!ln||!$('haMine').checked||!r.line||U(r.line)===U(ln);
+  const nAp=REQS.filter(r=>r.status==='신청'&&myLine(r)).length,nA=REQS.filter(r=>r.status==='출고'&&myLine(r)).length,nP=REQS.filter(r=>r.status==='승인').length;
+  $('apprCnt').textContent=nAp||'';$('asmCnt').textContent=nA||'';$('newCnt').textContent=nP||'';
+}
+const renderRecent=()=>renderHist('ha'),renderProc=()=>renderHist('hp');
+['ha','hp'].forEach(p=>{
+  $(p+'Chips').onclick=e=>{const b=e.target.closest('button');if(!b)return;H[p].st=b.dataset.s;H[p].sel.clear();renderHist(p);};
+  [p+'From',p+'To'].forEach(id=>$(id).addEventListener('change',()=>loadReqs()));
+  $(p+'Q').addEventListener('input',()=>renderHist(p));
+  $(p+'Body').addEventListener('click',e=>{const S=H[p];
+    const dc=e.target.closest('input[data-day]');
+    if(dc){const ids=histRows(p).filter(r=>dkey(r.created_at)===dc.dataset.day&&(!S.st||r.status===S.st)).map(r=>r.id);ids.forEach(i=>dc.checked?S.sel.add(i):S.sel.delete(i));renderHist(p);return;}
+    const rq=e.target.closest('input[data-req]');
+    if(rq){const ids=histRows(p).filter(r=>r.req_no===rq.dataset.req&&(!S.st||r.status===S.st)).map(r=>r.id);ids.forEach(i=>rq.checked?S.sel.add(i):S.sel.delete(i));renderHist(p);return;}
+    const tr=e.target.closest('tr.it');if(!tr)return;const id=+tr.dataset.id;S.sel.has(id)?S.sel.delete(id):S.sel.add(id);renderHist(p);});
+  $(p+'All').onchange=()=>{const S=H[p],rows=histRows(p).filter(r=>!S.st||r.status===S.st);if($(p+'All').checked)rows.forEach(r=>S.sel.add(r.id));else S.sel.clear();renderHist(p);};
+});
+$('haMine').onchange=renderRecent;
+$('hpName').onchange=()=>LS.set('pName',$('hpName').value.trim());
+$('haName').onchange=()=>LS.set('haName',$('haName').value.trim());
+const selOf=(p,st)=>REQS.filter(r=>H[p].sel.has(r.id)&&st.includes(r.status)).map(r=>r.id);
+const now=()=>new Date().toISOString();
+function need(id,msg){const v=$(id).value.trim();if(!v){toast(T(msg));$(id).focus();}return v;}
+
+/* 팀장 PIN */
+const PINC={};// 역할별 PIN 10분 기억(새로고침 시 삭제)
+function pinDialog(title,desc,fields){return new Promise(res=>{
+  $('pinTitle').textContent=title;$('pinDesc').textContent=desc;$('pinErr').textContent='';
+  $('pinFields').innerHTML=fields.map((f,i)=>`<label for="pf${i}">${esc(f)}</label><input type="password" id="pf${i}" autocomplete="off">`).join('');
+  $('pinModal').classList.remove('hidden');$('pf0').focus();
+  const vals=()=>fields.map((_,i)=>$('pf'+i).value);
+  const close=v=>{$('pinModal').classList.add('hidden');$('pinOk').onclick=$('pinCancel').onclick=null;$('pinModal').onkeydown=null;res(v);};
+  $('pinOk').onclick=()=>{const v=vals();if(v.some(x=>!x)){$('pinErr').textContent=T('pinEmpty');return;}close(v);};
+  $('pinCancel').onclick=()=>close(null);
+  $('pinModal').onkeydown=e=>{if(e.key==='Escape')close(null);if(e.key==='Enter'){e.preventDefault();$('pinOk').click();}};
+});}
+const roleName=r=>T(r==='asm'?'roleAsm':'roleProc');
+async function leaderAction(role,action,ids,by,note){
+  if(!ids.length){toast(T('noSel'));return false;}
+  for(let tries=0;tries<3;tries++){
+    let pin=PINC[role]&&PINC[role].exp>Date.now()?PINC[role].pin:null;
+    if(!pin){const v=await pinDialog(`🔒 ${roleName(role)} PIN`,T('pinDesc'),[T('pinLabel')]);if(!v)return false;pin=v[0];}
+    try{
+      const r=await fetch(SB_URL+'/rest/v1/rpc/shortage_approve',{method:'POST',headers:{apikey:SB_KEY,Authorization:'Bearer '+SB_KEY,'Content-Type':'application/json'},
+        body:JSON.stringify({p_plant:PLANT,p_role:role,p_pin:pin,p_action:action,p_ids:ids,p_by:by,p_note:note||null})});
+      const txt=await r.text();
+      if(!r.ok){if(/invalid_pin/.test(txt)){delete PINC[role];toast(T('pinWrong'));continue;}throw new Error(r.status+' '+txt.slice(0,200));}
+      PINC[role]={pin,exp:Date.now()+10*60*1000};setNet(true);
+      const n=+txt||0;toast(n<ids.length?T('skipped'):`${T('updated')} · ${n}`);
+      H.ha.sel.clear();H.hp.sel.clear();await loadReqs();return true;
+    }catch(e){console.error(e);setNet(false);alert(T('saveErr')+'\n'+e.message);return false;}
+  }
+  return false;
+}
+async function pinChange(role){
+  const v=await pinDialog(`🔒 ${roleName(role)} PIN ${T('pinChgT')}`,T('pinChgDesc'),[T('pinCur'),T('pinNew'),T('pinNew2')]);if(!v)return;
+  if(v[1]!==v[2]){toast(T('pinMismatch'));return;}
+  if(v[1].length<4){toast(T('pinShort'));return;}
+  try{const r=await fetch(SB_URL+'/rest/v1/rpc/shortage_pin_change',{method:'POST',headers:{apikey:SB_KEY,Authorization:'Bearer '+SB_KEY,'Content-Type':'application/json'},
+      body:JSON.stringify({p_plant:PLANT,p_role:role,p_old:v[0],p_new:v[1]})});
+    const txt=await r.text();
+    if(!r.ok){toast(/invalid_pin/.test(txt)?T('pinWrong'):T('saveErr'));return;}
+    delete PINC[role];toast(T('pinChanged'));
+  }catch(e){alert(T('saveErr')+'\n'+e.message);}
+}
+$('haPinChg').onclick=()=>pinChange('asm');$('hpPinChg').onclick=()=>pinChange('proc');
+
+/* 조립 */
+$('haAppr').onclick=()=>{const w=need('haName','needAsmWorker');if(w)leaderAction('asm','approve',selOf('ha',['신청']),w);};
+$('haApprUndo').onclick=()=>{const w=need('haName','needAsmWorker');if(w)leaderAction('asm','unapprove',selOf('ha',['승인']),w);};
+$('haReject').onclick=()=>{const w=need('haName','needAsmWorker');if(!w)return;const why=prompt(T('rejectWhy'),'');if(why===null)return;
+  leaderAction('asm','reject',selOf('ha',['신청']),w,why.trim());};
+$('haRecv').onclick=()=>{const w=need('haName','needAsmWorker');if(w)run([[selOf('ha',['출고']),['출고'],{status:'수령',recv_at:now(),recv_by:w}]]);};
+$('haRecvUndo').onclick=()=>run([[selOf('ha',['수령']),['수령'],{status:'출고',recv_at:null,recv_by:null}]]);
+$('haCancel').onclick=()=>{const w=need('haName','needAsmWorker');if(!w)return;
+  const ids=selOf('ha',['신청','승인','접수','가공승인']);if(!ids.length)return toast(T('noSel'));
+  const inProc=REQS.some(r=>ids.includes(r.id)&&(r.status==='접수'||r.status==='가공승인'));
+  if(!confirm(T(inProc?'confirmCancelProc':'confirmCancel')))return;
+  run([[ids,['신청','승인','접수','가공승인'],{status:'취소',done_at:now(),done_by:w}]]);};
+/* 가공 */
+$('hpRecv').onclick=()=>{const w=need('hpName','needWorker');if(w)run([[selOf('hp',['승인']),['승인'],{status:'접수',received_at:now(),received_by:w}]]);};
+$('hpAppr').onclick=()=>{const w=need('hpName','needWorker');if(w)leaderAction('proc','approve',selOf('hp',['접수']),w);};
+$('hpShip').onclick=async()=>{const w=need('hpName','needWorker');if(!w)return;const lot=need('hpLot','needLot');if(!lot)return;
+  if(await run([[selOf('hp',['가공승인']),['가공승인'],{status:'출고',ship_at:now(),ship_by:w,mes_no:lot}]]))$('hpLot').value='';};
+$('hpReject').onclick=()=>{const w=need('hpName','needWorker');if(!w)return;const why=prompt(T('rejectWhy'),'');if(why===null)return;
+  run([[selOf('hp',['승인','접수','가공승인']),['승인','접수','가공승인'],{status:'반려',done_at:now(),done_by:w,proc_note:why.trim()||null}]]);};
+$('hpUndo').onclick=async()=>{
+  const pa=selOf('hp',['가공승인']),rest=[[selOf('hp',['접수']),['접수'],{status:'승인',received_at:null,received_by:null}],[selOf('hp',['출고']),['출고'],{status:'가공승인',ship_at:null,ship_by:null,mes_no:null}]];
+  // 가공승인 취소는 팀장 PIN 필요
+  if(pa.length){const w=need('hpName','needWorker');if(!w)return;const keep=new Set(rest.flatMap(j=>j[0]));if(!await leaderAction('proc','unapprove',pa,w))return;keep.forEach(i=>H.hp.sel.add(i));}
+  if(rest.some(j=>j[0].length))run(rest);};
+
+function exportRows(){const S=H.hp,s=REQS.filter(r=>S.sel.has(r.id));return s.length?s:histRows('hp').filter(r=>!S.st||r.status===S.st);}
+$('hpCopy').onclick=async()=>{
+  const rows=exportRows();const txt=['품번\t선번\t수량'].concat(rows.map(r=>`${r.pn}\t${r.wn}\t${r.qty}`)).join('\n');
+  try{await navigator.clipboard.writeText(txt);}catch(e){const ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();try{document.execCommand('copy')}catch(_){}ta.remove();}
+  toast(`${T('copied')} (${rows.length})`);};
+$('hpCsv').onclick=()=>{
+  const rows=exportRows();const HD=['신청시각','요청번호','라인','신청자','품번','선번','함께만드는선','구분','재질','SQ','색상','길이','좌단자','우단자','수량','상태','조립승인자','조립승인시각','가공접수자','가공접수시각','가공승인자','가공승인시각','출고자','출고시각','MES LOT','조립접수자','조립접수시각','메모','반려/취소 처리자','반려/취소 시각','반려/취소 사유'];
+  const q=v=>{v=v==null?'':String(v);return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};
+  const L=rows.map(r=>[fmtT(r.created_at),r.req_no,r.line,r.requester,r.pn,r.wn,r.grp,r.grp_type,r.mat,r.sq,r.col,r.len,r.t_l,r.t_r,r.qty,T('st'+(ST.indexOf(r.status)+1)),
+    r.approved_by,fmtT(r.approved_at),r.received_by,fmtT(r.received_at),r.p_approved_by,fmtT(r.p_approved_at),r.ship_by,fmtT(r.ship_at),r.mes_no,r.recv_by,fmtT(r.recv_at),r.req_note,
+    (r.status==='반려'||r.status==='취소')?r.done_by:'',(r.status==='반려'||r.status==='취소')?fmtT(r.done_at):'',r.proc_note].map(q).join(','));
+  const blob=new Blob(['\ufeff'+[HD.join(',')].concat(L).join('\r\n')],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`부족회로_P${PLANT}_${ymd(new Date())}.csv`;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},500);};
+
+/* ---------- 탭 ---------- */
+function show(v){['Asm','Proc','Master'].forEach(k=>{$('view'+k).classList.toggle('hidden',k!==v);$('tab'+k).classList.toggle('on',k===v);});LS.set('tab'+PLANT,v);}
+$('tabAsm').onclick=()=>{show('Asm');loadReqs();$('scanIn').focus();};$('tabProc').onclick=()=>{show('Proc');loadReqs();};$('tabMaster').onclick=()=>show('Master');
+$('reloadBtn').onclick=()=>{loadMaster();loadReqs();loadLots();};
+$('langBtn').onclick=()=>{lang=lang==='ko'?'es':'ko';LS.set('lang',lang);applyLang();};
+function renderAll(){renderPick();renderCart();renderRecent();renderProc();}
+
+(async()=>{
+  lang=LS.get('lang','ko');
+  $('aLine').value=LS.get('aLine');$('aName').value=LS.get('aName');$('aDefQty').value=LS.get('aDefQty','1')||'1';$('hpName').value=LS.get('pName');$('haName').value=LS.get('haName');
+  pickPn=LS.get('pn'+PLANT);$('dPn').value=pickPn;
+  const t=new Date(),f=new Date();f.setMonth(f.getMonth()-1);['ha','hp'].forEach(p=>{$(p+'From').value=ymd(f);$(p+'To').value=ymd(t);});// 기본: 현재일 기준 1달 전 ~ 오늘
+  db=await idbOpen();
+  applyLang();
+  const tab=LS.get('tab'+PLANT,'Asm');show(['Asm','Proc','Master'].includes(tab)?tab:'Asm');
+  await Promise.all([loadMaster(),loadReqs(),loadLots()]);
+  if(!$('viewAsm').classList.contains('hidden'))$('scanIn').focus();
+  if(!MASTER.rows.length)show('Master');
+  setInterval(()=>{if(!document.hidden)loadReqs();},20000);
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)loadReqs();});
+})();
+</script>
+</body>
+</html>
