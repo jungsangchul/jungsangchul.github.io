@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>재고부족예상 · 2공장</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{--bg:#f3f5f8;--card:#fff;--ink:#1c2430;--mute:#6b7685;--line:#dde2e9;--pri:#1f5fbf;--pri2:#e8f0fc;
+--red:#d0342c;--redbg:#fde9e8;--amb:#b86e00;--ambbg:#fff3dc;--grn:#1d8a4e;--grnbg:#e5f6ec}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Malgun Gothic','Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--ink);font-size:14px}
+.top{position:sticky;top:0;z-index:50;box-shadow:0 2px 6px rgba(0,0,0,.15)}
+.plant{background:#f0a020;color:#14233b;border-radius:12px;padding:3px 10px;font-weight:800;font-size:12px}
+header{background:#14233b;color:#fff;padding:10px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+header a.logo{color:#fff;text-decoration:none;font-weight:800;letter-spacing:.5px}
+header h1{font-size:17px;margin:0;font-weight:700}
+header .sp{flex:1}
+header button{background:#2b3d5c;color:#fff;border:1px solid #44587a;border-radius:6px;padding:5px 10px;cursor:pointer}
+nav{display:flex;gap:4px;padding:8px 12px 0;background:#14233b;overflow-x:auto}
+nav button{background:transparent;color:#b9c5d8;border:0;padding:9px 14px;border-radius:8px 8px 0 0;cursor:pointer;font-weight:600;white-space:nowrap}
+nav button.on{background:var(--bg);color:var(--ink)}
+main{padding:14px;max-width:1500px;margin:0 auto}
+.tab{display:none}.tab.on{display:block}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:12px}
+.card h3{margin:0 0 10px;font-size:15px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--mute);font-weight:600}
+input,select,textarea{font:inherit;border:1px solid var(--line);border-radius:6px;padding:7px 9px;background:#fff;color:var(--ink)}
+textarea{width:100%;min-height:150px;font-family:Consolas,monospace;font-size:12px}
+.btn{background:var(--pri);color:#fff;border:0;border-radius:6px;padding:8px 14px;font-weight:700;cursor:pointer}
+.btn.sec{background:#fff;color:var(--pri);border:1px solid var(--pri)}
+.btn.red{background:var(--red)}
+.btn.sm{padding:4px 9px;font-size:12px}
+.btn:disabled{opacity:.5;cursor:default}
+.hint{color:var(--mute);font-size:12px;line-height:1.6}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:12px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;cursor:pointer}
+.kpi b{display:block;font-size:22px;margin-top:2px}
+.kpi.r b{color:var(--red)}.kpi.a b{color:var(--amb)}.kpi.g b{color:var(--grn)}
+.tw{overflow:auto;max-height:65vh;border:1px solid var(--line);border-radius:8px}
+table{border-collapse:collapse;width:100%;font-size:13px;background:#fff}
+th,td{padding:6px 8px;border-bottom:1px solid #eef1f5;white-space:nowrap}
+th{position:sticky;top:0;background:#eef2f7;text-align:left;font-size:12px;cursor:pointer;z-index:1}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+tr.short td{background:var(--redbg)}tr.care td{background:var(--ambbg)}tr.ex td{color:#a0a8b4;text-decoration:line-through}
+.neg{color:var(--red);font-weight:700}
+.tag{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700}
+.tag.short{background:var(--red);color:#fff}.tag.care{background:#f0a020;color:#fff}.tag.ok{background:var(--grnbg);color:var(--grn)}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{background:var(--pri2);color:var(--pri);border-radius:14px;padding:4px 6px 4px 11px;font-weight:700;display:flex;align-items:center;gap:6px}
+.chip small{color:var(--mute);font-weight:400}
+.chip button{border:0;background:#fff;color:var(--red);border-radius:50%;width:20px;height:20px;cursor:pointer;font-weight:700}
+.grid2{display:grid;grid-template-columns:2fr 1fr;gap:12px}
+@media(max-width:900px){.grid2{grid-template-columns:1fr}}
+.dl{max-height:420px;overflow:auto}
+.dl div{display:flex;justify-content:space-between;align-items:center;padding:6px 8px;border-bottom:1px solid #eef1f5;gap:8px}
+.dl div:hover{background:#f6f8fb}.dl div.sel{background:var(--pri2)}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#14233b;color:#fff;padding:10px 18px;border-radius:8px;display:none;z-index:99}
+.load{position:fixed;inset:0;background:rgba(255,255,255,.6);display:none;align-items:center;justify-content:center;z-index:98;font-weight:700}
+.prev{font-size:12px;color:var(--mute);margin:6px 0}
+</style>
+</head>
+<body>
+<div class="top">
+<header>
+  <a class="logo" href="index.html">YURA</a>
+  <h1 data-t="title">재고부족예상</h1>
+  <span class="plant" data-t="plant">멕시코 2공장 · Torreón</span>
+  <span class="sp"></span>
+  <button id="langBtn">ES</button>
+</header>
+<nav id="nav">
+  <button data-tab="sum" class="on" data-t="tab_sum">부족예상</button>
+  <button data-tab="need" data-t="tab_need">작업필요자재 (17000)</button>
+  <button data-tab="cnt" data-t="tab_cnt">실사</button>
+  <button data-tab="rec" data-t="tab_rec">현장입고 (30810)</button>
+  <button data-tab="use" data-t="tab_use">사용량 (32040)</button>
+  <button data-tab="mst" data-t="tab_mst">창고보유자재 (25010)</button>
+</nav>
+</div>
+<main>
+
+<!-- ===== 부족예상 ===== -->
+<section class="tab on" id="t-sum">
+  <div class="card">
+    <div class="row">
+      <label class="f"><span data-t="cntDate">실사일</span><select id="sCnt"></select></label>
+      <label class="f"><span data-t="from">사용·입고 시작</span><input type="date" id="sFrom"></label>
+      <label class="f"><span data-t="to">사용·입고 종료</span><input type="date" id="sTo"></label>
+      <label class="f"><span data-t="thr">주의 기준(부족예상 &lt;)</span><input type="number" id="sThr" style="width:110px"></label>
+      <button class="btn" id="sRun" data-t="run">조회</button>
+      <span class="sp" style="flex:1"></span>
+      <label class="f"><span data-t="search">검색</span><input id="sQ" placeholder="코드/자재명" style="width:170px"></label>
+      <label class="f"><span data-t="filter">표시</span><select id="sF">
+        <option value="all" data-t="f_all">전체</option><option value="chk" data-t="f_chk">주의+부족</option>
+        <option value="short" data-t="f_short">부족만</option></select></label>
+      <button class="btn sec" id="sCopy" data-t="copy">복사</button>
+      <button class="btn sec" id="sXlsx" data-t="xlsx">엑셀</button>
+    </div>
+    <div class="hint" id="sInfo" style="margin-top:8px"></div>
+  </div>
+  <div class="kpis">
+    <div class="kpi" data-f="all"><span data-t="k_mat">자재 수</span><b id="kAll">-</b></div>
+    <div class="kpi r" data-f="short"><span data-t="k_short">부족 (&lt;0)</span><b id="kShort">-</b></div>
+    <div class="kpi a" data-f="chk"><span data-t="k_care">주의</span><b id="kCare">-</b></div>
+    <div class="kpi g" data-f="all"><span data-t="k_ex">제외 LOT 행</span><b id="kEx">-</b></div>
+  </div>
+  <div class="tw"><table id="sTbl"></table></div>
+  <p class="hint" data-t="formula">현재고 = 실사 − 사용량 + 입고량 · 부족예상 = 현재고 + 창고재고 − 필요량 · 필요량은 같은 자재코드 합산(제외 LOT 제외)</p>
+</section>
+
+<!-- ===== 17000 ===== -->
+<section class="tab" id="t-need">
+  <div class="grid2">
+    <div class="card">
+      <h3 data-t="need_h">작업필요자재 붙여넣기 (A~F열)</h3>
+      <div class="hint" data-t="need_hint">엑셀 17000 시트의 A~F열(자재코드·자재명·수량·단위·LOTNO·선번)을 복사해 붙여넣으세요. 헤더 행은 자동으로 건너뜁니다.</div>
+      <textarea id="nTxt"></textarea>
+      <div class="prev" id="nPrev"></div>
+      <div class="row">
+        <label class="f"><span data-t="mode">방식</span><select id="nMode">
+          <option value="replace" data-t="m_replace">전체 교체 (조회시점 기준)</option>
+          <option value="append" data-t="m_append">기존 목록에 추가</option></select></label>
+        <button class="btn" id="nSave" data-t="save">저장</button>
+        <button class="btn red" id="nClear" data-t="clearAll">전체 삭제</button>
+      </div>
+    </div>
+    <div class="card">
+      <h3 data-t="ex_h">제외 LOT 설정</h3>
+      <div class="hint" data-t="ex_hint">LOTNO에 아래 번호가 포함된 행은 필요량에서 제외됩니다.</div>
+      <div class="row" style="margin:10px 0">
+        <input id="exLot" placeholder="LOT 번호" style="width:130px">
+        <input id="exMemo" placeholder="메모" style="flex:1;min-width:100px">
+        <button class="btn" id="exAdd" data-t="add">추가</button>
+      </div>
+      <div class="chips" id="exList"></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="row" style="justify-content:space-between;margin-bottom:8px">
+      <h3 style="margin:0"><span data-t="need_list">저장된 목록</span> <span class="hint" id="nInfo"></span></h3>
+      <input id="nQ" placeholder="검색" style="width:170px">
+    </div>
+    <div class="tw"><table id="nTbl"></table></div>
+  </div>
+</section>
+
+<!-- ===== 실사 / 입고 / 사용량 (공통 구조) ===== -->
+<section class="tab" id="t-cnt"></section>
+<section class="tab" id="t-rec"></section>
+<section class="tab" id="t-use"></section>
+
+<!-- ===== 창고보유자재 ===== -->
+<section class="tab" id="t-mst">
+  <div class="grid2">
+    <div class="card">
+      <h3 data-t="mst_h">창고보유자재 붙여넣기</h3>
+      <div class="hint" data-t="mst_hint">자재코드·품명·단위·수량(창고재고)·개수 순서로 붙여넣으세요. 수량이 창고재고로 사용됩니다.</div>
+      <textarea id="mTxt"></textarea>
+      <div class="prev" id="mPrev"></div>
+      <div class="row">
+        <label class="f"><span data-t="mode">방식</span><select id="mMode">
+          <option value="upsert" data-t="m_upsert">추가/갱신 (같은 코드는 덮어쓰기)</option>
+          <option value="replace" data-t="m_replace2">전체 교체</option></select></label>
+        <button class="btn" id="mSave" data-t="save">저장</button>
+      </div>
+    </div>
+    <div class="card">
+      <h3 data-t="mst_one">항목 추가 / 수정</h3>
+      <div style="display:grid;gap:8px">
+        <input id="fCode" placeholder="자재코드">
+        <input id="fName" placeholder="품명">
+        <div class="row">
+          <input id="fUnit" placeholder="단위 (EA/M)" style="width:100px">
+          <input id="fQty" type="number" placeholder="수량" style="flex:1">
+          <input id="fCnt" type="number" placeholder="개수" style="width:90px">
+        </div>
+        <div class="row"><button class="btn" id="fSave" data-t="save">저장</button>
+          <button class="btn red" id="fDel" data-t="del">삭제</button></div>
+        <div class="hint" data-t="mst_click">아래 목록의 행을 클릭하면 여기로 불러옵니다.</div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="row" style="justify-content:space-between;margin-bottom:8px">
+      <h3 style="margin:0"><span data-t="mst_list">창고보유자재</span> <span class="hint" id="mInfo"></span></h3>
+      <input id="mQ" placeholder="검색" style="width:170px">
+    </div>
+    <div class="tw"><table id="mTbl"></table></div>
+  </div>
+</section>
+</main>
+<div class="toast" id="toast"></div>
+<div class="load" id="load">…</div>
+
+<script>
+const SB='https://lrjurjhavlalhlwaplxd.supabase.co/rest/v1/';
+const KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxyanVyamhhdmxhbGhsd2FwbHhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNzUxNDAsImV4cCI6MjA5NTY1MTE0MH0.DVFmZaT37R9CXSMHdnLx4YAVNTnlBGijkOIaoUo7Qsk';
+const H={apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json'};
+
+/* ---------- i18n ---------- */
+const ES={title:'Pronóstico de faltantes',plant:'Planta 2 México · Torreón',tab_sum:'Faltantes',tab_need:'Material requerido (17000)',tab_cnt:'Inventario físico',
+tab_rec:'Entrada a piso (30810)',tab_use:'Consumo (32040)',tab_mst:'Material en almacén (25010)',cntDate:'Fecha inventario',from:'Desde',to:'Hasta',
+thr:'Umbral alerta (<)',run:'Consultar',search:'Buscar',filter:'Mostrar',f_all:'Todo',f_chk:'Alerta+Faltante',f_short:'Solo faltante',
+copy:'Copiar',xlsx:'Excel',k_mat:'Materiales',k_short:'Faltante (<0)',k_care:'Alerta',k_ex:'Filas LOT excluidas',
+formula:'Stock actual = Inventario − Consumo + Entrada · Pronóstico = Stock actual + Almacén − Requerido',
+need_h:'Pegar material requerido (col. A~F)',need_hint:'Copie columnas A~F (código, nombre, cantidad, unidad, LOTNO, línea) y péguelas aquí.',
+mode:'Modo',m_replace:'Reemplazar todo',m_append:'Agregar a la lista',save:'Guardar',clearAll:'Borrar todo',ex_h:'LOT excluidos',
+ex_hint:'Las filas cuyo LOTNO contenga estos números no se suman.',add:'Agregar',need_list:'Lista guardada',mst_h:'Pegar material en almacén',
+mst_hint:'Código, nombre, unidad, cantidad (almacén), piezas.',m_upsert:'Agregar/actualizar',m_replace2:'Reemplazar todo',
+mst_one:'Agregar / editar',del:'Eliminar',mst_click:'Haga clic en una fila para cargarla aquí.',mst_list:'Material en almacén',
+date:'Fecha',useRowDate:'Usar fecha de cada fila (si falta, la seleccionada)',paste:'Pegar datos',savedDates:'Fechas guardadas',viewDel:'Eliminar fecha'};
+let LANG=localStorage.getItem('mshort_lang_2')||'ko';
+const KO={};
+function applyLang(){
+  document.querySelectorAll('[data-t]').forEach(e=>{const k=e.dataset.t;if(!(k in KO))KO[k]=e.innerHTML;e.innerHTML=LANG==='es'&&ES[k]?ES[k]:KO[k];});
+  document.getElementById('langBtn').textContent=LANG==='es'?'KO':'ES';
+}
+const tr=(ko,es)=>LANG==='es'?es:ko;
+document.getElementById('langBtn').onclick=()=>{LANG=LANG==='es'?'ko':'es';try{localStorage.setItem('mshort_lang_2',LANG)}catch(e){}applyLang();renderSum();renderNeed();renderMst();DAILY.forEach(d=>renderDates(d));};
+
+/* ---------- utils ---------- */
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const num=v=>{if(v==null)return NaN;const s=String(v).replace(/,/g,'').trim();return s===''?NaN:Number(s)};
+const fmt=v=>{if(v==null||isNaN(v))return'';return Number(v).toLocaleString('en-US',{maximumFractionDigits:2})};
+const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+const addDay=(s,n)=>{const d=new Date(s+'T12:00:00');d.setDate(d.getDate()+n);return d.toISOString().slice(0,10)};
+const md=s=>s?s.slice(5).replace('-','/'):'';
+function toast(m){const t=$('toast');t.textContent=m;t.style.display='block';clearTimeout(t._t);t._t=setTimeout(()=>t.style.display='none',2500)}
+function busy(on){$('load').style.display=on?'flex':'none'}
+function rows(txt){return txt.replace(/\r/g,'').split('\n').filter(l=>l.trim()!=='').map(l=>l.split('\t').map(c=>c.trim()))}
+const codeOk=c=>c&&/^[A-Za-z0-9][A-Za-z0-9\-_.]{2,}$/.test(c);
+
+/* ---------- REST ---------- */
+async function sel(table,q=''){
+  let out=[],from=0,step=1000;
+  while(true){
+    const r=await fetch(SB+table+'?'+q,{headers:{...H,Range:from+'-'+(from+step-1),'Range-Unit':'items'}});
+    if(!r.ok)throw new Error(await r.text());
+    const j=await r.json();out=out.concat(j);if(j.length<step)break;from+=step;
+  }
+  return out;
+}
+async function ins(table,data,upsertKey){
+  for(let i=0;i<data.length;i+=500){
+    const r=await fetch(SB+table+(upsertKey?'?on_conflict='+upsertKey:''),{method:'POST',
+      headers:{...H,Prefer:'return=minimal'+(upsertKey?',resolution=merge-duplicates':'')},body:JSON.stringify(data.slice(i,i+500))});
+    if(!r.ok)throw new Error(await r.text());
+  }
+}
+async function del(table,q){const r=await fetch(SB+table+'?'+q,{method:'DELETE',headers:H});if(!r.ok)throw new Error(await r.text())}
+
+/* ---------- state ---------- */
+let NEED=[],EX=[],MST=[],DATES=[],CFG={threshold:'2000'},SUM=null,sortK=null,sortD=1;
+
+/* ---------- tabs ---------- */
+document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('#nav button').forEach(x=>x.classList.toggle('on',x===b));
+  document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on',x.id==='t-'+b.dataset.tab));
+});
+
+/* ---------- 제외 LOT ---------- */
+const isEx=lot=>{const l=String(lot||'');return l!==''&&EX.some(e=>l.includes(e.lotno))};
+function renderEx(){
+  $('exList').innerHTML=EX.map(e=>`<span class="chip">${esc(e.lotno)} <small>${esc(e.memo||'')}</small><button data-l="${esc(e.lotno)}">×</button></span>`).join('')||'<span class="hint">-</span>';
+  $('exList').querySelectorAll('button').forEach(b=>b.onclick=async()=>{
+    if(!confirm(tr('제외 해제: ','Quitar: ')+b.dataset.l))return;
+    busy(1);try{await del('mshort_exlot_2','lotno=eq.'+encodeURIComponent(b.dataset.l));await loadEx();renderNeed();toast('OK')}catch(e){alert(e.message)}busy(0)});
+}
+$('exAdd').onclick=async()=>{
+  const l=$('exLot').value.trim();if(!l)return;
+  busy(1);try{await ins('mshort_exlot_2',[{lotno:l,memo:$('exMemo').value.trim()}],'lotno');$('exLot').value='';$('exMemo').value='';await loadEx();renderNeed();toast('OK')}catch(e){alert(e.message)}busy(0)};
+async function loadEx(){EX=await sel('mshort_exlot_2','select=*&order=lotno');renderEx()}
+
+/* ---------- 17000 ---------- */
+function parseNeed(txt){
+  return rows(txt).map(c=>({code:(c[0]||'').toUpperCase(),name:c[1]||'',qty:num(c[2]),unit:c[3]||'',lotno:c[4]||'',seonbeon:c[5]||''}))
+    .filter(r=>codeOk(r.code)&&!isNaN(r.qty));
+}
+$('nTxt').oninput=()=>{const p=parseNeed($('nTxt').value);const ex=p.filter(r=>isEx(r.lotno)).length;
+  $('nPrev').textContent=p.length?tr(`인식 ${p.length}행 (제외 LOT ${ex}행)`,`${p.length} filas (${ex} excluidas)`):''};
+$('nSave').onclick=async()=>{
+  const p=parseNeed($('nTxt').value);if(!p.length)return toast(tr('인식된 행이 없습니다','Sin filas'));
+  const rep=$('nMode').value==='replace';
+  if(rep&&NEED.length&&!confirm(tr(`기존 ${NEED.length}행을 지우고 ${p.length}행으로 교체합니다.`,`Reemplazar ${NEED.length} filas por ${p.length}?`)))return;
+  busy(1);try{if(rep)await del('mshort_need_2','id=gt.0');await ins('mshort_need_2',p);$('nTxt').value='';$('nPrev').textContent='';await loadNeed();toast(tr('저장 완료','Guardado'))}catch(e){alert(e.message)}busy(0)};
+$('nClear').onclick=async()=>{if(!confirm(tr('작업필요자재 전체 삭제?','¿Borrar todo?')))return;busy(1);try{await del('mshort_need_2','id=gt.0');await loadNeed()}catch(e){alert(e.message)}busy(0)};
+async function loadNeed(){NEED=await sel('mshort_need_2','select=*&order=id');renderNeed()}
+function renderNeed(){
+  const q=$('nQ').value.trim().toUpperCase();
+  const ex=NEED.filter(r=>isEx(r.lotno)).length;
+  $('nInfo').textContent=tr(`${NEED.length}행 · 제외 ${ex}행`,`${NEED.length} filas · ${ex} excluidas`);
+  const list=NEED.filter(r=>!q||(r.code+' '+r.name+' '+(r.lotno||'')).toUpperCase().includes(q));
+  $('nTbl').innerHTML=`<tr><th>#</th><th>${tr('자재코드','Código')}</th><th>${tr('자재명','Nombre')}</th><th class="n">${tr('수량','Cant.')}</th><th>${tr('단위','Unidad')}</th><th>LOTNO</th><th>${tr('선번','Línea')}</th></tr>`+
+    list.slice(0,3000).map((r,i)=>`<tr class="${isEx(r.lotno)?'ex':''}"><td>${i+1}</td><td>${esc(r.code)}</td><td>${esc(r.name)}</td><td class="n">${fmt(r.qty)}</td><td>${esc(r.unit)}</td><td>${esc(r.lotno)}</td><td>${esc(r.seonbeon)}</td></tr>`).join('');
+}
+$('nQ').oninput=renderNeed;
+
+/* ---------- 일자별 입력 (실사/입고/사용량) ---------- */
+/* ---------- 머릿글 없이도 인식하는 공통 판별 ---------- */
+const isNum=v=>v!=null&&/^-?[\d,]*\.?\d+$/.test(String(v).trim());
+const isCodeCell=v=>/^[A-Za-z][A-Za-z0-9\-_.]*\d[A-Za-z0-9\-_.]*$/.test(String(v||'').trim())&&String(v).trim().length>=6;
+const isGrp=v=>/^\d{2}[A-Za-z]\d$/.test(String(v||'').trim());   // 08J1, 03T1, 01W1
+const findCode=c=>c.findIndex(isCodeCell);
+function toDate(v){
+  v=String(v||'').trim();if(!v)return'';
+  let m=v.match(/^(\d{4})[-./](\d{1,2})[-./](\d{1,2})/);
+  if(m)return`${m[1]}-${m[2].padStart(2,'0')}-${m[3].padStart(2,'0')}`;
+  m=v.match(/^(20\d{2})(\d{2})(\d{2})$/);if(m)return`${m[1]}-${m[2]}-${m[3]}`;
+  m=v.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);if(m)return`${m[3]}-${m[1].padStart(2,'0')}-${m[2].padStart(2,'0')}`;
+  if(/^4\d{4}(\.\d+)?$/.test(v)){const d=new Date(Date.UTC(1899,11,30)+Math.floor(Number(v))*864e5);return d.toISOString().slice(0,10)}
+  return'';
+}
+const rowDate=(c,ci)=>{for(let i=0;i<ci;i++){const d=toDate(c[i]);if(d)return d}return''};
+
+/* 실사: 코드 + 수량(코드 뒤 마지막 숫자) */
+function parseCount(txt){
+  return rows(txt).map(c=>{const ci=findCode(c);if(ci<0)return null;
+    let q=NaN;for(let i=c.length-1;i>ci;i--)if(isNum(c[i])){q=num(c[i]);break}
+    return{code:c[ci].toUpperCase(),qty:q,_rd:rowDate(c,ci)}}).filter(r=>r&&!isNaN(r.qty));
+}
+/* 사용량: 코드 · 업체명 · 품목그룹 · 사용량 — 머릿글/빈열/앞쪽 날짜열 있어도 인식 */
+function parseUsage(txt){
+  return rows(txt).map(c=>{const ci=findCode(c);if(ci<0)return null;
+    const gi=c.findIndex((v,i)=>i>ci&&isGrp(v));
+    let q=NaN,qi=-1;
+    if(gi>=0){for(let i=gi+1;i<c.length;i++)if(isNum(c[i])){q=num(c[i]);qi=i;break}}
+    else{for(let i=c.length-1;i>ci+1;i--)if(isNum(c[i])){q=num(c[i]);qi=i;break}
+         if(isNaN(q)&&isNum(c[ci+1])&&c.length===ci+2){q=num(c[ci+1]);qi=ci+1}}   // 코드·수량 2열
+    const name=qi!==ci+1&&gi!==ci+1?(c[ci+1]||''):'';
+    return{code:c[ci].toUpperCase(),name,grp:gi>=0?c[gi].toUpperCase():'',qty:q,_rd:rowDate(c,ci)}}).filter(r=>r&&!isNaN(r.qty));
+}
+/* 현장입고 ERP 30810: 실사일자·유라코드·업체품명·단위·실사수량·바코드·업체바코드·사용 */
+function parseErp(txt){
+  const R=rows(txt);if(!R.length)return[];
+  const keys={date:['실사일자','일자','날짜','FECHA'],code:['유라코드','율하코드','자재코드','코드'],name:['업체품명','품명','자재명'],unit:['단위'],
+    qty:['실사수량','수량'],barcode:['바코드'],vbarcode:['업체바코드'],used:['사용']};
+  let pos=null,start=0;
+  const hi=R.findIndex(r=>r.some(c=>/유라코드|율하코드|실사일자|실사수량/.test(c)));
+  if(hi>=0&&hi<5){const h=R[hi].map(c=>c.replace(/\s/g,''));pos={};
+    Object.entries(keys).forEach(([k,names])=>{const i=h.findIndex(c=>names.includes(c));if(i>=0)pos[k]=i});
+    const vb=h.indexOf('업체바코드'),b=h.indexOf('바코드');if(b>=0)pos.barcode=b;if(vb>=0)pos.vbarcode=vb;
+    start=hi+1}
+  const out=[],seen=new Set();
+  R.slice(start).forEach(c=>{
+    let r;
+    if(pos&&pos.code!=null){
+      r={_rd:toDate(c[pos.date]),code:(c[pos.code]||'').toUpperCase(),name:c[pos.name]||'',unit:c[pos.unit]||'',qty:num(c[pos.qty]),
+        barcode:c[pos.barcode]||'',vbarcode:c[pos.vbarcode]||'',used:c[pos.used]||''};
+    }else{
+      // 머릿글 없음: 코드 위치 기준 상대 위치로 판별
+      const ci=findCode(c);if(ci<0)return;
+      const t=c.slice(ci+1);   // 품명, 단위, 수량, 바코드, 업체바코드, 사용  (또는 품명, 수량)
+      if(t.length>=3&&!isNum(t[1])&&isNum(t[2]))
+        r={name:t[0]||'',unit:t[1]||'',qty:num(t[2]),barcode:t[3]||'',vbarcode:t[4]||'',used:t[5]||''};
+      else{const qi=t.findIndex((v,i)=>i>0&&isNum(v));
+        r={name:t[0]||'',unit:'',qty:qi>=0?num(t[qi]):(isNum(t[0])?num(t[0]):NaN),barcode:'',vbarcode:'',used:''};
+        if(qi<0&&isNum(t[0]))r.name=''}
+      r.code=c[ci].toUpperCase();r._rd=rowDate(c,ci);
+    }
+    if(!codeOk(r.code)||isNaN(r.qty))return;
+    if(r.barcode){if(seen.has(r.barcode))return;seen.add(r.barcode)}
+    out.push(r)});
+  return out;
+}
+const DAILY=[
+ {key:'cnt',kind:'count',table:'mshort_count_2',dcol:'cdate',ko:'실사',es:'Inventario físico',parser:parseCount,
+  hint:['월말 실사한 순수 원자재 수량. 유라코드·실사수량을 붙여넣으세요(머릿글 없어도 됨). 같은 코드는 합산됩니다.','Código y cantidad contada (sin encabezado OK). Códigos repetidos se suman.']},
+ {key:'rec',kind:'receipt',table:'mshort_receipt_2',dcol:'rdate',ko:'현장입고',es:'Entrada a piso',parser:parseErp,erp:true,
+  hint:['ERP 30810 형식(실사일자·유라코드·업체품명·단위·실사수량·바코드·업체바코드·사용)을 붙여넣으세요. 머릿글이 없어도 인식합니다. 같은 바코드는 1번만 반영됩니다.',
+        'Pegue el formato ERP 30810 (fecha, código, nombre, unidad, cantidad, código de barras, cód. proveedor, uso), con o sin encabezado. Códigos de barras repetidos se cuentan una vez.']},
+ {key:'use',kind:'usage',table:'mshort_usage_2',dcol:'udate',ko:'사용량',es:'Consumo',parser:parseUsage,
+  hint:['날짜 지정 후 자재코드·업체명·품목그룹·사용량을 붙여넣으세요. 머릿글·빈 열·앞쪽 순번/날짜 열이 있어도 코드와 품목그룹(08J1·03T1·01W1) 기준으로 인식합니다.',
+        'Seleccione fecha y pegue código, proveedor, grupo, consumo. Se reconoce sin encabezado.']}
+];
+DAILY.forEach(d=>{
+  $('t-'+d.key).innerHTML=`<div class="grid2"><div class="card"><h3>${d.ko} <span data-t="paste">붙여넣기</span></h3>
+    <div class="hint" id="${d.key}Hint"></div>
+    <div class="row" style="margin:10px 0"><label class="f"><span data-t="date">날짜</span><input type="date" id="${d.key}Date"></label>
+    ${d.erp?`<label style="display:flex;gap:6px;align-items:center;font-size:13px;padding-bottom:8px"><input type="checkbox" id="${d.key}UseRowDate" checked> <span data-t="useRowDate">행의 실사일자 사용 (없으면 지정 날짜)</span></label>`:''}</div>
+    <textarea id="${d.key}Txt"></textarea><div class="prev" id="${d.key}Prev"></div>
+    <div class="row"><button class="btn" id="${d.key}Save" data-t="save">저장</button>
+    <span class="hint" id="${d.key}Warn"></span></div></div>
+    <div class="card"><h3 data-t="savedDates">저장된 날짜</h3><div class="dl" id="${d.key}Dates"></div></div></div>
+    <div class="card"><h3 id="${d.key}VH"></h3><div class="tw"><table id="${d.key}Tbl"></table></div></div>`;
+  $(d.key+'Date').value=today();
+  // 각 행에 저장할 날짜(_d)를 붙여 반환
+  const parse=()=>{
+    const sel=$(d.key+'Date').value,useRow=d.erp&&$(d.key+'UseRowDate').checked;
+    return d.parser($(d.key+'Txt').value).filter(r=>codeOk(r.code)).map(({_rd,...r})=>({...r,_d:useRow&&_rd?_rd:sel}));
+  };
+  const groups=p=>{const g={};p.forEach(r=>{(g[r._d]=g[r._d]||[]).push(r)});return g};
+  const warn=()=>{const p=parse();const ds=p.length?Object.keys(groups(p)):[$(d.key+'Date').value];
+    const ex=ds.map(dt=>DATES.find(x=>x.kind===d.kind&&x.d===dt)).filter(Boolean);
+    $(d.key+'Warn').textContent=ex.length?tr(`※ 기존 데이터 교체: ${ex.map(x=>x.d+'('+x.n+'행)').join(', ')}`,`※ Se reemplazarán: ${ex.map(x=>x.d).join(', ')}`):''};
+  $(d.key+'Txt').oninput=()=>{const p=parse();const g=groups(p);const ds=Object.keys(g).sort();
+    $(d.key+'Prev').textContent=p.length?tr(`인식 ${p.length}행 · 합계 ${fmt(p.reduce((a,r)=>a+r.qty,0))} · 날짜: ${ds.map(x=>x+'('+g[x].length+')').join(', ')}`,
+      `${p.length} filas · total ${fmt(p.reduce((a,r)=>a+r.qty,0))} · fechas: ${ds.join(', ')}`):'';warn()};
+  $(d.key+'Date').onchange=()=>$(d.key+'Txt').oninput();
+  if(d.erp)$(d.key+'UseRowDate').onchange=()=>$(d.key+'Txt').oninput();
+  $(d.key+'Save').onclick=async()=>{
+    const p=parse();if(!p.length)return toast(tr('인식된 행이 없습니다','Sin filas'));
+    if(p.some(r=>!r._d))return toast(tr('날짜를 지정하세요','Seleccione fecha'));
+    const g=groups(p),ds=Object.keys(g).sort();
+    const ex=ds.map(dt=>DATES.find(x=>x.kind===d.kind&&x.d===dt)).filter(Boolean);
+    if(ex.length&&!confirm(tr(`기존 데이터를 교체합니다: ${ex.map(x=>x.d+' '+x.n+'행').join(', ')}`,`Reemplazar: ${ex.map(x=>x.d).join(', ')}?`)))return;
+    busy(1);try{
+      for(const dt of ds){await del(d.table,d.dcol+'=eq.'+dt);
+        await ins(d.table,g[dt].map(({_d,...r})=>({...r,[d.dcol]:dt})))}
+      $(d.key+'Txt').value='';$(d.key+'Prev').textContent='';$(d.key+'Warn').textContent='';
+      await loadDates();viewDate(d,ds[ds.length-1]);toast(tr(`저장 완료 (${ds.length}일)`,'Guardado'))}catch(e){alert(e.message)}busy(0)};
+});
+function renderDates(d){
+  $(d.key+'Hint').textContent=d.hint[LANG==='es'?1:0];
+  const list=DATES.filter(x=>x.kind===d.kind).sort((a,b)=>b.d.localeCompare(a.d));
+  $(d.key+'Dates').innerHTML=list.map(x=>`<div data-d="${x.d}" class="${d.cur===x.d?'sel':''}"><span style="cursor:pointer;flex:1"><b>${x.d}</b> <span class="hint">${x.n}${tr('행','f')} · ${fmt(x.total)}</span></span>
+    <button class="btn red sm" data-del="${x.d}">×</button></div>`).join('')||'<span class="hint">-</span>';
+  $(d.key+'Dates').querySelectorAll('[data-d] span').forEach(s=>s.onclick=()=>viewDate(d,s.parentNode.dataset.d));
+  $(d.key+'Dates').querySelectorAll('[data-del]').forEach(b=>b.onclick=async()=>{
+    if(!confirm(tr(`${b.dataset.del} 데이터 삭제?`,`¿Eliminar ${b.dataset.del}?`)))return;
+    busy(1);try{await del(d.table,d.dcol+'=eq.'+b.dataset.del);if(d.cur===b.dataset.del){d.cur=null;$(d.key+'Tbl').innerHTML='';$(d.key+'VH').textContent=''}await loadDates()}catch(e){alert(e.message)}busy(0)});
+}
+async function viewDate(d,dt){
+  d.cur=dt;renderDates(d);busy(1);
+  try{const r=await sel(d.table,`select=*&${d.dcol}=eq.${dt}&order=id`);
+    $(d.key+'VH').textContent=`${dt} · ${r.length}${tr('행','')}`;
+    if(d.erp){
+      $(d.key+'Tbl').innerHTML=`<tr><th>#</th><th>${tr('실사일자','Fecha')}</th><th>${tr('유라코드','Código')}</th><th>${tr('업체품명','Nombre')}</th><th>${tr('단위','Unidad')}</th><th class="n">${tr('실사수량','Cantidad')}</th><th>${tr('바코드','Cód. barras')}</th><th>${tr('업체바코드','Cód. proveedor')}</th><th>${tr('사용','Uso')}</th></tr>`+
+        r.map((x,i)=>`<tr><td>${i+1}</td><td>${esc(x.rdate)}</td><td>${esc(x.code)}</td><td>${esc(x.name)}</td><td>${esc(x.unit)}</td><td class="n">${fmt(x.qty)}</td><td>${esc(x.barcode)}</td><td>${esc(x.vbarcode)}</td><td>${esc(x.used)}</td></tr>`).join('');
+    }else
+    $(d.key+'Tbl').innerHTML=`<tr><th>#</th><th>${tr('자재코드','Código')}</th>${d.key!=='cnt'?`<th>${tr('자재명','Nombre')}</th>`:''}${d.key==='use'?`<th>${tr('품목그룹','Grupo')}</th>`:''}<th class="n">${tr('수량','Cant.')}</th></tr>`+
+      r.map((x,i)=>`<tr><td>${i+1}</td><td>${esc(x.code)}</td>${d.key!=='cnt'?`<td>${esc(x.name)}</td>`:''}${d.key==='use'?`<td>${esc(x.grp)}</td>`:''}<td class="n">${fmt(x.qty)}</td></tr>`).join('');
+  }catch(e){alert(e.message)}busy(0);
+}
+async function loadDates(){
+  DATES=await sel('mshort_dates_2','select=*');DATES.forEach(x=>x.total=Number(x.total));
+  DAILY.forEach(renderDates);
+  const cur=$('sCnt').value;
+  const cs=DATES.filter(x=>x.kind==='count').map(x=>x.d).sort().reverse();
+  $('sCnt').innerHTML=cs.length?cs.map(d=>`<option>${d}</option>`).join(''):`<option value="">(${tr('실사 없음','sin inventario')})</option>`;
+  if(cs.includes(cur))$('sCnt').value=cur;
+  if(!$('sFrom').value&&cs[0])$('sFrom').value=addDay(cs[0],1);
+}
+$('sCnt').onchange=()=>{if($('sCnt').value)$('sFrom').value=addDay($('sCnt').value,1)};
+
+/* ---------- 창고보유자재 (25010) ---------- */
+function parseMst(txt){
+  return rows(txt).map(c=>({code:(c[0]||'').toUpperCase(),name:c[1]||'',unit:c[2]||'',qty:num(c[3]),cnt:Math.round(num(c[4]))||0}))
+    .filter(r=>codeOk(r.code)&&!isNaN(r.qty));
+}
+$('mTxt').oninput=()=>{const p=parseMst($('mTxt').value);$('mPrev').textContent=p.length?tr(`인식 ${p.length}행`,`${p.length} filas`):''};
+$('mSave').onclick=async()=>{
+  let p=parseMst($('mTxt').value);if(!p.length)return toast(tr('인식된 행이 없습니다','Sin filas'));
+  const m={};p.forEach(r=>{m[r.code]=r});p=Object.values(m).map(r=>({...r,updated_at:new Date().toISOString()}));
+  const rep=$('mMode').value==='replace';
+  if(rep&&!confirm(tr(`창고보유자재 전체(${MST.length}행)를 ${p.length}행으로 교체합니다.`,`Reemplazar almacén (${MST.length}) por ${p.length}?`)))return;
+  busy(1);try{if(rep)await del('mshort_master_2','code=neq.__none__');await ins('mshort_master_2',p,'code');$('mTxt').value='';$('mPrev').textContent='';await loadMst();toast(tr('저장 완료','Guardado'))}catch(e){alert(e.message)}busy(0)};
+$('fSave').onclick=async()=>{
+  const code=$('fCode').value.trim().toUpperCase();if(!codeOk(code))return toast(tr('자재코드를 확인하세요','Revise el código'));
+  const r={code,name:$('fName').value.trim(),unit:$('fUnit').value.trim(),qty:num($('fQty').value)||0,cnt:Math.round(num($('fCnt').value))||0,updated_at:new Date().toISOString()};
+  busy(1);try{await ins('mshort_master_2',[r],'code');await loadMst();toast(tr('저장 완료','Guardado'))}catch(e){alert(e.message)}busy(0)};
+$('fDel').onclick=async()=>{
+  const code=$('fCode').value.trim().toUpperCase();if(!code||!confirm(tr(code+' 삭제?','¿Eliminar '+code+'?')))return;
+  busy(1);try{await del('mshort_master_2','code=eq.'+encodeURIComponent(code));['fCode','fName','fUnit','fQty','fCnt'].forEach(i=>$(i).value='');await loadMst()}catch(e){alert(e.message)}busy(0)};
+async function loadMst(){MST=await sel('mshort_master_2','select=*&order=code');renderMst()}
+function renderMst(){
+  const q=$('mQ').value.trim().toUpperCase();
+  const list=MST.filter(r=>!q||(r.code+' '+r.name).toUpperCase().includes(q));
+  $('mInfo').textContent=tr(`${MST.length}개 자재`,`${MST.length} materiales`);
+  $('mTbl').innerHTML=`<tr><th>${tr('자재코드','Código')}</th><th>${tr('품명','Nombre')}</th><th>${tr('단위','Unidad')}</th><th class="n">${tr('수량(창고재고)','Cant. almacén')}</th><th class="n">${tr('개수','Piezas')}</th><th>${tr('수정일','Actualizado')}</th></tr>`+
+    list.map(r=>`<tr data-c="${esc(r.code)}" style="cursor:pointer"><td>${esc(r.code)}</td><td>${esc(r.name)}</td><td>${esc(r.unit)}</td><td class="n">${fmt(r.qty)}</td><td class="n">${fmt(r.cnt)}</td><td class="hint">${(r.updated_at||'').slice(0,10)}</td></tr>`).join('');
+  $('mTbl').querySelectorAll('tr[data-c]').forEach(tr_=>tr_.onclick=()=>{const r=MST.find(x=>x.code===tr_.dataset.c);
+    $('fCode').value=r.code;$('fName').value=r.name||'';$('fUnit').value=r.unit||'';$('fQty').value=r.qty;$('fCnt').value=r.cnt;window.scrollTo({top:0,behavior:'smooth'})});
+}
+$('mQ').oninput=renderMst;
+
+/* ---------- 부족예상 계산 ---------- */
+$('sThr').onchange=async()=>{CFG.threshold=$('sThr').value;try{await ins('mshort_config_2',[{key:'threshold',value:CFG.threshold}],'key')}catch(e){}renderSum()};
+$('sRun').onclick=calc;
+async function calc(){
+  const cd=$('sCnt').value,f=$('sFrom').value,t=$('sTo').value;
+  busy(1);
+  try{
+    await Promise.all([loadNeed(),loadMst()]);
+    const [cnt,use,rec]=await Promise.all([
+      cd?sel('mshort_count_2',`select=code,qty&cdate=eq.${cd}`):[],
+      f&&t?sel('mshort_usage_2',`select=code,qty&udate=gte.${f}&udate=lte.${t}`):[],
+      f&&t?sel('mshort_receipt_2',`select=code,qty&rdate=gte.${f}&rdate=lte.${t}`):[]]);
+    const sum=a=>{const m={};a.forEach(r=>{const c=String(r.code).toUpperCase();m[c]=(m[c]||0)+Number(r.qty)});return m};
+    const C=sum(cnt),U=sum(use),R=sum(rec),W={};MST.forEach(r=>W[r.code]=Number(r.qty)||0);
+    const agg={},order=[];let exRows=0;
+    NEED.forEach(r=>{if(isEx(r.lotno)){exRows++;return}
+      if(!agg[r.code]){agg[r.code]={code:r.code,name:r.name,unit:r.unit,need:0};order.push(r.code)}
+      agg[r.code].need+=Number(r.qty)||0});
+    const list=order.map((c,i)=>{const a=agg[c];const cnt_=C[c]||0,u=U[c]||0,rc=R[c]||0,w=W[c]||0;
+      const cur=cnt_-u+rc,sh=cur+w-a.need;return{...a,i,cnt:cnt_,use:u,rec:rc,cur,wh:w,short:sh}});
+    SUM={list,exRows,cd,f,t};
+  }catch(e){alert(e.message)}
+  busy(0);renderSum();
+}
+function status(r){const th=Number(CFG.threshold)||0;return r.short<0?'short':r.short<th?'care':'ok'}
+function viewList(){
+  if(!SUM)return[];
+  const q=$('sQ').value.trim().toUpperCase(),f=$('sF').value;
+  let l=SUM.list.filter(r=>{const s=status(r);if(f==='short'&&s!=='short')return false;if(f==='chk'&&s==='ok')return false;
+    return!q||(r.code+' '+r.name).toUpperCase().includes(q)});
+  if(sortK)l=[...l].sort((a,b)=>{const x=a[sortK],y=b[sortK];return(typeof x==='string'?x.localeCompare(y):x-y)*sortD});
+  return l;
+}
+function cols(){
+  const cd=SUM?SUM.cd:'',rng=SUM&&SUM.f?`${md(SUM.f)}~${md(SUM.t)}`:'';
+  return[['code',tr('자재코드','Código')],['name',tr('자재명','Nombre')],['unit',tr('단위','Unid.')],['need',tr('필요량','Requerido'),1],
+   ['cnt',tr('실사','Inv.')+(cd?`(${md(cd).replace('/','')})`:''),1],['use',tr('사용량','Consumo')+`(${rng})`,1],['rec',tr('입고량','Entrada')+`(${rng})`,1],
+   ['cur',tr('현재고','Stock')+(SUM&&SUM.t?`(${md(SUM.t)})`:''),1],['wh',tr('창고재고','Almacén'),1],['short',tr('부족예상','Pronóstico'),1],['chk','check']];
+}
+function renderSum(){
+  $('sThr').value=CFG.threshold;
+  if(!SUM){$('sTbl').innerHTML=`<tr><td class="hint" style="padding:20px">${tr('조회 버튼을 누르세요','Presione Consultar')}</td></tr>`;return}
+  const all=SUM.list,st=all.map(status);
+  $('kAll').textContent=all.length;$('kShort').textContent=st.filter(s=>s==='short').length;
+  $('kCare').textContent=st.filter(s=>s==='care').length;$('kEx').textContent=SUM.exRows;
+  $('sInfo').textContent=tr(`실사 ${SUM.cd||'-'} · 사용/입고 ${SUM.f||'-'} ~ ${SUM.t||'-'} · 제외 LOT: ${EX.map(e=>e.lotno).join(', ')||'없음'}`,
+    `Inventario ${SUM.cd||'-'} · ${SUM.f||'-'} ~ ${SUM.t||'-'} · LOT excluidos: ${EX.map(e=>e.lotno).join(', ')||'ninguno'}`);
+  const C=cols(),l=viewList();
+  const lab={short:tr('부족','Faltante'),care:tr('주의','Alerta'),ok:'OK'};
+  $('sTbl').innerHTML='<tr>'+C.map(([k,h,n])=>`<th class="${n?'n':''}" data-k="${k}">${h}${sortK===k?(sortD>0?' ▲':' ▼'):''}</th>`).join('')+'</tr>'+
+    l.map(r=>{const s=status(r);return`<tr class="${s==='ok'?'':s}">`+C.map(([k,h,n])=>{
+      if(k==='chk')return`<td><span class="tag ${s}">${lab[s]}</span></td>`;
+      const v=r[k];return n?`<td class="n ${v<0?'neg':''}">${fmt(v)}</td>`:`<td>${esc(v)}</td>`}).join('')+'</tr>'}).join('');
+  $('sTbl').querySelectorAll('th').forEach(th=>th.onclick=()=>{const k=th.dataset.k==='chk'?'short':th.dataset.k;
+    if(sortK===k)sortD=-sortD;else{sortK=k;sortD=1}renderSum()});
+}
+['sQ','sF'].forEach(i=>$(i).addEventListener(i==='sQ'?'input':'change',renderSum));
+document.querySelectorAll('.kpi').forEach(k=>k.onclick=()=>{$('sF').value=k.dataset.f;renderSum()});
+function exportRows(){const C=cols();const lab={short:tr('부족','Faltante'),care:'carefull',ok:''};
+  return[C.map(c=>c[1])].concat(viewList().map(r=>C.map(([k])=>k==='chk'?lab[status(r)]:r[k])))}
+$('sCopy').onclick=async()=>{if(!SUM)return;const t=exportRows().map(r=>r.join('\t')).join('\n');
+  try{await navigator.clipboard.writeText(t);toast(tr('클립보드에 복사됨 — 엑셀에 붙여넣기','Copiado'))}catch(e){alert(e.message)}};
+$('sXlsx').onclick=()=>{if(!SUM)return;const ws=XLSX.utils.aoa_to_sheet(exportRows());ws['!cols']=cols().map((c,i)=>({wch:i===1?24:14}));
+  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'부족예상');XLSX.writeFile(wb,`재고부족예상_2공장_${SUM.t||today()}.xlsx`)};
+
+/* ---------- init ---------- */
+(async()=>{
+  applyLang();$('sTo').value=today();busy(1);
+  try{
+    const cfg=await sel('mshort_config_2','select=*');cfg.forEach(c=>CFG[c.key]=c.value);
+    await loadEx();await Promise.all([loadNeed(),loadMst(),loadDates()]);
+    if($('sCnt').value)await calc();else renderSum();
+  }catch(e){alert(tr('불러오기 오류: ','Error: ')+e.message)}
+  busy(0);
+})();
+</script>
+</body>
+</html>
