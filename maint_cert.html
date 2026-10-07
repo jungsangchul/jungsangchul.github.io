@@ -1,0 +1,3211 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
+<title>보전자 자격인증 평가</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&amp;family=JetBrains+Mono:wght@400;700&amp;display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#1e2535;--surface:#252d3d;--surface2:#2d3649;--border:#3a4560;
+  --navy:#0f1f3d;--accent:#4a90d9;--sky:#5ba3e8;--text:#dde4f0;--text2:#8a9bbf;
+  --green:#2ecc7a;--red:#e05252;--blue:#4a90d9;--purple:#9b7ee8;
+  --gold:#e8b84b;--teal:#2ab8a8;--orange:#e87a2a;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-serif;min-height:100vh;}
+
+header{background:#0f1f3d;border-bottom:2px solid #1e3a6e;padding:0 1.2rem;display:flex;align-items:center;gap:12px;justify-content:space-between;height:60px;position:sticky;top:0;z-index:100;box-shadow:0 2px 16px rgba(0,0,0,0.4);}
+.header-left{display:flex;align-items:center;gap:12px;flex-shrink:0;}
+.home-btn{display:flex;align-items:center;gap:6px;padding:6px 12px;background:rgba(0,200,255,0.1);border:1px solid rgba(0,200,255,0.35);color:#00c8ff;font-size:11px;font-weight:700;letter-spacing:1.5px;cursor:pointer;text-decoration:none;border-radius:4px;transition:all 0.2s;flex-shrink:0;font-family:inherit;white-space:nowrap;}
+.home-btn:hover{background:rgba(0,200,255,0.22);border-color:#00c8ff;transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,200,255,0.2);}
+.home-btn svg{width:14px;height:14px;fill:none;stroke:#00c8ff;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;}
+.hdivider{width:1px;height:28px;background:rgba(255,255,255,0.12);flex-shrink:0;}
+.logo-text .logo-es{font-size:0.82rem;font-weight:700;color:#e8f0ff;}
+.logo-text .logo-kr{font-size:0.72rem;font-weight:600;color:#7eb8f7;}
+.tab-nav{display:flex;overflow-x:auto;flex:1;justify-content:center;}
+.tab-btn{padding:0 1rem;height:60px;background:none;border:none;color:rgba(255,255,255,0.45);font-family:inherit;font-size:0.78rem;font-weight:500;cursor:pointer;border-bottom:2px solid transparent;transition:all .18s;white-space:nowrap;}
+.tab-btn.active{color:#ffffff;border-bottom-color:var(--sky);background:rgba(255,255,255,0.06);}
+.tab-btn:hover:not(.active){color:rgba(255,255,255,0.85);background:rgba(255,255,255,0.04);}
+.lang-btn{padding:5px 10px;background:rgba(0,200,255,0.1);border:1px solid rgba(0,200,255,0.35);color:#00c8ff;border-radius:5px;cursor:pointer;font-family:inherit;font-size:0.75rem;font-weight:700;white-space:nowrap;}
+@media(max-width:900px){
+  header{height:auto;flex-wrap:wrap;padding:8px 10px;gap:8px;position:static;}
+  .header-left{flex:1 1 auto;min-width:0;}
+  .logo-text .logo-es{font-size:0.72rem;}.logo-text .logo-kr{font-size:0.65rem;}
+  .tab-nav{order:3;flex-wrap:wrap;overflow-x:visible;width:100%;border-top:1px solid rgba(255,255,255,0.08);padding-top:4px;justify-content:flex-start;}
+  .tab-btn{height:40px;padding:0 0.7rem;font-size:0.74rem;flex:0 0 auto;}
+}
+@media(max-width:480px){
+  .home-btn{padding:5px 8px;font-size:10px;}.hdivider{display:none;}
+  .tab-btn{height:36px;padding:0 0.55rem;font-size:0.7rem;}
+}
+
+.page{display:none;padding:1.5rem;max-width:1280px;margin:0 auto;}.page.active{display:block;}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:1.4rem;margin-bottom:1.4rem;box-shadow:0 2px 8px rgba(0,0,0,0.2);}
+.card-title{font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--sky);margin-bottom:1.1rem;display:flex;align-items:center;gap:0.5rem;padding-bottom:0.6rem;border-bottom:1px solid var(--border);flex-wrap:wrap;}
+.card-title .sp{flex:1;}
+.card-title.blue{color:var(--blue);}.card-title.purple{color:var(--purple);}.card-title.green{color:var(--green);}.card-title.gold{color:var(--gold);}.card-title.teal{color:var(--teal);}
+.card-title select{width:auto;font-size:0.76rem;padding:0.3rem 0.6rem;text-transform:none;letter-spacing:0;}
+
+input,select,textarea{background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:inherit;font-size:0.88rem;padding:0.55rem 0.85rem;outline:none;transition:border-color .2s,box-shadow .2s;width:100%;}
+input:focus,select:focus,textarea:focus{border-color:var(--sky);box-shadow:0 0 0 3px rgba(91,163,232,0.15);}
+input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(0.7) brightness(1.5);cursor:pointer;}
+label{font-size:0.78rem;color:var(--text2);margin-bottom:0.3rem;display:block;}
+.form-row{display:grid;gap:1rem;margin-bottom:1rem;align-items:end;}
+.col4{grid-template-columns:2fr 1.4fr 1fr 1fr auto;}
+.col-admin{grid-template-columns:2fr 1fr 1fr auto;}
+.col-cfg{grid-template-columns:1fr 1fr auto;max-width:520px;}
+@media(max-width:760px){.col4,.col-admin,.col-cfg{grid-template-columns:1fr 1fr;}}
+
+.btn{padding:0.5rem 1.1rem;border-radius:6px;border:none;cursor:pointer;font-family:inherit;font-size:0.83rem;font-weight:600;transition:all .15s;display:inline-flex;align-items:center;gap:0.35rem;white-space:nowrap;}
+.btn-primary{background:var(--accent);color:#fff;}.btn-primary:hover{background:var(--sky);}
+.btn-secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border);}.btn-secondary:hover{border-color:var(--sky);color:var(--sky);}
+.btn-danger{background:#b83232;color:#fff;}.btn-danger:hover{background:var(--red);}
+.btn-success{background:#1d9460;color:#fff;}.btn-success:hover{background:var(--green);}
+.btn-teal{background:#1a8a7c;color:#fff;}.btn-teal:hover{background:var(--teal);}
+.btn-sm{padding:0.32rem 0.75rem;font-size:0.76rem;}
+.btn-outline{background:none;color:var(--accent);border:1px solid var(--accent);}.btn-outline:hover{background:rgba(74,144,217,0.12);}
+
+/* tables */
+.tw{overflow:auto;max-height:72vh;}
+.results-table{width:100%;border-collapse:collapse;}
+.results-table th,.results-table td{padding:0.6rem 0.7rem;text-align:center;border-bottom:1px solid var(--border);font-size:0.8rem;vertical-align:middle;}
+.results-table thead,.results-table th{background:var(--surface2);}
+.results-table th{color:var(--sky);font-size:0.7rem;text-transform:uppercase;letter-spacing:1px;font-weight:700;position:sticky;top:0;z-index:1;}
+.results-table tr:hover td{background:rgba(255,255,255,0.03);}
+.results-table .l{text-align:left;}
+.mono{font-family:'JetBrains Mono',monospace;}
+.name-link{color:var(--sky);font-weight:600;cursor:pointer;}
+.name-link:hover{text-decoration:underline;}
+
+/* grades / badges */
+.grade-s{background:linear-gradient(135deg,#f1c40f,#f39c12);color:#000;border-radius:6px;padding:0.15rem 0.55rem;font-size:0.78rem;font-weight:900;white-space:nowrap;}
+.grade-a{background:rgba(46,204,122,0.2);color:var(--green);border:1px solid rgba(46,204,122,0.5);border-radius:6px;padding:0.15rem 0.55rem;font-size:0.78rem;font-weight:700;white-space:nowrap;}
+.grade-b{background:rgba(74,144,217,0.2);color:var(--blue);border:1px solid rgba(74,144,217,0.5);border-radius:6px;padding:0.15rem 0.55rem;font-size:0.78rem;font-weight:700;white-space:nowrap;}
+.grade-fail{background:rgba(224,82,82,0.15);color:var(--red);border:1px solid rgba(224,82,82,0.4);border-radius:6px;padding:0.15rem 0.55rem;font-size:0.78rem;font-weight:700;white-space:nowrap;}
+.grade-na{color:var(--text2);font-size:0.78rem;}
+.done-badge{background:rgba(46,204,122,0.12);color:var(--green);border:1px solid rgba(46,204,122,0.3);border-radius:4px;padding:0.15rem 0.5rem;font-size:0.72rem;font-weight:700;white-space:nowrap;}
+.pend-badge{background:rgba(232,184,75,0.12);color:var(--gold);border:1px solid rgba(232,184,75,0.3);border-radius:4px;padding:0.15rem 0.5rem;font-size:0.72rem;font-weight:700;white-space:nowrap;}
+.fail-badge{background:rgba(224,82,82,0.12);color:var(--red);border:1px solid rgba(224,82,82,0.3);border-radius:4px;padding:0.15rem 0.5rem;font-size:0.72rem;font-weight:700;white-space:nowrap;}
+.na-badge{background:var(--surface2);color:var(--text2);border:1px solid var(--border);border-radius:4px;padding:0.15rem 0.5rem;font-size:0.72rem;font-weight:700;white-space:nowrap;}
+.score-t{background:rgba(74,144,217,0.15);color:var(--blue);font-size:0.76rem;padding:0.12rem 0.45rem;border-radius:4px;font-weight:700;}
+.score-t.low{background:rgba(224,82,82,0.15);color:var(--red);}
+
+/* stats */
+.stats-row{display:grid;grid-template-columns:repeat(6,1fr);gap:0.9rem;margin-bottom:1.4rem;}
+@media(max-width:900px){.stats-row{grid-template-columns:repeat(3,1fr);}}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:1.1rem;text-align:center;border-top:3px solid var(--accent);}
+.stat-card.green{border-top-color:var(--green);}.stat-card.gold{border-top-color:var(--gold);}.stat-card.red{border-top-color:var(--red);}.stat-card.purple{border-top-color:var(--purple);}
+.stat-val{font-size:1.7rem;font-weight:700;color:var(--sky);font-family:'JetBrains Mono',monospace;}
+.stat-val.green{color:var(--green);}.stat-val.gold{color:var(--gold);}.stat-val.red{color:var(--red);}.stat-val.purple{color:var(--purple);}
+.stat-label{font-size:0.7rem;color:var(--text2);margin-top:0.2rem;}
+
+/* distribution bars */
+.dist{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem 1.4rem;}
+.bar-label{font-size:0.76rem;color:var(--text);margin-bottom:0.3rem;display:flex;justify-content:space-between;}
+.bar-label span{color:var(--text2);}
+.stack{display:flex;height:20px;background:var(--surface2);border-radius:5px;overflow:hidden;}
+.stack div{display:flex;align-items:center;justify-content:center;font-size:0.68rem;font-weight:800;color:#fff;}
+.legend{display:flex;gap:0.9rem;font-size:0.7rem;color:var(--text2);margin-top:0.9rem;flex-wrap:wrap;}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;vertical-align:-1px;}
+.bar-track{height:8px;background:var(--surface2);border-radius:4px;overflow:hidden;min-width:70px;}
+.bar-fill{height:100%;border-radius:4px;}
+
+/* flow */
+.flow{display:flex;align-items:center;flex-wrap:wrap;gap:0.4rem;justify-content:center;padding:0.4rem 0;}
+.flow-step{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:0.6rem 0.9rem;font-size:0.8rem;font-weight:700;color:var(--sky);text-align:center;}
+.flow-step.red{color:var(--red);border-color:rgba(224,82,82,0.4);}
+.flow-sub{font-size:0.68rem;color:var(--text2);font-weight:400;margin-top:0.15rem;}
+.flow-arrow{color:var(--text2);font-weight:700;}
+.flow-label{font-size:0.72rem;font-weight:700;color:var(--gold);width:100%;text-align:center;margin-top:0.6rem;}
+.info-box{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:0.7rem 1rem;font-size:0.77rem;color:var(--text2);margin-top:0.8rem;line-height:1.7;}
+.info-box .hl{color:var(--sky);font-weight:600;}
+.hint{font-size:0.74rem;color:var(--text2);margin-top:0.7rem;line-height:1.6;}
+
+/* practical */
+.lv{display:flex;gap:0.35rem;flex-wrap:wrap;}
+.lv button{background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:0.3rem 0.5rem;font-size:0.7rem;color:var(--text2);cursor:pointer;font-family:inherit;line-height:1.25;text-align:center;min-width:66px;transition:all .15s;}
+.lv button b{display:block;font-size:0.9rem;color:var(--text);font-family:'JetBrains Mono',monospace;}
+.lv button:hover{border-color:var(--sky);}
+.lv button.on{background:var(--accent);border-color:var(--accent);color:#fff;}
+.lv button.on b{color:#fff;}
+.crit{font-size:0.72rem;color:var(--text2);margin-top:0.25rem;line-height:1.5;}
+.sc-in{width:72px!important;text-align:center;font-family:'JetBrains Mono',monospace;font-size:1rem!important;font-weight:700;}
+.score-total-bar{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:0.8rem 1rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap;margin-top:1rem;}
+.score-total-bar .big{font-size:1.9rem;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--sky);}
+.edit-tag{font-size:0.7rem;color:var(--gold);text-transform:none;letter-spacing:0;}
+
+/* modal */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:9999;align-items:flex-start;justify-content:center;overflow:auto;padding:2rem 0.6rem;}
+.modal-bg.open{display:flex;}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.6rem;width:100%;max-width:860px;box-shadow:0 8px 40px rgba(0,0,0,0.5);}
+.modal-title{font-size:1rem;font-weight:700;color:var(--sky);flex:1;}
+.modal h4{font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--purple);margin:1.3rem 0 0.6rem;display:flex;gap:0.6rem;align-items:center;flex-wrap:wrap;}
+.modal h4.t{color:var(--blue);}
+.weak{color:var(--red)!important;font-weight:700;}
+.muted{color:var(--text2);font-size:0.76rem;}
+.empty-state{text-align:center;padding:2rem;color:var(--text2);font-size:0.82rem;}
+
+/* ===== EXAM (exam.html style) ===== */
+.ex-wrap{display:flex;justify-content:center;padding:1rem 0;}
+.ex-card{background:#1a1d27;border:1px solid #2a2f45;border-radius:16px;padding:2rem 1.5rem;width:100%;max-width:420px;position:relative;}
+.ex-ttl{font-size:1.1rem;font-weight:800;text-align:center;color:var(--sky);margin-bottom:0.25rem;}
+.ex-sub{font-size:0.78rem;color:#8892b0;text-align:center;margin-bottom:1.2rem;}
+.ex-tags{display:flex;gap:0.5rem;justify-content:center;flex-wrap:wrap;margin-bottom:1.2rem;}
+.ex-tag{background:#22263a;border:1px solid #2a2f45;border-radius:20px;padding:0.2rem 0.7rem;font-size:0.72rem;color:#8892b0;}
+.ex-card label{font-size:0.82rem;color:#8892b0;font-weight:600;}
+.ex-card select{background:#22263a;border:1px solid #2a2f45;border-radius:10px;font-size:1rem;padding:0.75rem 0.9rem;margin-bottom:1rem;}
+.ex-info{display:none;background:rgba(74,144,217,0.1);border:1px solid rgba(74,144,217,0.3);border-radius:8px;padding:0.6rem 0.9rem;margin-bottom:0.8rem;font-size:0.85rem;color:var(--sky);}
+.btn-start{display:block;width:100%;background:linear-gradient(135deg,#4a90d9,#3a7bc8);color:#fff;border:none;border-radius:12px;padding:1rem;font-size:1.05rem;font-weight:700;cursor:pointer;margin-top:0.5rem;font-family:inherit;}
+.btn-start:active{opacity:0.85;}
+.ex-lang{position:absolute;top:12px;right:12px;}
+.ex-link{margin-top:1.2rem;padding-top:1rem;border-top:1px solid #2a2f45;font-size:0.76rem;color:#8892b0;text-align:center;line-height:1.6;}
+.qr-box{background:#fff;padding:10px;border-radius:10px;display:inline-block;margin:0.6rem 0 0.3rem;}
+.qr-box img,.qr-box canvas{display:block;}
+.qr-url{font-size:0.68rem;color:#8892b0;word-break:break-all;margin-bottom:0.6rem;}
+.qr-sheet{text-align:center;padding:1rem 0;}
+.qr-sheet .qr-box{padding:18px;}
+.qr-sheet h2{color:var(--sky);font-size:1.4rem;margin-bottom:0.2rem;}
+.qr-sheet .qs-sub{color:var(--text2);font-size:0.95rem;margin-bottom:0.4rem;}
+.qr-sheet .qs-steps{color:var(--text);font-size:0.9rem;line-height:1.9;margin-top:0.8rem;}
+
+#exScreen{background:#0f1117;border-radius:10px;overflow:hidden;max-width:640px;margin:0 auto;border:1px solid #2a2f45;}
+body.exam-only #exScreen{border:none;border-radius:0;max-width:none;min-height:100vh;}
+.ex-hdr{background:#1a1d27;border-bottom:1px solid #2a2f45;padding:0.8rem 1rem;display:flex;justify-content:space-between;align-items:center;gap:0.6rem;position:sticky;top:0;z-index:50;}
+.ex-hdr-u{font-size:0.78rem;color:#8892b0;}
+.ex-hdr-u strong{color:var(--sky);}
+.ex-cnt{font-size:0.9rem;font-weight:700;color:var(--gold);font-family:monospace;background:#22263a;padding:0.2rem 0.6rem;border-radius:6px;}
+.pb-w{width:100%;height:5px;background:#22263a;}
+.pb-f{height:100%;background:linear-gradient(90deg,#4a90d9,#2bbcb0);transition:width 0.4s;}
+.qw{padding:1.2rem 1rem 2.5rem;max-width:600px;margin:0 auto;}
+.qcnt{font-size:0.75rem;color:#8892b0;text-align:center;margin-bottom:0.5rem;}
+.qtxt{font-size:1.05rem;font-weight:700;line-height:1.7;color:#e8eaf0;background:#1a1d27;border:1px solid #2a2f45;border-radius:12px;padding:1.1rem 1rem;margin-bottom:1rem;word-break:keep-all;}
+.opts{display:flex;flex-direction:column;gap:0.65rem;}
+.opt-btn{background:#1a1d27;border:2px solid #2a2f45;border-radius:12px;padding:0.9rem 1rem;text-align:left;cursor:pointer;display:flex;align-items:center;gap:0.7rem;color:#e8eaf0;font-size:0.97rem;width:100%;font-family:inherit;}
+.opt-btn.selected{border-color:#4a90d9;background:rgba(74,144,217,0.15);}
+.onum{width:28px;height:28px;border-radius:50%;background:#22263a;border:1px solid #2a2f45;display:inline-flex;align-items:center;justify-content:center;font-size:0.78rem;font-weight:700;flex-shrink:0;color:#8892b0;}
+.opt-btn.selected .onum{background:#4a90d9;border-color:#4a90d9;color:#fff;}
+.otxt{flex:1;line-height:1.5;word-break:keep-all;}
+.q21r{background:#22263a;border:1px solid #2a2f45;border-radius:10px;margin-top:0.7rem;font-size:0.95rem;min-height:90px;}
+.dots{display:flex;flex-wrap:wrap;margin:0.9rem 0;justify-content:center;}
+.a-dot{width:32px;height:32px;border-radius:50%;border:2px solid #2a2f45;display:inline-flex;align-items:center;justify-content:center;font-size:0.72rem;font-weight:700;cursor:pointer;color:#8892b0;background:#22263a;margin:0.2rem;}
+.a-dot.answered{background:#4a90d9;border-color:#4a90d9;color:#fff;}
+.a-dot.current{border-color:var(--gold);}
+.ex-nav{display:flex;gap:0.6rem;margin-top:1.2rem;}
+.btn-prev,.btn-next,.btn-submit{flex:1;padding:0.9rem;border:none;border-radius:12px;font-size:1rem;font-weight:700;cursor:pointer;font-family:inherit;}
+.btn-prev{background:#22263a;color:#8892b0;}
+.btn-next{background:linear-gradient(135deg,#4a90d9,#3a7bc8);color:#fff;}
+.btn-submit{background:linear-gradient(135deg,#2ecc71,#27ae60);color:#fff;}
+.btn-prev:disabled{opacity:0.4;}
+.done-card{background:#1a1d27;border:1px solid #2a2f45;border-radius:16px;padding:2rem 1.5rem;width:100%;max-width:420px;text-align:center;}
+.done-title{font-size:1.3rem;font-weight:800;margin-bottom:0.3rem;}
+.done-score{font-size:3.4rem;font-weight:900;font-family:'JetBrains Mono',monospace;margin:0.4rem 0;}
+.done-msg{font-size:0.85rem;color:#8892b0;line-height:1.7;margin:0.8rem 0 1.2rem;}
+body.exam-only{background:#0f1117;}
+body.exam-only .ex-wrap{min-height:100vh;align-items:center;padding:1.2rem;}
+body.exam-only .page{padding:0;max-width:none;}
+
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:#0f1f3d;border:1px solid var(--sky);color:#fff;padding:0.65rem 1.2rem;border-radius:8px;display:none;z-index:99999;font-size:0.82rem;font-weight:600;}
+.hide{display:none!important;}
+@media(max-width:640px){.page{padding:0.8rem;}.card{padding:1rem;}}
+@media print{
+  :root{--bg:#fff;--surface:#fff;--surface2:#eef1f6;--border:#c9ced8;--text:#000;--text2:#444;--sky:#1f4e9c;}
+  body{background:#fff;}header,.no-print{display:none!important;}
+  .card{box-shadow:none;border:none;padding:0;}.tw{max-height:none;overflow:visible;}.results-table th{position:static;}
+  body.printmodal .page{display:none!important;}
+  .modal-bg.open{position:static;background:none;padding:0;}.modal{box-shadow:none;border:none;max-width:none;}
+}
+</style>
+</head>
+<body>
+<header class="no-print" id="appHeader">
+  <div class="header-left">
+    <a href="index.html" class="home-btn" title="메인 메뉴로 돌아가기">
+      <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+      MAIN
+    </a>
+    <div class="hdivider"></div>
+    <div class="logo-text">
+      <div class="logo-es">YURA Harness México — Certificación de Mantenimiento</div>
+      <div class="logo-kr" id="logoKr">유라하네스멕시코 보전자 자격인증 시스템</div>
+    </div>
+  </div>
+  <nav class="tab-nav" id="nav">
+    <button class="tab-btn" data-tab="dash" data-t="tab_dash"></button>
+    <button class="tab-btn" data-tab="theory" data-t="tab_theory"></button>
+    <button class="tab-btn" data-tab="prac" data-t="tab_prac"></button>
+    <button class="tab-btn" data-tab="hist" data-t="tab_hist"></button>
+    <button class="tab-btn" data-tab="admin" data-t="tab_admin"></button>
+  </nav>
+  <div style="flex-shrink:0"><button type="button" class="lang-btn" onclick="toggleLang()" data-langbtn></button></div>
+</header>
+
+<!-- ① DASHBOARD -->
+<div class="page" id="page-dash">
+  <div class="stats-row" id="kpis"></div>
+  <div class="card">
+    <div class="card-title">📋 <span data-t="matrix"></span><span class="sp"></span>
+      <select id="fPlant" class="no-print"></select>
+      <button class="btn btn-teal btn-sm no-print" onclick="exportCSV()">📥 <span data-t="csv"></span></button>
+      <button class="btn btn-secondary btn-sm no-print" onclick="window.print()">🖨️ <span data-t="print"></span></button>
+    </div>
+    <div class="tw"><table class="results-table" id="matrix"></table></div>
+    <div class="hint" data-t="rule"></div>
+  </div>
+  <div class="card">
+    <div class="card-title purple">📊 <span data-t="dist"></span></div>
+    <div class="dist" id="dist"></div>
+    <div class="legend"><span><i style="background:#f1c40f"></i>S 90↑</span><span><i style="background:var(--green)"></i>A 80↑</span><span><i style="background:var(--blue)"></i>B 70↑</span><span><i style="background:var(--red)"></i>C 69↓</span></div>
+  </div>
+  <div class="card no-print">
+    <div class="card-title gold">🗺️ <span data-t="process"></span></div>
+    <div id="flow"></div>
+  </div>
+</div>
+
+<!-- ② THEORY EXAM -->
+<div class="page" id="page-theory">
+  <div class="ex-wrap" id="exStart">
+    <div class="ex-card">
+      <button type="button" class="lang-btn ex-lang" onclick="toggleLang()" data-langbtn></button>
+      <div class="ex-ttl" data-t="ex_title"></div>
+      <div class="ex-sub" id="exSub"></div>
+      <div class="ex-tags" id="exTags"></div>
+      <label data-t="plant"></label>
+      <select id="exPlant"></select>
+      <label data-t="name"></label>
+      <select id="exName"></select>
+      <div class="ex-info" id="exInfo"></div>
+      <button type="button" class="btn-start" onclick="startExam()" data-t="start"></button>
+      <div class="ex-link no-print" id="examLinkBox"><span data-t="qr_info"></span><div class="qr-box" id="qrSmall"></div><div class="qr-url mono" id="qrUrl"></div><div style="display:flex;gap:0.4rem;justify-content:center;flex-wrap:wrap"><button class="btn btn-primary btn-sm" onclick="openQR()">📱 <span data-t="qr_big"></span></button><button class="btn btn-outline btn-sm" onclick="copyExamLink()">🔗 <span data-t="copy"></span></button></div></div>
+    </div>
+  </div>
+  <div id="exScreen" class="hide">
+    <div class="ex-hdr">
+      <div class="ex-hdr-u">👤 <strong id="exWho">-</strong></div>
+      <div style="display:flex;gap:0.5rem;align-items:center"><button type="button" class="lang-btn" onclick="toggleLang()" data-langbtn></button><div class="ex-cnt" id="exCnt"></div></div>
+    </div>
+    <div class="pb-w"><div class="pb-f" id="exBar" style="width:0%"></div></div>
+    <div class="qw">
+      <div class="qcnt" id="qCounter"></div>
+      <div class="qtxt" id="qText"></div>
+      <div class="opts" id="qOpts"></div>
+      <div class="dots" id="qDots"></div>
+      <div class="ex-nav" id="qNav"></div>
+      <div style="text-align:center;margin-top:1rem"><button class="btn btn-secondary btn-sm" onclick="cancelExam()" data-t="cancel"></button></div>
+    </div>
+  </div>
+  <div class="ex-wrap hide" id="exResult"><div class="done-card" id="exResultCard"></div></div>
+</div>
+
+<!-- ③ PRACTICAL -->
+<div class="page" id="page-prac">
+  <div class="card">
+    <div class="card-title purple">🛠️ <span data-t="pr_title"></span><span class="sp"></span><span class="edit-tag hide" id="prEditTag"></span></div>
+    <div class="form-row col4">
+      <div><label data-t="name"></label><select id="prName"></select></div>
+      <div><label data-t="equip"></label><select id="prEquip"></select></div>
+      <div><label data-t="date"></label><input type="date" id="prDate"></div>
+      <div><label data-t="evaluator"></label><input type="text" id="prEval"></div>
+      <div><button class="btn btn-secondary" onclick="loadLastPrac()">↺ <span data-t="load_last"></span></button></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title" id="prEqTitle"></div>
+    <div class="tw" style="max-height:none"><table class="results-table" id="prTable"></table></div>
+    <div style="margin-top:1rem"><label data-t="note"></label><input type="text" id="prNote"></div>
+    <div class="score-total-bar">
+      <span class="muted" data-t="total"></span><span class="big" id="prTot">0</span><span id="prGrade"></span>
+      <span style="flex:1"></span>
+      <button class="btn btn-secondary" onclick="resetPrac()" data-t="reset"></button>
+      <button class="btn btn-success" onclick="savePrac()">💾 <span data-t="save"></span></button>
+    </div>
+  </div>
+</div>
+
+<!-- ④ HISTORY -->
+<div class="page" id="page-hist">
+  <div class="card">
+    <div class="card-title purple">🛠️ <span data-t="h_prac"></span><span class="sp"></span><select id="hName"></select><select id="hEquip"></select></div>
+    <div class="tw"><table class="results-table" id="hPrac"></table></div>
+  </div>
+  <div class="card">
+    <div class="card-title blue">📝 <span data-t="h_theory"></span></div>
+    <div class="tw"><table class="results-table" id="hTheory"></table></div>
+  </div>
+</div>
+
+<!-- ⑤ ADMIN -->
+<div class="page" id="page-admin">
+  <div class="card">
+    <div class="card-title teal">👥 <span data-t="staff"></span></div>
+    <div class="form-row col-admin">
+      <div><label data-t="name"></label><input type="text" id="adName"></div>
+      <div><label data-t="empno"></label><input type="text" id="adNo"></div>
+      <div><label data-t="plant"></label><select id="adPlant"><option value="1">1공장 Monclova</option><option value="2">2공장 Torreón</option></select></div>
+      <div><button class="btn btn-primary" onclick="addStaff()">＋ <span data-t="add"></span></button></div>
+    </div>
+    <div class="tw"><table class="results-table" id="staffT"></table></div>
+  </div>
+  <div class="card">
+    <div class="card-title gold">⚙️ <span data-t="settings"></span></div>
+    <div class="form-row col-cfg">
+      <div><label data-t="pass_score"></label><input type="number" id="cfPass" min="0" max="100"></div>
+      <div><label data-t="shuffle"></label><select id="cfShuffle"><option value="1">ON</option><option value="0">OFF</option></select></div>
+      <div><button class="btn btn-primary" onclick="saveCfg()">💾 <span data-t="save"></span></button></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title blue">📚 <span data-t="qbank"></span></div>
+    <div class="tw"><table class="results-table" id="qbankT"></table></div>
+  </div>
+</div>
+
+<div class="modal-bg" id="modal" onclick="if(event.target===this)closeModal()"><div class="modal" id="modalBody"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* QR Code Generator for JavaScript — Copyright (c) 2009 Kazuhiko Arase, MIT License */
+//---------------------------------------------------------------------
+//
+// QR Code Generator for JavaScript
+//
+// Copyright (c) 2009 Kazuhiko Arase
+//
+// URL: http://www.d-project.com/
+//
+// Licensed under the MIT license:
+//  http://www.opensource.org/licenses/mit-license.php
+//
+// The word 'QR Code' is registered trademark of
+// DENSO WAVE INCORPORATED
+//  http://www.denso-wave.com/qrcode/faqpatent-e.html
+//
+//---------------------------------------------------------------------
+
+var qrcode = function() {
+
+  //---------------------------------------------------------------------
+  // qrcode
+  //---------------------------------------------------------------------
+
+  /**
+   * qrcode
+   * @param typeNumber 1 to 40
+   * @param errorCorrectionLevel 'L','M','Q','H'
+   */
+  var qrcode = function(typeNumber, errorCorrectionLevel) {
+
+    var PAD0 = 0xEC;
+    var PAD1 = 0x11;
+
+    var _typeNumber = typeNumber;
+    var _errorCorrectionLevel = QRErrorCorrectionLevel[errorCorrectionLevel];
+    var _modules = null;
+    var _moduleCount = 0;
+    var _dataCache = null;
+    var _dataList = [];
+
+    var _this = {};
+
+    var makeImpl = function(test, maskPattern) {
+
+      _moduleCount = _typeNumber * 4 + 17;
+      _modules = function(moduleCount) {
+        var modules = new Array(moduleCount);
+        for (var row = 0; row < moduleCount; row += 1) {
+          modules[row] = new Array(moduleCount);
+          for (var col = 0; col < moduleCount; col += 1) {
+            modules[row][col] = null;
+          }
+        }
+        return modules;
+      }(_moduleCount);
+
+      setupPositionProbePattern(0, 0);
+      setupPositionProbePattern(_moduleCount - 7, 0);
+      setupPositionProbePattern(0, _moduleCount - 7);
+      setupPositionAdjustPattern();
+      setupTimingPattern();
+      setupTypeInfo(test, maskPattern);
+
+      if (_typeNumber >= 7) {
+        setupTypeNumber(test);
+      }
+
+      if (_dataCache == null) {
+        _dataCache = createData(_typeNumber, _errorCorrectionLevel, _dataList);
+      }
+
+      mapData(_dataCache, maskPattern);
+    };
+
+    var setupPositionProbePattern = function(row, col) {
+
+      for (var r = -1; r <= 7; r += 1) {
+
+        if (row + r <= -1 || _moduleCount <= row + r) continue;
+
+        for (var c = -1; c <= 7; c += 1) {
+
+          if (col + c <= -1 || _moduleCount <= col + c) continue;
+
+          if ( (0 <= r && r <= 6 && (c == 0 || c == 6) )
+              || (0 <= c && c <= 6 && (r == 0 || r == 6) )
+              || (2 <= r && r <= 4 && 2 <= c && c <= 4) ) {
+            _modules[row + r][col + c] = true;
+          } else {
+            _modules[row + r][col + c] = false;
+          }
+        }
+      }
+    };
+
+    var getBestMaskPattern = function() {
+
+      var minLostPoint = 0;
+      var pattern = 0;
+
+      for (var i = 0; i < 8; i += 1) {
+
+        makeImpl(true, i);
+
+        var lostPoint = QRUtil.getLostPoint(_this);
+
+        if (i == 0 || minLostPoint > lostPoint) {
+          minLostPoint = lostPoint;
+          pattern = i;
+        }
+      }
+
+      return pattern;
+    };
+
+    var setupTimingPattern = function() {
+
+      for (var r = 8; r < _moduleCount - 8; r += 1) {
+        if (_modules[r][6] != null) {
+          continue;
+        }
+        _modules[r][6] = (r % 2 == 0);
+      }
+
+      for (var c = 8; c < _moduleCount - 8; c += 1) {
+        if (_modules[6][c] != null) {
+          continue;
+        }
+        _modules[6][c] = (c % 2 == 0);
+      }
+    };
+
+    var setupPositionAdjustPattern = function() {
+
+      var pos = QRUtil.getPatternPosition(_typeNumber);
+
+      for (var i = 0; i < pos.length; i += 1) {
+
+        for (var j = 0; j < pos.length; j += 1) {
+
+          var row = pos[i];
+          var col = pos[j];
+
+          if (_modules[row][col] != null) {
+            continue;
+          }
+
+          for (var r = -2; r <= 2; r += 1) {
+
+            for (var c = -2; c <= 2; c += 1) {
+
+              if (r == -2 || r == 2 || c == -2 || c == 2
+                  || (r == 0 && c == 0) ) {
+                _modules[row + r][col + c] = true;
+              } else {
+                _modules[row + r][col + c] = false;
+              }
+            }
+          }
+        }
+      }
+    };
+
+    var setupTypeNumber = function(test) {
+
+      var bits = QRUtil.getBCHTypeNumber(_typeNumber);
+
+      for (var i = 0; i < 18; i += 1) {
+        var mod = (!test && ( (bits >> i) & 1) == 1);
+        _modules[Math.floor(i / 3)][i % 3 + _moduleCount - 8 - 3] = mod;
+      }
+
+      for (var i = 0; i < 18; i += 1) {
+        var mod = (!test && ( (bits >> i) & 1) == 1);
+        _modules[i % 3 + _moduleCount - 8 - 3][Math.floor(i / 3)] = mod;
+      }
+    };
+
+    var setupTypeInfo = function(test, maskPattern) {
+
+      var data = (_errorCorrectionLevel << 3) | maskPattern;
+      var bits = QRUtil.getBCHTypeInfo(data);
+
+      // vertical
+      for (var i = 0; i < 15; i += 1) {
+
+        var mod = (!test && ( (bits >> i) & 1) == 1);
+
+        if (i < 6) {
+          _modules[i][8] = mod;
+        } else if (i < 8) {
+          _modules[i + 1][8] = mod;
+        } else {
+          _modules[_moduleCount - 15 + i][8] = mod;
+        }
+      }
+
+      // horizontal
+      for (var i = 0; i < 15; i += 1) {
+
+        var mod = (!test && ( (bits >> i) & 1) == 1);
+
+        if (i < 8) {
+          _modules[8][_moduleCount - i - 1] = mod;
+        } else if (i < 9) {
+          _modules[8][15 - i - 1 + 1] = mod;
+        } else {
+          _modules[8][15 - i - 1] = mod;
+        }
+      }
+
+      // fixed module
+      _modules[_moduleCount - 8][8] = (!test);
+    };
+
+    var mapData = function(data, maskPattern) {
+
+      var inc = -1;
+      var row = _moduleCount - 1;
+      var bitIndex = 7;
+      var byteIndex = 0;
+      var maskFunc = QRUtil.getMaskFunction(maskPattern);
+
+      for (var col = _moduleCount - 1; col > 0; col -= 2) {
+
+        if (col == 6) col -= 1;
+
+        while (true) {
+
+          for (var c = 0; c < 2; c += 1) {
+
+            if (_modules[row][col - c] == null) {
+
+              var dark = false;
+
+              if (byteIndex < data.length) {
+                dark = ( ( (data[byteIndex] >>> bitIndex) & 1) == 1);
+              }
+
+              var mask = maskFunc(row, col - c);
+
+              if (mask) {
+                dark = !dark;
+              }
+
+              _modules[row][col - c] = dark;
+              bitIndex -= 1;
+
+              if (bitIndex == -1) {
+                byteIndex += 1;
+                bitIndex = 7;
+              }
+            }
+          }
+
+          row += inc;
+
+          if (row < 0 || _moduleCount <= row) {
+            row -= inc;
+            inc = -inc;
+            break;
+          }
+        }
+      }
+    };
+
+    var createBytes = function(buffer, rsBlocks) {
+
+      var offset = 0;
+
+      var maxDcCount = 0;
+      var maxEcCount = 0;
+
+      var dcdata = new Array(rsBlocks.length);
+      var ecdata = new Array(rsBlocks.length);
+
+      for (var r = 0; r < rsBlocks.length; r += 1) {
+
+        var dcCount = rsBlocks[r].dataCount;
+        var ecCount = rsBlocks[r].totalCount - dcCount;
+
+        maxDcCount = Math.max(maxDcCount, dcCount);
+        maxEcCount = Math.max(maxEcCount, ecCount);
+
+        dcdata[r] = new Array(dcCount);
+
+        for (var i = 0; i < dcdata[r].length; i += 1) {
+          dcdata[r][i] = 0xff & buffer.getBuffer()[i + offset];
+        }
+        offset += dcCount;
+
+        var rsPoly = QRUtil.getErrorCorrectPolynomial(ecCount);
+        var rawPoly = qrPolynomial(dcdata[r], rsPoly.getLength() - 1);
+
+        var modPoly = rawPoly.mod(rsPoly);
+        ecdata[r] = new Array(rsPoly.getLength() - 1);
+        for (var i = 0; i < ecdata[r].length; i += 1) {
+          var modIndex = i + modPoly.getLength() - ecdata[r].length;
+          ecdata[r][i] = (modIndex >= 0)? modPoly.getAt(modIndex) : 0;
+        }
+      }
+
+      var totalCodeCount = 0;
+      for (var i = 0; i < rsBlocks.length; i += 1) {
+        totalCodeCount += rsBlocks[i].totalCount;
+      }
+
+      var data = new Array(totalCodeCount);
+      var index = 0;
+
+      for (var i = 0; i < maxDcCount; i += 1) {
+        for (var r = 0; r < rsBlocks.length; r += 1) {
+          if (i < dcdata[r].length) {
+            data[index] = dcdata[r][i];
+            index += 1;
+          }
+        }
+      }
+
+      for (var i = 0; i < maxEcCount; i += 1) {
+        for (var r = 0; r < rsBlocks.length; r += 1) {
+          if (i < ecdata[r].length) {
+            data[index] = ecdata[r][i];
+            index += 1;
+          }
+        }
+      }
+
+      return data;
+    };
+
+    var createData = function(typeNumber, errorCorrectionLevel, dataList) {
+
+      var rsBlocks = QRRSBlock.getRSBlocks(typeNumber, errorCorrectionLevel);
+
+      var buffer = qrBitBuffer();
+
+      for (var i = 0; i < dataList.length; i += 1) {
+        var data = dataList[i];
+        buffer.put(data.getMode(), 4);
+        buffer.put(data.getLength(), QRUtil.getLengthInBits(data.getMode(), typeNumber) );
+        data.write(buffer);
+      }
+
+      // calc num max data.
+      var totalDataCount = 0;
+      for (var i = 0; i < rsBlocks.length; i += 1) {
+        totalDataCount += rsBlocks[i].dataCount;
+      }
+
+      if (buffer.getLengthInBits() > totalDataCount * 8) {
+        throw 'code length overflow. ('
+          + buffer.getLengthInBits()
+          + '>'
+          + totalDataCount * 8
+          + ')';
+      }
+
+      // end code
+      if (buffer.getLengthInBits() + 4 <= totalDataCount * 8) {
+        buffer.put(0, 4);
+      }
+
+      // padding
+      while (buffer.getLengthInBits() % 8 != 0) {
+        buffer.putBit(false);
+      }
+
+      // padding
+      while (true) {
+
+        if (buffer.getLengthInBits() >= totalDataCount * 8) {
+          break;
+        }
+        buffer.put(PAD0, 8);
+
+        if (buffer.getLengthInBits() >= totalDataCount * 8) {
+          break;
+        }
+        buffer.put(PAD1, 8);
+      }
+
+      return createBytes(buffer, rsBlocks);
+    };
+
+    _this.addData = function(data, mode) {
+
+      mode = mode || 'Byte';
+
+      var newData = null;
+
+      switch(mode) {
+      case 'Numeric' :
+        newData = qrNumber(data);
+        break;
+      case 'Alphanumeric' :
+        newData = qrAlphaNum(data);
+        break;
+      case 'Byte' :
+        newData = qr8BitByte(data);
+        break;
+      case 'Kanji' :
+        newData = qrKanji(data);
+        break;
+      default :
+        throw 'mode:' + mode;
+      }
+
+      _dataList.push(newData);
+      _dataCache = null;
+    };
+
+    _this.isDark = function(row, col) {
+      if (row < 0 || _moduleCount <= row || col < 0 || _moduleCount <= col) {
+        throw row + ',' + col;
+      }
+      return _modules[row][col];
+    };
+
+    _this.getModuleCount = function() {
+      return _moduleCount;
+    };
+
+    _this.make = function() {
+      if (_typeNumber < 1) {
+        var typeNumber = 1;
+
+        for (; typeNumber < 40; typeNumber++) {
+          var rsBlocks = QRRSBlock.getRSBlocks(typeNumber, _errorCorrectionLevel);
+          var buffer = qrBitBuffer();
+
+          for (var i = 0; i < _dataList.length; i++) {
+            var data = _dataList[i];
+            buffer.put(data.getMode(), 4);
+            buffer.put(data.getLength(), QRUtil.getLengthInBits(data.getMode(), typeNumber) );
+            data.write(buffer);
+          }
+
+          var totalDataCount = 0;
+          for (var i = 0; i < rsBlocks.length; i++) {
+            totalDataCount += rsBlocks[i].dataCount;
+          }
+
+          if (buffer.getLengthInBits() <= totalDataCount * 8) {
+            break;
+          }
+        }
+
+        _typeNumber = typeNumber;
+      }
+
+      makeImpl(false, getBestMaskPattern() );
+    };
+
+    _this.createTableTag = function(cellSize, margin) {
+
+      cellSize = cellSize || 2;
+      margin = (typeof margin == 'undefined')? cellSize * 4 : margin;
+
+      var qrHtml = '';
+
+      qrHtml += '<table style="';
+      qrHtml += ' border-width: 0px; border-style: none;';
+      qrHtml += ' border-collapse: collapse;';
+      qrHtml += ' padding: 0px; margin: ' + margin + 'px;';
+      qrHtml += '">';
+      qrHtml += '<tbody>';
+
+      for (var r = 0; r < _this.getModuleCount(); r += 1) {
+
+        qrHtml += '<tr>';
+
+        for (var c = 0; c < _this.getModuleCount(); c += 1) {
+          qrHtml += '<td style="';
+          qrHtml += ' border-width: 0px; border-style: none;';
+          qrHtml += ' border-collapse: collapse;';
+          qrHtml += ' padding: 0px; margin: 0px;';
+          qrHtml += ' width: ' + cellSize + 'px;';
+          qrHtml += ' height: ' + cellSize + 'px;';
+          qrHtml += ' background-color: ';
+          qrHtml += _this.isDark(r, c)? '#000000' : '#ffffff';
+          qrHtml += ';';
+          qrHtml += '"/>';
+        }
+
+        qrHtml += '</tr>';
+      }
+
+      qrHtml += '</tbody>';
+      qrHtml += '</table>';
+
+      return qrHtml;
+    };
+
+    _this.createSvgTag = function(cellSize, margin, alt, title) {
+
+      var opts = {};
+      if (typeof arguments[0] == 'object') {
+        // Called by options.
+        opts = arguments[0];
+        // overwrite cellSize and margin.
+        cellSize = opts.cellSize;
+        margin = opts.margin;
+        alt = opts.alt;
+        title = opts.title;
+      }
+
+      cellSize = cellSize || 2;
+      margin = (typeof margin == 'undefined')? cellSize * 4 : margin;
+
+      // Compose alt property surrogate
+      alt = (typeof alt === 'string') ? {text: alt} : alt || {};
+      alt.text = alt.text || null;
+      alt.id = (alt.text) ? alt.id || 'qrcode-description' : null;
+
+      // Compose title property surrogate
+      title = (typeof title === 'string') ? {text: title} : title || {};
+      title.text = title.text || null;
+      title.id = (title.text) ? title.id || 'qrcode-title' : null;
+
+      var size = _this.getModuleCount() * cellSize + margin * 2;
+      var c, mc, r, mr, qrSvg='', rect;
+
+      rect = 'l' + cellSize + ',0 0,' + cellSize +
+        ' -' + cellSize + ',0 0,-' + cellSize + 'z ';
+
+      qrSvg += '<svg version="1.1" xmlns="http://www.w3.org/2000/svg"';
+      qrSvg += !opts.scalable ? ' width="' + size + 'px" height="' + size + 'px"' : '';
+      qrSvg += ' viewBox="0 0 ' + size + ' ' + size + '" ';
+      qrSvg += ' preserveAspectRatio="xMinYMin meet"';
+      qrSvg += (title.text || alt.text) ? ' role="img" aria-labelledby="' +
+          escapeXml([title.id, alt.id].join(' ').trim() ) + '"' : '';
+      qrSvg += '>';
+      qrSvg += (title.text) ? '<title id="' + escapeXml(title.id) + '">' +
+          escapeXml(title.text) + '</title>' : '';
+      qrSvg += (alt.text) ? '<description id="' + escapeXml(alt.id) + '">' +
+          escapeXml(alt.text) + '</description>' : '';
+      qrSvg += '<rect width="100%" height="100%" fill="white" cx="0" cy="0"/>';
+      qrSvg += '<path d="';
+
+      for (r = 0; r < _this.getModuleCount(); r += 1) {
+        mr = r * cellSize + margin;
+        for (c = 0; c < _this.getModuleCount(); c += 1) {
+          if (_this.isDark(r, c) ) {
+            mc = c*cellSize+margin;
+            qrSvg += 'M' + mc + ',' + mr + rect;
+          }
+        }
+      }
+
+      qrSvg += '" stroke="transparent" fill="black"/>';
+      qrSvg += '</svg>';
+
+      return qrSvg;
+    };
+
+    _this.createDataURL = function(cellSize, margin) {
+
+      cellSize = cellSize || 2;
+      margin = (typeof margin == 'undefined')? cellSize * 4 : margin;
+
+      var size = _this.getModuleCount() * cellSize + margin * 2;
+      var min = margin;
+      var max = size - margin;
+
+      return createDataURL(size, size, function(x, y) {
+        if (min <= x && x < max && min <= y && y < max) {
+          var c = Math.floor( (x - min) / cellSize);
+          var r = Math.floor( (y - min) / cellSize);
+          return _this.isDark(r, c)? 0 : 1;
+        } else {
+          return 1;
+        }
+      } );
+    };
+
+    _this.createImgTag = function(cellSize, margin, alt) {
+
+      cellSize = cellSize || 2;
+      margin = (typeof margin == 'undefined')? cellSize * 4 : margin;
+
+      var size = _this.getModuleCount() * cellSize + margin * 2;
+
+      var img = '';
+      img += '<img';
+      img += '\u0020src="';
+      img += _this.createDataURL(cellSize, margin);
+      img += '"';
+      img += '\u0020width="';
+      img += size;
+      img += '"';
+      img += '\u0020height="';
+      img += size;
+      img += '"';
+      if (alt) {
+        img += '\u0020alt="';
+        img += escapeXml(alt);
+        img += '"';
+      }
+      img += '/>';
+
+      return img;
+    };
+
+    var escapeXml = function(s) {
+      var escaped = '';
+      for (var i = 0; i < s.length; i += 1) {
+        var c = s.charAt(i);
+        switch(c) {
+        case '<': escaped += '&lt;'; break;
+        case '>': escaped += '&gt;'; break;
+        case '&': escaped += '&amp;'; break;
+        case '"': escaped += '&quot;'; break;
+        default : escaped += c; break;
+        }
+      }
+      return escaped;
+    };
+
+    var _createHalfASCII = function(margin) {
+      var cellSize = 1;
+      margin = (typeof margin == 'undefined')? cellSize * 2 : margin;
+
+      var size = _this.getModuleCount() * cellSize + margin * 2;
+      var min = margin;
+      var max = size - margin;
+
+      var y, x, r1, r2, p;
+
+      var blocks = {
+        '██': '█',
+        '█ ': '▀',
+        ' █': '▄',
+        '  ': ' '
+      };
+
+      var blocksLastLineNoMargin = {
+        '██': '▀',
+        '█ ': '▀',
+        ' █': ' ',
+        '  ': ' '
+      };
+
+      var ascii = '';
+      for (y = 0; y < size; y += 2) {
+        r1 = Math.floor((y - min) / cellSize);
+        r2 = Math.floor((y + 1 - min) / cellSize);
+        for (x = 0; x < size; x += 1) {
+          p = '█';
+
+          if (min <= x && x < max && min <= y && y < max && _this.isDark(r1, Math.floor((x - min) / cellSize))) {
+            p = ' ';
+          }
+
+          if (min <= x && x < max && min <= y+1 && y+1 < max && _this.isDark(r2, Math.floor((x - min) / cellSize))) {
+            p += ' ';
+          }
+          else {
+            p += '█';
+          }
+
+          // Output 2 characters per pixel, to create full square. 1 character per pixels gives only half width of square.
+          ascii += (margin < 1 && y+1 >= max) ? blocksLastLineNoMargin[p] : blocks[p];
+        }
+
+        ascii += '\n';
+      }
+
+      if (size % 2 && margin > 0) {
+        return ascii.substring(0, ascii.length - size - 1) + Array(size+1).join('▀');
+      }
+
+      return ascii.substring(0, ascii.length-1);
+    };
+
+    _this.createASCII = function(cellSize, margin) {
+      cellSize = cellSize || 1;
+
+      if (cellSize < 2) {
+        return _createHalfASCII(margin);
+      }
+
+      cellSize -= 1;
+      margin = (typeof margin == 'undefined')? cellSize * 2 : margin;
+
+      var size = _this.getModuleCount() * cellSize + margin * 2;
+      var min = margin;
+      var max = size - margin;
+
+      var y, x, r, p;
+
+      var white = Array(cellSize+1).join('██');
+      var black = Array(cellSize+1).join('  ');
+
+      var ascii = '';
+      var line = '';
+      for (y = 0; y < size; y += 1) {
+        r = Math.floor( (y - min) / cellSize);
+        line = '';
+        for (x = 0; x < size; x += 1) {
+          p = 1;
+
+          if (min <= x && x < max && min <= y && y < max && _this.isDark(r, Math.floor((x - min) / cellSize))) {
+            p = 0;
+          }
+
+          // Output 2 characters per pixel, to create full square. 1 character per pixels gives only half width of square.
+          line += p ? white : black;
+        }
+
+        for (r = 0; r < cellSize; r += 1) {
+          ascii += line + '\n';
+        }
+      }
+
+      return ascii.substring(0, ascii.length-1);
+    };
+
+    _this.renderTo2dContext = function(context, cellSize) {
+      cellSize = cellSize || 2;
+      var length = _this.getModuleCount();
+      for (var row = 0; row < length; row++) {
+        for (var col = 0; col < length; col++) {
+          context.fillStyle = _this.isDark(row, col) ? 'black' : 'white';
+          context.fillRect(row * cellSize, col * cellSize, cellSize, cellSize);
+        }
+      }
+    }
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // qrcode.stringToBytes
+  //---------------------------------------------------------------------
+
+  qrcode.stringToBytesFuncs = {
+    'default' : function(s) {
+      var bytes = [];
+      for (var i = 0; i < s.length; i += 1) {
+        var c = s.charCodeAt(i);
+        bytes.push(c & 0xff);
+      }
+      return bytes;
+    }
+  };
+
+  qrcode.stringToBytes = qrcode.stringToBytesFuncs['default'];
+
+  //---------------------------------------------------------------------
+  // qrcode.createStringToBytes
+  //---------------------------------------------------------------------
+
+  /**
+   * @param unicodeData base64 string of byte array.
+   * [16bit Unicode],[16bit Bytes], ...
+   * @param numChars
+   */
+  qrcode.createStringToBytes = function(unicodeData, numChars) {
+
+    // create conversion map.
+
+    var unicodeMap = function() {
+
+      var bin = base64DecodeInputStream(unicodeData);
+      var read = function() {
+        var b = bin.read();
+        if (b == -1) throw 'eof';
+        return b;
+      };
+
+      var count = 0;
+      var unicodeMap = {};
+      while (true) {
+        var b0 = bin.read();
+        if (b0 == -1) break;
+        var b1 = read();
+        var b2 = read();
+        var b3 = read();
+        var k = String.fromCharCode( (b0 << 8) | b1);
+        var v = (b2 << 8) | b3;
+        unicodeMap[k] = v;
+        count += 1;
+      }
+      if (count != numChars) {
+        throw count + ' != ' + numChars;
+      }
+
+      return unicodeMap;
+    }();
+
+    var unknownChar = '?'.charCodeAt(0);
+
+    return function(s) {
+      var bytes = [];
+      for (var i = 0; i < s.length; i += 1) {
+        var c = s.charCodeAt(i);
+        if (c < 128) {
+          bytes.push(c);
+        } else {
+          var b = unicodeMap[s.charAt(i)];
+          if (typeof b == 'number') {
+            if ( (b & 0xff) == b) {
+              // 1byte
+              bytes.push(b);
+            } else {
+              // 2bytes
+              bytes.push(b >>> 8);
+              bytes.push(b & 0xff);
+            }
+          } else {
+            bytes.push(unknownChar);
+          }
+        }
+      }
+      return bytes;
+    };
+  };
+
+  //---------------------------------------------------------------------
+  // QRMode
+  //---------------------------------------------------------------------
+
+  var QRMode = {
+    MODE_NUMBER :    1 << 0,
+    MODE_ALPHA_NUM : 1 << 1,
+    MODE_8BIT_BYTE : 1 << 2,
+    MODE_KANJI :     1 << 3
+  };
+
+  //---------------------------------------------------------------------
+  // QRErrorCorrectionLevel
+  //---------------------------------------------------------------------
+
+  var QRErrorCorrectionLevel = {
+    L : 1,
+    M : 0,
+    Q : 3,
+    H : 2
+  };
+
+  //---------------------------------------------------------------------
+  // QRMaskPattern
+  //---------------------------------------------------------------------
+
+  var QRMaskPattern = {
+    PATTERN000 : 0,
+    PATTERN001 : 1,
+    PATTERN010 : 2,
+    PATTERN011 : 3,
+    PATTERN100 : 4,
+    PATTERN101 : 5,
+    PATTERN110 : 6,
+    PATTERN111 : 7
+  };
+
+  //---------------------------------------------------------------------
+  // QRUtil
+  //---------------------------------------------------------------------
+
+  var QRUtil = function() {
+
+    var PATTERN_POSITION_TABLE = [
+      [],
+      [6, 18],
+      [6, 22],
+      [6, 26],
+      [6, 30],
+      [6, 34],
+      [6, 22, 38],
+      [6, 24, 42],
+      [6, 26, 46],
+      [6, 28, 50],
+      [6, 30, 54],
+      [6, 32, 58],
+      [6, 34, 62],
+      [6, 26, 46, 66],
+      [6, 26, 48, 70],
+      [6, 26, 50, 74],
+      [6, 30, 54, 78],
+      [6, 30, 56, 82],
+      [6, 30, 58, 86],
+      [6, 34, 62, 90],
+      [6, 28, 50, 72, 94],
+      [6, 26, 50, 74, 98],
+      [6, 30, 54, 78, 102],
+      [6, 28, 54, 80, 106],
+      [6, 32, 58, 84, 110],
+      [6, 30, 58, 86, 114],
+      [6, 34, 62, 90, 118],
+      [6, 26, 50, 74, 98, 122],
+      [6, 30, 54, 78, 102, 126],
+      [6, 26, 52, 78, 104, 130],
+      [6, 30, 56, 82, 108, 134],
+      [6, 34, 60, 86, 112, 138],
+      [6, 30, 58, 86, 114, 142],
+      [6, 34, 62, 90, 118, 146],
+      [6, 30, 54, 78, 102, 126, 150],
+      [6, 24, 50, 76, 102, 128, 154],
+      [6, 28, 54, 80, 106, 132, 158],
+      [6, 32, 58, 84, 110, 136, 162],
+      [6, 26, 54, 82, 110, 138, 166],
+      [6, 30, 58, 86, 114, 142, 170]
+    ];
+    var G15 = (1 << 10) | (1 << 8) | (1 << 5) | (1 << 4) | (1 << 2) | (1 << 1) | (1 << 0);
+    var G18 = (1 << 12) | (1 << 11) | (1 << 10) | (1 << 9) | (1 << 8) | (1 << 5) | (1 << 2) | (1 << 0);
+    var G15_MASK = (1 << 14) | (1 << 12) | (1 << 10) | (1 << 4) | (1 << 1);
+
+    var _this = {};
+
+    var getBCHDigit = function(data) {
+      var digit = 0;
+      while (data != 0) {
+        digit += 1;
+        data >>>= 1;
+      }
+      return digit;
+    };
+
+    _this.getBCHTypeInfo = function(data) {
+      var d = data << 10;
+      while (getBCHDigit(d) - getBCHDigit(G15) >= 0) {
+        d ^= (G15 << (getBCHDigit(d) - getBCHDigit(G15) ) );
+      }
+      return ( (data << 10) | d) ^ G15_MASK;
+    };
+
+    _this.getBCHTypeNumber = function(data) {
+      var d = data << 12;
+      while (getBCHDigit(d) - getBCHDigit(G18) >= 0) {
+        d ^= (G18 << (getBCHDigit(d) - getBCHDigit(G18) ) );
+      }
+      return (data << 12) | d;
+    };
+
+    _this.getPatternPosition = function(typeNumber) {
+      return PATTERN_POSITION_TABLE[typeNumber - 1];
+    };
+
+    _this.getMaskFunction = function(maskPattern) {
+
+      switch (maskPattern) {
+
+      case QRMaskPattern.PATTERN000 :
+        return function(i, j) { return (i + j) % 2 == 0; };
+      case QRMaskPattern.PATTERN001 :
+        return function(i, j) { return i % 2 == 0; };
+      case QRMaskPattern.PATTERN010 :
+        return function(i, j) { return j % 3 == 0; };
+      case QRMaskPattern.PATTERN011 :
+        return function(i, j) { return (i + j) % 3 == 0; };
+      case QRMaskPattern.PATTERN100 :
+        return function(i, j) { return (Math.floor(i / 2) + Math.floor(j / 3) ) % 2 == 0; };
+      case QRMaskPattern.PATTERN101 :
+        return function(i, j) { return (i * j) % 2 + (i * j) % 3 == 0; };
+      case QRMaskPattern.PATTERN110 :
+        return function(i, j) { return ( (i * j) % 2 + (i * j) % 3) % 2 == 0; };
+      case QRMaskPattern.PATTERN111 :
+        return function(i, j) { return ( (i * j) % 3 + (i + j) % 2) % 2 == 0; };
+
+      default :
+        throw 'bad maskPattern:' + maskPattern;
+      }
+    };
+
+    _this.getErrorCorrectPolynomial = function(errorCorrectLength) {
+      var a = qrPolynomial([1], 0);
+      for (var i = 0; i < errorCorrectLength; i += 1) {
+        a = a.multiply(qrPolynomial([1, QRMath.gexp(i)], 0) );
+      }
+      return a;
+    };
+
+    _this.getLengthInBits = function(mode, type) {
+
+      if (1 <= type && type < 10) {
+
+        // 1 - 9
+
+        switch(mode) {
+        case QRMode.MODE_NUMBER    : return 10;
+        case QRMode.MODE_ALPHA_NUM : return 9;
+        case QRMode.MODE_8BIT_BYTE : return 8;
+        case QRMode.MODE_KANJI     : return 8;
+        default :
+          throw 'mode:' + mode;
+        }
+
+      } else if (type < 27) {
+
+        // 10 - 26
+
+        switch(mode) {
+        case QRMode.MODE_NUMBER    : return 12;
+        case QRMode.MODE_ALPHA_NUM : return 11;
+        case QRMode.MODE_8BIT_BYTE : return 16;
+        case QRMode.MODE_KANJI     : return 10;
+        default :
+          throw 'mode:' + mode;
+        }
+
+      } else if (type < 41) {
+
+        // 27 - 40
+
+        switch(mode) {
+        case QRMode.MODE_NUMBER    : return 14;
+        case QRMode.MODE_ALPHA_NUM : return 13;
+        case QRMode.MODE_8BIT_BYTE : return 16;
+        case QRMode.MODE_KANJI     : return 12;
+        default :
+          throw 'mode:' + mode;
+        }
+
+      } else {
+        throw 'type:' + type;
+      }
+    };
+
+    _this.getLostPoint = function(qrcode) {
+
+      var moduleCount = qrcode.getModuleCount();
+
+      var lostPoint = 0;
+
+      // LEVEL1
+
+      for (var row = 0; row < moduleCount; row += 1) {
+        for (var col = 0; col < moduleCount; col += 1) {
+
+          var sameCount = 0;
+          var dark = qrcode.isDark(row, col);
+
+          for (var r = -1; r <= 1; r += 1) {
+
+            if (row + r < 0 || moduleCount <= row + r) {
+              continue;
+            }
+
+            for (var c = -1; c <= 1; c += 1) {
+
+              if (col + c < 0 || moduleCount <= col + c) {
+                continue;
+              }
+
+              if (r == 0 && c == 0) {
+                continue;
+              }
+
+              if (dark == qrcode.isDark(row + r, col + c) ) {
+                sameCount += 1;
+              }
+            }
+          }
+
+          if (sameCount > 5) {
+            lostPoint += (3 + sameCount - 5);
+          }
+        }
+      };
+
+      // LEVEL2
+
+      for (var row = 0; row < moduleCount - 1; row += 1) {
+        for (var col = 0; col < moduleCount - 1; col += 1) {
+          var count = 0;
+          if (qrcode.isDark(row, col) ) count += 1;
+          if (qrcode.isDark(row + 1, col) ) count += 1;
+          if (qrcode.isDark(row, col + 1) ) count += 1;
+          if (qrcode.isDark(row + 1, col + 1) ) count += 1;
+          if (count == 0 || count == 4) {
+            lostPoint += 3;
+          }
+        }
+      }
+
+      // LEVEL3
+
+      for (var row = 0; row < moduleCount; row += 1) {
+        for (var col = 0; col < moduleCount - 6; col += 1) {
+          if (qrcode.isDark(row, col)
+              && !qrcode.isDark(row, col + 1)
+              &&  qrcode.isDark(row, col + 2)
+              &&  qrcode.isDark(row, col + 3)
+              &&  qrcode.isDark(row, col + 4)
+              && !qrcode.isDark(row, col + 5)
+              &&  qrcode.isDark(row, col + 6) ) {
+            lostPoint += 40;
+          }
+        }
+      }
+
+      for (var col = 0; col < moduleCount; col += 1) {
+        for (var row = 0; row < moduleCount - 6; row += 1) {
+          if (qrcode.isDark(row, col)
+              && !qrcode.isDark(row + 1, col)
+              &&  qrcode.isDark(row + 2, col)
+              &&  qrcode.isDark(row + 3, col)
+              &&  qrcode.isDark(row + 4, col)
+              && !qrcode.isDark(row + 5, col)
+              &&  qrcode.isDark(row + 6, col) ) {
+            lostPoint += 40;
+          }
+        }
+      }
+
+      // LEVEL4
+
+      var darkCount = 0;
+
+      for (var col = 0; col < moduleCount; col += 1) {
+        for (var row = 0; row < moduleCount; row += 1) {
+          if (qrcode.isDark(row, col) ) {
+            darkCount += 1;
+          }
+        }
+      }
+
+      var ratio = Math.abs(100 * darkCount / moduleCount / moduleCount - 50) / 5;
+      lostPoint += ratio * 10;
+
+      return lostPoint;
+    };
+
+    return _this;
+  }();
+
+  //---------------------------------------------------------------------
+  // QRMath
+  //---------------------------------------------------------------------
+
+  var QRMath = function() {
+
+    var EXP_TABLE = new Array(256);
+    var LOG_TABLE = new Array(256);
+
+    // initialize tables
+    for (var i = 0; i < 8; i += 1) {
+      EXP_TABLE[i] = 1 << i;
+    }
+    for (var i = 8; i < 256; i += 1) {
+      EXP_TABLE[i] = EXP_TABLE[i - 4]
+        ^ EXP_TABLE[i - 5]
+        ^ EXP_TABLE[i - 6]
+        ^ EXP_TABLE[i - 8];
+    }
+    for (var i = 0; i < 255; i += 1) {
+      LOG_TABLE[EXP_TABLE[i] ] = i;
+    }
+
+    var _this = {};
+
+    _this.glog = function(n) {
+
+      if (n < 1) {
+        throw 'glog(' + n + ')';
+      }
+
+      return LOG_TABLE[n];
+    };
+
+    _this.gexp = function(n) {
+
+      while (n < 0) {
+        n += 255;
+      }
+
+      while (n >= 256) {
+        n -= 255;
+      }
+
+      return EXP_TABLE[n];
+    };
+
+    return _this;
+  }();
+
+  //---------------------------------------------------------------------
+  // qrPolynomial
+  //---------------------------------------------------------------------
+
+  function qrPolynomial(num, shift) {
+
+    if (typeof num.length == 'undefined') {
+      throw num.length + '/' + shift;
+    }
+
+    var _num = function() {
+      var offset = 0;
+      while (offset < num.length && num[offset] == 0) {
+        offset += 1;
+      }
+      var _num = new Array(num.length - offset + shift);
+      for (var i = 0; i < num.length - offset; i += 1) {
+        _num[i] = num[i + offset];
+      }
+      return _num;
+    }();
+
+    var _this = {};
+
+    _this.getAt = function(index) {
+      return _num[index];
+    };
+
+    _this.getLength = function() {
+      return _num.length;
+    };
+
+    _this.multiply = function(e) {
+
+      var num = new Array(_this.getLength() + e.getLength() - 1);
+
+      for (var i = 0; i < _this.getLength(); i += 1) {
+        for (var j = 0; j < e.getLength(); j += 1) {
+          num[i + j] ^= QRMath.gexp(QRMath.glog(_this.getAt(i) ) + QRMath.glog(e.getAt(j) ) );
+        }
+      }
+
+      return qrPolynomial(num, 0);
+    };
+
+    _this.mod = function(e) {
+
+      if (_this.getLength() - e.getLength() < 0) {
+        return _this;
+      }
+
+      var ratio = QRMath.glog(_this.getAt(0) ) - QRMath.glog(e.getAt(0) );
+
+      var num = new Array(_this.getLength() );
+      for (var i = 0; i < _this.getLength(); i += 1) {
+        num[i] = _this.getAt(i);
+      }
+
+      for (var i = 0; i < e.getLength(); i += 1) {
+        num[i] ^= QRMath.gexp(QRMath.glog(e.getAt(i) ) + ratio);
+      }
+
+      // recursive call
+      return qrPolynomial(num, 0).mod(e);
+    };
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // QRRSBlock
+  //---------------------------------------------------------------------
+
+  var QRRSBlock = function() {
+
+    var RS_BLOCK_TABLE = [
+
+      // L
+      // M
+      // Q
+      // H
+
+      // 1
+      [1, 26, 19],
+      [1, 26, 16],
+      [1, 26, 13],
+      [1, 26, 9],
+
+      // 2
+      [1, 44, 34],
+      [1, 44, 28],
+      [1, 44, 22],
+      [1, 44, 16],
+
+      // 3
+      [1, 70, 55],
+      [1, 70, 44],
+      [2, 35, 17],
+      [2, 35, 13],
+
+      // 4
+      [1, 100, 80],
+      [2, 50, 32],
+      [2, 50, 24],
+      [4, 25, 9],
+
+      // 5
+      [1, 134, 108],
+      [2, 67, 43],
+      [2, 33, 15, 2, 34, 16],
+      [2, 33, 11, 2, 34, 12],
+
+      // 6
+      [2, 86, 68],
+      [4, 43, 27],
+      [4, 43, 19],
+      [4, 43, 15],
+
+      // 7
+      [2, 98, 78],
+      [4, 49, 31],
+      [2, 32, 14, 4, 33, 15],
+      [4, 39, 13, 1, 40, 14],
+
+      // 8
+      [2, 121, 97],
+      [2, 60, 38, 2, 61, 39],
+      [4, 40, 18, 2, 41, 19],
+      [4, 40, 14, 2, 41, 15],
+
+      // 9
+      [2, 146, 116],
+      [3, 58, 36, 2, 59, 37],
+      [4, 36, 16, 4, 37, 17],
+      [4, 36, 12, 4, 37, 13],
+
+      // 10
+      [2, 86, 68, 2, 87, 69],
+      [4, 69, 43, 1, 70, 44],
+      [6, 43, 19, 2, 44, 20],
+      [6, 43, 15, 2, 44, 16],
+
+      // 11
+      [4, 101, 81],
+      [1, 80, 50, 4, 81, 51],
+      [4, 50, 22, 4, 51, 23],
+      [3, 36, 12, 8, 37, 13],
+
+      // 12
+      [2, 116, 92, 2, 117, 93],
+      [6, 58, 36, 2, 59, 37],
+      [4, 46, 20, 6, 47, 21],
+      [7, 42, 14, 4, 43, 15],
+
+      // 13
+      [4, 133, 107],
+      [8, 59, 37, 1, 60, 38],
+      [8, 44, 20, 4, 45, 21],
+      [12, 33, 11, 4, 34, 12],
+
+      // 14
+      [3, 145, 115, 1, 146, 116],
+      [4, 64, 40, 5, 65, 41],
+      [11, 36, 16, 5, 37, 17],
+      [11, 36, 12, 5, 37, 13],
+
+      // 15
+      [5, 109, 87, 1, 110, 88],
+      [5, 65, 41, 5, 66, 42],
+      [5, 54, 24, 7, 55, 25],
+      [11, 36, 12, 7, 37, 13],
+
+      // 16
+      [5, 122, 98, 1, 123, 99],
+      [7, 73, 45, 3, 74, 46],
+      [15, 43, 19, 2, 44, 20],
+      [3, 45, 15, 13, 46, 16],
+
+      // 17
+      [1, 135, 107, 5, 136, 108],
+      [10, 74, 46, 1, 75, 47],
+      [1, 50, 22, 15, 51, 23],
+      [2, 42, 14, 17, 43, 15],
+
+      // 18
+      [5, 150, 120, 1, 151, 121],
+      [9, 69, 43, 4, 70, 44],
+      [17, 50, 22, 1, 51, 23],
+      [2, 42, 14, 19, 43, 15],
+
+      // 19
+      [3, 141, 113, 4, 142, 114],
+      [3, 70, 44, 11, 71, 45],
+      [17, 47, 21, 4, 48, 22],
+      [9, 39, 13, 16, 40, 14],
+
+      // 20
+      [3, 135, 107, 5, 136, 108],
+      [3, 67, 41, 13, 68, 42],
+      [15, 54, 24, 5, 55, 25],
+      [15, 43, 15, 10, 44, 16],
+
+      // 21
+      [4, 144, 116, 4, 145, 117],
+      [17, 68, 42],
+      [17, 50, 22, 6, 51, 23],
+      [19, 46, 16, 6, 47, 17],
+
+      // 22
+      [2, 139, 111, 7, 140, 112],
+      [17, 74, 46],
+      [7, 54, 24, 16, 55, 25],
+      [34, 37, 13],
+
+      // 23
+      [4, 151, 121, 5, 152, 122],
+      [4, 75, 47, 14, 76, 48],
+      [11, 54, 24, 14, 55, 25],
+      [16, 45, 15, 14, 46, 16],
+
+      // 24
+      [6, 147, 117, 4, 148, 118],
+      [6, 73, 45, 14, 74, 46],
+      [11, 54, 24, 16, 55, 25],
+      [30, 46, 16, 2, 47, 17],
+
+      // 25
+      [8, 132, 106, 4, 133, 107],
+      [8, 75, 47, 13, 76, 48],
+      [7, 54, 24, 22, 55, 25],
+      [22, 45, 15, 13, 46, 16],
+
+      // 26
+      [10, 142, 114, 2, 143, 115],
+      [19, 74, 46, 4, 75, 47],
+      [28, 50, 22, 6, 51, 23],
+      [33, 46, 16, 4, 47, 17],
+
+      // 27
+      [8, 152, 122, 4, 153, 123],
+      [22, 73, 45, 3, 74, 46],
+      [8, 53, 23, 26, 54, 24],
+      [12, 45, 15, 28, 46, 16],
+
+      // 28
+      [3, 147, 117, 10, 148, 118],
+      [3, 73, 45, 23, 74, 46],
+      [4, 54, 24, 31, 55, 25],
+      [11, 45, 15, 31, 46, 16],
+
+      // 29
+      [7, 146, 116, 7, 147, 117],
+      [21, 73, 45, 7, 74, 46],
+      [1, 53, 23, 37, 54, 24],
+      [19, 45, 15, 26, 46, 16],
+
+      // 30
+      [5, 145, 115, 10, 146, 116],
+      [19, 75, 47, 10, 76, 48],
+      [15, 54, 24, 25, 55, 25],
+      [23, 45, 15, 25, 46, 16],
+
+      // 31
+      [13, 145, 115, 3, 146, 116],
+      [2, 74, 46, 29, 75, 47],
+      [42, 54, 24, 1, 55, 25],
+      [23, 45, 15, 28, 46, 16],
+
+      // 32
+      [17, 145, 115],
+      [10, 74, 46, 23, 75, 47],
+      [10, 54, 24, 35, 55, 25],
+      [19, 45, 15, 35, 46, 16],
+
+      // 33
+      [17, 145, 115, 1, 146, 116],
+      [14, 74, 46, 21, 75, 47],
+      [29, 54, 24, 19, 55, 25],
+      [11, 45, 15, 46, 46, 16],
+
+      // 34
+      [13, 145, 115, 6, 146, 116],
+      [14, 74, 46, 23, 75, 47],
+      [44, 54, 24, 7, 55, 25],
+      [59, 46, 16, 1, 47, 17],
+
+      // 35
+      [12, 151, 121, 7, 152, 122],
+      [12, 75, 47, 26, 76, 48],
+      [39, 54, 24, 14, 55, 25],
+      [22, 45, 15, 41, 46, 16],
+
+      // 36
+      [6, 151, 121, 14, 152, 122],
+      [6, 75, 47, 34, 76, 48],
+      [46, 54, 24, 10, 55, 25],
+      [2, 45, 15, 64, 46, 16],
+
+      // 37
+      [17, 152, 122, 4, 153, 123],
+      [29, 74, 46, 14, 75, 47],
+      [49, 54, 24, 10, 55, 25],
+      [24, 45, 15, 46, 46, 16],
+
+      // 38
+      [4, 152, 122, 18, 153, 123],
+      [13, 74, 46, 32, 75, 47],
+      [48, 54, 24, 14, 55, 25],
+      [42, 45, 15, 32, 46, 16],
+
+      // 39
+      [20, 147, 117, 4, 148, 118],
+      [40, 75, 47, 7, 76, 48],
+      [43, 54, 24, 22, 55, 25],
+      [10, 45, 15, 67, 46, 16],
+
+      // 40
+      [19, 148, 118, 6, 149, 119],
+      [18, 75, 47, 31, 76, 48],
+      [34, 54, 24, 34, 55, 25],
+      [20, 45, 15, 61, 46, 16]
+    ];
+
+    var qrRSBlock = function(totalCount, dataCount) {
+      var _this = {};
+      _this.totalCount = totalCount;
+      _this.dataCount = dataCount;
+      return _this;
+    };
+
+    var _this = {};
+
+    var getRsBlockTable = function(typeNumber, errorCorrectionLevel) {
+
+      switch(errorCorrectionLevel) {
+      case QRErrorCorrectionLevel.L :
+        return RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 0];
+      case QRErrorCorrectionLevel.M :
+        return RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 1];
+      case QRErrorCorrectionLevel.Q :
+        return RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 2];
+      case QRErrorCorrectionLevel.H :
+        return RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 3];
+      default :
+        return undefined;
+      }
+    };
+
+    _this.getRSBlocks = function(typeNumber, errorCorrectionLevel) {
+
+      var rsBlock = getRsBlockTable(typeNumber, errorCorrectionLevel);
+
+      if (typeof rsBlock == 'undefined') {
+        throw 'bad rs block @ typeNumber:' + typeNumber +
+            '/errorCorrectionLevel:' + errorCorrectionLevel;
+      }
+
+      var length = rsBlock.length / 3;
+
+      var list = [];
+
+      for (var i = 0; i < length; i += 1) {
+
+        var count = rsBlock[i * 3 + 0];
+        var totalCount = rsBlock[i * 3 + 1];
+        var dataCount = rsBlock[i * 3 + 2];
+
+        for (var j = 0; j < count; j += 1) {
+          list.push(qrRSBlock(totalCount, dataCount) );
+        }
+      }
+
+      return list;
+    };
+
+    return _this;
+  }();
+
+  //---------------------------------------------------------------------
+  // qrBitBuffer
+  //---------------------------------------------------------------------
+
+  var qrBitBuffer = function() {
+
+    var _buffer = [];
+    var _length = 0;
+
+    var _this = {};
+
+    _this.getBuffer = function() {
+      return _buffer;
+    };
+
+    _this.getAt = function(index) {
+      var bufIndex = Math.floor(index / 8);
+      return ( (_buffer[bufIndex] >>> (7 - index % 8) ) & 1) == 1;
+    };
+
+    _this.put = function(num, length) {
+      for (var i = 0; i < length; i += 1) {
+        _this.putBit( ( (num >>> (length - i - 1) ) & 1) == 1);
+      }
+    };
+
+    _this.getLengthInBits = function() {
+      return _length;
+    };
+
+    _this.putBit = function(bit) {
+
+      var bufIndex = Math.floor(_length / 8);
+      if (_buffer.length <= bufIndex) {
+        _buffer.push(0);
+      }
+
+      if (bit) {
+        _buffer[bufIndex] |= (0x80 >>> (_length % 8) );
+      }
+
+      _length += 1;
+    };
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // qrNumber
+  //---------------------------------------------------------------------
+
+  var qrNumber = function(data) {
+
+    var _mode = QRMode.MODE_NUMBER;
+    var _data = data;
+
+    var _this = {};
+
+    _this.getMode = function() {
+      return _mode;
+    };
+
+    _this.getLength = function(buffer) {
+      return _data.length;
+    };
+
+    _this.write = function(buffer) {
+
+      var data = _data;
+
+      var i = 0;
+
+      while (i + 2 < data.length) {
+        buffer.put(strToNum(data.substring(i, i + 3) ), 10);
+        i += 3;
+      }
+
+      if (i < data.length) {
+        if (data.length - i == 1) {
+          buffer.put(strToNum(data.substring(i, i + 1) ), 4);
+        } else if (data.length - i == 2) {
+          buffer.put(strToNum(data.substring(i, i + 2) ), 7);
+        }
+      }
+    };
+
+    var strToNum = function(s) {
+      var num = 0;
+      for (var i = 0; i < s.length; i += 1) {
+        num = num * 10 + chatToNum(s.charAt(i) );
+      }
+      return num;
+    };
+
+    var chatToNum = function(c) {
+      if ('0' <= c && c <= '9') {
+        return c.charCodeAt(0) - '0'.charCodeAt(0);
+      }
+      throw 'illegal char :' + c;
+    };
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // qrAlphaNum
+  //---------------------------------------------------------------------
+
+  var qrAlphaNum = function(data) {
+
+    var _mode = QRMode.MODE_ALPHA_NUM;
+    var _data = data;
+
+    var _this = {};
+
+    _this.getMode = function() {
+      return _mode;
+    };
+
+    _this.getLength = function(buffer) {
+      return _data.length;
+    };
+
+    _this.write = function(buffer) {
+
+      var s = _data;
+
+      var i = 0;
+
+      while (i + 1 < s.length) {
+        buffer.put(
+          getCode(s.charAt(i) ) * 45 +
+          getCode(s.charAt(i + 1) ), 11);
+        i += 2;
+      }
+
+      if (i < s.length) {
+        buffer.put(getCode(s.charAt(i) ), 6);
+      }
+    };
+
+    var getCode = function(c) {
+
+      if ('0' <= c && c <= '9') {
+        return c.charCodeAt(0) - '0'.charCodeAt(0);
+      } else if ('A' <= c && c <= 'Z') {
+        return c.charCodeAt(0) - 'A'.charCodeAt(0) + 10;
+      } else {
+        switch (c) {
+        case ' ' : return 36;
+        case '$' : return 37;
+        case '%' : return 38;
+        case '*' : return 39;
+        case '+' : return 40;
+        case '-' : return 41;
+        case '.' : return 42;
+        case '/' : return 43;
+        case ':' : return 44;
+        default :
+          throw 'illegal char :' + c;
+        }
+      }
+    };
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // qr8BitByte
+  //---------------------------------------------------------------------
+
+  var qr8BitByte = function(data) {
+
+    var _mode = QRMode.MODE_8BIT_BYTE;
+    var _data = data;
+    var _bytes = qrcode.stringToBytes(data);
+
+    var _this = {};
+
+    _this.getMode = function() {
+      return _mode;
+    };
+
+    _this.getLength = function(buffer) {
+      return _bytes.length;
+    };
+
+    _this.write = function(buffer) {
+      for (var i = 0; i < _bytes.length; i += 1) {
+        buffer.put(_bytes[i], 8);
+      }
+    };
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // qrKanji
+  //---------------------------------------------------------------------
+
+  var qrKanji = function(data) {
+
+    var _mode = QRMode.MODE_KANJI;
+    var _data = data;
+
+    var stringToBytes = qrcode.stringToBytesFuncs['SJIS'];
+    if (!stringToBytes) {
+      throw 'sjis not supported.';
+    }
+    !function(c, code) {
+      // self test for sjis support.
+      var test = stringToBytes(c);
+      if (test.length != 2 || ( (test[0] << 8) | test[1]) != code) {
+        throw 'sjis not supported.';
+      }
+    }('\u53cb', 0x9746);
+
+    var _bytes = stringToBytes(data);
+
+    var _this = {};
+
+    _this.getMode = function() {
+      return _mode;
+    };
+
+    _this.getLength = function(buffer) {
+      return ~~(_bytes.length / 2);
+    };
+
+    _this.write = function(buffer) {
+
+      var data = _bytes;
+
+      var i = 0;
+
+      while (i + 1 < data.length) {
+
+        var c = ( (0xff & data[i]) << 8) | (0xff & data[i + 1]);
+
+        if (0x8140 <= c && c <= 0x9FFC) {
+          c -= 0x8140;
+        } else if (0xE040 <= c && c <= 0xEBBF) {
+          c -= 0xC140;
+        } else {
+          throw 'illegal char at ' + (i + 1) + '/' + c;
+        }
+
+        c = ( (c >>> 8) & 0xff) * 0xC0 + (c & 0xff);
+
+        buffer.put(c, 13);
+
+        i += 2;
+      }
+
+      if (i < data.length) {
+        throw 'illegal char at ' + (i + 1);
+      }
+    };
+
+    return _this;
+  };
+
+  //=====================================================================
+  // GIF Support etc.
+  //
+
+  //---------------------------------------------------------------------
+  // byteArrayOutputStream
+  //---------------------------------------------------------------------
+
+  var byteArrayOutputStream = function() {
+
+    var _bytes = [];
+
+    var _this = {};
+
+    _this.writeByte = function(b) {
+      _bytes.push(b & 0xff);
+    };
+
+    _this.writeShort = function(i) {
+      _this.writeByte(i);
+      _this.writeByte(i >>> 8);
+    };
+
+    _this.writeBytes = function(b, off, len) {
+      off = off || 0;
+      len = len || b.length;
+      for (var i = 0; i < len; i += 1) {
+        _this.writeByte(b[i + off]);
+      }
+    };
+
+    _this.writeString = function(s) {
+      for (var i = 0; i < s.length; i += 1) {
+        _this.writeByte(s.charCodeAt(i) );
+      }
+    };
+
+    _this.toByteArray = function() {
+      return _bytes;
+    };
+
+    _this.toString = function() {
+      var s = '';
+      s += '[';
+      for (var i = 0; i < _bytes.length; i += 1) {
+        if (i > 0) {
+          s += ',';
+        }
+        s += _bytes[i];
+      }
+      s += ']';
+      return s;
+    };
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // base64EncodeOutputStream
+  //---------------------------------------------------------------------
+
+  var base64EncodeOutputStream = function() {
+
+    var _buffer = 0;
+    var _buflen = 0;
+    var _length = 0;
+    var _base64 = '';
+
+    var _this = {};
+
+    var writeEncoded = function(b) {
+      _base64 += String.fromCharCode(encode(b & 0x3f) );
+    };
+
+    var encode = function(n) {
+      if (n < 0) {
+        // error.
+      } else if (n < 26) {
+        return 0x41 + n;
+      } else if (n < 52) {
+        return 0x61 + (n - 26);
+      } else if (n < 62) {
+        return 0x30 + (n - 52);
+      } else if (n == 62) {
+        return 0x2b;
+      } else if (n == 63) {
+        return 0x2f;
+      }
+      throw 'n:' + n;
+    };
+
+    _this.writeByte = function(n) {
+
+      _buffer = (_buffer << 8) | (n & 0xff);
+      _buflen += 8;
+      _length += 1;
+
+      while (_buflen >= 6) {
+        writeEncoded(_buffer >>> (_buflen - 6) );
+        _buflen -= 6;
+      }
+    };
+
+    _this.flush = function() {
+
+      if (_buflen > 0) {
+        writeEncoded(_buffer << (6 - _buflen) );
+        _buffer = 0;
+        _buflen = 0;
+      }
+
+      if (_length % 3 != 0) {
+        // padding
+        var padlen = 3 - _length % 3;
+        for (var i = 0; i < padlen; i += 1) {
+          _base64 += '=';
+        }
+      }
+    };
+
+    _this.toString = function() {
+      return _base64;
+    };
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // base64DecodeInputStream
+  //---------------------------------------------------------------------
+
+  var base64DecodeInputStream = function(str) {
+
+    var _str = str;
+    var _pos = 0;
+    var _buffer = 0;
+    var _buflen = 0;
+
+    var _this = {};
+
+    _this.read = function() {
+
+      while (_buflen < 8) {
+
+        if (_pos >= _str.length) {
+          if (_buflen == 0) {
+            return -1;
+          }
+          throw 'unexpected end of file./' + _buflen;
+        }
+
+        var c = _str.charAt(_pos);
+        _pos += 1;
+
+        if (c == '=') {
+          _buflen = 0;
+          return -1;
+        } else if (c.match(/^\s$/) ) {
+          // ignore if whitespace.
+          continue;
+        }
+
+        _buffer = (_buffer << 6) | decode(c.charCodeAt(0) );
+        _buflen += 6;
+      }
+
+      var n = (_buffer >>> (_buflen - 8) ) & 0xff;
+      _buflen -= 8;
+      return n;
+    };
+
+    var decode = function(c) {
+      if (0x41 <= c && c <= 0x5a) {
+        return c - 0x41;
+      } else if (0x61 <= c && c <= 0x7a) {
+        return c - 0x61 + 26;
+      } else if (0x30 <= c && c <= 0x39) {
+        return c - 0x30 + 52;
+      } else if (c == 0x2b) {
+        return 62;
+      } else if (c == 0x2f) {
+        return 63;
+      } else {
+        throw 'c:' + c;
+      }
+    };
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // gifImage (B/W)
+  //---------------------------------------------------------------------
+
+  var gifImage = function(width, height) {
+
+    var _width = width;
+    var _height = height;
+    var _data = new Array(width * height);
+
+    var _this = {};
+
+    _this.setPixel = function(x, y, pixel) {
+      _data[y * _width + x] = pixel;
+    };
+
+    _this.write = function(out) {
+
+      //---------------------------------
+      // GIF Signature
+
+      out.writeString('GIF87a');
+
+      //---------------------------------
+      // Screen Descriptor
+
+      out.writeShort(_width);
+      out.writeShort(_height);
+
+      out.writeByte(0x80); // 2bit
+      out.writeByte(0);
+      out.writeByte(0);
+
+      //---------------------------------
+      // Global Color Map
+
+      // black
+      out.writeByte(0x00);
+      out.writeByte(0x00);
+      out.writeByte(0x00);
+
+      // white
+      out.writeByte(0xff);
+      out.writeByte(0xff);
+      out.writeByte(0xff);
+
+      //---------------------------------
+      // Image Descriptor
+
+      out.writeString(',');
+      out.writeShort(0);
+      out.writeShort(0);
+      out.writeShort(_width);
+      out.writeShort(_height);
+      out.writeByte(0);
+
+      //---------------------------------
+      // Local Color Map
+
+      //---------------------------------
+      // Raster Data
+
+      var lzwMinCodeSize = 2;
+      var raster = getLZWRaster(lzwMinCodeSize);
+
+      out.writeByte(lzwMinCodeSize);
+
+      var offset = 0;
+
+      while (raster.length - offset > 255) {
+        out.writeByte(255);
+        out.writeBytes(raster, offset, 255);
+        offset += 255;
+      }
+
+      out.writeByte(raster.length - offset);
+      out.writeBytes(raster, offset, raster.length - offset);
+      out.writeByte(0x00);
+
+      //---------------------------------
+      // GIF Terminator
+      out.writeString(';');
+    };
+
+    var bitOutputStream = function(out) {
+
+      var _out = out;
+      var _bitLength = 0;
+      var _bitBuffer = 0;
+
+      var _this = {};
+
+      _this.write = function(data, length) {
+
+        if ( (data >>> length) != 0) {
+          throw 'length over';
+        }
+
+        while (_bitLength + length >= 8) {
+          _out.writeByte(0xff & ( (data << _bitLength) | _bitBuffer) );
+          length -= (8 - _bitLength);
+          data >>>= (8 - _bitLength);
+          _bitBuffer = 0;
+          _bitLength = 0;
+        }
+
+        _bitBuffer = (data << _bitLength) | _bitBuffer;
+        _bitLength = _bitLength + length;
+      };
+
+      _this.flush = function() {
+        if (_bitLength > 0) {
+          _out.writeByte(_bitBuffer);
+        }
+      };
+
+      return _this;
+    };
+
+    var getLZWRaster = function(lzwMinCodeSize) {
+
+      var clearCode = 1 << lzwMinCodeSize;
+      var endCode = (1 << lzwMinCodeSize) + 1;
+      var bitLength = lzwMinCodeSize + 1;
+
+      // Setup LZWTable
+      var table = lzwTable();
+
+      for (var i = 0; i < clearCode; i += 1) {
+        table.add(String.fromCharCode(i) );
+      }
+      table.add(String.fromCharCode(clearCode) );
+      table.add(String.fromCharCode(endCode) );
+
+      var byteOut = byteArrayOutputStream();
+      var bitOut = bitOutputStream(byteOut);
+
+      // clear code
+      bitOut.write(clearCode, bitLength);
+
+      var dataIndex = 0;
+
+      var s = String.fromCharCode(_data[dataIndex]);
+      dataIndex += 1;
+
+      while (dataIndex < _data.length) {
+
+        var c = String.fromCharCode(_data[dataIndex]);
+        dataIndex += 1;
+
+        if (table.contains(s + c) ) {
+
+          s = s + c;
+
+        } else {
+
+          bitOut.write(table.indexOf(s), bitLength);
+
+          if (table.size() < 0xfff) {
+
+            if (table.size() == (1 << bitLength) ) {
+              bitLength += 1;
+            }
+
+            table.add(s + c);
+          }
+
+          s = c;
+        }
+      }
+
+      bitOut.write(table.indexOf(s), bitLength);
+
+      // end code
+      bitOut.write(endCode, bitLength);
+
+      bitOut.flush();
+
+      return byteOut.toByteArray();
+    };
+
+    var lzwTable = function() {
+
+      var _map = {};
+      var _size = 0;
+
+      var _this = {};
+
+      _this.add = function(key) {
+        if (_this.contains(key) ) {
+          throw 'dup key:' + key;
+        }
+        _map[key] = _size;
+        _size += 1;
+      };
+
+      _this.size = function() {
+        return _size;
+      };
+
+      _this.indexOf = function(key) {
+        return _map[key];
+      };
+
+      _this.contains = function(key) {
+        return typeof _map[key] != 'undefined';
+      };
+
+      return _this;
+    };
+
+    return _this;
+  };
+
+  var createDataURL = function(width, height, getPixel) {
+    var gif = gifImage(width, height);
+    for (var y = 0; y < height; y += 1) {
+      for (var x = 0; x < width; x += 1) {
+        gif.setPixel(x, y, getPixel(x, y) );
+      }
+    }
+
+    var b = byteArrayOutputStream();
+    gif.write(b);
+
+    var base64 = base64EncodeOutputStream();
+    var bytes = b.toByteArray();
+    for (var i = 0; i < bytes.length; i += 1) {
+      base64.writeByte(bytes[i]);
+    }
+    base64.flush();
+
+    return 'data:image/gif;base64,' + base64;
+  };
+
+  //---------------------------------------------------------------------
+  // returns qrcode function.
+
+  return qrcode;
+}();
+
+// multibyte support
+!function() {
+
+  qrcode.stringToBytesFuncs['UTF-8'] = function(s) {
+    // http://stackoverflow.com/questions/18729405/how-to-convert-utf8-string-to-byte-array
+    function toUTF8Array(str) {
+      var utf8 = [];
+      for (var i=0; i < str.length; i++) {
+        var charcode = str.charCodeAt(i);
+        if (charcode < 0x80) utf8.push(charcode);
+        else if (charcode < 0x800) {
+          utf8.push(0xc0 | (charcode >> 6),
+              0x80 | (charcode & 0x3f));
+        }
+        else if (charcode < 0xd800 || charcode >= 0xe000) {
+          utf8.push(0xe0 | (charcode >> 12),
+              0x80 | ((charcode>>6) & 0x3f),
+              0x80 | (charcode & 0x3f));
+        }
+        // surrogate pair
+        else {
+          i++;
+          // UTF-16 encodes 0x10000-0x10FFFF by
+          // subtracting 0x10000 and splitting the
+          // 20 bits of 0x0-0xFFFFF into two halves
+          charcode = 0x10000 + (((charcode & 0x3ff)<<10)
+            | (str.charCodeAt(i) & 0x3ff));
+          utf8.push(0xf0 | (charcode >>18),
+              0x80 | ((charcode>>12) & 0x3f),
+              0x80 | ((charcode>>6) & 0x3f),
+              0x80 | (charcode & 0x3f));
+        }
+      }
+      return utf8;
+    }
+    return toUTF8Array(s);
+  };
+
+}();
+
+(function (factory) {
+  if (typeof define === 'function' && define.amd) {
+      define([], factory);
+  } else if (typeof exports === 'object') {
+      module.exports = factory();
+  }
+}(function () {
+    return qrcode;
+}));
+
+</script>
+<script>
+/* ===================== CONFIG ===================== */
+const SB='https://lrjurjhavlalhlwaplxd.supabase.co';
+const KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxyanVyamhhdmxhbGhsd2FwbHhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNzUxNDAsImV4cCI6MjA5NTY1MTE0MH0.DVFmZaT37R9CXSMHdnLx4YAVNTnlBGijkOIaoUo7Qsk';
+/* 공장 설정: 1공장 = '' / 2공장 = '_2' (테이블 접미사) */
+const PLANT='1', SFX='', PUBLIC_URL='https://jungsangchul.github.io/maint_cert.html';
+const PNAME={ko:PLANT==='2'?'2공장':'1공장',es:'Planta '+PLANT};
+const TB={staff:'mcert_staff'+SFX,theory:'mcert_theory'+SFX,practical:'mcert_practical'+SFX,config:'mcert_config'+SFX};
+const EXAM_ONLY=new URLSearchParams(location.search).get('mode')==='exam';
+
+/* ===================== I18N ===================== */
+const TX={
+title:['보전자 자격인증 평가','Certificación de Personal de Mantenimiento'],
+subtitle:['가공생산팀 · 이론/실기 숙련도 평가','Producción de Corte · Evaluación teórica y práctica'],
+tab_dash:['인증 현황','Estado'],tab_theory:['이론평가','Examen teórico'],tab_prac:['실기평가 입력','Evaluación práctica'],tab_hist:['평가 이력','Historial'],tab_admin:['관리','Administración'],
+matrix:['보전자별 자격인증 현황','Estado de certificación por técnico'],csv:['CSV','CSV'],print:['인쇄','Imprimir'],
+rule:['등급: S 90↑ 매우능숙 · A 80↑ 능숙 · B 70↑ 보통(조건부 합격) · C 69↓ 부족(해당 설비 재교육) / 판정: 이론 불합격 = 불합격, 이론 합격 + 실기 4개 전부 A 이상 = 합격, 그 외 = 조건부 합격',
+      'Nivel: S ≥90 · A ≥80 · B ≥70 (aprobado condicional) · C ≤69 (recapacitar en ese equipo) / Resultado: teórico reprobado = Reprobado; teórico aprobado + 4 prácticos ≥A = Aprobado; otros = Condicional'],
+dist:['설비별 등급 분포','Distribución de niveles por equipo'],process:['자격인증 절차','Proceso de certificación'],
+plant:['공장','Planta'],all:['전체','Todas'],name:['성명','Nombre'],lang:['언어','Idioma'],start:['시험 시작','Iniciar examen'],
+ex_title:['이론평가 (객관식 20문항 + 서술형 1문항)','Examen teórico (20 opción múltiple + 1 abierta)'],
+ex_info:['객관식 1~20번 각 5점(100점 만점). 21번 서술형은 채점에 포함하지 않고 평가자가 확인합니다.','Preguntas 1–20: 5 puntos c/u (100 total). La pregunta 21 es abierta y la revisa el evaluador.'],
+ex_link:['태블릿/휴대폰 응시 전용 링크:','Enlace solo para examen (tablet/celular):'],copy:['링크 복사','Copiar enlace'],
+cancel:['취소','Cancelar'],submit:['제출','Enviar'],answered:['응답','Respondidas'],
+miss_alert:['응답하지 않은 문항이 있습니다','Hay preguntas sin responder'],sel_name:['성명을 선택하세요','Seleccione un nombre'],
+reason:['이유','Razón'],score:['점수','Puntaje'],pass:['합격','Aprobado'],fail:['불합격','Reprobado'],cond:['조건부 합격','Aprobado condicional'],
+next_person:['다음 응시자','Siguiente persona'],correct_cnt:['정답','Correctas'],
+pr_title:['실기평가 입력 (10개 항목 · 100점)','Captura de evaluación práctica (10 rubros · 100 pts)'],
+equip:['평가 설비','Equipo'],date:['평가일','Fecha'],evaluator:['평가자','Evaluador'],load_last:['최근 평가 불러오기','Cargar última'],
+note:['비고','Nota'],total:['합계','Total'],reset:['초기화','Limpiar'],save:['저장','Guardar'],
+item:['항목','Rubro'],crit:['세부 평가 기준','Criterio'],method:['평가 방식 (클릭 또는 직접 입력)','Método (clic o captura directa)'],pts:['배점','Pts'],sc:['점수','Puntos'],
+saved:['저장되었습니다','Guardado'],deleted:['삭제되었습니다','Eliminado'],editing:['수정 중','Editando'],
+h_prac:['실기평가 이력','Historial práctico'],h_theory:['이론평가 이력','Historial teórico'],
+del_confirm:['이 기록을 삭제할까요?','¿Eliminar este registro?'],edit:['수정','Editar'],del:['삭제','Eliminar'],view:['보기','Ver'],
+staff:['보전자 명단','Lista de técnicos'],empno:['사번','No. empleado'],add:['추가','Agregar'],active:['재직','Activo'],
+settings:['설정','Configuración'],pass_score:['이론 합격 점수','Puntaje mínimo teórico'],shuffle:['보기 순서 섞기','Mezclar opciones'],
+qbank:['이론 문제 · 정답','Banco de preguntas y respuestas'],
+k_staff:['평가 대상','Técnicos'],k_theory:['이론 응시/합격','Teórico realizado/aprobado'],k_avg:['실기 평균','Promedio práctico'],k_ok:['합격','Aprobados'],k_cond:['조건부','Condicional'],k_ng:['불합격(이론)','Reprobados (teórico)'],retrain_eq:['재교육','Recapacitar'],
+theory:['이론','Teórico'],avg:['실기평균','Prom. práctico'],result:['판정','Resultado'],na:['미평가','Pendiente'],incomplete:['평가 미완료','Incompleto'],
+weak:['취약 항목 (70% 미만)','Rubros débiles (<70%)'],wrong:['오답 문항','Preguntas incorrectas'],none:['없음','Ninguno'],close:['닫기','Cerrar'],
+last_eval:['최근 평가','Última evaluación'],no_data:['기록 없음','Sin registros'],answer:['정답','Respuesta'],
+retrain:['재교육 대상 설비','Equipos a recapacitar'],err:['오류','Error'],dup:['이미 등록된 이름입니다','Nombre ya registrado'],
+copied:['복사되었습니다','Copiado'],loading:['불러오는 중…','Cargando…'],
+};
+let LANG=localStorage.getItem('mcert_lang')||'ko';
+const T=k=>(TX[k]||[k,k])[LANG==='ko'?0:1];
+const L=o=>o?(o[LANG]??o.ko):'';
+
+/* ===================== EQUIPMENT RUBRIC ===================== */
+const LV={
+ tool:{ko:['정확한 공구 사용','-','-','부정확한 공구 사용'],es:['Herramienta correcta','-','-','Herramienta incorrecta']},
+ repair:{ko:['1회 완료','2회 완료','3회 완료','4회 이상 완료'],es:['1 intento','2 intentos','3 intentos','4+ intentos']},
+ run:{ko:['기동·정지 가능','1회 틀림','2회 틀림','3회 이상 틀림'],es:['Correcto','1 error','2 errores','3+ errores']},
+ chk:{ko:['점검표 기준 점검 가능','1회 틀림','2회 틀림','3회 이상 틀림'],es:['Inspección correcta','1 error','2 errores','3+ errores']},
+ crimp:{ko:['1회 setting 완료','2회 setting 완료','3회 setting 완료','4회 이상 setting'],es:['Ajuste en 1 intento','2 intentos','3 intentos','4+ intentos']},
+ maint:{ko:['1회 보전 완료','2회 보전 완료','3회 보전 완료','4회 이상 보전'],es:['1 intento','2 intentos','3 intentos','4+ intentos']},
+ abn:{ko:['금형·설비 각 1회 완료','2회 완료','3회 완료','4회 이상'],es:['Molde y equipo en 1 intento','2 intentos','3 intentos','4+ intentos']},
+ time:{ko:['30분 이내','35분 이내','40분 이내','41분 이상'],es:['≤30 min','≤35 min','≤40 min','≥41 min']},
+ set:{ko:['부품 누락 없음','1EA 누락','2EA 누락','3EA 이상 누락'],es:['Sin faltantes','1 pieza faltante','2 piezas faltantes','3+ piezas faltantes']},
+};
+const C_REP={ko:'이상 발생 시 원인에 맞는 수리를 하는가?',es:'¿Repara según la causa de la falla?'};
+const C_ZERO={ko:'고장 시 조치 및 영점 SETTING 방법을 알고 있는가?',es:'¿Conoce la corrección de fallas y el ajuste de punto cero?'};
+const C_NOWORK={ko:'작동 안 될 시 조치 방법을 정확하게 알고 있는가?',es:'¿Sabe qué hacer cuando no funciona?'};
+const I_TOOL={ko:'공구 사용 방법',es:'Uso de herramientas',max:10,lv:'tool',c:[{ko:'이상 발생 수리 시 정확한 공구 사용을 실시하는가?',es:'¿Utiliza la herramienta correcta al reparar?'},{ko:'규격에 맞는 정확한 공구를 사용하는가?',es:'¿Usa herramientas adecuadas a la especificación?'}]};
+const I_RUN={ko:'설비 기동/정지',es:'Arranque / paro',max:10,lv:'run',c:[{ko:'설비 가동 및 정지 방법을 알고 있는가?',es:'¿Conoce cómo arrancar y detener el equipo?'},{ko:'설비 전원 기동 ~ Air 정지 방법을 알고 있는가?',es:'¿Conoce la secuencia de encendido hasta corte de aire?'}]};
+const I_CHK={ko:'설비점검',es:'Inspección del equipo',max:10,lv:'chk',c:[{ko:'설비점검 방법을 이해하고 점검표 기준대로 실행할 수 있는가?',es:'¿Entiende e inspecciona según la hoja de verificación?'}]};
+const I_CONV={ko:'Conveyor',es:'Conveyor',max:10,lv:'repair',c:[C_REP,{ko:'Conveyor Motor 해체·조립 시 과·부족 부품이 없는가?',es:'¿Desarma/arma el motor sin piezas faltantes o sobrantes?'}]};
+const I_CUT={ko:'컷팅 헤드부',es:'Cabezal de corte',max:10,lv:'repair',c:[C_ZERO,{ko:'컷팅헤드부 Setting 방법을 정확하게 알고 있는가?',es:'¿Conoce el ajuste del cabezal de corte?'}]};
+const I_SWV={ko:'Swivel',es:'Swivel',max:10,lv:'repair',c:[C_ZERO,{ko:'초기 정확한 Calibration Setting을 하는가?',es:'¿Realiza correctamente la calibración inicial?'}]};
+const rep=(ko,es,extra)=>({ko,es,max:10,lv:'repair',c:[C_REP,...extra]});
+const EQUIP={
+ kmp2n:{ko:'자동절단압착 KM-P2N',es:'Corte/crimpado automático KM-P2N',short:'KM-P2N',items:[
+  I_TOOL,
+  rep('Pre Feeder','Pre Feeder',[{ko:'Wire 부하 발생 시 보전 방법을 정확하게 알고 있는가?',es:'¿Conoce el mantenimiento cuando hay carga en el cable?'}]),
+  rep('Belt Drive','Belt Drive',[{ko:'드라이브 휠 교체 보전을 정확하게 하는가?',es:'¿Cambia correctamente las ruedas de tracción?'}]),
+  I_SWV,
+  {ko:'Press',es:'Prensa',max:10,lv:'repair',c:[C_ZERO,{ko:'Press Setting을 정확하게 알고 있는가?',es:'¿Conoce correctamente el ajuste de la prensa?'}]},
+  I_CUT,I_RUN,
+  rep('Seal Station','Seal Station',[C_NOWORK]),
+  I_CONV,I_CHK]},
+ schl:{ko:'자동절단압착 Schleuniger',es:'Corte/crimpado automático Schleuniger',short:'Schleuniger',items:[
+  I_TOOL,I_RUN,
+  rep('Prefeeder60','Prefeeder60',[{ko:'Wire 부하 발생 시 보전 방법을 정확하게 알고 있는가?',es:'¿Conoce el mantenimiento cuando hay carga en el cable?'}]),
+  rep('Belt Drive','Belt Drive',[{ko:'드라이브 Belt 교체 보전을 정확하게 하는가?',es:'¿Cambia correctamente la banda de tracción?'}]),
+  I_SWV,
+  {ko:'SPL 2000C (Press)',es:'SPL 2000C (Prensa)',max:10,lv:'repair',c:[C_ZERO,C_NOWORK]},
+  I_CUT,
+  rep('SLU 3000 (Seal)','SLU 3000 (Sello)',[C_NOWORK]),
+  I_CONV,I_CHK]},
+ manual:{ko:'수동 공정 설비',es:'Equipos de proceso manual',short:'수동공정',shortEs:'Manual',items:[
+  I_TOOL,
+  rep('트위스트','Trenzadora (twist)',[{ko:'각 부위별 역할 및 고장 발생 시 수리 방법을 알고 있는가?',es:'¿Conoce la función de cada parte y su reparación?'}]),
+  rep('압착 Press','Prensa de crimpado',[{ko:'Press Setting을 정확하게 알고 있는가?',es:'¿Conoce correctamente el ajuste de la prensa?'}]),
+  rep('중간 스트립기','Peladora intermedia',[{ko:'배가름 위치 및 스트립 위치를 조정할 수 있는가?',es:'¿Ajusta la posición de corte y pelado?'},{ko:'칼날 교환(배가름, 스트립)을 할 수 있는가?',es:'¿Puede cambiar las cuchillas?'}]),
+  rep('열수축기','Termocontráctil',[{ko:'온도 설정법을 정확하게 알고 있는가?',es:'¿Conoce el ajuste de temperatura?'}]),
+  rep('테핑기','Encintadora',[{ko:'테이프 길이 조정 방법을 알고 있는가?',es:'¿Ajusta la longitud de la cinta?'},{ko:'부위별 수리 방법을 알고 있는가?',es:'¿Conoce la reparación por partes?'}]),
+  rep('내피 탈피기','Pelador de aislamiento interno',[{ko:'스트립 길이 조정 방법을 알고 있는가?',es:'¿Ajusta la longitud de pelado?'},{ko:'부위별(동작센서 위치) 수리 방법을 알고 있는가?',es:'¿Conoce la reparación por partes (sensores)?'}]),
+  rep('KM-703','KM-703',[{ko:'설비 전원 가동 ~ Air 정지 방법을 알고 있는가?',es:'¿Conoce la secuencia de encendido hasta corte de aire?'},{ko:'절단 길이 SQ별 설정 방법을 알고 있는가?',es:'¿Conoce el ajuste de longitud por calibre (SQ)?'}]),
+  rep('차폐케이블 절단기','Cortadora de cable blindado',[{ko:'회전 및 절단 불량 시 조치 방법을 알고 있는가?',es:'¿Sabe corregir fallas de giro y corte?'}]),
+  I_CHK]},
+ app:{ko:'Applicator (금형)',es:'Aplicador',short:'Applicator',items:[
+  {ko:'압착고 조정',es:'Ajuste de altura de crimpado',max:10,lv:'crimp',c:[{ko:'압착고 불량 시 와이어·인슐 다이얼을 정확하게 조정하는가?',es:'¿Ajusta correctamente los diales de cable y aislamiento?'},{ko:'Spec: 심선부 ±0.05 / 피복부 ±0.1',es:'Spec: conductor ±0.05 / aislamiento ±0.1'}]},
+  {ko:'불량 유형별 보전',es:'Mantenimiento por tipo de defecto',max:10,lv:'maint',c:[{ko:'단자 불량 유형별(밴드업·다운, 롤링, 트위스트, 버 과다 등) 보전을 하는가?',es:'¿Corrige según el defecto (bend up/down, rolling, twist, rebaba, etc.)?'}]},
+  {ko:'이상발생 처리 (MES)',es:'Atención de fallas (MES)',max:20,lv:'abn',c:[{ko:'금형 고장 시 원인에 맞게 수리하는가? (10)',es:'¿Repara fallas del molde según la causa? (10)'},{ko:'설비 고장 시 원인에 맞게 수리하는가? (10)',es:'¿Repara fallas del equipo según la causa? (10)'}]},
+  I_TOOL,
+  {ko:"APP' 분해·조립 (시간)",es:'Desarme/armado (tiempo)',max:20,lv:'time',c:[{ko:'30분 내 분해·조립이 가능해야 한다',es:'Debe desarmar y armar en 30 min'}]},
+  {ko:"APP' 셋팅 상태",es:'Estado de ajuste',max:20,lv:'set',c:[{ko:"조립 완료 후 APP'의 셋팅 상태가 정확한가?",es:'¿El ajuste del aplicador es correcto tras armarlo?'}]},
+  {ko:'금형점검',es:'Inspección del aplicador',max:10,lv:'chk',c:[{ko:'Applicator 점검을 점검표 기준에 의하여 점검 실시',es:'Inspecciona el aplicador según la hoja de verificación'}]}]},
+};
+const EQK=Object.keys(EQUIP);
+const eqShort=k=>LANG==='es'&&EQUIP[k].shortEs?EQUIP[k].shortEs:EQUIP[k].short;
+const lvPts=max=>max===20?[20,15,10,5]:[10,8,6,4];
+
+/* ===================== THEORY QUESTIONS ===================== */
+const Q=[
+{ko:'어플리케이터 작업을 시작하기 전에 무엇을 점검해야 합니까?',es:'¿Qué se debe revisar antes de comenzar a trabajar con un aplicador?',
+ o:[['색상만 확인한다.','Solo el color.'],['전체 상태, 부품 및 체결 상태를 확인한다.','El estado general, piezas y fijaciones.'],['터미널 번호만 확인한다.','Número de terminal.'],['아무것도 확인하지 않는다.','Nada.']],a:1},
+{ko:'설비 예방보전의 주요 목적은 무엇입니까?',es:'¿Cuál es el objetivo principal del mantenimiento preventivo de una máquina?',
+ o:[['설비가 정지했을 때만 수리한다.','Repararla solamente cuando se detiene.'],['고장을 예방하고 설비를 양호한 상태로 유지한다.','Prevenir fallas y mantenerla en buenas condiciones.'],['항상 설비의 속도를 높인다.','Aumentar siempre su velocidad.'],['모든 부품을 교체한다.','Cambiar todas las piezas.']],a:1},
+{ko:'어플리케이터의 주요 기능은 무엇입니까?',es:'¿Cuál es la función principal de un aplicador?',
+ o:[['전선을 완전히 절단한다.','Cortar el cable completo.'],['터미널을 전선에 정확하게 압착한다.','Realizar correctamente el crimpado del terminal sobre el cable.'],['전압을 측정한다.','Medir voltaje.'],['프레스에 윤활유를 공급한다.','Lubricar la prensa.']],a:1},
+{ko:'어플리케이터에서 터미널을 직접 압착하는 부품은 무엇입니까?',es:'¿Qué parte del aplicador realiza el crimpado sobre el terminal?',
+ o:[['크림퍼 (Crimper)','Crimper.'],['센서 (Sensor)','Sensor.'],['모터 (Motor)','Motor.'],['전선 (Cable)','Cable eléctrico.']],a:0},
+{ko:'어플리케이터에서 앤빌(Anvil)의 역할은 무엇입니까?',es:'¿Cuál es la función del anvil (yunque) en un aplicador?',
+ o:[['전선을 절단한다.','Cortar el cable.'],['압착 과정에서 터미널을 받쳐 주는 역할을 한다.','Servir de apoyo al terminal durante el proceso de crimpado.'],['설비에 에어를 공급한다.','Alimentar aire a la máquina.'],['터미널을 감지한다.','Detectar el terminal.']],a:1},
+{ko:'크림퍼가 손상되거나 마모된 경우 어떻게 해야 합니까?',es:'Si el crimper está dañado o desgastado, ¿qué debemos hacer?',
+ o:[['계속 사용한다.','Seguir utilizándolo.'],['상태를 점검하고 필요한 경우 교체한다.','Revisarlo y reemplazarlo cuando corresponda.'],['두드려서 사용한다.','Golpearlo.'],['점검하지 않고 압력을 높인다.','Aumentar la presión sin revisar.']],a:1},
+{ko:'설비가 고장으로 정지했을 경우 가장 먼저 무엇을 해야 합니까?',es:'Si una máquina se detiene por una falla, ¿qué se debe hacer primero?',
+ o:[['강제로 계속 가동한다.','Forzarla para que continúe trabajando.'],['알람 또는 고장 원인을 확인하고 안전 절차에 따라 조치한다.','Identificar la alarma o falla y seguir el procedimiento de seguridad.'],['반복적으로 재가동한다.','Reiniciarla repetidamente.'],['센서를 해제한다.','Desactivar los sensores.']],a:1},
+{ko:'압착 높이(Crimp Height)가 규격을 벗어난 경우 어떻게 해야 합니까?',es:'Si la altura de crimpado está fuera de especificación, ¿qué corresponde hacer?',
+ o:[['생산을 계속한다.','Continuar producción.'],['생산을 중지하고 필요한 조정을 실시한다.','Detener y realizar el ajuste correspondiente.'],['터미널의 색상을 변경한다.','Cambiar el color del terminal.'],['차이가 작으면 무시한다.','Ignorarlo si la diferencia es pequeña.']],a:1},
+{ko:'압착 높이를 측정할 때 일반적으로 사용하는 측정기는 무엇입니까?',es:'¿Qué instrumento se utiliza normalmente para verificar la altura de crimpado?',
+ o:[['자','Regla.'],['압착 높이 측정용 마이크로미터','Micrómetro de crimpado.'],['멀티미터','Multímetro.'],['토크렌치','Torquímetro.']],a:1},
+{ko:'고장 난 설비를 수리한 후 무엇을 해야 합니까?',es:'Después de reparar una máquina averiada, ¿qué se debe hacer?',
+ o:[['즉시 생산에 투입한다.','Liberarla inmediatamente a producción.'],['수리 상태와 설비의 정상 작동 여부를 확인한 후 생산에 투입한다.','Verificar que la reparación y el funcionamiento sean correctos antes de liberarla.'],['알람만 삭제한다.','Borrar solamente la alarma.'],['테스트를 위해 설비 속도를 높인다.','Aumentar la velocidad para probarla.']],a:1},
+{ko:'보전 담당자의 주요 업무 중 하나는 무엇입니까?',es:'¿Cuál es una de las principales funciones del personal de mantenimiento?',
+ o:[['설비 및 장비가 정상적으로 작동할 수 있도록 유지·관리한다.','Mantener las máquinas y equipos en condiciones correctas de funcionamiento.'],['설비 청소만 실시한다.','Solamente limpiar las máquinas.'],['생산 속도를 높인다.','Aumentar la velocidad de producción.'],['모든 생산 설비를 직접 운전한다.','Operar todas las máquinas de producción.']],a:0},
+{ko:'어플리케이터에서 터미널이 정상적으로 공급되지 않을 경우 어떻게 해야 합니까?',es:'Si el terminal no avanza correctamente en el aplicador, ¿qué debemos hacer?',
+ o:[['손으로 강제로 밀어 넣는다.','Forzarlo manualmente.'],['터미널 공급 장치를 점검하고 원인을 확인한다.','Revisar el sistema de alimentación y encontrar la causa.'],['즉시 설비 속도를 높인다.','Aumentar inmediatamente la velocidad.'],['그대로 작업을 계속한다.','Continuar trabajando.']],a:1},
+{ko:'터미널 변형이 반복적으로 발생하는 경우 무엇을 점검해야 합니까?',es:'¿Qué debemos revisar si aparecen terminales deformados repetidamente?',
+ o:[['어플리케이터, 조정 상태 및 압착 관련 부품을 점검한다.','Aplicador, ajuste y componentes de crimpado.'],['바닥만 확인한다.','Solamente el piso.'],['프레스의 색상을 확인한다.','El color de la prensa.'],['작업장의 조명을 확인한다.','La iluminación del área.']],a:0},
+{ko:'프레스에 설치된 어플리케이터를 분해하거나 점검하기 전에 무엇을 해야 합니까?',es:'Antes de desmontar o intervenir un aplicador instalado en una prensa, debemos:',
+ o:[['안전 절차에 따라 설비의 안전 상태를 확보한다.','Asegurar la máquina según el procedimiento de seguridad.'],['즉시 손을 넣는다.','Meter la mano inmediatamente.'],['설비 속도를 높인다.','Aumentar la velocidad.'],['자동 운전을 시작한다.','Activar el ciclo automático.']],a:0},
+{ko:'어플리케이터 예방보전이란 무엇입니까?',es:'¿Qué es el mantenimiento preventivo de un aplicador?',
+ o:[['고장이 발생하기 전에 점검하고 유지·관리하는 것이다.','Revisarlo y mantenerlo antes de que ocurra una falla.'],['고장이 발생했을 때만 수리하는 것이다.','Repararlo únicamente cuando se rompe.'],['매일 모든 부품을 교체하는 것이다.','Cambiar todas sus piezas diariamente.'],['작동하지 않을 때만 청소하는 것이다.','Limpiarlo solo cuando deja de funcionar.']],a:0},
+{ko:'어플리케이터에서 파손된 부품을 발견한 경우 어떻게 해야 합니까?',es:'¿Qué debemos hacer si encontramos una pieza rota en un aplicador?',
+ o:[['계속 생산한다.','Seguir produciendo.'],['해당 내용을 보고하고 필요에 따라 부품을 교체하거나 수리한다.','Reportarla y reemplazar/reparar según corresponda.'],['접착제로 붙인 후 계속 사용한다.','Pegarla y continuar siempre.'],['무시한다.','Ignorarla.']],a:1},
+{ko:'각 어플리케이터에 맞는 정확한 부품을 사용해야 하는 이유는 무엇입니까?',es:'¿Por qué es importante utilizar las piezas correctas para cada aplicador?',
+ o:[['어플리케이터의 정상 작동과 정확한 압착 품질을 확보하기 위해서이다.','Para asegurar su funcionamiento y el crimpado correcto.'],['모든 부품은 동일하게 사용할 수 있기 때문이다.','Porque todas las piezas funcionan igual.'],['외관을 보기 좋게 하기 위해서이다.','Solamente por apariencia.'],['어떤 부품을 사용해도 상관없다.','No importa qué pieza se utilice.']],a:0},
+{ko:'어플리케이터 보전 작업을 완료한 후 무엇을 해야 합니까?',es:'Después de realizar mantenimiento a un aplicador, debemos:',
+ o:[['정상 작동 여부와 압착 결과를 확인한다.','Verificar su funcionamiento y el resultado del crimpado.'],['테스트하지 않고 바로 인계한다.','Entregarlo sin probar.'],['분해된 상태로 둔다.','Dejarlo desarmado.'],['모든 부품을 다시 교체한다.','Cambiar nuevamente todas las piezas.']],a:0},
+{ko:'어플리케이터에서 동일한 문제가 반복적으로 발생할 경우 어떻게 해야 합니까?',es:'Si un aplicador presenta el mismo problema varias veces, ¿qué debemos hacer?',
+ o:[['원인을 확인하지 않고 항상 동일한 방법으로 수리한다.','Repararlo siempre de la misma manera sin revisar.'],['반복적으로 발생하는 문제의 근본 원인을 확인한다.','Buscar la causa del problema repetitivo.'],['문제를 무시한다.','Ignorarlo.'],['설비 속도를 높인다.','Aumentar la velocidad.']],a:1},
+{ko:'어플리케이터의 보전 이력을 기록해야 하는 이유는 무엇입니까?',es:'¿Por qué se debe llevar un registro del mantenimiento del aplicador?',
+ o:[['보전 및 수리 이력을 확인하고 관리하기 위해서이다.','Para conocer su historial de mantenimiento y reparaciones.'],['누가 청소했는지만 확인하기 위해서이다.','Solo para saber quién lo limpió.'],['점검을 피하기 위해서이다.','Para evitar inspecciones.'],['기록할 필요가 없다.','No es necesario.']],a:0},
+];
+const Q21={ko:'에어 압력이 올바른 압착 작업에 중요하다고 생각합니까?',es:'¿Crees que las presiones de aire son importantes para un crimpado correcto?',
+ o:[['예. 그 이유는:','Sí, porque:'],['아니요. 그 이유는:','No, porque:']]};
+const ABCD='ABCD';
+
+Object.assign(TX,{
+qr_info:['📱 휴대폰 카메라로 QR을 스캔하면 바로 시험에 접속합니다','📱 Escanee el código QR con la cámara para entrar al examen'],qr_big:['QR 크게 보기 / 인쇄','Ver QR grande / Imprimir'],
+
+tab_dash:['① 인증 현황','① Estado'],tab_theory:['② 이론평가','② Examen teórico'],tab_prac:['③ 실기평가','③ Evaluación práctica'],tab_hist:['④ 평가 이력','④ Historial'],tab_admin:['⑤ 관리','⑤ Administración'],
+ex_title:['보전자 이론평가','Examen teórico de Mantenimiento'],
+prev:['◀ 이전','◀ Anterior'],next:['다음 ▶','Siguiente ▶'],submit:['📥 제출','📥 Enviar'],
+question:['문항','Pregunta'],q_tag:['❓ 21문항','❓ 21 preguntas'],pt_tag:['💯 100점','💯 100 puntos'],
+pass_tag:['🎯 {n}점 합격','🎯 Aprobado {n} pts'],
+unanswered_confirm:['응답하지 않은 문항이 있습니다','Hay preguntas sin responder'],
+q21_hint:['이유를 작성하세요','Escriba la razón'],
+cancel_confirm:['시험을 취소할까요?','¿Cancelar el examen?'],
+});
+
+/* ===================== STATE / DB ===================== */
+let STAFF=[],PRAC=[],THEO=[],CFG={theoryPass:70,shuffle:true};
+async function sb(path,opt={}){
+  const r=await fetch(SB+'/rest/v1/'+path,{...opt,headers:{apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json',Prefer:'return=representation',...(opt.headers||{})}});
+  const t=await r.text(); if(!r.ok) throw new Error(t||r.status); return t?JSON.parse(t):null;
+}
+async function loadAll(){
+  const [s,p,t,c]=await Promise.all([
+    sb(TB.staff+'?select=*&order=name'),
+    sb(TB.practical+'?select=*&order=eval_date.desc,id.desc'),
+    sb(TB.theory+'?select=*&order=exam_date.desc,id.desc'),
+    sb(TB.config+'?select=*')]);
+  STAFF=s;PRAC=p;THEO=t;
+  const st=(c||[]).find(x=>x.key==='settings'); if(st) CFG={...CFG,...st.value};
+}
+const grade=s=>s==null?null:s>=90?'S':s>=80?'A':s>=70?'B':'C';
+const gCls={S:'grade-s',A:'grade-a',B:'grade-b',C:'grade-fail'};
+const gTag=s=>s==null?`<span class="grade-na">—</span>`:`<span class="${gCls[grade(s)]}">${s} (${grade(s)})</span>`;
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const today=()=>{const d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,10)};
+function toast(m){const e=document.getElementById('toast');e.textContent=m;e.style.display='block';clearTimeout(e._t);e._t=setTimeout(()=>e.style.display='none',2400)}
+const latestPrac=(n,e)=>PRAC.find(r=>r.staff_name===n&&r.equip===e);
+const latestTheo=n=>THEO.find(r=>r.staff_name===n);
+const plantLabel=p=>p==='2'?(LANG==='ko'?'2공장':'Planta 2'):(LANG==='ko'?'1공장':'Planta 1');
+
+function judge(n){
+  const th=latestTheo(n), sc=EQK.map(e=>{const p=latestPrac(n,e);return p?p.total:null});
+  const done=sc.filter(x=>x!=null);
+  const avg=done.length?Math.round(done.reduce((a,b)=>a+b,0)/done.length*10)/10:null;
+  const cs=EQK.filter((e,i)=>sc[i]!=null&&sc[i]<70);
+  let res;
+  if(th&&th.score<CFG.theoryPass) res='NG';
+  else if(!th||done.length<EQK.length) res='NA';
+  else if(Math.min(...sc)>=80) res='OK';
+  else res='COND';
+  return {th,sc,avg,res,cs};
+}
+const resPill=r=>({OK:`<span class="done-badge">✔ ${T('pass')}</span>`,COND:`<span class="pend-badge">△ ${T('cond')}</span>`,NG:`<span class="fail-badge">✖ ${T('fail')}</span>`,NA:`<span class="na-badge">${T('incomplete')}</span>`}[r]);
+const thTag=th=>th?`<span class="score-t${th.score<CFG.theoryPass?' low':''}">${th.score}</span>`:`<span class="grade-na">—</span>`;
+
+/* ===================== LANG / TABS ===================== */
+function toggleLang(){LANG=LANG==='ko'?'es':'ko';localStorage.setItem('mcert_lang',LANG);render()}
+function applyLang(){
+  document.documentElement.lang=LANG;
+  document.querySelectorAll('[data-t]').forEach(e=>e.textContent=T(e.dataset.t));
+  document.querySelectorAll('[data-langbtn]').forEach(b=>b.textContent='🌐 '+(LANG==='ko'?'ES':'KR'));
+  document.title=T('title')+' · '+PNAME[LANG];
+  document.getElementById('logoKr').textContent='유라하네스멕시코 보전자 자격인증 시스템 · '+PNAME.ko;
+}
+let TAB='dash';
+function showTab(t){
+  TAB=t;
+  document.querySelectorAll('#nav .tab-btn').forEach(b=>b.classList.toggle('active',b.dataset.tab===t));
+  document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id==='page-'+t));
+  render();
+}
+function render(){
+  applyLang(); fillSelects();
+  if(TAB==='dash') renderDash();
+  if(TAB==='theory') renderTheory();
+  if(TAB==='prac') renderPrac();
+  if(TAB==='hist') renderHist();
+  if(TAB==='admin') renderAdmin();
+}
+function opts(list,cur){return list.map(([v,t])=>`<option value="${esc(v)}"${v===cur?' selected':''}>${esc(t)}</option>`).join('')}
+function fillSelects(){
+  const act=STAFF.filter(s=>s.active);
+  const pl=[['',T('all')],['1',plantLabel('1')],['2',plantLabel('2')]];
+  ['fPlant','exPlant'].forEach(id=>{const e=document.getElementById(id);const v=e.value;e.innerHTML=opts(pl,v)});
+  const exP=document.getElementById('exPlant').value;
+  const exN=document.getElementById('exName');const v1=exN.value;
+  exN.innerHTML=`<option value="">-- ${T('sel_name')} --</option>`+opts(act.filter(s=>!exP||s.plant===exP).map(s=>[s.name,s.name+(s.emp_no?' ('+s.emp_no+')':'')]),v1);
+  const prN=document.getElementById('prName');const v2=prN.value;
+  prN.innerHTML=`<option value="">-- ${T('sel_name')} --</option>`+opts(act.map(s=>[s.name,s.name]),v2);
+  const prE=document.getElementById('prEquip');const v3=prE.value||'kmp2n';
+  prE.innerHTML=opts(EQK.map(k=>[k,L(EQUIP[k])]),v3);
+  const hN=document.getElementById('hName');const v4=hN.value;
+  hN.innerHTML=`<option value="">${T('name')}: ${T('all')}</option>`+opts(STAFF.map(s=>[s.name,s.name]),v4);
+  const hE=document.getElementById('hEquip');const v5=hE.value;
+  hE.innerHTML=`<option value="">${T('equip')}: ${T('all')}</option>`+opts(EQK.map(k=>[k,eqShort(k)]),v5);
+}
+
+/* ===================== DASHBOARD ===================== */
+function dashStaff(){const p=document.getElementById('fPlant').value;return STAFF.filter(s=>s.active&&(!p||s.plant===p))}
+function renderDash(){
+  const st=dashStaff(), J=st.map(s=>({s,...judge(s.name)}));
+  const thDone=J.filter(j=>j.th).length, thPass=J.filter(j=>j.th&&j.th.score>=CFG.theoryPass).length;
+  const allSc=J.flatMap(j=>j.sc.filter(x=>x!=null));
+  const avg=allSc.length?(allSc.reduce((a,b)=>a+b,0)/allSc.length).toFixed(1):'—';
+  const cnt=r=>J.filter(j=>j.res===r).length;
+  document.getElementById('kpis').innerHTML=[
+    ['',st.length,T('k_staff')],['',`${thDone}/${thPass}`,T('k_theory')],['purple',avg,T('k_avg')],
+    ['green',cnt('OK'),T('k_ok')],['gold',cnt('COND'),T('k_cond')],['red',cnt('NG'),T('k_ng')]
+  ].map(([c,v,l])=>`<div class="stat-card ${c}"><div class="stat-val ${c}">${v}</div><div class="stat-label">${l}</div></div>`).join('');
+  let h=`<thead><tr><th>#</th><th class="l">${T('name')}</th><th>${T('plant')}</th><th>${T('theory')}</th>${EQK.map(k=>`<th>${eqShort(k)}</th>`).join('')}<th>${T('avg')}</th><th>${T('result')}</th></tr></thead><tbody>`;
+  J.forEach((j,i)=>{
+    const nm=esc(j.s.name);
+    h+=`<tr><td class="mono">${i+1}</td><td class="l"><span class="name-link" data-n="${nm}">${nm}</span></td><td>${plantLabel(j.s.plant)}</td><td>${thTag(j.th)}</td>${j.sc.map(s=>`<td>${gTag(s)}</td>`).join('')}<td class="mono"><b>${j.avg??'—'}</b></td><td>${resPill(j.res)}</td></tr>`;
+  });
+  if(!J.length) h+=`<tr><td colspan="10" class="empty-state">${T('no_data')}</td></tr>`;
+  document.getElementById('matrix').innerHTML=h+'</tbody>';
+  const col={S:'#f1c40f',A:'var(--green)',B:'var(--blue)',C:'var(--red)'};
+  const stack=arr=>{const g={S:0,A:0,B:0,C:0};arr.forEach(s=>g[grade(s)]++);const n=arr.length;
+    return `<div class="stack">${n?'SABC'.split('').filter(x=>g[x]).map(x=>`<div style="width:${g[x]/n*100}%;background:${col[x]}${x==='S'?';color:#000':''}">${x} ${g[x]}</div>`).join(''):''}</div>`};
+  document.getElementById('dist').innerHTML=EQK.map((k,ix)=>{const arr=J.map(j=>j.sc[ix]).filter(x=>x!=null);
+    return `<div><div class="bar-label">${L(EQUIP[k])}<span>${arr.length}${LANG==='ko'?'명':''}</span></div>${stack(arr)}</div>`}).join('')
+    +(()=>{const arr=J.filter(j=>j.th).map(j=>j.th.score);return `<div><div class="bar-label">${T('theory')}<span>${arr.length}${LANG==='ko'?'명':''}</span></div>${stack(arr)}</div>`})();
+  const ko=LANG==='ko';
+  const step=(t,s,c='')=>`<div class="flow-step ${c}">${t}${s?`<div class="flow-sub">${s}</div>`:''}</div>`, ar='<div class="flow-arrow">→</div>';
+  document.getElementById('flow').innerHTML=
+   `<div class="flow-label">${ko?'신규 보전자':'Técnico nuevo'}</div><div class="flow">${step(ko?'기초교육/훈련':'Capacitación básica','OJT')}${ar}${step(ko?'유효성 평가':'Evaluación',ko?'이론 / 실기':'Teórica / Práctica')}${ar}${step(ko?'급수/자격 부여':'Asignación de nivel')}</div>`+
+   `<div class="flow-label">${ko?'기존 보전자':'Técnico actual'}</div><div class="flow">${step(ko?'정기/수시 교육':'Capacitación periódica')}${ar}${step(ko?'숙련도 평가':'Evaluación de habilidad',ko?'연 1회 또는 필요 시':'1 vez al año o según necesidad')}${ar}${step(ko?'급수 조정/자격 인증':'Ajuste de nivel / certificación')}</div>`+
+   `<div class="flow-label" style="color:var(--red)">${ko?'불합격 시':'Si reprueba'}</div><div class="flow">${step(ko?'재교육/훈련':'Recapacitación','','red')}${ar}${step(ko?'재평가':'Reevaluación','','red')}</div>`+
+   `<div class="info-box"><span class="hl">${ko?'특별평가 대상':'Evaluación especial'}</span> — ${ko?'신입사원 · 책임자(담당팀장) 판단 · 주요 설비 Trouble 발생 시 · 해당 설비 보전이 적절치 못할 경우':'personal nuevo · criterio del jefe de área · fallas mayores de equipo · mantenimiento inadecuado del equipo'}</div>`;
+}
+function buildCSV(){}
+document.addEventListener('click',e=>{const n=e.target.closest('.name-link[data-n]');if(n)openPerson(n.dataset.n)});
+function exportCSV(){
+  const st=dashStaff();
+  const rows=[['No','Name','Plant','Theory',...EQK.map(k=>EQUIP[k].short),'Avg','Result','Retrain']];
+  st.forEach((s,i)=>{const j=judge(s.name);rows.push([i+1,s.name,s.plant,j.th?j.th.score:'',...j.sc.map(x=>x==null?'':`${x} (${grade(x)})`),j.avg??'',{OK:'합격',COND:'조건부합격',NG:'불합격',NA:'미완료'}[j.res],j.cs.map(k=>EQUIP[k].short).join(' / ')])});
+  const csv='﻿'+rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\r\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download=`보전자_자격인증_${PNAME.ko}_${today()}.csv`;a.click();
+}
+
+/* ===================== PERSON DETAIL ===================== */
+function openPerson(n){
+  const j=judge(n), s=STAFF.find(x=>x.name===n)||{};
+  let h=`<div style="display:flex;gap:0.6rem;align-items:center;flex-wrap:wrap;margin-bottom:0.4rem"><div class="modal-title">👤 ${esc(n)}</div>${resPill(j.res)}
+    <button class="btn btn-secondary btn-sm no-print" onclick="printModal()">🖨️ ${T('print')}</button><button class="btn btn-primary btn-sm no-print" onclick="closeModal()">${T('close')}</button></div>
+    <div class="muted">${plantLabel(s.plant)} ${s.emp_no?'· '+esc(s.emp_no):''} · ${T('avg')}: <b class="mono">${j.avg??'—'}</b>${j.cs.length?` · <span class="weak">${T('retrain')}: ${j.cs.map(eqShort).join(', ')}</span>`:''}</div>`;
+  h+=`<h4 class="t">📝 ${T('theory')} ${j.th?thTag(j.th):''}</h4>`;
+  if(j.th){
+    const wrong=Q.map((q,i)=>({q,i,a:(j.th.answers||[])[i]})).filter(x=>x.a!==x.q.a);
+    const li=LANG==='ko'?0:1;
+    h+=`<div class="muted">${j.th.exam_date} · ${T('correct_cnt')} ${j.th.correct}/20 · ${j.th.lang==='ko'?'한국어':'Español'}</div>
+      <div style="margin-top:0.5rem;font-size:0.8rem"><b>${T('wrong')}:</b> ${wrong.length?wrong.map(w=>`<div class="muted" style="margin-top:3px">Q${w.i+1}. ${esc(L(w.q))} → <span class="weak">${w.a==null?'—':esc(w.q.o[w.a][li])}</span> / ${T('answer')}: ${esc(w.q.o[w.q.a][li])}</div>`).join(''):T('none')}</div>
+      <div style="margin-top:0.5rem;font-size:0.8rem"><b>Q21.</b> ${esc(L(Q21))}<div class="muted">${j.th.q21_choice?esc(Q21.o[j.th.q21_choice==='A'?0:1][li]):'—'} ${esc(j.th.q21_reason||'')}</div></div>`;
+  } else h+=`<div class="muted">${T('no_data')}</div>`;
+  EQK.forEach(k=>{
+    const p=latestPrac(n,k), E=EQUIP[k];
+    h+=`<h4>🛠️ ${L(E)} ${p?gTag(p.total):''} <span class="muted" style="text-transform:none;letter-spacing:0;font-weight:400">${p?p.eval_date+(p.evaluator?' · '+esc(p.evaluator):''):''}</span></h4>`;
+    if(!p){h+=`<div class="muted">${T('no_data')}</div>`;return}
+    h+=`<table class="results-table"><thead><tr><th class="l">${T('item')}</th><th>${T('sc')}</th><th style="width:40%"></th></tr></thead><tbody>`+E.items.map((it,i)=>{
+      const v=p.scores[i]??0, r=v/it.max, w=r<0.7;
+      return `<tr><td class="l${w?' weak':''}">${L(it)}</td><td class="mono${w?' weak':''}">${v} / ${it.max}</td><td><div class="bar-track"><div class="bar-fill" style="width:${r*100}%;background:${w?'var(--red)':r>=0.9?'#f1c40f':r>=0.8?'var(--green)':'var(--blue)'}"></div></div></td></tr>`}).join('')+'</tbody></table>';
+    const weak=E.items.filter((it,i)=>(p.scores[i]??0)/it.max<0.7).map(L);
+    if(weak.length) h+=`<div class="weak" style="font-size:0.74rem;margin-top:0.4rem">⚠ ${T('weak')}: ${weak.join(', ')}</div>`;
+  });
+  document.getElementById('modalBody').innerHTML=h;
+  document.getElementById('modal').classList.add('open');
+}
+function closeModal(){document.getElementById('modal').classList.remove('open')}
+function printModal(){document.body.classList.add('printmodal');window.print();setTimeout(()=>document.body.classList.remove('printmodal'),500)}
+
+/* ===================== THEORY EXAM (one question per screen) ===================== */
+let EX={on:false};
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function renderTheory(){
+  document.getElementById('exSub').textContent=(LANG==='ko'?'가공생산팀 '+PNAME.ko+' · ':'Producción de Corte · '+PNAME.es+' · ')+today();
+  document.getElementById('exTags').innerHTML=`<span class="ex-tag">${T('q_tag')}</span><span class="ex-tag">${T('pass_tag').replace('{n}',CFG.theoryPass)}</span><span class="ex-tag">${T('pt_tag')}</span>`;
+  onExName();
+  renderQRSmall();
+  if(EX.on) renderQ();
+}
+function onExName(){
+  const n=document.getElementById('exName').value, s=STAFF.find(x=>x.name===n), box=document.getElementById('exInfo');
+  if(s){box.style.display='block';box.textContent=s.name+(s.emp_no?' | '+s.emp_no:'')+' | '+plantLabel(s.plant)}else box.style.display='none';
+}
+function startExam(){
+  const n=document.getElementById('exName').value; if(!n){alert(T('sel_name'));return}
+  EX={on:true,name:n,cur:0,ans:Array(Q.length).fill(null),q21:null,q21r:'',order:Q.map(()=>CFG.shuffle?shuffle([0,1,2,3]):[0,1,2,3])};
+  document.getElementById('exStart').classList.add('hide');
+  document.getElementById('exResult').classList.add('hide');
+  document.getElementById('exScreen').classList.remove('hide');
+  document.getElementById('exWho').textContent=n;
+  renderQ(); window.scrollTo(0,0);
+}
+const NQ=21;
+function renderQ(){
+  const li=LANG==='ko'?0:1, i=EX.cur, ko=LANG;
+  document.getElementById('qCounter').textContent=`${T('question')} ${i+1} / ${NQ}`;
+  if(i<20){
+    const q=Q[i];
+    document.getElementById('qText').textContent=`${i+1}. ${q[ko]}`;
+    document.getElementById('qOpts').innerHTML=EX.order[i].map((oi,pos)=>`<button type="button" class="opt-btn${EX.ans[i]===oi?' selected':''}" onclick="pick(${oi})"><span class="onum">${ABCD[pos]}</span><span class="otxt">${esc(q.o[oi][li])}</span></button>`).join('');
+  } else {
+    document.getElementById('qText').textContent=`21. ${Q21[ko]}`;
+    document.getElementById('qOpts').innerHTML=Q21.o.map((o,k)=>`<button type="button" class="opt-btn${EX.q21===ABCD[k]?' selected':''}" onclick="pick21('${ABCD[k]}')"><span class="onum">${ABCD[k]}</span><span class="otxt">${esc(o[li])}</span></button>`).join('')
+      +`<textarea class="q21r" id="q21r" placeholder="${T('q21_hint')}" oninput="EX.q21r=this.value">${esc(EX.q21r)}</textarea>`;
+  }
+  const answered=k=>k<20?EX.ans[k]!=null:!!EX.q21;
+  document.getElementById('qDots').innerHTML=Array.from({length:NQ},(_,k)=>`<span class="a-dot${answered(k)?' answered':''}${k===i?' current':''}" onclick="goQ(${k})">${k+1}</span>`).join('');
+  document.getElementById('qNav').innerHTML=`<button class="btn-prev" onclick="goQ(${i-1})"${i===0?' disabled':''}>${T('prev')}</button>`+
+    (i<NQ-1?`<button class="btn-next" onclick="goQ(${i+1})">${T('next')}</button>`:`<button class="btn-submit" onclick="submitExam()">${T('submit')}</button>`);
+  const n=EX.ans.filter(x=>x!=null).length+(EX.q21?1:0);
+  document.getElementById('exCnt').textContent=`${n}/${NQ}`;
+  document.getElementById('exBar').style.width=(n/NQ*100)+'%';
+}
+function goQ(k){if(k<0||k>=NQ)return;EX.cur=k;renderQ();window.scrollTo(0,document.getElementById('exScreen').offsetTop-70)}
+function pick(oi){EX.ans[EX.cur]=oi;renderQ();if(EX.cur<NQ-1)setTimeout(()=>goQ(EX.cur+1),250)}
+function pick21(c){EX.q21=c;renderQ();setTimeout(()=>{const t=document.getElementById('q21r');if(t)t.focus()},50)}
+function cancelExam(){if(!confirm(T('cancel_confirm')))return;EX={on:false};resetExamView()}
+function resetExamView(){document.getElementById('exStart').classList.remove('hide');document.getElementById('exScreen').classList.add('hide');document.getElementById('exResult').classList.add('hide');document.getElementById('exName').value='';onExName();window.scrollTo(0,0)}
+async function submitExam(){
+  const miss=EX.ans.map((a,i)=>a==null?i:-1).filter(i=>i>=0); if(!EX.q21) miss.push(20);
+  if(miss.length){alert(T('unanswered_confirm')+` (${miss.map(i=>i+1).join(', ')})`);goQ(miss[0]);return}
+  const correct=EX.ans.filter((a,i)=>a===Q[i].a).length, score=correct*5;
+  const rec={staff_name:EX.name,lang:LANG,answers:EX.ans,correct,score,q21_choice:EX.q21,q21_reason:EX.q21r,exam_date:today()};
+  try{const r=await sb(TB.theory+'',{method:'POST',body:JSON.stringify(rec)});THEO.unshift(r[0])}catch(e){alert(T('err')+': '+e.message);return}
+  const ok=score>=CFG.theoryPass, g=grade(score), ko=LANG==='ko';
+  document.getElementById('exScreen').classList.add('hide');
+  document.getElementById('exResult').classList.remove('hide');
+  document.getElementById('exResultCard').innerHTML=`<div style="font-size:3rem">${ok?'✅':'📚'}</div>
+    <div class="done-title" style="color:${ok?'var(--green)':'var(--red)'}">${ok?(ko?'합격':'Aprobado'):(ko?'불합격':'Reprobado')}</div>
+    <div class="muted">${esc(EX.name)}</div>
+    <div class="done-score" style="color:${ok?'var(--green)':'var(--red)'}">${score}</div>
+    <span class="${ok?gCls[g]:'grade-fail'}">${g}</span>
+    <div class="done-msg">${ko?'정답':'Correctas'} ${correct} / 20<br>${ok?'':(ko?'교육 후 재시험 대상입니다.':'Debe recapacitarse y presentar de nuevo.')}<br>${ko?'21번 서술형은 평가자가 확인합니다.':'La pregunta 21 la revisa el evaluador.'}</div>
+    <button class="btn-start" onclick="EX={on:false};resetExamView()">${T('next_person')}</button>`;
+  window.scrollTo(0,0); EX.on=false;
+}
+function examUrl(){
+  // 로컬 파일(file://)로 열었을 때는 휴대폰이 접근할 수 없으므로 GitHub Pages 주소로 QR 생성
+  const base=location.protocol.startsWith('http')?location.href.split('?')[0].split('#')[0]:PUBLIC_URL;
+  return base+'?mode=exam';
+}
+function drawQR(el,size){
+  el.innerHTML='';
+  const qr=qrcode(0,'M');qr.addData(examUrl());qr.make();
+  const n=qr.getModuleCount(), cell=Math.max(2,Math.floor(size/n));
+  el.innerHTML=qr.createSvgTag({cellSize:cell,margin:0,scalable:false});
+}
+function renderQRSmall(){
+  const el=document.getElementById('qrSmall'); if(!el||EXAM_ONLY)return;
+  if(el.dataset.url!==examUrl()){drawQR(el,150);el.dataset.url=examUrl()}
+  document.getElementById('qrUrl').textContent=examUrl();
+}
+function openQR(){
+  const ko=LANG==='ko';
+  document.getElementById('modalBody').innerHTML=`<div style="display:flex;justify-content:flex-end;gap:0.5rem" class="no-print"><button class="btn btn-secondary btn-sm" onclick="printModal()">🖨️ ${T('print')}</button><button class="btn btn-primary btn-sm" onclick="closeModal()">${T('close')}</button></div>
+   <div class="qr-sheet"><h2>보전자 이론평가 · Examen teórico de Mantenimiento</h2>
+   <div class="qs-sub">YURA Harness México — 가공생산팀 ${PNAME.ko} / Producción de Corte ${PNAME.es}</div>
+   <div class="qr-box" id="qrBig"></div>
+   <div class="qr-url mono">${esc(examUrl())}</div>
+   <div class="qs-steps">① 카메라로 QR 스캔 · Escanee el código QR<br>② 성명 선택 · Seleccione su nombre<br>③ 🌐 KR / ES 언어 선택 · Elija el idioma<br>④ 시험 시작 → 제출 · Iniciar examen → Enviar</div></div>`;
+  document.getElementById('modal').classList.add('open');
+  drawQR(document.getElementById('qrBig'),300);
+}
+function copyExamLink(){
+  const u=examUrl();
+  (navigator.clipboard?navigator.clipboard.writeText(u):Promise.reject()).then(()=>toast(T('copied'))).catch(()=>prompt('URL',u));
+}
+
+/* ===================== PRACTICAL ===================== */
+let PR={scores:[],editId:null};
+function renderPrac(){
+  const k=document.getElementById('prEquip').value, E=EQUIP[k];
+  if(!document.getElementById('prDate').value) document.getElementById('prDate').value=today();
+  if(PR.equip!==k){PR.scores=E.items.map(()=>null);PR.equip=k}
+  document.getElementById('prEqTitle').innerHTML=`📋 ${esc(L(E))} — ${E.items.length}${LANG==='ko'?'개 항목 · 100점':' rubros · 100 pts'}`;
+  document.getElementById('prTable').innerHTML=`<thead><tr><th style="width:40px">No</th><th class="l">${T('item')} / ${T('crit')}</th><th class="l">${T('method')}</th><th style="width:90px">${T('sc')}</th></tr></thead><tbody>`+
+   E.items.map((it,i)=>{const pts=lvPts(it.max), lab=LV[it.lv][LANG]||LV[it.lv].ko;
+    return `<tr><td class="mono">${i+1}</td><td class="l"><b>${esc(L(it))}</b> <span class="muted">(${it.max})</span><div class="crit">${it.c.map(c=>'▷ '+esc(L(c))).join('<br>')}</div></td>
+     <td class="l"><div class="lv">${pts.map((p,x)=>lab[x]==='-'?'':`<button type="button" data-p="${p}" class="${PR.scores[i]===p?'on':''}" onclick="setSc(${i},${p})"><b>${p}</b>${esc(lab[x])}</button>`).join('')}</div></td>
+     <td><input type="number" class="sc-in" min="0" max="${it.max}" value="${PR.scores[i]??''}" oninput="setSc(${i},this.value===''?null:+this.value,true)" id="ps${i}"></td></tr>`}).join('')+'</tbody>';
+  updTot();
+}
+function setSc(i,v,fromInput){
+  const max=EQUIP[PR.equip].items[i].max;
+  if(v!=null) v=Math.max(0,Math.min(max,Math.round(v)));
+  PR.scores[i]=v;
+  const inp=document.getElementById('ps'+i); if(!fromInput) inp.value=v??'';
+  inp.closest('tr').querySelectorAll('.lv button').forEach(b=>b.classList.toggle('on',+b.dataset.p===v));
+  updTot();
+}
+function updTot(){
+  const t=PR.scores.reduce((a,b)=>a+(b||0),0), full=PR.scores.every(x=>x!=null);
+  document.getElementById('prTot').textContent=t;
+  document.getElementById('prGrade').innerHTML=full?gTag(t)+' '+(t>=80?`<span class="done-badge">✔ ${T('pass')}</span>`:t>=70?`<span class="pend-badge">△ ${T('cond')}</span>`:`<span class="fail-badge">↺ ${T('retrain_eq')}</span>`):`<span class="muted">${PR.scores.filter(x=>x!=null).length} / ${PR.scores.length}</span>`;
+  const tag=document.getElementById('prEditTag');tag.classList.toggle('hide',!PR.editId);tag.textContent='✏️ '+T('editing')+' #'+(PR.editId||'');
+}
+function resetPrac(){const k=document.getElementById('prEquip').value;PR={scores:EQUIP[k].items.map(()=>null),equip:k,editId:null};document.getElementById('prNote').value='';renderPrac()}
+function loadLastPrac(){
+  const n=document.getElementById('prName').value,k=document.getElementById('prEquip').value;
+  const p=latestPrac(n,k); if(!p){toast(T('no_data'));return}
+  PR={scores:p.scores.slice(),equip:k,editId:null};document.getElementById('prNote').value='';renderPrac();
+}
+async function savePrac(){
+  const n=document.getElementById('prName').value,k=document.getElementById('prEquip').value;
+  if(!n){alert(T('sel_name'));return}
+  if(PR.scores.some(x=>x==null)){alert(T('miss_alert'));return}
+  const rec={staff_name:n,equip:k,scores:PR.scores,total:PR.scores.reduce((a,b)=>a+b,0),evaluator:document.getElementById('prEval').value.trim(),eval_date:document.getElementById('prDate').value||today(),note:document.getElementById('prNote').value.trim()};
+  try{
+    if(PR.editId) await sb(TB.practical+'?id=eq.'+PR.editId,{method:'PATCH',body:JSON.stringify(rec)});
+    else await sb(TB.practical+'',{method:'POST',body:JSON.stringify(rec)});
+    localStorage.setItem('mcert_eval',rec.evaluator);
+    await loadAll(); toast(T('saved')+` — ${n} · ${EQUIP[k].short} ${rec.total} (${grade(rec.total)})`); resetPrac();
+  }catch(e){alert(T('err')+': '+e.message)}
+}
+function editPrac(id){
+  const p=PRAC.find(r=>r.id===id); if(!p)return;
+  showTab('prac');
+  document.getElementById('prName').value=p.staff_name;document.getElementById('prEquip').value=p.equip;
+  document.getElementById('prDate').value=p.eval_date;document.getElementById('prEval').value=p.evaluator||'';document.getElementById('prNote').value=p.note||'';
+  PR={scores:p.scores.slice(),equip:p.equip,editId:id};renderPrac();window.scrollTo(0,0);
+}
+
+/* ===================== HISTORY ===================== */
+function renderHist(){
+  const n=document.getElementById('hName').value,k=document.getElementById('hEquip').value;
+  const P=PRAC.filter(r=>(!n||r.staff_name===n)&&(!k||r.equip===k));
+  document.getElementById('hPrac').innerHTML=`<thead><tr><th>${T('date')}</th><th class="l">${T('name')}</th><th>${T('equip')}</th><th>${T('total')}</th><th class="l">${LANG==='ko'?'항목별 점수':'Por rubro'}</th><th>${T('evaluator')}</th><th class="l">${T('note')}</th><th></th></tr></thead><tbody>`+
+   (P.length?P.map(r=>`<tr><td class="mono">${r.eval_date}</td><td class="l">${esc(r.staff_name)}</td><td>${eqShort(r.equip)}</td><td>${gTag(r.total)}</td><td class="l muted mono">${r.scores.join(' · ')}</td><td>${esc(r.evaluator||'')}</td><td class="l muted">${esc(r.note||'')}</td>
+    <td style="white-space:nowrap"><button class="btn btn-secondary btn-sm" onclick="editPrac(${r.id})">✏️ ${T('edit')}</button> <button class="btn btn-danger btn-sm" onclick="delRec(TB.practical+'',${r.id})">🗑</button></td></tr>`).join(''):`<tr><td colspan="8" class="empty-state">${T('no_data')}</td></tr>`)+'</tbody>';
+  const TH=THEO.filter(r=>!n||r.staff_name===n);
+  document.getElementById('hTheory').innerHTML=`<thead><tr><th>${T('date')}</th><th class="l">${T('name')}</th><th>${T('lang')}</th><th>${T('correct_cnt')}</th><th>${T('score')}</th><th class="l">Q21</th><th></th></tr></thead><tbody>`+
+   (TH.length?TH.map(r=>`<tr><td class="mono">${r.exam_date}</td><td class="l">${esc(r.staff_name)}</td><td>${r.lang==='ko'?'KR':'ES'}</td><td class="mono">${r.correct}/20</td><td>${gTag(r.score)}</td><td class="l muted">${esc(r.q21_choice||'')} ${esc(r.q21_reason||'')}</td>
+    <td style="white-space:nowrap"><button class="btn btn-secondary btn-sm name-link-btn" onclick="openPerson(this.dataset.n)" data-n="${esc(r.staff_name)}">🔍 ${T('view')}</button> <button class="btn btn-danger btn-sm" onclick="delRec(TB.theory+'',${r.id})">🗑</button></td></tr>`).join(''):`<tr><td colspan="7" class="empty-state">${T('no_data')}</td></tr>`)+'</tbody>';
+}
+async function delRec(tb,id){if(!confirm(T('del_confirm')))return;try{await sb(tb+'?id=eq.'+id,{method:'DELETE'});await loadAll();toast(T('deleted'));render()}catch(e){alert(T('err')+': '+e.message)}}
+
+/* ===================== ADMIN ===================== */
+function renderAdmin(){
+  document.getElementById('staffT').innerHTML=`<thead><tr><th>#</th><th class="l">${T('name')}</th><th>${T('empno')}</th><th>${T('plant')}</th><th>${T('active')}</th><th></th></tr></thead><tbody>`+
+   STAFF.map((s,i)=>`<tr><td class="mono">${i+1}</td><td class="l">${esc(s.name)}</td><td><input type="text" value="${esc(s.emp_no||'')}" style="width:120px" onchange="updStaff(${s.id},{emp_no:this.value.trim()})"></td>
+    <td><select style="width:auto" onchange="updStaff(${s.id},{plant:this.value})">${opts([['1',plantLabel('1')],['2',plantLabel('2')]],s.plant)}</select></td>
+    <td><input type="checkbox" style="width:auto" ${s.active?'checked':''} onchange="updStaff(${s.id},{active:this.checked})"></td><td><button class="btn btn-danger btn-sm" onclick="delStaff(${s.id})">🗑</button></td></tr>`).join('')+'</tbody>';
+  document.getElementById('cfPass').value=CFG.theoryPass;document.getElementById('cfShuffle').value=CFG.shuffle?'1':'0';
+  const li=LANG==='ko'?0:1;
+  document.getElementById('qbankT').innerHTML=`<thead><tr><th>No</th><th class="l">${LANG==='ko'?'문제':'Pregunta'}</th><th>${T('answer')}</th></tr></thead><tbody>`+
+   Q.map((q,i)=>`<tr><td class="mono">${i+1}</td><td class="l">${esc(L(q))}<div class="muted" style="margin-top:3px">${q.o.map((o,k)=>`<span style="${k===q.a?'color:var(--green);font-weight:700':''}">${ABCD[k]}) ${esc(o[li])}</span>`).join(' &nbsp; ')}</div></td><td><span class="grade-a">${ABCD[q.a]}</span></td></tr>`).join('')+
+   `<tr><td class="mono">21</td><td class="l">${esc(L(Q21))}</td><td class="muted">${LANG==='ko'?'서술형':'Abierta'}</td></tr></tbody>`;
+}
+async function addStaff(){
+  const name=document.getElementById('adName').value.trim(); if(!name)return;
+  if(STAFF.some(s=>s.name.toLowerCase()===name.toLowerCase())){alert(T('dup'));return}
+  try{await sb(TB.staff+'',{method:'POST',body:JSON.stringify({name,emp_no:document.getElementById('adNo').value.trim()||null,plant:document.getElementById('adPlant').value})});
+    document.getElementById('adName').value='';document.getElementById('adNo').value='';await loadAll();render();toast(T('saved'))}catch(e){alert(T('err')+': '+e.message)}
+}
+async function delStaff(id){
+  const s=STAFF.find(x=>x.id===id); if(!s)return;
+  if(!confirm((LANG==='ko'?'명단에서 삭제할까요? (평가 기록은 유지됩니다)\n':'¿Eliminar de la lista? (los registros se conservan)\n')+s.name))return;
+  try{await sb(TB.staff+'?id=eq.'+id,{method:'DELETE'});await loadAll();render();toast(T('deleted'))}catch(e){alert(T('err')+': '+e.message)}
+}
+async function updStaff(id,patch){try{await sb(TB.staff+'?id=eq.'+id,{method:'PATCH',body:JSON.stringify(patch)});Object.assign(STAFF.find(s=>s.id===id),patch);toast(T('saved'))}catch(e){alert(T('err')+': '+e.message)}}
+async function saveCfg(){
+  CFG={theoryPass:+document.getElementById('cfPass').value||70,shuffle:document.getElementById('cfShuffle').value==='1'};
+  try{await sb(TB.config+'',{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=representation'},body:JSON.stringify({key:'settings',value:CFG})});toast(T('saved'))}catch(e){alert(T('err')+': '+e.message)}
+}
+
+/* ===================== INIT ===================== */
+document.querySelectorAll('#nav .tab-btn').forEach(b=>b.onclick=()=>showTab(b.dataset.tab));
+document.getElementById('fPlant').onchange=renderDash;
+document.getElementById('exPlant').onchange=()=>{fillSelects();onExName()};
+document.getElementById('exName').onchange=onExName;
+document.getElementById('prEquip').onchange=()=>{PR.editId=null;renderPrac()};
+document.getElementById('prName').onchange=()=>{PR.editId=null;updTot()};
+document.getElementById('hName').onchange=renderHist;document.getElementById('hEquip').onchange=renderHist;
+document.getElementById('prEval').value=localStorage.getItem('mcert_eval')||'';
+document.getElementById('adPlant').value=PLANT;
+(async()=>{
+  if(EXAM_ONLY){document.body.classList.add('exam-only');document.getElementById('appHeader').classList.add('hide');document.getElementById('examLinkBox').classList.add('hide');if(!localStorage.getItem('mcert_lang'))LANG='es';}
+  applyLang();
+  document.getElementById('kpis').innerHTML=`<div class="stat-card"><div class="stat-label">${T('loading')}</div></div>`;
+  try{await loadAll()}catch(e){alert(T('err')+': '+e.message)}
+  showTab(EXAM_ONLY?'theory':'dash');
+})();
+</script>
+</body>
+</html>
