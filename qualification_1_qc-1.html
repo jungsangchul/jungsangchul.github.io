@@ -3021,7 +3021,7 @@ var qrcode = function() {
 
 <script>
 /* ===== 응시자 시험 페이지 QR ===== */
-const EXAM_PAGE_URL = 'https://jungsangchul.github.io/exam_1_qc.html';
+const EXAM_PAGE_URL = location.origin+'/exam_1_qc.html';
 function renderExamQr(){
   try{
     var mini=document.getElementById('examQrMini'), big=document.getElementById('examQrBig');
@@ -3466,7 +3466,7 @@ document.addEventListener('DOMContentLoaded', renderExamQr);
     <div style="flex:1;min-width:220px">
       <div style="font-weight:700;color:var(--sky);font-size:0.92rem;margin-bottom:0.3rem">📱 <span data-kr="응시자 시험 페이지 QR" data-es="QR de la Página de Examen">응시자 시험 페이지 QR</span></div>
       <div style="font-size:0.78rem;color:var(--text2);line-height:1.5"><span data-kr="응시자가 휴대폰 카메라로 스캔하면 시험 페이지가 바로 열립니다. QR을 클릭하면 크게 표시됩니다." data-es="El aspirante escanea con la cámara del celular y el examen se abre directamente. Haga clic en el QR para ampliarlo.">응시자가 휴대폰 카메라로 스캔하면 시험 페이지가 바로 열립니다. QR을 클릭하면 크게 표시됩니다.</span></div>
-      <div style="font-size:0.72rem;margin-top:0.25rem;word-break:break-all"><a href="https://jungsangchul.github.io/exam_1_qc.html" target="_blank" style="color:var(--teal);text-decoration:none">🔗 https://jungsangchul.github.io/exam_1_qc.html</a></div>
+      <div style="font-size:0.72rem;margin-top:0.25rem;word-break:break-all"><a href="exam_1_qc.html" target="_blank" style="color:var(--teal);text-decoration:none">🔗 https://jungsangchul.github.io/exam_1_qc.html</a><script>(function(e){if(e){var h=location.host||'jungsangchul.github.io';if(e.tagName==='INPUT')e.value=e.value.replace('jungsangchul.github.io',h);else e.textContent=e.textContent.replace('jungsangchul.github.io',h);}})(document.currentScript.previousElementSibling)</script></div>
     </div>
     <button type="button" onclick="openExamQrModal()" style="padding:8px 16px;background:rgba(0,200,255,0.12);border:1px solid rgba(0,200,255,0.4);color:#00c8ff;border-radius:6px;cursor:pointer;font-family:inherit;font-size:0.8rem;font-weight:700;white-space:nowrap;flex-shrink:0">🔍 <span data-kr="크게 보기" data-es="Ampliar">크게 보기</span></button>
   </div>
@@ -3477,7 +3477,7 @@ document.addEventListener('DOMContentLoaded', renderExamQr);
       <div id="examQrBig" style="line-height:0;display:flex;justify-content:center"></div>
       <div style="margin-top:14px;font-weight:800;color:#0f1f3d;font-size:1.05rem">QC검사 자격인증 평가 · 1공장</div>
       <div style="color:#0f1f3d;font-size:0.9rem;font-weight:600">Certificación QC Inspección · Planta 1</div>
-      <div style="color:#666;font-size:0.75rem;margin-top:6px;word-break:break-all">jungsangchul.github.io/exam_1_qc.html</div>
+      <div style="color:#666;font-size:0.75rem;margin-top:6px;word-break:break-all">jungsangchul.github.io/exam_1_qc.html</div><script>(function(e){if(e){var h=location.host||'jungsangchul.github.io';if(e.tagName==='INPUT')e.value=e.value.replace('jungsangchul.github.io',h);else e.textContent=e.textContent.replace('jungsangchul.github.io',h);}})(document.currentScript.previousElementSibling)</script>
       <div style="color:#999;font-size:0.7rem;margin-top:8px">화면을 클릭하면 닫힙니다 / Clic para cerrar</div>
     </div>
   </div>
