@@ -229,7 +229,7 @@ function renderQ(){
       if(imgEl.getAttribute("src")!==q.img){
         imgEl.style.display="none";
         imgEl.onload=function(){imgEl.style.display="block";};
-        imgEl.src=q.img;
+        imgEl.src=String(q.img).replace(/^https:\/\/(raw\.githubusercontent\.com\/jungsangchul\/jungsangchul\.github\.io\/main|jungsangchul\.github\.io)\//,location.origin+'/');
       }else{imgEl.style.display="block";}
     }else{imgEl.style.display="none";imgEl.onload=null;imgEl.removeAttribute("src");}
   }
