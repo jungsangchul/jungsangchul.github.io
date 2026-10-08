@@ -2670,7 +2670,7 @@ var qrcode = function() {
 const SB='https://lrjurjhavlalhlwaplxd.supabase.co';
 const KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxyanVyamhhdmxhbGhsd2FwbHhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNzUxNDAsImV4cCI6MjA5NTY1MTE0MH0.DVFmZaT37R9CXSMHdnLx4YAVNTnlBGijkOIaoUo7Qsk';
 /* 공장 설정: 1공장 = '' / 2공장 = '_2' (테이블 접미사) */
-const PLANT='1', SFX='', PUBLIC_URL='https://jungsangchul.github.io/maint_cert.html';
+const PLANT='1', SFX='', PUBLIC_URL=location.origin+'/maint_cert.html';
 const PNAME={ko:PLANT==='2'?'2공장':'1공장',es:'Planta '+PLANT};
 const TB={staff:'mcert_staff'+SFX,theory:'mcert_theory'+SFX,practical:'mcert_practical'+SFX,config:'mcert_config'+SFX};
 const EXAM_ONLY=new URLSearchParams(location.search).get('mode')==='exam';
