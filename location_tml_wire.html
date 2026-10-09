@@ -205,6 +205,10 @@ main{max-width:var(--w);margin:0 auto;padding:16px 14px 90px}
 #cam .ctoast.on{display:block}
 #cam .ctoast.ok{background:var(--ok);color:#fff}#cam .ctoast.bad{background:var(--bad);color:#fff}#cam .ctoast.warn{background:var(--label);color:var(--label-ink)}
 #cam .ctoast small{display:block;font-weight:500;opacity:.9;margin-top:2px;font-size:13px}
+#cam .zoom{display:flex;border:2px solid #fff;border-radius:10px;overflow:hidden;flex:0 0 auto}
+#cam .zoom button{background:none;border:0;color:#fff;font-weight:700;font-size:16px;width:50px;height:50px}
+#cam .zoom button.on{background:#fff;color:#000}
+#cam video{transform-origin:center center;transition:transform .15s}
 #cam .cbar{display:flex;gap:8px;padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px))}
 #cam .cbar .btn{flex:1;height:54px}
 #cam .cbar .btn.ghost{flex:0 0 auto}
@@ -383,7 +387,7 @@ main{max-width:var(--w);margin:0 auto;padding:16px 14px 90px}
 <div id="cam"><div class="vw"><video playsinline muted autoplay></video><div class="guide"></div><div class="gtip" id="camTip"></div>
   <div class="ctitle"><span id="camTitle"></span><b id="camCount"></b></div>
   <div class="ctoast" id="camToast"></div></div>
-  <div class="cbar"><button class="btn ghost" id="camTorch" style="display:none">💡</button><button class="btn" id="camClose" data-i18n="close">닫기</button></div></div>
+  <div class="cbar"><div class="zoom" id="camZoom"><button data-z="1" class="on">1x</button><button data-z="2">2x</button><button data-z="3">3x</button></div><button class="btn ghost" id="camTorch" style="display:none">💡</button><button class="btn" id="camClose" data-i18n="close">닫기</button></div></div>
 
 <script>
 /* ---------- Supabase ---------- */
@@ -465,7 +469,7 @@ const I18N = {
     zsDone:'0처리 완료', zsAlready:w=>`이미 0처리됨${w ? ' · ' + w : ''}`, zsNoRc:'입고 내역에 없는 바코드 — 0처리는 등록됨',
     zsBadFmt:'0처리할 수 없는 바코드 형식입니다', zsErr:'저장 실패', zsUndo:'취소', zsUndone:'0처리 취소됨',
     zsLog:n=>`이번 스캔 ${n}건`, zsLogClr:'목록 지우기', zsProc:'처리 중…',
-    camErr:'카메라를 열 수 없습니다. 브라우저 카메라 권한을 허용했는지 확인하세요.', camLib:'바코드 인식 모듈을 불러오는 중…', camTip:'라벨 바코드를 흰 박스 안에 가로로 꽉 차게 맞추세요',
+    camErr:'카메라를 열 수 없습니다. 브라우저 카메라 권한을 허용했는지 확인하세요.', camLib:'바코드 인식 모듈을 불러오는 중…', camTip:'바코드를 흰 박스 안에 가로로 맞추세요 · 작은 바코드는 2x/3x로 확대하고 조금 떨어져서 찍으세요',
     rcTitle:'24120 시트 (입고 내역)', lcTitle:'LOCATION 시트 (자재별 지정장소)',
     rcStep1:'엑셀 24120 시트에서 A열~L열을 선택해 복사 — 신규 입고분만 복사해도 됩니다 (D열 바코드 기준으로 중복은 갱신, 신규는 추가)',
     rcReplace:'기존 입고 내역을 모두 지우고 이번 내용으로 교체',
@@ -533,7 +537,7 @@ const I18N = {
     zsDone:'Puesto en cero', zsAlready:w=>`Ya estaba en cero${w ? ' · ' + w : ''}`, zsNoRc:'No está en entradas — se registró en cero de todos modos',
     zsBadFmt:'Formato de código no válido para poner en cero', zsErr:'No se pudo guardar', zsUndo:'Deshacer', zsUndone:'Cero deshecho',
     zsLog:n=>`Escaneados ahora: ${n}`, zsLogClr:'Limpiar lista', zsProc:'Procesando…',
-    camErr:'No se pudo abrir la cámara. Verifique el permiso de cámara del navegador.', camLib:'Cargando módulo de lectura…', camTip:'Coloque el código de barras de la etiqueta dentro del recuadro, horizontal y llenándolo',
+    camErr:'No se pudo abrir la cámara. Verifique el permiso de cámara del navegador.', camLib:'Cargando módulo de lectura…', camTip:'Coloque el código dentro del recuadro, horizontal · Si es pequeño use 2x/3x y aléjese un poco',
     rcTitle:'Hoja 24120 (entradas de material)', lcTitle:'Hoja LOCATION (ubicación por material)',
     rcStep1:'En la hoja 24120 seleccione las columnas A~L y copie — basta con las entradas nuevas (por código de barras col. D: repetidos se actualizan, nuevos se agregan)',
     rcReplace:'Borrar todas las entradas anteriores y reemplazarlas con estas',
@@ -883,7 +887,7 @@ function camToast(cls, text, sub){
   el.innerHTML = esc(text) + (sub ? `<small>${esc(sub)}</small>` : '');
 }
 // 실제 바코드처럼 보이는 값만 통과: @+숫자 10~12자리, 숫자 10~12자리, 영숫자 10자 이상(라벨 바코드)
-const looksLikeCode = v => /^@?\d{10,12}$/.test(v) || /^[0-9A-Z][0-9A-Z\-]{9,}$/i.test(v);
+const looksLikeCode = v => /^@?[0-9A-Z]{10,12}$/i.test(v) && /\d{6,}/.test(v) || /^[0-9A-Z][0-9A-Z\-]{9,}$/i.test(v);
 let candV = '', candN = 0, candAt = 0;
 function camRead(raw){                              // 같은 값이 연속 2번 읽혀야 인정
   const v = String(raw||'').trim().replace(/\s+/g,'');
@@ -913,7 +917,7 @@ function cropGuide(v){
   let sx = (gr.left - er.left - ox) / sc, sy = (gr.top - er.top - oy) / sc, sw = gr.width / sc, sh = gr.height / sc;
   sx = Math.max(0, sx); sy = Math.max(0, sy); sw = Math.min(vw - sx, sw); sh = Math.min(vh - sy, sh);
   if(sw < 20 || sh < 20) return null;
-  const k = Math.min(1, 1280 / sw);
+  const k = Math.min(1, 1800 / sw);
   camCanvas.width = Math.round(sw * k); camCanvas.height = Math.round(sh * k);
   const ctx = camCanvas.getContext('2d', {willReadFrequently:true});
   ctx.drawImage(v, sx, sy, sw, sh, 0, 0, camCanvas.width, camCanvas.height);
@@ -923,12 +927,14 @@ async function openCam(opt){                       // opt: {title, cont, onCode}
   if(CAM.on) return;
   Object.assign(CAM, {on:true, cont:!!opt.cont, onCode:opt.onCode, last:'', lastAt:0, busy:false, torch:false});
   candV = ''; candN = 0;
+  if(!CAM.zoom){ CAM.zoom = 1; try{ CAM.zoom = +localStorage.getItem('tmlwire_zoom') || 1; }catch(e){} }
+  document.querySelector('#cam video').style.transform = '';
   $('camTitle').textContent = opt.title || ''; $('camCount').textContent = '';
   $('camTip').textContent = t('camTip');
   $('camToast').className = 'ctoast'; $('camTorch').style.display = 'none';
   $('cam').classList.add('on');
   const v = document.querySelector('#cam video');
-  const constraints = {video:{facingMode:{ideal:'environment'}, width:{ideal:1920}, height:{ideal:1080}}, audio:false};
+  const constraints = {video:{facingMode:{ideal:'environment'}, width:{ideal:2560}, height:{ideal:1440}}, audio:false};
   try{
     let det = await nativeDetector(), zr = null, Z = null;
     if(!det){
@@ -944,6 +950,7 @@ async function openCam(opt){                       // opt: {title, cont, onCode}
     if(!CAM.on){ CAM.stream.getTracks().forEach(x => x.stop()); CAM.stream = null; return; }
     v.srcObject = CAM.stream; await v.play();
     CAM.track = CAM.stream.getVideoTracks()[0];
+    setZoom(CAM.zoom || 1);
     try{
       const cap = CAM.track.getCapabilities ? CAM.track.getCapabilities() : {};
       if(cap.torch) $('camTorch').style.display = '';
@@ -971,6 +978,21 @@ async function openCam(opt){                       // opt: {title, cont, onCode}
     closeCam(); alert(t('camErr') + '\n' + (e && e.message || e));
   }
 }
+// 확대: 카메라가 광학/하드웨어 줌을 지원하면 그걸 쓰고(안드로이드), 아니면 고해상도 영상을 잘라서 확대(아이폰)
+function setZoom(z){
+  CAM.zoom = z; try{ localStorage.setItem('tmlwire_zoom', z); }catch(e){}
+  document.querySelectorAll('#camZoom button').forEach(b => b.classList.toggle('on', +b.dataset.z === z));
+  const v = document.querySelector('#cam video'); let hw = false;
+  try{
+    const cap = CAM.track && CAM.track.getCapabilities ? CAM.track.getCapabilities() : {};
+    if(cap.zoom && cap.zoom.max > 1){
+      const zz = Math.min(cap.zoom.max, Math.max(cap.zoom.min || 1, z));
+      CAM.track.applyConstraints({advanced:[{zoom:zz}]}).catch(() => {}); hw = true;
+    }
+  }catch(e){}
+  v.style.transform = hw || z === 1 ? '' : `scale(${z})`;
+}
+$('camZoom').addEventListener('click', e => { const b = e.target.closest('[data-z]'); if(b) setZoom(+b.dataset.z); });
 function closeCam(){
   CAM.on = false; clearTimeout(CAM.timer); CAM.timer = null;
   const v = document.querySelector('#cam video');
@@ -1007,7 +1029,7 @@ async function zeroOne(v){
     const recs = await sb(`${T_RC}?or=${enc(or)}&select=barcode,mat_code,mat_name&limit=1`);
     let bc;
     if(recs.length){ bc = recs[0].barcode; e.mat = recs[0].mat_code||''; e.name = recs[0].mat_name||''; }
-    else if(/^@?\d{10,12}$/.test(v)){ bc = v.startsWith('@') ? v : '@' + v; e.st = 'warn'; }
+    else if(/^@?\d{2}[0-9A-Z]\d{8,9}$/i.test(v)){ bc = (v.startsWith('@') ? v : '@' + v).toUpperCase(); e.st = 'warn'; }
     else{ e.msg = t('zsBadFmt'); e.st = 'bad'; zAdd(e); beep(false); return; }
     e.bc = bc;
     const a = ASSIGN.get(bc); if(a) e.loc = a.location;
@@ -1419,11 +1441,11 @@ function buildZero(rows){
   const share = (i, re) => rows.filter(r => re.test(r[i]||'')).length / (rows.length || 1);
   let bi = -1, bs = 0, bare = false;
   for(let i = 0; i < width; i++){ const v = share(i, /^@[0-9A-Za-z]{6,}$/); if(v > bs){ bs = v; bi = i; } }
-  if(bs < 0.5){ bi = -1; bs = 0; for(let i = 0; i < width; i++){ const v = share(i, /^\d{10,12}$/); if(v > bs){ bs = v; bi = i; bare = true; } } if(bs < 0.5) bi = -1; }
+  if(bs < 0.5){ bi = -1; bs = 0; for(let i = 0; i < width; i++){ const v = share(i, /^\d{2}[0-9A-Z]\d{8,9}$/); if(v > bs){ bs = v; bi = i; bare = true; } } if(bs < 0.5) bi = -1; }
   let di = -1;
   if(bi >= 0) for(let i = 0; i < width; i++){ if(i !== bi && share(i, /\d{1,4}[-/.]\s?\d{1,2}[-/.]\s?\d{1,4}/) > 0.5){ di = i; break; } }
   const map = new Map(); let skipped = 0, dups = 0;
-  const re = bare ? /^\d{10,12}$/ : /^@[0-9A-Za-z]{6,}$/;
+  const re = bare ? /^\d{2}[0-9A-Z]\d{8,9}$/ : /^@[0-9A-Za-z]{6,}$/;
   if(bi >= 0) rows.forEach(r => {
     const raw = r[bi] || '';
     if(!re.test(raw)){ skipped++; return; }
