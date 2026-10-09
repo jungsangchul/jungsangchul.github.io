@@ -621,13 +621,32 @@ function buildLabelHTML(r, pw, ph) {
   </div>`;
 }
 
+/*
+ * 용지 맞춤: 실제 렌더된 글자 폭을 측정해서 라벨 폭을 넘으면 폰트를 비율로 줄임
+ * (미리보기와 인쇄 iframe 양쪽에서 동일 함수 사용)
+ */
+function fitLabelText(doc) {
+  doc.querySelectorAll('.lbl2').forEach(box => {
+    const row = box.querySelector('.l2row');
+    if (!row) return;
+    row.style.width = 'auto';
+    const maxW = box.clientWidth * 0.96;            // 좌우 2% 안전여백
+    let fs = parseFloat(row.style.fontSize);         // mm 단위
+    const unit = row.style.fontSize.replace(/[\d.]/g, '') || 'mm';
+    for (let i = 0; i < 40 && row.scrollWidth > maxW && fs > 0.5; i++) {
+      fs *= Math.max(0.5, Math.min(0.98, maxW / row.scrollWidth));
+      row.style.fontSize = fs.toFixed(3) + unit;
+    }
+  });
+}
+
 const LABEL_CSS = `
   html,body{margin:0;padding:0;background:#fff;overflow:hidden}
   body{padding:0.8mm}
   .lbl2{display:flex;flex-direction:column;align-items:center;justify-content:center;
     box-sizing:border-box;background:#fff;color:#000;overflow:hidden;
     font-family:'Malgun Gothic',Arial,sans-serif;font-weight:900;line-height:1;white-space:nowrap}
-  .l2row{display:flex;align-items:center;justify-content:center;gap:0.8em}`;
+  .l2row{display:flex;align-items:center;justify-content:center;gap:0.8em;flex-shrink:0}`;
 
 function updateLblPreview() {
   if (!currentLabelRow) return;
@@ -635,7 +654,11 @@ function updateLblPreview() {
   const ph = parseFloat(document.getElementById('ph')?.value) || 30;
   printW = pw; printH = ph;
   const box = document.getElementById('lblPreview');
-  if (box) box.innerHTML = buildLabelHTML(currentLabelRow, pw, ph);
+  if (box) {
+    box.innerHTML = buildLabelHTML(currentLabelRow, pw, ph);
+    fitLabelText(box);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => fitLabelText(box));
+  }
 }
 
 /*
@@ -663,6 +686,7 @@ function printLabel() {
   doc.close();
 
   setTimeout(() => {
+    fitLabelText(doc);                 // 인쇄 폰트(Malgun Gothic) 기준으로 다시 측정·축소
     f.contentWindow.focus();
     f.contentWindow.print();
   }, 200);
