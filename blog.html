@@ -290,6 +290,13 @@
   .sv-txts{margin-top:9px;max-height:260px;overflow-y:auto;display:flex;flex-direction:column;gap:6px}
   .sv-txts div{font-size:13.5px;color:#d6e0f1;background:rgba(255,255,255,.04);border-radius:9px;padding:8px 10px;line-height:1.5;white-space:pre-wrap;word-break:break-word;-webkit-user-select:text;user-select:text}
   .sv-txts .who{font-size:11px;color:var(--muted);margin-bottom:2px}
+  .sv-teambar{display:flex;align-items:center;gap:8px;margin-top:14px}
+  .sv-teambar span{font-size:12.5px;font-weight:800;color:#5eead4;white-space:nowrap}
+  .sv-teambar select.field{flex:1;padding:10px 36px 10px 12px;font-size:14px;border-radius:11px}
+  .sv-teamnote{font-size:11.5px;color:var(--muted);font-weight:700;margin-top:6px}
+  .sv-tc{margin-top:12px;padding-top:10px;border-top:1px dashed var(--line2)}
+  .sv-tc .h{font-size:11.5px;font-weight:800;color:#5eead4}
+  .sv-tc .sv-bar .fi{background:linear-gradient(90deg,#3b82f6,#93c5fd)}
   /* 응답 화면 */
   .sv-q{background:var(--panel);border:1px solid var(--line);border-radius:15px;padding:15px 14px;margin-top:12px;transition:border-color .2s}
   .sv-q.err{border-color:var(--bad);box-shadow:0 0 0 2px rgba(248,113,113,.18)}
@@ -1382,7 +1389,7 @@ const SVI={
   bSaving:"저장 중…",bOkT:"설문 게시 완료!",bOkS:"게시판에 표시됩니다.",bOkEdit:"설문 수정 완료!",bFail:"저장하지 못했습니다. (DB 설정 확인)",
   tHd:"문항 방식 선택",
   types:{single:["단일 선택","하나만 고르기"],multi:["복수 선택","여러 개 고르기"],dropdown:["드롭다운","목록에서 선택"],yesno:["예 / 아니오","찬반·OX"],rating:["별점","⭐ 1~5점"],scale:["척도","0~10 등 점수"],ranking:["순위","보기 순서 정하기"],short:["단답형","짧은 글"],long:["장문형","긴 의견"]},
-  csvAt:"응답일시",csvId:"사번",csvNm:"이름",empty:"등록된 설문이 없습니다."},
+  csvAt:"응답일시",csvTeam:"팀",teamAll:n=>`전체 팀 (${n}명)`,teamOpt:(l,n)=>`${l} (${n}명)`,teamNone:"팀 미지정",teamSmall:k=>`기타 팀 (응답 ${k}명 미만 합산)`,teamPart:"팀별 참여 인원",teamCmp:"팀별 비교",teamYes:"예 비율",teamTop:"최다 선택",teamMask:k=>`🔒 익명 보호: 응답 ${k}명 미만인 팀은 “기타 팀”으로 합쳐 표시`,teamView:"팀 선택",csvId:"사번",csvNm:"이름",empty:"등록된 설문이 없습니다."},
  es:{tab:"Encuestas",list:"Encuestas",chip:"Encuesta",open:"Abierta",closed:"Cerrada",done:"Respondida",ppl:n=>`👥 ${n}`,dday:d=>d===0?"Cierra hoy":`Faltan ${d}d`,
   go:"📝 Responder encuesta",doneBig:"✅ Ya respondiste — ¡gracias!",closedBig:"🔒 Encuesta cerrada",seeRes:"📊 Ver resultados",hideRes:"Ocultar resultados",resLoading:"Cargando resultados…",
   anon:"🔒 Anónima",named:"👤 Con nombre",qcnt:n=>`${n} preguntas`,until:d=>`Hasta ${d}`,noEnd:"Sin fecha límite",respN:n=>`${n} respuestas`,
@@ -1404,7 +1411,7 @@ const SVI={
   bSaving:"Guardando…",bOkT:"¡Encuesta publicada!",bOkS:"Ya aparece en el tablón.",bOkEdit:"¡Encuesta actualizada!",bFail:"No se pudo guardar. (verifica la BD)",
   tHd:"Tipo de pregunta",
   types:{single:["Opción única","Elegir una"],multi:["Opción múltiple","Elegir varias"],dropdown:["Desplegable","Elegir de lista"],yesno:["Sí / No","A favor o no"],rating:["Estrellas","⭐ 1 a 5"],scale:["Escala","Puntaje 0-10, etc."],ranking:["Ordenar","Ordenar opciones"],short:["Respuesta corta","Texto breve"],long:["Párrafo","Opinión larga"]},
-  csvAt:"Fecha",csvId:"Número",csvNm:"Nombre",empty:"No hay encuestas."}
+  csvAt:"Fecha",csvTeam:"Equipo",teamAll:n=>`Todos los equipos (${n})`,teamOpt:(l,n)=>`${l} (${n})`,teamNone:"Sin equipo",teamSmall:k=>`Otros equipos (menos de ${k} resp.)`,teamPart:"Participación por equipo",teamCmp:"Comparación por equipo",teamYes:"% Sí",teamTop:"Más elegida",teamMask:k=>`🔒 Anonimato: equipos con menos de ${k} respuestas se agrupan en “Otros”`,teamView:"Equipo",csvId:"Número",csvNm:"Nombre",empty:"No hay encuestas."}
 };
 const sv=k=>SVI[lang][k];
 const svL=(a,b)=>lang==="es"?((b||"").trim()||a||""):((a||"").trim()||b||"");
@@ -1614,7 +1621,7 @@ $("svSubmit").onclick=async()=>{
 
 /* ---------- 결과 ---------- */
 async function svFetchRows(s, full){
-  const cols=full?"answers,respondent_id,respondent_name,created_at":"answers";
+  const cols=full?"answers,team,respondent_id,respondent_name,created_at":"answers,team";
   const r=await fetch(REST(`survey_responses?survey_id=eq.${s.id}&select=${cols}&order=created_at.asc&limit=5000`),{headers:H});
   if(!r.ok) throw 0; return await r.json();
 }
@@ -1623,14 +1630,69 @@ async function svToggleRes(p,sfx,btn){
   if(box.dataset.on==="1"){ box.innerHTML=""; box.dataset.on=""; btn.textContent=sv("seeRes"); return; }
   box.dataset.on="1"; btn.textContent=sv("hideRes");
   box.innerHTML=`<div class="empty" style="padding:20px">${sv("resLoading")}</div>`;
-  try{ const rows=svResCache[p.id]||(svResCache[p.id]=await svFetchRows(p,svAdmin&&!p.anonymous)); box.innerHTML=svResultsHtml(p,rows); }
+  try{ const rows=svResCache[p.id]||(svResCache[p.id]=await svFetchRows(p,svAdmin&&!p.anonymous)); svResState[sfx]="all"; svRenderRes(p,rows,sfx); }
   catch(e){ box.innerHTML=`<div class="empty" style="padding:20px">${t("netErr")}</div>`; }
+}
+const SV_MIN_TEAM=3, svResState={};
+function svTeamKeyFn(s,rows){
+  const cnt={}; rows.forEach(r=>{ const k=(r.team||"").trim()||"__none"; cnt[k]=(cnt[k]||0)+1; });
+  return r=>{ const k=(r.team||"").trim()||"__none"; return (s.anonymous&&k!=="__none"&&cnt[k]<SV_MIN_TEAM)?"__small":k; };
+}
+function svTeamLabel(k){
+  if(k==="__none") return sv("teamNone"); if(k==="__small") return sv("teamSmall")(SV_MIN_TEAM);
+  const m=k.match(/^(.+?)\s*\((.+)\)\s*$/); if(m) return lang==="ko"?m[1].trim():m[2].trim();
+  return k;
+}
+function svRenderRes(s,rows,sfx){
+  const box=$("svRes_"+sfx); if(!box) return;
+  if(!rows.length){ box.innerHTML=`<div class="empty" style="padding:22px">${sv("noAns")}</div>`; return; }
+  const key=svTeamKeyFn(s,rows), groups={};
+  rows.forEach(r=>{ const k=key(r); (groups[k]=groups[k]||[]).push(r); });
+  const teams=Object.keys(groups).sort((a,b)=>(a.startsWith("__")-b.startsWith("__"))||groups[b].length-groups[a].length);
+  let cur=svResState[sfx]||"all"; if(cur!=="all"&&!groups[cur]) cur="all";
+  let h="";
+  if(teams.length>1||teams[0]!=="__none"){
+    h+=`<div class="sv-teambar"><span>👥 ${sv("teamView")}</span><select class="field" data-svteam="1"><option value="all">${esc(sv("teamAll")(rows.length))}</option>${teams.map(k=>`<option value="${esc(k)}"${k===cur?" selected":""}>${esc(sv("teamOpt")(svTeamLabel(k),groups[k].length))}</option>`).join("")}</select></div>`;
+    if(s.anonymous&&groups.__small) h+=`<div class="sv-teamnote">${sv("teamMask")(SV_MIN_TEAM)}</div>`;
+    if(cur==="all"&&teams.length>1) h+=`<div class="sv-rq" style="margin-top:12px"><div class="qt">👥 ${sv("teamPart")}</div>${svBars(teams.map(k=>({l:svTeamLabel(k),n:groups[k].length})),rows.length)}</div>`;
+  }
+  const cmp = cur==="all"&&teams.length>1 ? teams.map(k=>({k,rows:groups[k]})) : null;
+  h+=svResultsHtml(s, cur==="all"?rows:groups[cur], cmp);
+  box.innerHTML=h;
+  const sel=box.querySelector("[data-svteam]"); if(sel) sel.onchange=()=>{ svResState[sfx]=sel.value; svRenderRes(s,rows,sfx); };
+}
+function svTeamCmp(q,cmp){
+  if(!cmp) return "";
+  const pick=r=>(r.answers||{})[q.id];
+  const has=a=>a!==undefined&&a!==null&&a!==""&&!(Array.isArray(a)&&!a.length);
+  const nm=n=>lang==="ko"?n+"명":String(n);
+  const bar=(lab,val,pc)=>`<div class="sv-bar"><div class="lb"><span>${lab}</span><b>${val}</b></div><div class="tr"><div class="fi" style="width:${Math.max(0,Math.min(100,pc))}%"></div></div></div>`;
+  let rowsH="", head="";
+  if(q.type==="rating"||q.type==="scale"){
+    const mx=q.type==="rating"?5:(q.maxv??5);
+    rowsH=cmp.map(g=>{ const v=g.rows.map(pick).filter(has).map(Number); if(!v.length) return ""; const a=v.reduce((x,y)=>x+y,0)/v.length;
+      return bar(esc(svTeamLabel(g.k)), `${a.toFixed(2)} · ${nm(v.length)}`, Math.round(a/mx*100)); }).join("");
+    head=sv("avg");
+  } else if(q.type==="yesno"){
+    rowsH=cmp.map(g=>{ const v=g.rows.map(pick).filter(has); if(!v.length) return ""; const p=Math.round(v.filter(x=>x===0).length/v.length*100);
+      return bar(esc(svTeamLabel(g.k)), `${p}% · ${nm(v.length)}`, p); }).join("");
+    head=sv("teamYes");
+  } else if(["single","dropdown","multi"].includes(q.type)){
+    const opts=q.options||[];
+    rowsH=cmp.map(g=>{ const v=g.rows.map(pick).filter(has); if(!v.length) return ""; const c={};
+      v.forEach(a=>(Array.isArray(a)?a:[a]).forEach(i=>c[i]=(c[i]||0)+1));
+      const top=Object.keys(c).sort((a,b)=>c[b]-c[a])[0]; const p=Math.round(c[top]/v.length*100);
+      const lab=top==="-1"?sv("other"):svOptTxt(opts[+top]||{});
+      return bar(`${esc(svTeamLabel(g.k))} → <span style="color:#5eead4">${esc(lab)}</span>`, `${p}% · ${nm(v.length)}`, p); }).join("");
+    head=sv("teamTop");
+  }
+  return rowsH?`<div class="sv-tc"><div class="h">📊 ${sv("teamCmp")} · ${head}</div>${rowsH}</div>`:"";
 }
 function svBars(list,total){
   const mx=Math.max(0,...list.map(x=>x.n));
   return list.map(x=>{ const pc=total?Math.round(x.n/total*100):0; return `<div class="sv-bar${x.n&&x.n===mx?" top":""}"><div class="lb"><span>${esc(x.l)}</span><b>${x.n} · ${pc}%</b></div><div class="tr"><div class="fi" style="width:${pc}%"></div></div></div>`; }).join("");
 }
-function svResultsHtml(s,rows){
+function svResultsHtml(s,rows,cmp){
   if(!rows.length) return `<div class="empty" style="padding:22px">${sv("noAns")}</div>`;
   const qs=s.questions||[]; let h=`<div class="sv-res">`;
   qs.forEach((q,n)=>{
@@ -1659,7 +1721,7 @@ function svResultsHtml(s,rows){
     } else {
       body=`<div class="sv-txts">${ans.slice().reverse().map(x=>`<div>${x.who?`<div class="who">${esc(x.who)}</div>`:""}${esc(String(x.a))}</div>`).join("")}</div>`;
     }
-    h+=`<div class="sv-rq"><div class="qt">${n+1}. ${esc(svL(q.title,q.title_es))}</div><div class="qn">${sv("ansN")(N)}</div>${body}</div>`;
+    h+=`<div class="sv-rq"><div class="qt">${n+1}. ${esc(svL(q.title,q.title_es))}</div><div class="qn">${sv("ansN")(N)}</div>${body}${svTeamCmp(q,cmp)}</div>`;
   });
   return h+`</div>`;
 }
@@ -1668,7 +1730,8 @@ async function svCsv(s){
   let rows; try{ rows=await svFetchRows(s,true); }catch(e){ badFlood(t("badErr"), t("netErr")); return; }
   flood("fBusy",false);
   const qs=s.questions||[]; const ko=o=>(o&&(o.ko||o.es))||"";
-  const head=[SVI.ko.csvAt].concat(s.anonymous?[]:[SVI.ko.csvId,SVI.ko.csvNm]).concat(qs.map((q,n)=>`${n+1}. ${q.title||q.title_es||""}`));
+  const tk=svTeamKeyFn(s,rows), tl=k=>k==="__none"?"":k==="__small"?SVI.ko.teamSmall(SV_MIN_TEAM):k;
+  const head=[SVI.ko.csvAt,SVI.ko.csvTeam].concat(s.anonymous?[]:[SVI.ko.csvId,SVI.ko.csvNm]).concat(qs.map((q,n)=>`${n+1}. ${q.title||q.title_es||""}`));
   const val=(q,a,o)=>{
     if(a===undefined||a===null) return "";
     const lab=i=>i===-1?`${SVI.ko.other}: ${o||""}`:q.type==="yesno"?(i===0?SVI.ko.yes:SVI.ko.no):ko((q.options||[])[i]);
@@ -1679,7 +1742,7 @@ async function svCsv(s){
   };
   const lines=[head].concat(rows.map(r=>{ const A=r.answers||{}; const d=new Date(r.created_at);
     const ts=svDate(d)+" "+String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0");
-    return [ts].concat(s.anonymous?[]:[r.respondent_id||"",r.respondent_name||""]).concat(qs.map(q=>val(q,A[q.id],A[q.id+"_o"]))); }));
+    return [ts,tl(tk(r))].concat(s.anonymous?[]:[r.respondent_id||"",r.respondent_name||""]).concat(qs.map(q=>val(q,A[q.id],A[q.id+"_o"]))); }));
   const csv="﻿"+lines.map(l=>l.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(",")).join("\r\n");
   const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8"}));
   a.download=`survey_${s.id}_${(s.title||"").replace(/[\\/:*?"<>|\s]+/g,"_").slice(0,30)}.csv`; document.body.appendChild(a); a.click(); a.remove();
