@@ -93,8 +93,8 @@ tr.short td{background:var(--redbg)}tr.care td{background:var(--ambbg)}tr.ex td{
       <span class="sp" style="flex:1"></span>
       <label class="f"><span data-t="search">검색</span><input id="sQ" placeholder="코드/자재명" style="width:170px"></label>
       <label class="f"><span data-t="filter">표시</span><select id="sF">
-        <option value="all" data-t="f_all">전체</option><option value="chk" data-t="f_chk">주의+부족</option>
-        <option value="short" data-t="f_short">부족만</option></select></label>
+        <option value="all" data-t="f_all">전체</option><option value="short" data-t="f_short">부족</option>
+        <option value="care" data-t="f_care">주의</option><option value="chk" data-t="f_chk">부족+주의</option></select></label>
       <button class="btn sec" id="sCopy" data-t="copy">복사</button>
       <button class="btn sec" id="sXlsx" data-t="xlsx">엑셀</button>
     </div>
@@ -103,7 +103,7 @@ tr.short td{background:var(--redbg)}tr.care td{background:var(--ambbg)}tr.ex td{
   <div class="kpis">
     <div class="kpi" data-f="all"><span data-t="k_mat">자재 수</span><b id="kAll">-</b></div>
     <div class="kpi r" data-f="short"><span data-t="k_short">부족 (&lt;0)</span><b id="kShort">-</b></div>
-    <div class="kpi a" data-f="chk"><span data-t="k_care">주의</span><b id="kCare">-</b></div>
+    <div class="kpi a" data-f="care"><span data-t="k_care">주의</span><b id="kCare">-</b></div>
     <div class="kpi g" data-f="all"><span data-t="k_ex">제외 LOT 행</span><b id="kEx">-</b></div>
   </div>
   <div class="tw"><table id="sTbl"></table></div>
@@ -124,6 +124,7 @@ tr.short td{background:var(--redbg)}tr.care td{background:var(--ambbg)}tr.ex td{
           <option value="append" data-t="m_append">기존 목록에 추가</option></select></label>
         <button class="btn" id="nSave" data-t="save">저장</button>
         <button class="btn red" id="nClear" data-t="clearAll">전체 삭제</button>
+        <span class="hint" id="nLast" style="padding-bottom:8px"></span>
       </div>
     </div>
     <div class="card">
@@ -161,9 +162,10 @@ tr.short td{background:var(--redbg)}tr.care td{background:var(--ambbg)}tr.ex td{
       <div class="prev" id="mPrev"></div>
       <div class="row">
         <label class="f"><span data-t="mode">방식</span><select id="mMode">
-          <option value="upsert" data-t="m_upsert">추가/갱신 (같은 코드는 덮어쓰기)</option>
-          <option value="replace" data-t="m_replace2">전체 교체</option></select></label>
+          <option value="replace" data-t="m_replace2" selected>전체 교체</option>
+          <option value="upsert" data-t="m_upsert">추가/갱신 (같은 코드는 덮어쓰기)</option></select></label>
         <button class="btn" id="mSave" data-t="save">저장</button>
+        <span class="hint" id="mLast" style="padding-bottom:8px"></span>
       </div>
     </div>
     <div class="card">
@@ -202,7 +204,7 @@ const H={apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json
 /* ---------- i18n ---------- */
 const ES={title:'Pronóstico de faltantes',plant:'Planta 1 México · Monclova',tab_sum:'Faltantes',tab_need:'Material requerido (17000)',tab_cnt:'Inventario físico',
 tab_rec:'Entrada a piso (30810)',tab_use:'Consumo (32040)',tab_mst:'Material en almacén (25010)',cntDate:'Fecha inventario',from:'Desde',to:'Hasta',
-thr:'Umbral alerta (<)',run:'Consultar',search:'Buscar',filter:'Mostrar',f_all:'Todo',f_chk:'Alerta+Faltante',f_short:'Solo faltante',
+thr:'Umbral alerta (<)',run:'Consultar',search:'Buscar',filter:'Mostrar',f_all:'Todo',f_short:'Faltante',f_care:'Alerta',f_chk:'Faltante+Alerta',
 copy:'Copiar',xlsx:'Excel',k_mat:'Materiales',k_short:'Faltante (<0)',k_care:'Alerta',k_ex:'Filas LOT excluidas',
 formula:'Stock actual = Inventario − Consumo + Entrada · Pronóstico = Stock actual + Almacén − Requerido · Rollos piso = rollos recibidos (TML·WIRE) sin cierre (0)',
 need_h:'Pegar material requerido (col. A~F)',need_hint:'Copie columnas A~F (código, nombre, cantidad, unidad, LOTNO, línea) y péguelas aquí.',
@@ -221,6 +223,8 @@ const tr=(ko,es)=>LANG==='es'?es:ko;
 document.getElementById('langBtn').onclick=()=>{LANG=LANG==='es'?'ko':'es';try{localStorage.setItem('mshort_lang',LANG)}catch(e){}applyLang();renderSum();renderNeed();renderMst();DAILY.forEach(d=>renderDates(d));};
 
 /* ---------- utils ---------- */
+const lastUpd=(list,col)=>{let m='';list.forEach(r=>{if((r[col]||'')>m)m=r[col]});if(!m)return'';
+  const d=new Date(m);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')};
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const num=v=>{if(v==null)return NaN;const s=String(v).replace(/,/g,'').trim();return s===''?NaN:Number(s)};
@@ -291,7 +295,9 @@ async function loadNeed(){NEED=await sel('mshort_need','select=*&order=id');rend
 function renderNeed(){
   const q=$('nQ').value.trim().toUpperCase();
   const ex=NEED.filter(r=>isEx(r.lotno)).length;
-  $('nInfo').textContent=tr(`${NEED.length}행 · 제외 ${ex}행`,`${NEED.length} filas · ${ex} excluidas`);
+  const lu=lastUpd(NEED,'created_at');
+  $('nInfo').textContent=tr(`${NEED.length}행 · 제외 ${ex}행`,`${NEED.length} filas · ${ex} excluidas`)+(lu?tr(` · 최종 업데이트 ${lu}`,` · Actualizado ${lu}`):'');
+  $('nLast').textContent=lu?tr(`최종 업데이트: ${lu}`,`Última actualización: ${lu}`):'';
   const list=NEED.filter(r=>!q||(r.code+' '+r.name+' '+(r.lotno||'')).toUpperCase().includes(q));
   $('nTbl').innerHTML=`<tr><th>#</th><th>${tr('자재코드','Código')}</th><th>${tr('자재명','Nombre')}</th><th class="n">${tr('수량','Cant.')}</th><th>${tr('단위','Unidad')}</th><th>LOTNO</th><th>${tr('선번','Línea')}</th></tr>`+
     list.slice(0,3000).map((r,i)=>`<tr class="${isEx(r.lotno)?'ex':''}"><td>${i+1}</td><td>${esc(r.code)}</td><td>${esc(r.name)}</td><td class="n">${fmt(r.qty)}</td><td>${esc(r.unit)}</td><td>${esc(r.lotno)}</td><td>${esc(r.seonbeon)}</td></tr>`).join('');
@@ -369,8 +375,8 @@ const DAILY=[
  {key:'cnt',kind:'count',table:'mshort_count',dcol:'cdate',ko:'실사',es:'Inventario físico',parser:parseCount,
   hint:['월말 실사한 순수 원자재 수량. 유라코드·실사수량을 붙여넣으세요(머릿글 없어도 됨). 같은 코드는 합산됩니다.','Código y cantidad contada (sin encabezado OK). Códigos repetidos se suman.']},
  {key:'rec',kind:'receipt',table:'mshort_receipt',dcol:'rdate',ko:'현장입고',es:'Entrada a piso',parser:parseErp,erp:true,
-  hint:['ERP 30810 형식(실사일자·유라코드·업체품명·단위·실사수량·바코드·업체바코드·사용)을 붙여넣으세요. 머릿글이 없어도 인식합니다. 같은 바코드는 1번만 반영됩니다.',
-        'Pegue el formato ERP 30810 (fecha, código, nombre, unidad, cantidad, código de barras, cód. proveedor, uso), con o sin encabezado. Códigos de barras repetidos se cuentan una vez.']},
+  hint:['ERP 30810 형식(실사일자·유라코드·업체품명·단위·실사수량·바코드·업체바코드·사용)을 붙여넣으세요. 머릿글이 없어도 인식합니다. 같은 바코드는 1번만 반영되며, 재업로드 시 바코드가 같고 수량이 다르면 수정됩니다.',
+        'Pegue el formato ERP 30810 (fecha, código, nombre, unidad, cantidad, código de barras, cód. proveedor, uso), con o sin encabezado. Códigos de barras repetidos se cuentan una vez; al recargar, si la cantidad cambia se actualiza.']},
  {key:'use',kind:'usage',table:'mshort_usage',dcol:'udate',ko:'사용량',es:'Consumo',parser:parseUsage,
   hint:['날짜 지정 후 자재코드·업체명·품목그룹·사용량을 붙여넣으세요. 머릿글·빈 열·앞쪽 순번/날짜 열이 있어도 코드와 품목그룹(08J1·03T1·01W1) 기준으로 인식합니다.',
         'Seleccione fecha y pegue código, proveedor, grupo, consumo. Se reconoce sin encabezado.']}
@@ -394,7 +400,7 @@ DAILY.forEach(d=>{
   const groups=p=>{const g={};p.forEach(r=>{(g[r._d]=g[r._d]||[]).push(r)});return g};
   const warn=()=>{const p=parse();const ds=p.length?Object.keys(groups(p)):[$(d.key+'Date').value];
     const ex=ds.map(dt=>DATES.find(x=>x.kind===d.kind&&x.d===dt)).filter(Boolean);
-    $(d.key+'Warn').textContent=ex.length?tr(`※ 기존 데이터 교체: ${ex.map(x=>x.d+'('+x.n+'행)').join(', ')}`,`※ Se reemplazarán: ${ex.map(x=>x.d).join(', ')}`):''};
+    $(d.key+'Warn').textContent=ex.length?tr(`※ 기존 데이터와 병합: ${ex.map(x=>x.d+'('+x.n+'행)').join(', ')} — 수량이 다른 항목만 갱신, 새 항목 추가`,`※ Se combinará con: ${ex.map(x=>x.d).join(', ')} (solo cambios)`):''};
   $(d.key+'Txt').oninput=()=>{const p=parse();const g=groups(p);const ds=Object.keys(g).sort();
     $(d.key+'Prev').textContent=p.length?tr(`인식 ${p.length}행 · 합계 ${fmt(p.reduce((a,r)=>a+r.qty,0))} · 날짜: ${ds.map(x=>x+'('+g[x].length+')').join(', ')}`,
       `${p.length} filas · total ${fmt(p.reduce((a,r)=>a+r.qty,0))} · fechas: ${ds.join(', ')}`):'';warn()};
@@ -403,15 +409,45 @@ DAILY.forEach(d=>{
   $(d.key+'Save').onclick=async()=>{
     const p=parse();if(!p.length)return toast(tr('인식된 행이 없습니다','Sin filas'));
     if(p.some(r=>!r._d))return toast(tr('날짜를 지정하세요','Seleccione fecha'));
-    const g=groups(p),ds=Object.keys(g).sort();
-    const ex=ds.map(dt=>DATES.find(x=>x.kind===d.kind&&x.d===dt)).filter(Boolean);
-    if(ex.length&&!confirm(tr(`기존 데이터를 교체합니다: ${ex.map(x=>x.d+' '+x.n+'행').join(', ')}`,`Reemplazar: ${ex.map(x=>x.d).join(', ')}?`)))return;
+    const ds=Object.keys(groups(p)).sort();
     busy(1);try{
-      for(const dt of ds){await del(d.table,d.dcol+'=eq.'+dt);
-        await ins(d.table,g[dt].map(({_d,...r})=>({...r,[d.dcol]:dt})))}
+      const res=await mergeSave(d,p);
       $(d.key+'Txt').value='';$(d.key+'Prev').textContent='';$(d.key+'Warn').textContent='';
-      await loadDates();viewDate(d,ds[ds.length-1]);toast(tr(`저장 완료 (${ds.length}일)`,'Guardado'))}catch(e){alert(e.message)}busy(0)};
+      await loadDates();viewDate(d,ds[ds.length-1]);
+      toast(tr(`저장 완료 · 신규 ${res.add} · 수정 ${res.upd} · 동일 ${res.same}`,`Guardado · nuevos ${res.add} · actualizados ${res.upd} · iguales ${res.same}`))}catch(e){alert(e.message)}busy(0)};
 });
+/* 병합 저장: 입고는 바코드 기준(바코드 없으면 날짜+코드), 사용량은 날짜+코드+품목그룹, 실사는 날짜+코드
+   같은 키가 이미 있으면 수량(입고는 날짜 포함)이 다를 때만 갱신, 없으면 추가, 기존 다른 항목은 유지 */
+const mkey=(d,r,dt)=>d.kind==='receipt'&&r.barcode?'B:'+r.barcode:dt+'|'+String(r.code).toUpperCase()+(d.kind==='usage'?'|'+(r.grp||''):'');
+async function mergeSave(d,p){
+  const up={};
+  p.forEach(({_d,...r})=>{const k=mkey(d,r,_d);
+    if(up[k]){if(!(d.kind==='receipt'&&r.barcode))up[k].qty+=Number(r.qty)||0}
+    else up[k]={...r,qty:Number(r.qty)||0,[d.dcol]:_d}});
+  const ds=[...new Set(Object.values(up).map(r=>r[d.dcol]))];
+  let old=[];
+  for(let i=0;i<ds.length;i+=50)old=old.concat(await sel(d.table,`select=*&${d.dcol}=in.(${ds.slice(i,i+50).join(',')})`));
+  if(d.kind==='receipt'){
+    const ids=new Set(old.map(o=>o.id));
+    const bcs=[...new Set(Object.values(up).map(r=>r.barcode).filter(Boolean))];
+    for(let i=0;i<bcs.length;i+=100){
+      const q=bcs.slice(i,i+100).map(b=>'"'+String(b).replace(/["\\]/g,'')+'"').join(',');
+      (await sel(d.table,'select=*&barcode=in.('+encodeURIComponent(q)+')')).forEach(o=>{if(!ids.has(o.id)){ids.add(o.id);old.push(o)}});
+    }
+  }
+  const om={};old.forEach(o=>{const k=mkey(d,o,o[d.dcol]);(om[k]=om[k]||[]).push(o)});
+  const delIds=[],insRows=[];let add=0,upd=0,same=0;
+  Object.entries(up).forEach(([k,r])=>{
+    const ex=om[k];
+    if(!ex){insRows.push(r);add++;return}
+    const oq=ex.reduce((a,o)=>a+(Number(o.qty)||0),0);
+    const sameDate=ex.every(o=>o[d.dcol]===r[d.dcol]);
+    if(ex.length===1&&Math.abs(oq-r.qty)<1e-9&&sameDate){same++;return}
+    ex.forEach(o=>delIds.push(o.id));insRows.push(r);upd++});
+  for(let i=0;i<delIds.length;i+=200)await del(d.table,'id=in.('+delIds.slice(i,i+200).join(',')+')');
+  if(insRows.length)await ins(d.table,insRows);
+  return{add,upd,same};
+}
 function renderDates(d){
   $(d.key+'Hint').textContent=d.hint[LANG==='es'?1:0];
   const list=DATES.filter(x=>x.kind===d.kind).sort((a,b)=>b.d.localeCompare(a.d));
@@ -468,7 +504,9 @@ async function loadMst(){MST=await sel('mshort_master','select=*&order=code');re
 function renderMst(){
   const q=$('mQ').value.trim().toUpperCase();
   const list=MST.filter(r=>!q||(r.code+' '+r.name).toUpperCase().includes(q));
-  $('mInfo').textContent=tr(`${MST.length}개 자재`,`${MST.length} materiales`);
+  const lu=lastUpd(MST,'updated_at');
+  $('mInfo').textContent=tr(`${MST.length}개 자재`,`${MST.length} materiales`)+(lu?tr(` · 최종 업데이트 ${lu}`,` · Actualizado ${lu}`):'');
+  $('mLast').textContent=lu?tr(`최종 업데이트: ${lu}`,`Última actualización: ${lu}`):'';
   $('mTbl').innerHTML=`<tr><th>${tr('자재코드','Código')}</th><th>${tr('품명','Nombre')}</th><th>${tr('단위','Unidad')}</th><th class="n">${tr('수량(창고재고)','Cant. almacén')}</th><th class="n">${tr('개수','Piezas')}</th><th>${tr('수정일','Actualizado')}</th></tr>`+
     list.map(r=>`<tr data-c="${esc(r.code)}" style="cursor:pointer"><td>${esc(r.code)}</td><td>${esc(r.name)}</td><td>${esc(r.unit)}</td><td class="n">${fmt(r.qty)}</td><td class="n">${fmt(r.cnt)}</td><td class="hint">${(r.updated_at||'').slice(0,10)}</td></tr>`).join('');
   $('mTbl').querySelectorAll('tr[data-c]').forEach(tr_=>tr_.onclick=()=>{const r=MST.find(x=>x.code===tr_.dataset.c);
@@ -510,7 +548,7 @@ function status(r){const th=Number(CFG.threshold)||0;return r.short<0?'short':r.
 function viewList(){
   if(!SUM)return[];
   const q=$('sQ').value.trim().toUpperCase(),f=$('sF').value;
-  let l=SUM.list.filter(r=>{const s=status(r);if(f==='short'&&s!=='short')return false;if(f==='chk'&&s==='ok')return false;
+  let l=SUM.list.filter(r=>{const s=status(r);if(f==='short'&&s!=='short')return false;if(f==='care'&&s!=='care')return false;if(f==='chk'&&s==='ok')return false;
     return!q||(r.code+' '+r.name).toUpperCase().includes(q)});
   if(sortK)l=[...l].sort((a,b)=>{const x=a[sortK],y=b[sortK];return(typeof x==='string'?x.localeCompare(y):x-y)*sortD});
   return l;
