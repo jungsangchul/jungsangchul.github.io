@@ -531,7 +531,7 @@ const I18N={
     ioUploading:n=>`업로드 중… (${n})`, ioEmpty:"업로드할 데이터가 없습니다", ioBadFile:"엑셀(.xlsx) 또는 CSV 파일을 올려주세요",
     ioParseErr:"파일을 읽지 못했습니다 — 양식을 확인하세요", ioConfirm:n=>`${n}건을 등록/갱신할까요?`,
     ioDone:(a,u,k)=>`완료 · 신규 ${a}명 · 갱신 ${u}명${k?` · 실패 ${k}명`:""}`, ioHint:"양식 다운로드 → 입력 후 업로드. 컬럼: 사번·이름·한글약칭·팀·장소·입사일·상태(재직/퇴사)·퇴사일. 직원 명단 다운로드 파일 그대로 업로드 가능. 장소: 1=1공장, lib=도서관",
-    colAction:"처리", btnCheckin:"출석 처리", confirmCheckin:n=>`${n} 님을 출석 처리할까요?`, processing:"처리중…", opFail:"처리 실패",
+    colAction:"처리", processing:"처리중…", opFail:"처리 실패",
     btnCheckout:"퇴근 처리", confirmCheckout:n=>`${n} 님을 퇴근 처리할까요?\n(정규 퇴근시각으로 기록됩니다)`,
     earlyOutWarn:(n,inBy)=>`⚠️ 지금은 출근시간(${inBy}) 전후입니다.\n\n${n} 님을 정말 퇴근 타각 처리할까요?\n(정규 퇴근시각으로 기록됩니다)`,
     mealAdd:"식사 수기 등록", mealAddBtn:"+ 식사 등록", mealOk:"등록", mealDup:"이미 식사 신청됨", idBad:"등록되지 않은 사번입니다", needId:"사번을 입력하세요" },
@@ -565,7 +565,7 @@ const I18N={
     ioUploading:n=>`Subiendo… (${n})`, ioEmpty:"No hay datos para subir", ioBadFile:"Suba un archivo Excel (.xlsx) o CSV",
     ioParseErr:"No se pudo leer el archivo — revise la plantilla", ioConfirm:n=>`¿Registrar/actualizar ${n} registros?`,
     ioDone:(a,u,k)=>`Listo · ${a} nuevos · ${u} actualizados${k?` · ${k} con error`:""}`, ioHint:"Descargue la plantilla → complete y suba. Columnas: N°·Nombre·KO·Equipo·Planta·F.Ingreso·Estado·F.Baja. Planta: 1=Planta 1, lib=Biblioteca",
-    colAction:"Acción", btnCheckin:"Marcar", confirmCheckin:n=>`¿Marcar asistencia de ${n}?`, processing:"Procesando…", opFail:"Error",
+    colAction:"Acción", processing:"Procesando…", opFail:"Error",
     btnCheckout:"Marcar salida", confirmCheckout:n=>`¿Marcar salida de ${n}?\n(Se registrará a la hora oficial de salida)`,
     earlyOutWarn:(n,inBy)=>`⚠️ Ahora es antes o cerca de la hora de entrada (${inBy}).\n\n¿Realmente desea marcar la SALIDA de ${n}?\n(Se registrará a la hora oficial de salida)`,
     mealAdd:"Registro manual de comida", mealAddBtn:"+ Comida", mealOk:"Registrar", mealDup:"Comida ya registrada", idBad:"N° no registrado", needId:"Ingrese el N°" }
@@ -785,7 +785,7 @@ function COLS(){
   const T=I18N[lang];
   return {
     att:[["employee_id",T.colId],["name",T.colName],["team",T.colTeam],["factory",T.colPlant],["inTime",T.colIn],["outTime",T.colOut],["status",T.colState],["work",T.colWork],["__photo",T.colPhoto]],
-    absent:[["employee_id",T.colId],["name",T.colName],["team",T.colTeam],["factory",T.colPlant],["__checkin",T.colAction]],
+    absent:[["employee_id",T.colId],["name",T.colName],["team",T.colTeam],["factory",T.colPlant]],
     meal:[["employee_id",T.colId],["name",T.colName],["team",T.colTeam],["factory",T.colPlant],["time",T.colTime]],
     noout:[["employee_id",T.colId],["name",T.colName],["team",T.colTeam],["factory",T.colPlant],["inTime",T.colIn],["work",T.colWork],["__photo",T.colPhoto],["__checkout",T.colAction]],
     early:[["employee_id",T.colId],["name",T.colName],["team",T.colTeam],["factory",T.colPlant],["inTime",T.colIn],["outTime",T.colOut],["work",T.colWork],["__photo",T.colPhoto]],
@@ -832,7 +832,6 @@ function renderTable(){
   tbody.innerHTML=rows.map(r=>"<tr>"+cols.map(c=>{
     const f=c[0];
     if(f==="__photo") return r.photoId?`<td><button class="photo-btn" onclick="showPhoto('${r.photoId}','${escapeHtml(r.name)}','${escapeHtml(plantName(r.factory))}')">${t("photoView")}</button></td>`:"<td>–</td>";
-    if(f==="__checkin") return `<td><button class="act-btn" onclick="markPresent('${r.employee_id}',this)">${t("btnCheckin")}</button></td>`;
     if(f==="__checkout") return `<td><button class="act-btn" onclick="markLeft('${r.employee_id}',this)">${t("btnCheckout")}</button></td>`;
     if(f==="status") return r.status==="in"?`<td><span class="pill in">${t("present")}</span></td>`:r.status==="absent"?`<td><span class="pill late">${t("kAbsent")}</span></td>`:`<td><span class="pill out">${t("left")}</span></td>`;
     if(f==="work") return `<td>${workPill(r)}</td>`;
@@ -954,23 +953,11 @@ async function submitAdd(){
   finally{ $("aOk").disabled=false; }
 }
 
-/* ---------- 미출근 → 출석 처리 (수기) ---------- */
+/* ---------- 수기 시각 변환 (퇴근 처리용) ---------- */
 function isoAtLocal(dateStr, hm){
   const [y,m,d]=dateStr.split("-").map(Number); const [hh,mm]=(hm||"08:30").split(":").map(Number);
   const utcMs=Date.UTC(y,m-1,d,hh,mm,0)-CONFIG.TZ_OFFSET_HOURS*3600*1000;
   return new Date(utcMs).toISOString();
-}
-async function markPresent(empId, btn){
-  const row=view.absent.find(r=>r.employee_id===empId); if(!row) return;
-  if(!confirm(t("confirmCheckin")(row.name))) return;
-  if(btn){ btn.disabled=true; btn.textContent=t("processing"); }
-  const date=$("fDate").value||todayDate(); const sched=plantSched(row.factory);
-  const body={ employee_id:empId, name:row.name, type:"in", factory:row.factory, flag:"normal", created_at:isoAtLocal(date,sched.inBy) };
-  try{
-    const r=await fetch(REST(CONFIG.T_RECORDS),{method:"POST",headers:JSON_HEADERS,body:JSON.stringify(body)});
-    if(!r.ok){ console.error(await r.text()); if(btn){ btn.disabled=false; btn.textContent=t("btnCheckin"); } alert(t("opFail")); return; }
-    refresh();
-  }catch(e){ if(btn){ btn.disabled=false; btn.textContent=t("btnCheckin"); } alert(t("opFail")); }
 }
 async function markLeft(empId, btn){
   const row=view.noout.find(r=>r.employee_id===empId); if(!row) return;
