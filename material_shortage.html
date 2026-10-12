@@ -107,7 +107,7 @@ tr.short td{background:var(--redbg)}tr.care td{background:var(--ambbg)}tr.ex td{
     <div class="kpi g" data-f="all"><span data-t="k_ex">제외 LOT 행</span><b id="kEx">-</b></div>
   </div>
   <div class="tw"><table id="sTbl"></table></div>
-  <p class="hint" data-t="formula">현재고 = 실사 − 사용량 + 입고량 · 부족예상 = 현재고 + 창고재고 − 필요량 · 필요량은 같은 자재코드 합산(제외 LOT 제외) · 현장롤수 = TML·WIRE 입고 바코드 중 0처리 안 된 롤 수 (숫자에 마우스를 올리면 롤 수량합)</p>
+  <p class="hint" data-t="formula">현재고 = 실사 − 사용량 + 입고량 · 부족예상 = 현재고 + 창고재고 − 필요량 · 필요량은 같은 자재코드 합산(제외 LOT 제외) · 현장롤수 = TML·WIRE 입고 바코드 중 0처리 안 된 롤 수 (숫자에 마우스를 올리면 롤 수량합) · 창고롤수 = 창고보유자재(25010)의 개수</p>
 </section>
 
 <!-- ===== 17000 ===== -->
@@ -206,7 +206,7 @@ const ES={title:'Pronóstico de faltantes',plant:'Planta 1 México · Monclova',
 tab_rec:'Entrada a piso (30810)',tab_use:'Consumo (32040)',tab_mst:'Material en almacén (25010)',cntDate:'Fecha inventario',from:'Desde',to:'Hasta',
 thr:'Umbral alerta (<)',run:'Consultar',search:'Buscar',filter:'Mostrar',f_all:'Todo',f_short:'Faltante',f_care:'Alerta',f_chk:'Faltante+Alerta',f_need:'Solo 17000',f_extra:'Fuera de 17000 (piso)',
 copy:'Copiar',xlsx:'Excel',k_mat:'Materiales',k_short:'Faltante (<0)',k_care:'Alerta',k_ex:'Filas LOT excluidas',
-formula:'Stock actual = Inventario − Consumo + Entrada · Pronóstico = Stock actual + Almacén − Requerido · Rollos piso = rollos recibidos (TML·WIRE) sin cierre (0)',
+formula:'Stock actual = Inventario − Consumo + Entrada · Pronóstico = Stock actual + Almacén − Requerido · Rollos piso = rollos recibidos (TML·WIRE) sin cierre (0) · Rollos alm. = Piezas de almacén (25010)',
 need_h:'Pegar material requerido (col. A~F)',need_hint:'Copie columnas A~F (código, nombre, cantidad, unidad, LOTNO, línea) y péguelas aquí.',
 mode:'Modo',m_replace:'Reemplazar todo',m_append:'Agregar a la lista',save:'Guardar',clearAll:'Borrar todo',ex_h:'LOT excluidos',
 ex_hint:'Las filas cuyo LOTNO contenga estos números no se suman.',add:'Agregar',need_list:'Lista guardada',mst_h:'Pegar material en almacén',
@@ -533,20 +533,20 @@ async function calc(){
       rr.forEach(r=>{nm(r.mat_code,r.mat_name,r.unit);if(!r.barcode||Z.has(r.barcode))return;const c=String(r.mat_code||'').toUpperCase();RL[c]=(RL[c]||0)+1;RQ[c]=(RQ[c]||0)+(Number(r.qty)||0)});
     }catch(e){console.warn('roll',e)}
     const sum=a=>{const m={};a.forEach(r=>{const c=String(r.code).toUpperCase();m[c]=(m[c]||0)+Number(r.qty)});return m};
-    const C=sum(cnt),U=sum(use),R=sum(rec),W={};MST.forEach(r=>{W[r.code]=Number(r.qty)||0;nm(r.code,r.name,r.unit)});
+    const C=sum(cnt),U=sum(use),R=sum(rec),W={},WR={};MST.forEach(r=>{W[r.code]=Number(r.qty)||0;WR[r.code]=Number(r.cnt)||0;nm(r.code,r.name,r.unit)});
     use.forEach(r=>nm(r.code,r.name));rec.forEach(r=>nm(r.code,r.name,r.unit));
     const agg={},order=[];let exRows=0;
     NEED.forEach(r=>{if(isEx(r.lotno)){exRows++;return}
       if(!agg[r.code]){agg[r.code]={code:r.code,name:r.name,unit:r.unit,need:0};order.push(r.code)}
       agg[r.code].need+=Number(r.qty)||0});
     const list=order.map((c,i)=>{const a=agg[c];const cnt_=C[c]||0,u=U[c]||0,rc=R[c]||0,w=W[c]||0;
-      const cur=cnt_-u+rc,sh=cur+w-a.need;return{...a,i,cnt:cnt_,use:u,rec:rc,cur,roll:RL[c]||0,rollq:RQ[c]||0,wh:w,short:sh}});
+      const cur=cnt_-u+rc,sh=cur+w-a.need;return{...a,i,cnt:cnt_,use:u,rec:rc,cur,roll:RL[c]||0,rollq:RQ[c]||0,wh:w,whroll:WR[c]||0,short:sh}});
     /* 17000에 없는 현장보유 자재 (현재고≠0 또는 현장 롤 보유) */
     const inNeed=new Set(order.map(c=>String(c).toUpperCase()));
     const xs=new Set([...Object.keys(C),...Object.keys(U),...Object.keys(R),...Object.keys(RL)]);
     [...xs].filter(c=>c&&!inNeed.has(c)).sort().forEach(c=>{const cnt_=C[c]||0,u=U[c]||0,rc=R[c]||0,cur=cnt_-u+rc,rl=RL[c]||0;
       if(Math.abs(cur)<1e-9&&!rl)return;const w=W[c]||0,o=NM[c]||{};
-      list.push({code:c,name:o.name||'',unit:o.unit||'',need:0,i:list.length,cnt:cnt_,use:u,rec:rc,cur,roll:rl,rollq:RQ[c]||0,wh:w,short:cur+w,extra:1})});
+      list.push({code:c,name:o.name||'',unit:o.unit||'',need:0,i:list.length,cnt:cnt_,use:u,rec:rc,cur,roll:rl,rollq:RQ[c]||0,wh:w,whroll:WR[c]||0,short:cur+w,extra:1})});
     SUM={list,exRows,cd,f,t,zAt};
   }catch(e){alert(e.message)}
   busy(0);renderSum();
@@ -564,7 +564,7 @@ function cols(){
   const cd=SUM?SUM.cd:'',rng=SUM&&SUM.f?`${md(SUM.f)}~${md(SUM.t)}`:'';
   return[['code',tr('자재코드','Código')],['name',tr('자재명','Nombre')],['unit',tr('단위','Unid.')],['need',tr('필요량','Requerido'),1],
    ['cnt',tr('실사','Inv.')+(cd?`(${md(cd).replace('/','')})`:''),1],['use',tr('사용량','Consumo')+`(${rng})`,1],['rec',tr('입고량','Entrada')+`(${rng})`,1],
-   ['cur',tr('현재고','Stock')+(SUM&&SUM.t?`(${md(SUM.t)})`:''),1],['roll',tr('현장롤수','Rollos piso'),1],['wh',tr('창고재고','Almacén'),1],['short',tr('부족예상','Pronóstico'),1],['chk','check']];
+   ['cur',tr('현재고','Stock')+(SUM&&SUM.t?`(${md(SUM.t)})`:''),1],['roll',tr('현장롤수','Rollos piso'),1],['wh',tr('창고재고','Almacén'),1],['whroll',tr('창고롤수','Rollos alm.'),1],['short',tr('부족예상','Pronóstico'),1],['chk','check']];
 }
 function renderSum(){
   $('sThr').value=CFG.threshold;
@@ -581,6 +581,7 @@ function renderSum(){
     l.map(r=>{const s=status(r);return`<tr class="${s==='ok'?'':s}">`+C.map(([k,h,n])=>{
       if(k==='chk')return`<td><span class="tag ${s}">${lab[s]}</span></td>`;
       const v=r[k];
+      if(k==='whroll')return`<td class="n">${v?fmt(v):'<span class="hint">0</span>'}</td>`;
       if(k==='roll')return`<td class="n" title="${tr('현장 보유 롤 수량합','Cant. en rollos')}: ${fmt(r.rollq)}">${v?fmt(v):'<span class="hint">0</span>'}</td>`;
       if(k==='code'&&r.extra)return`<td>${esc(v)}<span class="tag xt" title="${tr('17000 작업필요자재에 없음','No está en 17000')}">${tr('현장','Piso')}</span></td>`;
       return n?`<td class="n ${v<0?'neg':''}">${fmt(v)}</td>`:`<td>${esc(v)}</td>`}).join('')+'</tr>'}).join('');
