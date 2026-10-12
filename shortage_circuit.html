@@ -947,6 +947,14 @@ function renderHist(p){
     .forEach(r=>{if(!m[r.req_no]){m[r.req_no]={no:r.req_no,items:[]};groups.push(m[r.req_no]);}m[r.req_no].items.push(r);});
   if(!(S.st&&isOpen({status:S.st})))groups.reverse();// 진행 중은 오래된 것부터, 그 외는 최근부터
   const days=[];let cur=null;groups.forEach(g=>{const k=dkey(g.items[0].created_at);if(!cur||cur.k!==k){cur={k,gs:[]};days.push(cur);}cur.gs.push(g);});
+  if(p==='hp'&&(S.st==='접수'||S.st==='가공승인')){// 가공 접수·승인 시: 부족수량 오름차순(같이 만드는 선은 붙여서)
+    const gk=r=>r.pn+'|'+(r.grp?r.grp.split(',').map(x=>x.trim()).sort().join(','):r.wn);
+    const gq=g=>Math.min(...g.items.map(r=>r.qty));
+    groups.forEach(g=>{const mq={};g.items.forEach(r=>{const k=gk(r);mq[k]=Math.min(mq[k]??Infinity,r.qty);});
+      const ord=new Map();g.items.forEach((r,i)=>{if(!ord.has(gk(r)))ord.set(gk(r),i);});
+      g.items.sort((a,b)=>mq[gk(a)]-mq[gk(b)]||ord.get(gk(a))-ord.get(gk(b))||a.qty-b.qty||a.id-b.id);});
+    days.forEach(d=>d.gs.sort((a,b)=>gq(a)-gq(b)));
+  }
   const today=ymd(new Date()),auto=!!$(p+'Q').value.trim();// 검색 중일 때만 모두 펼침
   $(p+'Body').innerHTML=days.map(d=>{const its=d.gs.flatMap(g=>g.items),dOn=its.every(r=>S.sel.has(r.id));
     const fold=d.k!==today&&!auto&&!S.open.has(d.k),nOpen=its.filter(isOpen).length;
