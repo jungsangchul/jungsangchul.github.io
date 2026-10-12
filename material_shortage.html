@@ -46,7 +46,7 @@ td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
 tr.short td{background:var(--redbg)}tr.care td{background:var(--ambbg)}tr.ex td{color:#a0a8b4;text-decoration:line-through}
 .neg{color:var(--red);font-weight:700}
 .tag{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700}
-.tag.short{background:var(--red);color:#fff}.tag.care{background:#f0a020;color:#fff}.tag.ok{background:var(--grnbg);color:var(--grn)}
+.tag.xt{background:#e4ecf7;color:#2a5aa0;margin-left:6px;font-size:11px}.tag.short{background:var(--red);color:#fff}.tag.care{background:#f0a020;color:#fff}.tag.ok{background:var(--grnbg);color:var(--grn)}
 .chips{display:flex;gap:6px;flex-wrap:wrap}
 .chip{background:var(--pri2);color:var(--pri);border-radius:14px;padding:4px 6px 4px 11px;font-weight:700;display:flex;align-items:center;gap:6px}
 .chip small{color:var(--mute);font-weight:400}
@@ -94,7 +94,7 @@ tr.short td{background:var(--redbg)}tr.care td{background:var(--ambbg)}tr.ex td{
       <label class="f"><span data-t="search">검색</span><input id="sQ" placeholder="코드/자재명" style="width:170px"></label>
       <label class="f"><span data-t="filter">표시</span><select id="sF">
         <option value="all" data-t="f_all">전체</option><option value="short" data-t="f_short">부족</option>
-        <option value="care" data-t="f_care">주의</option><option value="chk" data-t="f_chk">부족+주의</option></select></label>
+        <option value="care" data-t="f_care">주의</option><option value="chk" data-t="f_chk">부족+주의</option><option value="need" data-t="f_need">17000 자재만</option><option value="extra" data-t="f_extra">17000 외 현장보유</option></select></label>
       <button class="btn sec" id="sCopy" data-t="copy">복사</button>
       <button class="btn sec" id="sXlsx" data-t="xlsx">엑셀</button>
     </div>
@@ -204,7 +204,7 @@ const H={apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json
 /* ---------- i18n ---------- */
 const ES={title:'Pronóstico de faltantes',plant:'Planta 1 México · Monclova',tab_sum:'Faltantes',tab_need:'Material requerido (17000)',tab_cnt:'Inventario físico',
 tab_rec:'Entrada a piso (30810)',tab_use:'Consumo (32040)',tab_mst:'Material en almacén (25010)',cntDate:'Fecha inventario',from:'Desde',to:'Hasta',
-thr:'Umbral alerta (<)',run:'Consultar',search:'Buscar',filter:'Mostrar',f_all:'Todo',f_short:'Faltante',f_care:'Alerta',f_chk:'Faltante+Alerta',
+thr:'Umbral alerta (<)',run:'Consultar',search:'Buscar',filter:'Mostrar',f_all:'Todo',f_short:'Faltante',f_care:'Alerta',f_chk:'Faltante+Alerta',f_need:'Solo 17000',f_extra:'Fuera de 17000 (piso)',
 copy:'Copiar',xlsx:'Excel',k_mat:'Materiales',k_short:'Faltante (<0)',k_care:'Alerta',k_ex:'Filas LOT excluidas',
 formula:'Stock actual = Inventario − Consumo + Entrada · Pronóstico = Stock actual + Almacén − Requerido · Rollos piso = rollos recibidos (TML·WIRE) sin cierre (0)',
 need_h:'Pegar material requerido (col. A~F)',need_hint:'Copie columnas A~F (código, nombre, cantidad, unidad, LOTNO, línea) y péguelas aquí.',
@@ -524,22 +524,29 @@ async function calc(){
     await Promise.all([loadNeed(),loadMst()]);
     const [cnt,use,rec]=await Promise.all([
       cd?sel('mshort_count',`select=code,qty&cdate=eq.${cd}`):[],
-      f&&t?sel('mshort_usage',`select=code,qty&udate=gte.${f}&udate=lte.${t}`):[],
-      f&&t?sel('mshort_receipt',`select=code,qty&rdate=gte.${f}&rdate=lte.${t}`):[]]);
+      f&&t?sel('mshort_usage',`select=code,name,qty&udate=gte.${f}&udate=lte.${t}`):[],
+      f&&t?sel('mshort_receipt',`select=code,name,unit,qty&rdate=gte.${f}&rdate=lte.${t}`):[]]);
     /* 현장 보유 롤수: TML·WIRE 입고 바코드 − 0처리(사용완료) 바코드 */
-    let RL={},RQ={},zAt='';
-    try{const [rr,zz]=await Promise.all([sel('tmlwire_receipts','select=barcode,mat_code,qty'),sel('tmlwire_zero','select=barcode,uploaded_at')]);
+    let RL={},RQ={},zAt='';const NM={};const nm=(c,n,u)=>{c=String(c||'').toUpperCase();if(!c)return;const o=NM[c]||(NM[c]={});if(n&&!o.name)o.name=n;if(u&&!o.unit)o.unit=u};
+    try{const [rr,zz]=await Promise.all([sel('tmlwire_receipts','select=barcode,mat_code,mat_name,unit,qty'),sel('tmlwire_zero','select=barcode,uploaded_at')]);
       const Z=new Set(zz.map(z=>z.barcode));zz.forEach(z=>{if((z.uploaded_at||'')>zAt)zAt=z.uploaded_at});
-      rr.forEach(r=>{if(!r.barcode||Z.has(r.barcode))return;const c=String(r.mat_code||'').toUpperCase();RL[c]=(RL[c]||0)+1;RQ[c]=(RQ[c]||0)+(Number(r.qty)||0)});
+      rr.forEach(r=>{nm(r.mat_code,r.mat_name,r.unit);if(!r.barcode||Z.has(r.barcode))return;const c=String(r.mat_code||'').toUpperCase();RL[c]=(RL[c]||0)+1;RQ[c]=(RQ[c]||0)+(Number(r.qty)||0)});
     }catch(e){console.warn('roll',e)}
     const sum=a=>{const m={};a.forEach(r=>{const c=String(r.code).toUpperCase();m[c]=(m[c]||0)+Number(r.qty)});return m};
-    const C=sum(cnt),U=sum(use),R=sum(rec),W={};MST.forEach(r=>W[r.code]=Number(r.qty)||0);
+    const C=sum(cnt),U=sum(use),R=sum(rec),W={};MST.forEach(r=>{W[r.code]=Number(r.qty)||0;nm(r.code,r.name,r.unit)});
+    use.forEach(r=>nm(r.code,r.name));rec.forEach(r=>nm(r.code,r.name,r.unit));
     const agg={},order=[];let exRows=0;
     NEED.forEach(r=>{if(isEx(r.lotno)){exRows++;return}
       if(!agg[r.code]){agg[r.code]={code:r.code,name:r.name,unit:r.unit,need:0};order.push(r.code)}
       agg[r.code].need+=Number(r.qty)||0});
     const list=order.map((c,i)=>{const a=agg[c];const cnt_=C[c]||0,u=U[c]||0,rc=R[c]||0,w=W[c]||0;
       const cur=cnt_-u+rc,sh=cur+w-a.need;return{...a,i,cnt:cnt_,use:u,rec:rc,cur,roll:RL[c]||0,rollq:RQ[c]||0,wh:w,short:sh}});
+    /* 17000에 없는 현장보유 자재 (현재고≠0 또는 현장 롤 보유) */
+    const inNeed=new Set(order.map(c=>String(c).toUpperCase()));
+    const xs=new Set([...Object.keys(C),...Object.keys(U),...Object.keys(R),...Object.keys(RL)]);
+    [...xs].filter(c=>c&&!inNeed.has(c)).sort().forEach(c=>{const cnt_=C[c]||0,u=U[c]||0,rc=R[c]||0,cur=cnt_-u+rc,rl=RL[c]||0;
+      if(Math.abs(cur)<1e-9&&!rl)return;const w=W[c]||0,o=NM[c]||{};
+      list.push({code:c,name:o.name||'',unit:o.unit||'',need:0,i:list.length,cnt:cnt_,use:u,rec:rc,cur,roll:rl,rollq:RQ[c]||0,wh:w,short:cur+w,extra:1})});
     SUM={list,exRows,cd,f,t,zAt};
   }catch(e){alert(e.message)}
   busy(0);renderSum();
@@ -548,7 +555,7 @@ function status(r){const th=Number(CFG.threshold)||0;return r.short<0?'short':r.
 function viewList(){
   if(!SUM)return[];
   const q=$('sQ').value.trim().toUpperCase(),f=$('sF').value;
-  let l=SUM.list.filter(r=>{const s=status(r);if(f==='short'&&s!=='short')return false;if(f==='care'&&s!=='care')return false;if(f==='chk'&&s==='ok')return false;
+  let l=SUM.list.filter(r=>{const s=status(r);if(f==='short'&&s!=='short')return false;if(f==='care'&&s!=='care')return false;if(f==='chk'&&s==='ok')return false;if(f==='need'&&r.extra)return false;if(f==='extra'&&!r.extra)return false;
     return!q||(r.code+' '+r.name).toUpperCase().includes(q)});
   if(sortK)l=[...l].sort((a,b)=>{const x=a[sortK],y=b[sortK];return(typeof x==='string'?x.localeCompare(y):x-y)*sortD});
   return l;
@@ -563,7 +570,7 @@ function renderSum(){
   $('sThr').value=CFG.threshold;
   if(!SUM){$('sTbl').innerHTML=`<tr><td class="hint" style="padding:20px">${tr('조회 버튼을 누르세요','Presione Consultar')}</td></tr>`;return}
   const all=SUM.list,st=all.map(status);
-  $('kAll').textContent=all.length;$('kShort').textContent=st.filter(s=>s==='short').length;
+  $('kAll').textContent=all.length;$('kAll').title=tr(`17000 ${all.filter(r=>!r.extra).length} + 현장보유 ${all.filter(r=>r.extra).length}`,'');$('kShort').textContent=st.filter(s=>s==='short').length;
   $('kCare').textContent=st.filter(s=>s==='care').length;$('kEx').textContent=SUM.exRows;
   $('sInfo').textContent=tr(`실사 ${SUM.cd||'-'} · 사용/입고 ${SUM.f||'-'} ~ ${SUM.t||'-'} · 제외 LOT: ${EX.map(e=>e.lotno).join(', ')||'없음'}`,
     `Inventario ${SUM.cd||'-'} · ${SUM.f||'-'} ~ ${SUM.t||'-'} · LOT excluidos: ${EX.map(e=>e.lotno).join(', ')||'ninguno'}`)+
@@ -575,6 +582,7 @@ function renderSum(){
       if(k==='chk')return`<td><span class="tag ${s}">${lab[s]}</span></td>`;
       const v=r[k];
       if(k==='roll')return`<td class="n" title="${tr('현장 보유 롤 수량합','Cant. en rollos')}: ${fmt(r.rollq)}">${v?fmt(v):'<span class="hint">0</span>'}</td>`;
+      if(k==='code'&&r.extra)return`<td>${esc(v)}<span class="tag xt" title="${tr('17000 작업필요자재에 없음','No está en 17000')}">${tr('현장','Piso')}</span></td>`;
       return n?`<td class="n ${v<0?'neg':''}">${fmt(v)}</td>`:`<td>${esc(v)}</td>`}).join('')+'</tr>'}).join('');
   $('sTbl').querySelectorAll('th').forEach(th=>th.onclick=()=>{const k=th.dataset.k==='chk'?'short':th.dataset.k;
     if(sortK===k)sortD=-sortD;else{sortK=k;sortD=1}renderSum()});
