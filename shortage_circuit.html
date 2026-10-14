@@ -84,6 +84,7 @@ tr.g td:first-child{box-shadow:inset 3px 0 0 var(--gc,transparent)}
 .pick input[type=checkbox]{pointer-events:none;accent-color:var(--accent);width:16px;height:16px}
 .pick .scroll{max-height:calc(100vh - 330px);min-height:260px}
 .legend{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.direct .lotf{grid-column:1/-1}
 .direct{display:grid;grid-template-columns:1.4fr 1fr 70px auto;gap:8px;align-items:end;padding:12px 14px;border-bottom:1px solid var(--line)}
 .cart .scroll{max-height:calc(100vh - 470px);min-height:160px}
 .cart td{padding:5px 8px}
@@ -122,6 +123,9 @@ label.f.inl{min-width:150px}label.f.inl > input{padding:6px 9px}
 .wn2{font-weight:700;font-size:14px;white-space:nowrap}
 .sub2{font-size:11.5px;color:var(--sub);white-space:nowrap}
 .sub2.lot{color:var(--ink);font-weight:600;margin-top:3px}
+.olot{display:inline-block;margin-top:3px;padding:1px 6px;border:1px solid var(--accent);border-radius:4px;font:600 11px/1.4 Consolas,"D2Coding",monospace;color:var(--accent)}
+.olot.none{border-color:var(--line);color:var(--sub);font-family:inherit}
+#dLot{font-family:Consolas,"D2Coding",monospace}
 .grp2 .gb{margin:1px 0}
 .fl{display:grid;grid-template-columns:repeat(3,minmax(128px,auto));gap:3px 8px}
 .tl{display:block;font-size:11.5px;color:var(--sub);white-space:nowrap;padding-left:7px;border-left:2px solid var(--line);opacity:.5}
@@ -182,7 +186,7 @@ textarea#lotBox{width:100%;min-height:160px;padding:10px;border:1px solid var(--
 .camtools label.btn{display:flex;align-items:center;justify-content:center;gap:4px;cursor:pointer}
 #camMsg{min-height:20px;font-size:13px}
 .asm>*{min-width:0}
-@media (max-width:700px){.asm .cart{order:-1}.btn.cam{padding:12px 14px;font-size:16px}.scan label.f > input{font-size:14px}.direct{grid-template-columns:1fr 1fr 64px}.direct .btn{grid-column:1/-1}header{position:static}}
+@media (max-width:700px){.asm .cart{order:-1}.btn.cam{padding:12px 14px;font-size:16px}.scan label.f > input{font-size:14px}.direct{grid-template-columns:1fr 1fr 64px}.direct .lotf{grid-column:1/-1}.direct .btn{grid-column:1/-1}header{position:static}}
 .stats{display:flex;gap:24px;flex-wrap:wrap;margin:14px 0 0;padding:12px 0 0;border-top:1px solid var(--line)}
 .stats div{font-size:12px;color:var(--sub)}
 .stats b{display:block;font-size:20px;color:var(--ink)}
@@ -258,6 +262,7 @@ textarea#lotBox{width:100%;min-height:160px;padding:10px;border:1px solid var(--
         <div class="scan-info status" id="scanInfo"></div>
       </div>
       <div class="direct">
+        <label class="f lotf"><span data-i="origLot">원 LOT</span><input id="dLot" autocomplete="off" spellcheck="false" placeholder="5726A01005"></label>
         <label class="f"><span data-i="pn">품번</span><input id="dPn" list="dlPn" autocomplete="off"></label>
         <label class="f"><span data-i="cWn">선번</span><input id="dWn" list="dlWn" autocomplete="off"></label>
         <label class="f"><span data-i="qty">수량</span><input id="dQty" inputmode="numeric" autocomplete="off"></label>
@@ -421,9 +426,9 @@ removeGroup:'Se quitarán también los circuitos del mismo grupo.',sel:'seleccio
 Object.assign(ES,{scanLbl:'Escanear código — selecciona No. de parte y circuito, luego capture la cantidad',lTitle:'Pegar tabla de LOT (LOT SAP → No. de parte)',
  lDesc:'Copie de Excel (orden de trabajo) desde el encabezado (No. parte · LOT) hasta los datos y péguelo. Sin encabezado, la celda que empieza con 5726 se toma como LOT y la de formato de No. de parte como No. de parte.',
  lotMerge:'Agregar · actualizar',lotAll:'Reemplazar todo',lotClear:'Borrar tabla de LOT',lHelp:'Agregar · actualizar: el mismo LOT se sobrescribe y lo demás se conserva. Se comparte con todas las PC.',lRows:'LOT guardados',
- scanBad:'Código no reconocido',lotMiss:'LOT no está en la tabla — elija el No. de parte',wnMiss:'Circuito no está en la sublista',scanOk:'Capture la cantidad y presione Enter',lotParsed:'LOT leídos',lotCleared:'Tabla de LOT borrada',confirmLotAll:'Se reemplazará toda la tabla de LOT. ¿Continuar?',confirmLotClear:'¿Borrar toda la tabla de LOT?',kLot:'LOT',kPn:'No. parte',kWn:'Circuito'});
+ scanBad:'Código no reconocido',lotMiss:'LOT no está en la tabla — elija el No. de parte',wnMiss:'Circuito no está en la sublista',scanOk:'Capture la cantidad y presione Enter',lotParsed:'LOT leídos',lotCleared:'Tabla de LOT borrada',confirmLotAll:'Se reemplazará toda la tabla de LOT. ¿Continuar?',confirmLotClear:'¿Borrar toda la tabla de LOT?',kLot:'LOT',kPn:'No. parte',kWn:'Circuito',origLot:'LOT original',noLotConfirm:'renglón(es) sin LOT original. ¿Enviar así?',lotFill:'No. de parte tomado del LOT'});
 Object.assign(ES,{camBtn:'Cámara',camTitle:'Escanear con cámara',closeBtn:'Cerrar',camStarting:'Iniciando cámara…',camAim:'Apunte la cámara al código de barras',camErr:'No se pudo abrir la cámara.',camOther:'Otro código leído:',camLib:'No se pudo cargar el lector (revise la red).',camTorch:'Linterna',camPhoto:'Tomar foto y leer',camAimBar:'Ponga el código de barras dentro del recuadro, horizontal y a 10–15 cm',camReading:'Leyendo foto…',camNoCode:'No se encontró código en la foto. Acérquese y tome la foto de frente.'});
-const KO={camAimBar:'바코드를 가로로, 노란 상자 안에 꽉 차게 맞추세요 (10~15cm)',camReading:'사진 읽는 중…',camNoCode:'사진에서 바코드를 찾지 못했습니다. 가까이서 정면으로 다시 찍어주세요.',camStarting:'카메라를 켜는 중…',camAim:'바코드를 화면 안에 맞추세요',camErr:'카메라를 열 수 없습니다. 브라우저의 카메라 권한을 확인하세요.',camOther:'다른 형식의 코드:',camLib:'스캔 모듈을 불러오지 못했습니다 (네트워크 확인).',scanBad:'바코드 형식을 읽을 수 없습니다',lotMiss:'LOT 매칭표에 없는 LOT입니다 — 품번을 직접 선택하세요',wnMiss:'서브리스트에 없는 선번',scanOk:'수량 입력 후 Enter',lotParsed:'개 LOT 읽음',lotCleared:'LOT 매칭표를 삭제했습니다',confirmLotAll:'기존 LOT 매칭표를 모두 지우고 새로 저장합니다. 계속할까요?',confirmLotClear:'LOT 매칭표 전체를 삭제할까요?',kLot:'LOT',kPn:'품번',kWn:'선번',
+const KO={camAimBar:'바코드를 가로로, 노란 상자 안에 꽉 차게 맞추세요 (10~15cm)',camReading:'사진 읽는 중…',camNoCode:'사진에서 바코드를 찾지 못했습니다. 가까이서 정면으로 다시 찍어주세요.',camStarting:'카메라를 켜는 중…',camAim:'바코드를 화면 안에 맞추세요',camErr:'카메라를 열 수 없습니다. 브라우저의 카메라 권한을 확인하세요.',camOther:'다른 형식의 코드:',camLib:'스캔 모듈을 불러오지 못했습니다 (네트워크 확인).',scanBad:'바코드 형식을 읽을 수 없습니다',lotMiss:'LOT 매칭표에 없는 LOT입니다 — 품번을 직접 선택하세요',wnMiss:'서브리스트에 없는 선번',scanOk:'수량 입력 후 Enter',lotParsed:'개 LOT 읽음',lotCleared:'LOT 매칭표를 삭제했습니다',confirmLotAll:'기존 LOT 매칭표를 모두 지우고 새로 저장합니다. 계속할까요?',confirmLotClear:'LOT 매칭표 전체를 삭제할까요?',kLot:'LOT',kPn:'품번',kWn:'선번',origLot:'원 LOT',noLotConfirm:'건이 원 LOT 없이 신청됩니다. 그대로 신청할까요?',lotFill:'LOT로 품번을 찾았습니다',
 line:'라인',total:'합계',all:'전체',st1:'신청',st2:'접수',st3:'MES등록',st4:'출고완료',st5:'반려',st6:'취소',stAll:'전체',cancel:'취소',noMaster:'서브리스트가 없습니다. 서브리스트 탭에서 붙여넣으세요.',choosePn:'품번을 선택하세요.',noHit:'조건에 맞는 회로가 없습니다.',
 needLine:'라인과 신청자를 입력하세요.',needItems:'신청 목록이 비어 있습니다.',badQty:'수량을 확인하세요 (1 이상).',saved:'신청을 저장했습니다',confirmSave:'신청을 저장할까요?',notInMaster:'서브리스트에 없음',addedNoMaster:'서브리스트에 없는 선번입니다. 입력한 그대로 추가했습니다.',needPnWn:'품번과 선번을 입력하세요.',
 needWorker:'처리자 이름을 입력하세요.',noSel:'행을 선택하세요.',mesNoPh:'MES 등록번호 (선택)',rejectWhy:'반려 사유',updated:'처리했습니다',copied:'복사했습니다. MES에 붙여넣으세요.',confirmCancel:'이 신청을 취소할까요?',
@@ -613,12 +618,13 @@ function defQty(){const v=parseInt($('aDefQty').value,10);return v>0?v:1;}
 function itemFrom(i,g,qty){const r=MASTER.rows[i];
   return {pn:r[C.pn],sub:r[C.sub],wn:r[C.wn],mat:r[C.mat],sq:r[C.sq],col:r[C.col],len:r[C.len],tL:r[C.tL],tR:r[C.tR],
     gkey:g?r[C.pn]+'#'+g.id:'',types:g?g.types:[],members:g?g.idxs.map(j=>MASTER.rows[j][C.wn]):[],inMaster:true,qty};}
+const curLot=()=>U($('dLot').value.trim());
 function inCart(pn,wn){return cart.some(c=>ckey(c.pn,c.wn)===ckey(pn,wn));}
 function toggleIdx(i,qty){
   const r=MASTER.rows[i],g=groupsFor(r[C.pn]).byIdx.get(i);
   const idxs=g?g.idxs:[i];
   if(inCart(r[C.pn],r[C.wn])){const keys=new Set(idxs.map(j=>ckey(MASTER.rows[j][C.pn],MASTER.rows[j][C.wn])));cart=cart.filter(c=>!keys.has(ckey(c.pn,c.wn)));}
-  else addIdx(i,qty);
+  else addIdx(i,qty,curLot());
   renderPick();renderCart();
 }
 function addIdx(i,qty,lot){
@@ -664,7 +670,7 @@ function directAdd(){
   if(!pn||!wn){toast(T('needPnWn'));return;}
   const pnKey=Object.keys(BYPN).find(p=>U(p)===U(pn));
   const i=pnKey?(BYPN[pnKey]||[]).find(j=>U(MASTER.rows[j][C.wn])===U(wn)):undefined;
-  const lot=scanCtx&&U(scanCtx.wn)===U(wn)&&(!scanCtx.pn||U(scanCtx.pn)===U(pn))?scanCtx.lot:'';
+  const lot=curLot();
   if(i!=null){addIdx(i,q,lot);}
   else{const ex=cart.find(c=>ckey(c.pn,c.wn)===ckey(pn,wn));
     if(ex){ex.qty=q;if(lot)ex.lot=lot;}else cart.push({pn:pnKey||pn,sub:'',wn:U(wn),mat:'',sq:'',col:'',len:'',tL:'',tR:'',gkey:'',types:[],members:[],inMaster:false,qty:q,lot});
@@ -674,7 +680,12 @@ function directAdd(){
   renderCart();renderPick();
 }
 $('dAdd').onclick=directAdd;
-['dPn','dWn','dQty'].forEach(id=>$(id).addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();if(isScan($(id).value)){const v=$(id).value;$(id).value='';if(id==='dPn')fillWnList();onScan(v);return;}if(id==='dPn')$('dWn').focus();else if(id==='dWn')$('dQty').focus();else directAdd();}}));
+/* 수기 LOT: 매칭표에 있으면 품번 자동 선택 */
+function lotTyped(){const v=curLot();$('dLot').value=v;if(!v)return;const pnRaw=LOTMAP[v];if(!pnRaw)return;
+  const pnKey=Object.keys(BYPN).find(p=>U(p)===U(pnRaw));const pn=pnKey||pnRaw;if(U($('dPn').value.trim())===U(pn))return;
+  $('dPn').value=pn;fillWnList();if(pnKey){pickPn=pnKey;$('aPn').value=pnKey;LS.set('pn'+PLANT,pnKey);$('aSearch').value='';renderPick();}toast(T('lotFill')+': '+pn);}
+$('dLot').addEventListener('change',()=>{if(!isScan($('dLot').value))lotTyped();});
+['dLot','dPn','dWn','dQty'].forEach(id=>$(id).addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();if(isScan($(id).value)){const v=$(id).value;$(id).value='';if(id==='dPn')fillWnList();onScan(v);return;}if(id==='dLot'){lotTyped();($('dPn').value.trim()?$('dWn'):$('dPn')).focus();return;}if(id==='dPn')$('dWn').focus();else if(id==='dWn')$('dQty').focus();else directAdd();}}));
 
 /* ---------- 바코드 스캔: !5726A01005;MC24;1; ---------- */
 let LOTMAP={},LOTUPD=null,scanCtx=null;
@@ -692,7 +703,7 @@ function onScan(v){
   if(!sc){scanInfo(`<span class="bad">${esc(T('scanBad'))}</span> <b>${esc(v)}</b>`);toast(T('scanBad'));$('scanIn').select();return;}
   const pnRaw=LOTMAP[sc.lot]||'';
   const pnKey=pnRaw?Object.keys(BYPN).find(p=>U(p)===U(pnRaw)):undefined;
-  scanCtx={lot:sc.lot,pn:pnKey||pnRaw,wn:sc.wn};
+  scanCtx={lot:sc.lot,pn:pnKey||pnRaw,wn:sc.wn};$('dLot').value=sc.lot;
   const lotTag=`<span><span class="k">${esc(T('kLot'))}</span><b>${esc(sc.lot)}</b></span>`;
   if(!pnRaw){
     $('dWn').value=sc.wn;$('dQty').value='';
@@ -863,13 +874,15 @@ async function saveReq(){
   if(!line||!name){toast(T('needLine'));(line?$('aName'):$('aLine')).focus();return;}
   if(!cart.length){toast(T('needItems'));return;}
   if(cart.some(c=>!(parseInt(c.qty,10)>0))){toast(T('badQty'));return;}
+  const noLot=cart.filter(c=>!c.lot).length;
+  if(noLot&&!confirm(noLot+T('noLotConfirm'))){$('dLot').focus();return;}
   const d=new Date();const reqNo=`P${PLANT}-${String(d.getFullYear()).slice(2)}${pad(d.getMonth()+1)}${pad(d.getDate())}-${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}-${Math.random().toString(36).slice(2,5).toUpperCase()}`;
   const note=$('aNote').value.trim();
   const rows=cart.map(c=>({plant:PLANT,req_no:reqNo,pn:c.pn,sub_no:c.sub||null,wn:c.wn,mat:c.mat||null,sq:c.sq||null,col:c.col||null,len:c.len||null,t_l:c.tL||null,t_r:c.tR||null,
     grp:c.members.length?c.members.join(','):null,grp_type:c.types.length?c.types.join('+'):null,in_master:c.inMaster,asm_lot:c.lot||null,qty:parseInt(c.qty,10),line,requester:name,req_note:note||null}));
   $('aSave').disabled=true;setStat(T('saving'));
   try{await sb(RQ,{method:'POST',body:JSON.stringify(rows),headers:{Prefer:'return=minimal'}});setNet(true);
-    toast(`${T('savedAppr')} (${rows.length})`);cart=[];$('aNote').value='';renderCart();renderPick();await loadReqs();}
+    toast(`${T('savedAppr')} (${rows.length})`);cart=[];$('aNote').value='';$('dLot').value='';scanCtx=null;renderCart();renderPick();await loadReqs();}
   catch(e){console.error(e);setNet(false);alert(T('saveErr')+'\n'+e.message);}
   finally{$('aSave').disabled=!cart.length;}
 }
@@ -960,9 +973,9 @@ function renderHist(p){
     const fold=d.k!==today&&!auto&&!S.open.has(d.k),nOpen=its.filter(isOpen).length;
     return `<tr class="dt${fold?' fold':''}" data-dk="${d.k}"><td><input type="checkbox" data-day="${d.k}" ${dOn?'checked':''} aria-label="${d.k}"></td><td colspan="6"><span class="car">▸</span><span class="dd">${esc(dlabel(d.k))}</span>${d.k===today?` <span class="today">${esc(T('today'))}</span>`:''}<span class="ds">${d.gs.length}${esc(T('reqCnt'))} · ${its.length}${esc(T('groupOf'))} · ${esc(T('qty'))} ${its.reduce((t,r)=>t+r.qty,0).toLocaleString()}</span>${nOpen&&d.k!==today?`<span class="dopen">${esc(T('inProg'))} ${nOpen}</span>`:''}</td></tr>`+
     (fold?'':d.gs.map(g=>{const h=g.items[0],allOn=g.items.every(r=>S.sel.has(r.id)),sum=g.items.reduce((t,r)=>t+r.qty,0);
-    return `<tr class="rq"><td><input type="checkbox" data-req="${esc(g.no)}" ${allOn?'checked':''} aria-label="${esc(g.no)}"></td><td colspan="6"><b>${fmtT(h.created_at).slice(6)}</b> · ${esc(T('line'))} <b>${esc(h.line||'-')}</b> · ${esc(T('reqBy'))} <b>${esc(h.requester||'')}</b> · ${g.items.length}${esc(T('groupOf'))} / ${sum.toLocaleString()}${h.req_note?' · '+esc(T('note'))+': <b>'+esc(h.req_note)+'</b>':''} <span style="opacity:.5">${esc(g.no)}</span></td></tr>`+
+    return `<tr class="rq"><td><input type="checkbox" data-req="${esc(g.no)}" ${allOn?'checked':''} aria-label="${esc(g.no)}"></td><td colspan="6"><b>${fmtT(h.created_at).slice(6)}</b> · ${esc(T('line'))} <b>${esc(h.line||'-')}</b> · ${esc(T('reqBy'))} <b>${esc(h.requester||'')}</b> · ${g.items.length}${esc(T('groupOf'))} / ${sum.toLocaleString()}${(()=>{const L=[...new Set(g.items.map(r=>r.asm_lot).filter(Boolean))];return ' · '+esc(T('origLot'))+' '+(L.length?L.map(x=>`<span class="olot">${esc(x)}</span>`).join(' '):'<span class="olot none">—</span>');})()}${h.req_note?' · '+esc(T('note'))+': <b>'+esc(h.req_note)+'</b>':''} <span style="opacity:.5">${esc(g.no)}</span></td></tr>`+
       g.items.map(r=>`<tr class="it${S.sel.has(r.id)?' sel':''}" data-id="${r.id}"><td><input type="checkbox" ${S.sel.has(r.id)?'checked':''} tabindex="-1" aria-label="${esc(r.wn)}"></td>
-        <td><div class="wn2">${esc(r.wn)}</div><div class="sub2">${esc(r.pn)}</div>${r.asm_lot?`<div class="sub2 lot">${esc(r.asm_lot)}</div>`:''}</td><td class="grp2">${badgeDb(r)}</td>
+        <td><div class="wn2">${esc(r.wn)}</div><div class="sub2">${esc(r.pn)}</div>${r.asm_lot?`<span class="olot">${esc(r.asm_lot)}</span>`:''}</td><td class="grp2">${badgeDb(r)}</td>
         <td>${r.mat?`<div>${esc(r.mat)} ${esc(r.sq)} ${chip(r.col)} <span class="status">· ${esc(r.len)}</span></div>`:''}<div class="sub2">${esc(r.t_l||'')}${r.t_r?' / '+esc(r.t_r):''}</div></td>
         <td class="num"><b style="font-size:16px">${r.qty}</b></td><td><div>${stTag(r.status)}</div><div class="sub2 lot">${esc(r.mes_no||'')}</div></td><td>${flow(r)}</td></tr>`).join('');}).join(''));}).join('');
   $(p+'Empty').classList.toggle('hidden',rows.length>0);
@@ -1078,9 +1091,9 @@ $('hpCopy').onclick=async()=>{
   try{await navigator.clipboard.writeText(txt);}catch(e){const ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();try{document.execCommand('copy')}catch(_){}ta.remove();}
   toast(`${T('copied')} (${rows.length})`);};
 $('hpCsv').onclick=()=>{
-  const rows=exportRows();const HD=['신청시각','요청번호','라인','신청자','품번','선번','함께만드는선','구분','재질','SQ','색상','길이','좌단자','우단자','수량','상태','조립승인자','조립승인시각','가공접수자','가공접수시각','가공승인자','가공승인시각','출고자','출고시각','MES LOT','조립접수자','조립접수시각','메모','반려/취소 처리자','반려/취소 시각','반려/취소 사유'];
+  const rows=exportRows();const HD=['신청시각','요청번호','라인','신청자','원 LOT','품번','선번','함께만드는선','구분','재질','SQ','색상','길이','좌단자','우단자','수량','상태','조립승인자','조립승인시각','가공접수자','가공접수시각','가공승인자','가공승인시각','출고자','출고시각','MES LOT','조립접수자','조립접수시각','메모','반려/취소 처리자','반려/취소 시각','반려/취소 사유'];
   const q=v=>{v=v==null?'':String(v);return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};
-  const L=rows.map(r=>[fmtT(r.created_at),r.req_no,r.line,r.requester,r.pn,r.wn,r.grp,r.grp_type,r.mat,r.sq,r.col,r.len,r.t_l,r.t_r,r.qty,T('st'+(ST.indexOf(r.status)+1)),
+  const L=rows.map(r=>[fmtT(r.created_at),r.req_no,r.line,r.requester,r.asm_lot,r.pn,r.wn,r.grp,r.grp_type,r.mat,r.sq,r.col,r.len,r.t_l,r.t_r,r.qty,T('st'+(ST.indexOf(r.status)+1)),
     r.approved_by,fmtT(r.approved_at),r.received_by,fmtT(r.received_at),r.p_approved_by,fmtT(r.p_approved_at),r.ship_by,fmtT(r.ship_at),r.mes_no,r.recv_by,fmtT(r.recv_at),r.req_note,
     (r.status==='반려'||r.status==='취소')?r.done_by:'',(r.status==='반려'||r.status==='취소')?fmtT(r.done_at):'',r.proc_note].map(q).join(','));
   const blob=new Blob(['\ufeff'+[HD.join(',')].concat(L).join('\r\n')],{type:'text/csv;charset=utf-8'});
