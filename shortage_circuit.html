@@ -681,10 +681,12 @@ function directAdd(){
 }
 $('dAdd').onclick=directAdd;
 /* 수기 LOT: 매칭표에 있으면 품번 자동 선택 */
-function lotTyped(){const v=curLot();$('dLot').value=v;if(!v)return;const pnRaw=LOTMAP[v];if(!pnRaw)return;
+function lotToCart(){const v=curLot();if(!v)return;let n=0;cart.forEach(c=>{if(!c.lot){c.lot=v;n++;}});if(n)renderCart();}
+function lotTyped(){const v=curLot();$('dLot').value=v;if(!v)return;lotToCart();const pnRaw=LOTMAP[v];if(!pnRaw)return;
   const pnKey=Object.keys(BYPN).find(p=>U(p)===U(pnRaw));const pn=pnKey||pnRaw;if(U($('dPn').value.trim())===U(pn))return;
   $('dPn').value=pn;fillWnList();if(pnKey){pickPn=pnKey;$('aPn').value=pnKey;LS.set('pn'+PLANT,pnKey);$('aSearch').value='';renderPick();}toast(T('lotFill')+': '+pn);}
 $('dLot').addEventListener('change',()=>{if(!isScan($('dLot').value))lotTyped();});
+$('dLot').addEventListener('input',()=>{if(!isScan($('dLot').value))lotToCart();});
 ['dLot','dPn','dWn','dQty'].forEach(id=>$(id).addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();if(isScan($(id).value)){const v=$(id).value;$(id).value='';if(id==='dPn')fillWnList();onScan(v);return;}if(id==='dLot'){lotTyped();($('dPn').value.trim()?$('dWn'):$('dPn')).focus();return;}if(id==='dPn')$('dWn').focus();else if(id==='dWn')$('dQty').focus();else directAdd();}}));
 
 /* ---------- 바코드 스캔: !5726A01005;MC24;1; ---------- */
@@ -703,7 +705,7 @@ function onScan(v){
   if(!sc){scanInfo(`<span class="bad">${esc(T('scanBad'))}</span> <b>${esc(v)}</b>`);toast(T('scanBad'));$('scanIn').select();return;}
   const pnRaw=LOTMAP[sc.lot]||'';
   const pnKey=pnRaw?Object.keys(BYPN).find(p=>U(p)===U(pnRaw)):undefined;
-  scanCtx={lot:sc.lot,pn:pnKey||pnRaw,wn:sc.wn};$('dLot').value=sc.lot;
+  scanCtx={lot:sc.lot,pn:pnKey||pnRaw,wn:sc.wn};$('dLot').value=sc.lot;lotToCart();
   const lotTag=`<span><span class="k">${esc(T('kLot'))}</span><b>${esc(sc.lot)}</b></span>`;
   if(!pnRaw){
     $('dWn').value=sc.wn;$('dQty').value='';
@@ -874,6 +876,7 @@ async function saveReq(){
   if(!line||!name){toast(T('needLine'));(line?$('aName'):$('aLine')).focus();return;}
   if(!cart.length){toast(T('needItems'));return;}
   if(cart.some(c=>!(parseInt(c.qty,10)>0))){toast(T('badQty'));return;}
+  lotToCart();
   const noLot=cart.filter(c=>!c.lot).length;
   if(noLot&&!confirm(noLot+T('noLotConfirm'))){$('dLot').focus();return;}
   const d=new Date();const reqNo=`P${PLANT}-${String(d.getFullYear()).slice(2)}${pad(d.getMonth()+1)}${pad(d.getDate())}-${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}-${Math.random().toString(36).slice(2,5).toUpperCase()}`;
