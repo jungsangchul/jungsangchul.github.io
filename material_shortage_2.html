@@ -64,6 +64,7 @@ td.adjc{cursor:pointer;text-decoration:underline dotted #9aa6b6}
 .adjbox{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin:10px 0}
 .adjbox div{background:#f6f8fb;border-radius:8px;padding:8px 10px;font-size:12px;color:var(--mute)}
 .adjbox b{display:block;font-size:18px;color:var(--ink);margin-top:2px}
+.tyf{display:flex;flex-direction:column;gap:4px}.tyc{display:flex;gap:4px;flex-wrap:wrap}.tyc label{display:flex;align-items:center;gap:3px;padding:5px 8px;border:1px solid #cbd5e1;border-radius:6px;font-size:12px;cursor:pointer;user-select:none;background:#fff}.tyc label:has(input:checked){background:#e0ecff;border-color:#3b82f6}.tyc input{margin:0}.tyc b{color:#64748b;font-weight:600}
 </style>
 </head>
 <body>
@@ -101,6 +102,7 @@ td.adjc{cursor:pointer;text-decoration:underline dotted #9aa6b6}
       <label class="f"><span data-t="filter">표시</span><select id="sF">
         <option value="all" data-t="f_all">전체</option><option value="short" data-t="f_short">부족</option>
         <option value="care" data-t="f_care">주의</option><option value="chk" data-t="f_chk">부족+주의</option></select></label>
+      <div class="f tyf" id="sType"><span data-t="type">구분</span><div class="tyc"><label><input type="checkbox" value="Terminal" checked>Terminal <b data-tc="Terminal"></b></label><label><input type="checkbox" value="Wire" checked>Wire <b data-tc="Wire"></b></label><label><input type="checkbox" value="Seal" checked>Seal <b data-tc="Seal"></b></label><label><input type="checkbox" value="Other" checked>Other <b data-tc="Other"></b></label></div></div>
       <button class="btn sec" id="sCopy" data-t="copy">복사</button>
       <button class="btn sec" id="sXlsx" data-t="xlsx">엑셀</button>
     </div>
@@ -248,7 +250,7 @@ const H={apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json
 /* ---------- i18n ---------- */
 const ES={title:'Pronóstico de faltantes',plant:'Planta 2 México · Torreón',tab_sum:'Faltantes',tab_need:'Material requerido (17000)',tab_cnt:'Inventario físico',
 tab_rec:'Entrada a piso (30810)',tab_use:'Consumo (32040)',tab_mst:'Material en almacén (25010)',cntDate:'Fecha inventario',from:'Desde',to:'Hasta',
-thr:'Umbral alerta (<)',run:'Consultar',search:'Buscar',filter:'Mostrar',f_all:'Todo',f_short:'Faltante',f_care:'Alerta',f_chk:'Faltante+Alerta',
+thr:'Umbral alerta (<)',run:'Consultar',search:'Buscar',filter:'Mostrar',type:'Tipo',f_all:'Todo',f_short:'Faltante',f_care:'Alerta',f_chk:'Faltante+Alerta',
 copy:'Copiar',xlsx:'Excel',k_mat:'Materiales',k_short:'Faltante (<0)',k_care:'Alerta',k_ex:'Filas LOT excluidas',
 formula:'Stock actual = Inventario − Consumo + Entrada + Ajuste · Pronóstico = Stock actual + Almacén − Requerido',
 need_h:'Pegar material requerido (col. A~F)',need_hint:'Copie columnas A~F (código, nombre, cantidad, unidad, LOTNO, línea) y péguelas aquí.',
@@ -586,27 +588,30 @@ async function calc(){
   }catch(e){alert(e.message)}
   busy(0);renderSum();
 }
-const mtype=c=>{const h=String(c||'').trim().toUpperCase()[0];return h==='T'?'Terminal':h==='W'?'Wire':h==='J'?'Seal':'Other'};
+const TYPES=['Terminal','Wire','Seal','Other'];const mtype=c=>{const h=String(c||'').trim().toUpperCase()[0];return h==='T'?'Terminal':h==='W'?'Wire':h==='J'?'Seal':'Other'};
+function selTypes(){return new Set([...document.querySelectorAll('#sType input:checked')].map(i=>i.value))}
 function status(r){const th=Number(CFG.threshold)||0;return r.short<0?'short':r.short<th?'care':'ok'}
 function viewList(){
   if(!SUM)return[];
-  const q=$('sQ').value.trim().toUpperCase(),f=$('sF').value;
+  const q=$('sQ').value.trim().toUpperCase(),f=$('sF').value,ty=selTypes();
   SUM.list.forEach(r=>{r.type=mtype(r.code)});
-  let l=SUM.list.filter(r=>{const s=status(r);if(f==='short'&&s!=='short')return false;if(f==='care'&&s!=='care')return false;if(f==='chk'&&s==='ok')return false;
+  let l=SUM.list.filter(r=>{if(!ty.has(r.type))return false;const s=status(r);if(f==='short'&&s!=='short')return false;if(f==='care'&&s!=='care')return false;if(f==='chk'&&s==='ok')return false;
     return!q||(r.code+' '+r.name+' '+r.type).toUpperCase().includes(q)});
   if(sortK)l=[...l].sort((a,b)=>{const x=a[sortK],y=b[sortK];return(typeof x==='string'?x.localeCompare(y):x-y)*sortD});
   return l;
 }
 function cols(){
   const cd=SUM?SUM.cd:'',rng=SUM&&SUM.f?`${md(SUM.f)}~${md(SUM.t)}`:'';
-  return[['code',tr('자재코드','Código')],['type',tr('구분','Tipo')],['name',tr('자재명','Nombre')],['unit',tr('단위','Unid.')],['need',tr('필요량','Requerido'),1],
+  return[['type',tr('구분','Tipo')],['code',tr('자재코드','Código')],['name',tr('자재명','Nombre')],['unit',tr('단위','Unid.')],['need',tr('필요량','Requerido'),1],
    ['cnt',tr('실사','Inv.')+(cd?`(${md(cd).replace('/','')})`:''),1],['use',tr('사용량','Consumo')+`(${rng})`,1],['rec',tr('입고량','Entrada')+`(${rng})`,1],['adj',tr('조정','Ajuste'),1],
    ['cur',tr('현재고','Stock')+(SUM&&SUM.t?`(${md(SUM.t)})`:''),1],['wh',tr('창고재고','Almacén'),1],['short',tr('부족예상','Pronóstico'),1],['chk','check']];
 }
 function renderSum(){
   $('sThr').value=CFG.threshold;
   if(!SUM){$('sTbl').innerHTML=`<tr><td class="hint" style="padding:20px">${tr('조회 버튼을 누르세요','Presione Consultar')}</td></tr>`;return}
-  const all=SUM.list,st=all.map(status);
+  SUM.list.forEach(r=>{r.type=mtype(r.code)});
+  {const f=$('sF').value,q=$('sQ').value.trim().toUpperCase();TYPES.forEach(t=>{const e=document.querySelector(`#sType b[data-tc="${t}"]`);if(e)e.textContent=SUM.list.filter(r=>{if(r.type!==t)return false;const s=status(r);if(f==='short'&&s!=='short')return false;if(f==='care'&&s!=='care')return false;if(f==='chk'&&s==='ok')return false;if(f==='need'&&r.extra)return false;if(f==='extra'&&!r.extra)return false;return!q||(r.code+' '+r.name+' '+r.type).toUpperCase().includes(q)}).length})}
+  const all=SUM.list.filter(r=>selTypes().has(r.type)),st=all.map(status);
   $('kAll').textContent=all.length;$('kShort').textContent=st.filter(s=>s==='short').length;
   $('kCare').textContent=st.filter(s=>s==='care').length;$('kEx').textContent=SUM.exRows;
   $('sInfo').textContent=tr(`실사 ${SUM.cd||'-'} · 사용/입고 ${SUM.f||'-'} ~ ${SUM.t||'-'} · 제외 LOT: ${EX.map(e=>e.lotno).join(', ')||'없음'}`,
@@ -625,12 +630,13 @@ function renderSum(){
     if(sortK===k)sortD=-sortD;else{sortK=k;sortD=1}renderSum()});
 }
 ['sQ','sF'].forEach(i=>$(i).addEventListener(i==='sQ'?'input':'change',renderSum));
+document.querySelectorAll('#sType input').forEach(i=>i.addEventListener('change',renderSum));
 document.querySelectorAll('.kpi').forEach(k=>k.onclick=()=>{$('sF').value=k.dataset.f;renderSum()});
 function exportRows(){const C=cols();const lab={short:tr('부족','Faltante'),care:'carefull',ok:''};
   return[C.map(c=>c[1])].concat(viewList().map(r=>C.map(([k])=>k==='chk'?lab[status(r)]:r[k])))}
 $('sCopy').onclick=async()=>{if(!SUM)return;const t=exportRows().map(r=>r.join('\t')).join('\n');
   try{await navigator.clipboard.writeText(t);toast(tr('클립보드에 복사됨 — 엑셀에 붙여넣기','Copiado'))}catch(e){alert(e.message)}};
-$('sXlsx').onclick=()=>{if(!SUM)return;const ws=XLSX.utils.aoa_to_sheet(exportRows());ws['!cols']=cols().map((c,i)=>({wch:i===2?24:i===1?10:14}));
+$('sXlsx').onclick=()=>{if(!SUM)return;const ws=XLSX.utils.aoa_to_sheet(exportRows());ws['!cols']=cols().map((c,i)=>({wch:i===2?24:i===0?10:14}));
   const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'부족예상');XLSX.writeFile(wb,`재고부족예상_2공장_${SUM.t||today()}.xlsx`)};
 
 /* ---------- 재고조정 ---------- */
