@@ -113,7 +113,7 @@ td.adjc{cursor:pointer;text-decoration:underline dotted #9aa6b6}
     <div class="kpi g" data-f="all"><span data-t="k_ex">제외 LOT 행</span><b id="kEx">-</b></div>
   </div>
   <div class="tw"><table id="sTbl"></table></div>
-  <p class="hint" data-t="formula">현재고 = 실사 − 사용량 + 입고량 + 조정 (0처리로 현장롤이 0이 되면 자동 0) · 부족예상 = 현재고 + 창고재고 − 필요량 · 필요량은 같은 자재코드 합산(제외 LOT 제외) · 현장롤수 = TML·WIRE 입고 바코드 중 0처리 안 된 롤 수 (숫자에 마우스를 올리면 롤 수량합) · 창고롤수 = 창고보유자재(25010)의 개수</p>
+  <p class="hint" data-t="formula">현재고 = 실사 − 사용량 + 입고량 + 조정 (0처리로 현장롤이 0이 되면 자동 0) · 부족예상 = 현재고 + 창고재고 − 필요량 · 필요량은 같은 자재코드 합산(제외 LOT 제외) · 현장롤수 = TML·WIRE 입고 바코드 중 0처리 안 된 롤 수 (현재고를 0으로 조정하면 그 전에 입고된 롤은 0) (숫자에 마우스를 올리면 롤 수량합) · 창고롤수 = 창고보유자재(25010)의 개수</p>
 </section>
 
 <!-- ===== 17000 ===== -->
@@ -225,7 +225,7 @@ td.adjc{cursor:pointer;text-decoration:underline dotted #9aa6b6}
     </div>
     <div class="card">
       <h3 data-t="adj_auto_h">0처리 자동조정</h3>
-      <div class="hint" data-t="adj_auto_hint">TML·WIRE 프로그램에서 바코드를 0처리해서 그 자재의 현장 롤이 하나도 남지 않으면, 현재고를 자동으로 0으로 맞춥니다. 0처리 이후에 수동 조정을 저장하면 수동 조정이 우선합니다.</div>
+      <div class="hint" data-t="adj_auto_hint">현재고를 0으로 조정하면 남은 현장롤도 TML·WIRE 프로그램에서 0처리됩니다(조정 삭제 시 취소). 반대로 TML·WIRE 프로그램에서 바코드를 0처리해서 그 자재의 현장 롤이 하나도 남지 않으면, 현재고를 자동으로 0으로 맞춥니다. 0처리 이후에 수동 조정을 저장하면 수동 조정이 우선합니다.</div>
       <div class="hint" id="aAutoInfo" style="margin-top:8px;color:var(--ink)"></div>
     </div>
   </div>
@@ -251,7 +251,7 @@ const ES={title:'Pronóstico de faltantes',plant:'Planta 1 México · Monclova',
 tab_rec:'Entrada a piso (30810)',tab_use:'Consumo (32040)',tab_mst:'Material en almacén (25010)',cntDate:'Fecha inventario',from:'Desde',to:'Hasta',
 thr:'Umbral alerta (<)',run:'Consultar',search:'Buscar',filter:'Mostrar',f_all:'Todo',f_short:'Faltante',f_care:'Alerta',f_chk:'Faltante+Alerta',f_need:'Solo 17000',f_extra:'Fuera de 17000 (piso)',
 copy:'Copiar',xlsx:'Excel',k_mat:'Materiales',k_short:'Faltante (<0)',k_care:'Alerta',k_ex:'Filas LOT excluidas',
-formula:'Stock actual = Inventario − Consumo + Entrada + Ajuste (sin rollos en piso tras cierre 0 → 0) · Pronóstico = Stock actual + Almacén − Requerido · Rollos piso = rollos recibidos (TML·WIRE) sin cierre (0) · Rollos alm. = Piezas de almacén (25010)',
+formula:'Stock actual = Inventario − Consumo + Entrada + Ajuste (sin rollos en piso tras cierre 0 → 0) · Pronóstico = Stock actual + Almacén − Requerido · Rollos piso = rollos recibidos (TML·WIRE) sin cierre (0); ajuste a 0 → rollos previos = 0 · Rollos alm. = Piezas de almacén (25010)',
 need_h:'Pegar material requerido (col. A~F)',need_hint:'Copie columnas A~F (código, nombre, cantidad, unidad, LOTNO, línea) y péguelas aquí.',
 mode:'Modo',m_replace:'Reemplazar todo',m_append:'Agregar a la lista',save:'Guardar',clearAll:'Borrar todo',ex_h:'LOT excluidos',
 ex_hint:'Las filas cuyo LOTNO contenga estos números no se suman.',add:'Agregar',need_list:'Lista guardada',mst_h:'Pegar material en almacén',
@@ -305,7 +305,7 @@ async function ins(table,data,upsertKey){
 async function del(table,q){const r=await fetch(SB+table+'?'+q,{method:'DELETE',headers:H});if(!r.ok)throw new Error(await r.text())}
 
 /* ---------- state ---------- */
-let ADJ=[],NEED=[],EX=[],MST=[],DATES=[],CFG={threshold:'2000'},SUM=null,sortK=null,sortD=1;
+let ROLLB={},ADJ=[],NEED=[],EX=[],MST=[],DATES=[],CFG={threshold:'2000'},SUM=null,sortK=null,sortD=1;
 
 /* ---------- tabs ---------- */
 document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>{
@@ -575,19 +575,28 @@ async function calc(){
       f&&t?sel('mshort_usage',`select=code,name,qty&udate=gte.${f}&udate=lte.${t}`):[],
       f&&t?sel('mshort_receipt',`select=code,name,unit,qty&rdate=gte.${f}&rdate=lte.${t}`):[]]);
     /* 현장 보유 롤수: TML·WIRE 입고 바코드 − 0처리(사용완료) 바코드 */
-    let RL={},RQ={},zAt='',HB={},LZ={};const NM={};const nm=(c,n,u)=>{c=String(c||'').toUpperCase();if(!c)return;const o=NM[c]||(NM[c]={});if(n&&!o.name)o.name=n;if(u&&!o.unit)o.unit=u};
-    try{const [rr,zz]=await Promise.all([sel('tmlwire_receipts','select=barcode,mat_code,mat_name,unit,qty'),sel('tmlwire_zero','select=barcode,uploaded_at')]);
+    let RL={},RQ={},zAt='',HB={},LZ={},RX={};const RB={};
+    /* 마지막 수동조정이 0이면 그 시각 이전에 입고된 롤은 현장롤수에서 제외 */
+    const ZA={};{const last={};if(f&&t)ADJ.forEach(a=>{if(a.adj_date<f||a.adj_date>t)return;const c=String(a.code).toUpperCase(),tm=new Date(a.created_at).getTime()||0;
+      if(!last[c]||tm>last[c].tm)last[c]={tm,z:Number(a.after_qty)===0}});Object.keys(last).forEach(c=>{if(last[c].z)ZA[c]=last[c].tm})}
+    const rcvMs=v=>{v=String(v||'').trim();let m=v.match(/^(\d{4})-(\d{1,2})-(\d{1,2})[ T](\d{1,2}):(\d{2})/);if(m)return new Date(+m[1],m[2]-1,+m[3],+m[4],+m[5]).getTime();
+      m=v.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})\s+(\d{1,2}):(\d{2})/);if(m){const y=+m[3]<100?2000+ +m[3]:+m[3];return new Date(y,m[1]-1,+m[2],+m[4],+m[5]).getTime()}return 0};const NM={};const nm=(c,n,u)=>{c=String(c||'').toUpperCase();if(!c)return;const o=NM[c]||(NM[c]={});if(n&&!o.name)o.name=n;if(u&&!o.unit)o.unit=u};
+    try{const [rr,zz]=await Promise.all([sel('tmlwire_receipts','select=barcode,mat_code,mat_name,unit,qty,recv_at'),sel('tmlwire_zero','select=barcode,uploaded_at')]);
       const Z=new Map(zz.map(z=>[z.barcode,z.uploaded_at||'']));zz.forEach(z=>{if((z.uploaded_at||'')>zAt)zAt=z.uploaded_at});
       rr.forEach(r=>{nm(r.mat_code,r.mat_name,r.unit);const c0=String(r.mat_code||'').toUpperCase();if(c0&&r.barcode)HB[c0]=1;
         if(r.barcode&&Z.has(r.barcode)){const t=new Date(Z.get(r.barcode)).getTime()||0;if(t>(LZ[c0]||0))LZ[c0]=t}
-        if(!r.barcode||Z.has(r.barcode))return;const c=String(r.mat_code||'').toUpperCase();RL[c]=(RL[c]||0)+1;RQ[c]=(RQ[c]||0)+(Number(r.qty)||0)});
+        if(!r.barcode||Z.has(r.barcode))return;
+        (RB[c0]||(RB[c0]=[])).push(r.barcode);
+        if(ZA[c0]&&rcvMs(r.recv_at)<=ZA[c0]){RX[c0]=(RX[c0]||0)+1;return}const c=String(r.mat_code||'').toUpperCase();RL[c]=(RL[c]||0)+1;RQ[c]=(RQ[c]||0)+(Number(r.qty)||0)});
+      ROLLB=RB;
     }catch(e){console.warn('roll',e)}
     const sum=a=>{const m={};a.forEach(r=>{const c=String(r.code).toUpperCase();m[c]=(m[c]||0)+Number(r.qty)});return m};
     /* 수동 재고조정 (사용·입고 기간 내) */
     const A={},LA={};if(f&&t)ADJ.forEach(a=>{if(a.adj_date<f||a.adj_date>t)return;const c=String(a.code).toUpperCase();A[c]=(A[c]||0)+(Number(a.qty)||0);
       const tm=new Date(a.created_at).getTime()||0;if(tm>(LA[c]||0))LA[c]=tm});
     /* 0처리 자동조정: 바코드 관리 자재인데 현장롤 0 + 마지막 0처리가 마지막 수동조정보다 나중 → 현재고 0 */
-    const fin=(c,base)=>{const auto=(HB[c]&&!(RL[c])&&(LZ[c]||0)>(LA[c]||0)&&Math.abs(base)>1e-9)?-base:0;return{adj:(A[c]||0)+auto,auto,base,cur:base+auto,lz:LZ[c]||0}};
+    const fin0=(c,base)=>{const auto=(HB[c]&&!(RL[c])&&(LZ[c]||0)>(LA[c]||0)&&Math.abs(base)>1e-9)?-base:0;return{adj:(A[c]||0)+auto,auto,base,cur:base+auto,lz:LZ[c]||0,rollx:RX[c]||0}};
+    const fin=fin0;
     const C=sum(cnt),U=sum(use),R=sum(rec),W={},WR={};MST.forEach(r=>{W[r.code]=Number(r.qty)||0;WR[r.code]=Number(r.cnt)||0;nm(r.code,r.name,r.unit)});
     use.forEach(r=>nm(r.code,r.name));rec.forEach(r=>nm(r.code,r.name,r.unit));
     const agg={},order=[];let exRows=0;
@@ -639,7 +648,7 @@ function renderSum(){
       if(k==='adj')return`<td class="n ${v<0?'neg':''}" title="${r.auto?tr('0처리 자동조정 포함: ','Incluye ajuste por cierre: ')+fmt(r.auto):''}">${v?fmt(v):'<span class="hint">0</span>'}${r.auto?'<span class="tag az">0</span>':''}</td>`;
       if(k==='cur')return`<td class="n adjc ${v<0?'neg':''}" data-adj="${esc(r.code)}" title="${tr('눌러서 재고조정','Toque para ajustar')}">${fmt(v)}</td>`;
       if(k==='whroll')return`<td class="n">${v?fmt(v):'<span class="hint">0</span>'}</td>`;
-      if(k==='roll')return`<td class="n" title="${tr('현장 보유 롤 수량합','Cant. en rollos')}: ${fmt(r.rollq)}">${v?fmt(v):'<span class="hint">0</span>'}</td>`;
+      if(k==='roll')return`<td class="n" title="${tr('현장 보유 롤 수량합','Cant. en rollos')}: ${fmt(r.rollq)}${r.rollx?tr(` · 재고조정 0으로 ${r.rollx}롤 제외`,` · ${r.rollx} rollos excluidos por ajuste a 0`):''}">${v?fmt(v):'<span class="hint">0</span>'}${r.rollx?'<span class="tag az">0</span>':''}</td>`;
       if(k==='code'&&r.extra)return`<td>${esc(v)}<span class="tag xt" title="${tr('17000 작업필요자재에 없음','No está en 17000')}">${tr('현장','Piso')}</span></td>`;
       return n?`<td class="n ${v<0?'neg':''}">${fmt(v)}</td>`:`<td>${esc(v)}</td>`}).join('')+'</tr>'}).join('');
   $('sTbl').querySelectorAll('td[data-adj]').forEach(td=>td.onclick=e=>{e.stopPropagation();openAdj(td.dataset.adj)});
@@ -656,6 +665,8 @@ $('sXlsx').onclick=()=>{if(!SUM)return;const ws=XLSX.utils.aoa_to_sheet(exportRo
   const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'부족예상');XLSX.writeFile(wb,`재고부족예상_1공장_${SUM.t||today()}.xlsx`)};
 
 /* ---------- 재고조정 ---------- */
+async function rpc(fn,body){const r=await fetch(SB+'rpc/'+fn,{method:'POST',headers:H,body:JSON.stringify(body)});if(!r.ok)throw new Error(await r.text());return r.json()}
+const nowLocal=()=>{const d=new Date();return today()+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')};
 async function loadAdj(){ADJ=await sel('mshort_adjust','select=*&order=created_at.desc');renderAdj()}
 const findSum=c=>SUM?SUM.list.find(r=>String(r.code).toUpperCase()===c):null;
 function fillAdjCodes(){if(!SUM)return;$('aCodes').innerHTML=SUM.list.map(r=>`<option value="${esc(r.code)}">${esc(r.name||'')}</option>`).join('');
@@ -680,15 +691,19 @@ $('aSave').onclick=async()=>{
   if(SUM.f&&(d<SUM.f||d>SUM.t)&&!confirm(tr(`일자 ${d}가 조회기간(${SUM.f}~${SUM.t}) 밖이라 현재 계산에는 반영되지 않습니다. 저장할까요?`,`La fecha ${d} está fuera del periodo. ¿Guardar?`)))return;
   const base=r?r.base:0,dq=a-base;
   if(!r&&!confirm(tr(`${c}는 조회 결과에 없습니다. 현재고 0 기준으로 ${fmt(a)} 저장할까요?`,`${c} no está en la consulta. ¿Guardar ${fmt(a)}?`)))return;
-  busy(1);try{await ins('mshort_adjust',[{adj_date:d,code:c,before_qty:r?r.cur:0,after_qty:a,qty:dq,memo:$('aMemo').value.trim()||null}]);
+  const zb=a===0?(ROLLB[c]||[]):[];
+  if(zb.length&&!confirm(tr(`현장롤 ${zb.length}개를 TML·WIRE 프로그램에서도 0처리(사용완료)합니다. 계속할까요?`,`Se cerrarán (0) ${zb.length} rollos también en TML·WIRE. ¿Continuar?`)))return;
+  busy(1);try{await ins('mshort_adjust',[{adj_date:d,code:c,before_qty:r?r.cur:0,after_qty:a,qty:dq,memo:$('aMemo').value.trim()||null,zero_barcodes:zb.length?zb:null}]);
+    if(zb.length){const za=nowLocal();await rpc('tmlwire_upload',{p_target:'zero',p_rows:zb.map(b=>({barcode:b,zero_at:za})),p_clear:false})}
     $('aAfter').value='';$('aMemo').value='';await calc();toast(tr('조정 저장','Ajuste guardado'))}catch(e){alert(e.message)}busy(0)};
 function renderAdj(){
   const q=$('aQ').value.trim().toUpperCase(),l=ADJ.filter(a=>!q||(a.code+' '+(a.memo||'')).toUpperCase().includes(q));
   $('aInfo').textContent=tr(`${ADJ.length}건`,`${ADJ.length} registros`);
   $('aTbl').innerHTML=`<tr><th>${tr('일자','Fecha')}</th><th>${tr('자재코드','Código')}</th><th class="n">${tr('조정전','Antes')}</th><th class="n">${tr('조정후','Después')}</th><th class="n">${tr('조정량','Ajuste')}</th><th>${tr('사유','Motivo')}</th><th>${tr('저장시각','Registrado')}</th><th></th></tr>`+
-    (l.map(a=>`<tr><td>${esc(a.adj_date)}</td><td>${esc(a.code)}</td><td class="n">${fmt(a.before_qty)}</td><td class="n">${fmt(a.after_qty)}</td><td class="n ${a.qty<0?'neg':''}">${a.qty>0?'+':''}${fmt(a.qty)}</td><td>${esc(a.memo||'')}</td><td class="hint">${lastUpd([a],'created_at')}</td><td><button class="btn red sm" data-id="${a.id}">${tr('삭제','Eliminar')}</button></td></tr>`).join('')||`<tr><td colspan="8" class="hint" style="padding:16px">-</td></tr>`);
-  $('aTbl').querySelectorAll('button[data-id]').forEach(b=>b.onclick=async()=>{if(!confirm(tr('이 조정을 삭제할까요?','¿Eliminar este ajuste?')))return;
-    busy(1);try{await del('mshort_adjust','id=eq.'+b.dataset.id);await calc();toast('OK')}catch(e){alert(e.message)}busy(0)});
+    (l.map(a=>`<tr><td>${esc(a.adj_date)}</td><td>${esc(a.code)}</td><td class="n">${fmt(a.before_qty)}</td><td class="n">${fmt(a.after_qty)}</td><td class="n ${a.qty<0?'neg':''}">${a.qty>0?'+':''}${fmt(a.qty)}</td><td>${esc(a.memo||'')}${a.zero_barcodes&&a.zero_barcodes.length?`<span class="tag az" title="${esc(a.zero_barcodes.join(', '))}">${tr('롤 '+a.zero_barcodes.length+'개 0처리','0: '+a.zero_barcodes.length+' rollos')}</span>`:''}</td><td class="hint">${lastUpd([a],'created_at')}</td><td><button class="btn red sm" data-id="${a.id}">${tr('삭제','Eliminar')}</button></td></tr>`).join('')||`<tr><td colspan="8" class="hint" style="padding:16px">-</td></tr>`);
+  $('aTbl').querySelectorAll('button[data-id]').forEach(b=>b.onclick=async()=>{const a=ADJ.find(x=>String(x.id)===b.dataset.id),zb=(a&&a.zero_barcodes)||[];
+    if(!confirm(tr('이 조정을 삭제할까요?','¿Eliminar este ajuste?')+(zb.length?tr(`\n이 조정으로 0처리한 롤 ${zb.length}개도 TML·WIRE에서 0처리 취소됩니다.`,`\nTambién se revierte el cierre de ${zb.length} rollos en TML·WIRE.`):'')))return;
+    busy(1);try{for(const bc of zb)await rpc('tmlwire_zero_undo',{p_barcode:bc});await del('mshort_adjust','id=eq.'+b.dataset.id);await calc();toast('OK')}catch(e){alert(e.message)}busy(0)});
 }
 $('aQ').oninput=renderAdj;
 
