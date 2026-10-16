@@ -174,11 +174,11 @@ table.cfg input{width:17px;height:17px}
   <div class="grid2">
     <div class="card">
       <h3 data-t="in_h">일별 입고 붙여넣기</h3>
-      <div class="hint" data-t="in_hint">자재명·업체품명·수량 3열을 붙여넣으세요(머릿글 없어도 됨). 자재명 칸은 자재코드나 구성부품명 모두 가능하며 자재코드 → 자재명 → 업체품명 순서로 품목을 찾습니다. 찾지 못했거나 후보가 여러 개인 행은 자재코드를 직접 고를 수 있습니다.</div>
+      <div class="hint" data-t="in_hint">자재코드·자재명·업체품명·수량 4열을 붙여넣으세요(머릿글 없어도 됨). 자재코드로 먼저 찾고, 코드가 없거나 맞지 않으면 자재명 → 업체품명 순서로 찾습니다. 찾지 못했거나 후보가 여러 개인 행은 자재코드를 직접 고를 수 있습니다.</div>
       <div class="row" style="margin:10px 0">
         <label class="f"><span data-t="in_date">입고일자</span><input type="date" id="nDate"></label>
         <label class="f" style="flex:1;min-width:140px"><span data-t="memo">메모</span><input id="nMemo"></label>
-        <label class="chkl"><input type="checkbox" id="nCreate"><span data-t="create_new2">찾지 못한 행은 신규 품목으로 추가</span></label>
+        <label class="chkl"><input type="checkbox" id="nCreate"><span data-t="create_new2">찾지 못한 행은 신규 품목으로 추가 (붙여넣은 자재코드 사용)</span></label>
       </div>
       <textarea id="nPaste"></textarea><div class="prev" id="nInfo"></div>
       <div class="row"><button class="btn" id="nSave" data-t="save" disabled>저장</button><button class="btn sec" id="nClear" data-t="clear">지우기</button></div>
@@ -333,8 +333,8 @@ proc:'Proceso (A·B ensamble · C corte)',copy:'Copiar',xlsx:'Excel',k_items:'Ma
 stk_formula:'Stock actual = Stock inicial + Entradas − Consumo SUB − Consumo ensamble ± Ajustes · Toque el número de Stock para ajustar; toque otra celda para ver el historial del material.',
 init_h:'Pegar stock inicial',init_hint:'Pegue código y cantidad (sin encabezado OK). La primera columna es el código y la última la cantidad; la cantidad pasa a ser el stock actual (sobrescribe). También puede descargar la plantilla de todos los materiales y llenar solo la columna amarilla. Las filas sin cantidad se omiten.',
 base_date:'Fecha base',memo:'Nota',create_new:'Agregar como material nuevo los códigos que no existen',save:'Guardar',clear:'Limpiar',tpl:'Plantilla de materiales (Excel)',savedDates:'Fechas guardadas',
-in_h:'Pegar entradas del día',in_hint:'Pegue 3 columnas: nombre del material, nombre del proveedor, cantidad (sin encabezado OK). En la primera puede ir el código o el nombre del componente; se busca por código → nombre → nombre del proveedor. Si no se encuentra o hay varios candidatos, puede elegir el código.',
-in_date:'Fecha de entrada',create_new2:'Agregar como material nuevo las filas no encontradas',
+in_h:'Pegar entradas del día',in_hint:'Pegue 4 columnas: código, nombre del material, nombre del proveedor, cantidad (sin encabezado OK). Se busca primero por código; si no hay o no coincide, por nombre → nombre del proveedor. Si no se encuentra o hay varios candidatos, puede elegir el código.',
+in_date:'Fecha de entrada',create_new2:'Agregar como material nuevo las filas no encontradas (usa el código pegado)',
 kind_INIT:'Stock inicial',kind_IN:'Entrada',kind_SUB:'Prod. SUB',kind_ASSY:'Prod. ensamble',kind_ADJ:'Ajuste',hist_h:'Historial',from:'Desde',to:'Hasta',inc_cancel:'Incluir cancelados',
 res_h_SUB:'Pegar resultados SUB (80230)',res_h_ASSY:'Pegar resultados de ensamble (80350)',
 res_hint:'Copie el resultado de MES con encabezado y péguelo (línea, modelo, producto, LOTNO, No. parte, cant. orden, cant. terminada, turno, LOT conv.). El No. parte 91500-GG920-46 se compara con la col. D (código 91500-GG920, incl. semiterminados # y +) + col. F (revisión 46) del BOM y se descuenta cant. terminada × consumo por unidad. Si vuelve a pegar la misma fecha·línea·LOT·parte·turno, solo se aplica la diferencia.',
@@ -709,10 +709,11 @@ function initTemplate(){
 let NP=null;
 function inParse(t){
   const rows=parseTSV(t);const out=[];let skip=0;
-  rows.forEach(r=>{let a,b,q;
-    if(r.length>=3){a=r[0];b=r[1];q=num(r[2])}else if(r.length===2){a=r[0];b='';q=num(r[1])}else{skip++;return}
-    if(isNaN(q)||q===0||!(a||b)){skip++;return}
-    const m=matchItem(a,b);out.push({n:out.length,a,b,q,code:m&&m.code?m.code:'',how:m?m.how:'none',cands:m&&m.cands?m.cands:null})});
+  rows.forEach(r=>{let c='',a='',b='',q;
+    if(r.length>=4){c=r[0];a=r[1];b=r[2];q=num(r[3])}else if(r.length===3){a=r[0];b=r[1];q=num(r[2])}else if(r.length===2){c=r[0];q=num(r[1])}else{skip++;return}
+    if(isNaN(q)||q===0||!(c||a||b)){skip++;return}
+    let m=c&&IDX.code.has(nz(c))?{code:IDX.code.get(nz(c)),how:'code'}:((a||b)?matchItem(a,b):null);
+    out.push({n:out.length,c,a,b,q,code:m&&m.code?m.code:'',how:m?m.how:'none',cands:m&&m.cands?m.cands:null})});
   NP={rows:out,skip};inRender();
 }
 function inRender(){
@@ -723,8 +724,8 @@ function inRender(){
   const tot=P.rows.filter(r=>r.code&&IMAP[r.code]).reduce((s,r)=>s+r.q,0);
   $('nInfo').innerHTML=tr(`인식 <b>${P.rows.length}</b> · 매칭 <b>${ok}</b> (수량 ${fmt(tot)}) · 후보선택 ${amb} · 미등록 ${none}`,`Leídas <b>${P.rows.length}</b> · encontradas <b>${ok}</b> (cant. ${fmt(tot)}) · por elegir ${amb} · sin material ${none}`)+(P.skip?tr(` · 제외 ${P.skip}`,` · omitidas ${P.skip}`):'');
   $('nSave').disabled=!(ok+(cr?none:0));
-  tbl('nPrev',[{h:['#','#'],v:r=>r.n+1,t:'n'},{h:['자재명 (원본)','Material (original)'],k:'a'},{h:['업체품명 (원본)','Proveedor (original)'],k:'b',cls:'mute'},{h:['수량','Cantidad'],k:'q',t:'n',cls:'b'},
-    {h:['자재코드','Código'],html:r=>{const i=r.n;
+  tbl('nPrev',[{h:['#','#'],v:r=>r.n+1,t:'n'},{h:['자재코드 (원본)','Código (original)'],k:'c'},{h:['자재명 (원본)','Material (original)'],k:'a'},{h:['업체품명 (원본)','Proveedor (original)'],k:'b',cls:'mute'},{h:['수량','Cantidad'],k:'q',t:'n',cls:'b'},
+    {h:['매칭 자재코드','Código asignado'],html:r=>{const i=r.n;
       if(r.cands&&!r.code)return `<select class="mc" data-i="${i}"><option value="">${tr('— 선택 —','— elegir —')}</option>${r.cands.map(c=>`<option value="${esc(c)}">${esc(c)} · ${esc(IMAP[c].vendor_part||IMAP[c].name||'')}</option>`).join('')}</select>`;
       if(!r.code||r.how==='manual')return `<input class="mc" data-i="${i}" list="itemList" value="${esc(r.code)}" placeholder="${tr('코드 입력','código')}">`;
       return `<b>${esc(r.code)}</b>`}},
@@ -741,7 +742,7 @@ async function inSave(){
   const P=NP;if(!P)return;const cr=$('nCreate').checked;
   const lines=[];let skipped=0;
   P.rows.forEach(r=>{if(r.code&&IMAP[r.code])lines.push({code:r.code,qty:r.q,mode:'delta',src_name:r.a,src_vendor:r.b});
-    else if(!r.cands&&cr&&r.a)lines.push({code:r.a.trim(),qty:r.q,mode:'delta',create:true,name:r.a,vendor:r.b,src_name:r.a,src_vendor:r.b});else skipped++});
+    else if(!r.cands&&cr&&(r.c||r.a))lines.push({code:(r.c||r.a).trim(),qty:r.q,mode:'delta',create:true,name:r.a||r.c,vendor:r.b,src_name:r.a,src_vendor:r.b});else skipped++});
   if(!lines.length)return;
   if(!confirm(tr(`${$('nDate').value} 입고 ${lines.length}건 (수량 합계 ${fmt(lines.reduce((s,l)=>s+l.qty,0))})을 저장합니다.`+(skipped?` 매칭되지 않은 ${skipped}건은 제외됩니다.`:'')+' 진행할까요?',
     `¿Guardar ${lines.length} entradas del ${$('nDate').value}?`+(skipped?` Se omiten ${skipped} filas sin material.`:''))))return;
