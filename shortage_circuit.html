@@ -120,6 +120,8 @@ label.f.inl{min-width:150px}label.f.inl > input{padding:6px 9px}
 .hist .today{display:inline-block;margin-left:6px;font-size:11px;font-weight:700;color:var(--accent-ink);background:var(--accent);border-radius:4px;padding:0 6px}
 .hist tr.rq td{background:#14191d;color:var(--sub);font-size:12px;padding:6px 10px}
 .hist tr.rq td b{color:var(--ink);font-size:12.5px}
+.rqx{float:right;margin:-2px 0 -2px 8px;padding:2px 9px;font-size:11.5px;color:var(--ok);border-color:#2b4a36}
+.rqx:hover{background:#1a2d22}
 .wn2{font-weight:700;font-size:14px;white-space:nowrap}
 .sub2{font-size:11.5px;color:var(--sub);white-space:nowrap}
 .sub2.lot{color:var(--ink);font-weight:600;margin-top:3px}
@@ -299,7 +301,7 @@ textarea#lotBox{width:100%;min-height:160px;padding:10px;border:1px solid var(--
       <span class="agrp"><button class="btn pri" id="haAppr" data-i="aAppr">🔒 팀장 승인</button><button class="btn" id="haApprUndo" data-i="aApprUndo">🔒 승인 취소</button><button class="btn warn" id="haReject" data-i="aReject">🔒 반려</button></span>
       <span class="agrp"><button class="btn ok" id="haRecv" data-i="aRecv">선재 접수 확인</button><button class="btn" id="haRecvUndo" data-i="aRecvUndo">접수 취소</button></span>
       <button class="btn warn" id="haCancel" data-i="aCancel">신청 취소</button>
-      <span style="flex:1"></span><button class="btn sm lock" id="haPinChg" data-i="pinChg">🔒 팀장 PIN 변경</button>
+      <span style="flex:1"></span><button class="btn ok" id="haXlsx" data-i="xlsx">📗 엑셀 저장</button><button class="btn sm lock" id="haPinChg" data-i="pinChg">🔒 팀장 PIN 변경</button>
     </div>
     <div class="scroll">
       <table>
@@ -330,7 +332,7 @@ textarea#lotBox{width:100%;min-height:160px;padding:10px;border:1px solid var(--
       <button class="btn" id="hpUndo" data-i="undo">한 단계 되돌리기</button>
       <span style="flex:1"></span>
       <button class="btn" id="hpCopy" data-i="copyMes">MES 입력용 복사</button>
-      <button class="btn" id="hpCsv" data-i="csv">CSV 저장</button>
+      <button class="btn ok" id="hpXlsx" data-i="xlsx">📗 엑셀 저장</button>
       <button class="btn sm lock" id="hpPinChg" data-i="pinChg">🔒 팀장 PIN 변경</button>
     </div>
     <div class="scroll">
@@ -354,6 +356,7 @@ textarea#lotBox{width:100%;min-height:160px;padding:10px;border:1px solid var(--
       <button class="btn pri" id="saveMerge" data-i="saveMerge">품번별 교체 저장</button>
       <button class="btn" id="saveAll" data-i="saveAll">전체 교체 저장</button>
       <button class="btn warn" id="clearAll" data-i="clearAll">서브리스트 전체 삭제</button>
+      <button class="btn ok" id="mXlsx" data-i="xlsxMaster">📗 서브리스트 · LOT 엑셀 저장</button>
     </div>
     <p class="status" style="margin-top:8px" data-i="mHelp">품번별 교체: 붙여넣은 품번의 기존 행만 지우고 새로 넣습니다. 다른 품번은 그대로 유지됩니다. 저장 내용은 모든 PC와 회로조회 프로그램에 공유됩니다.</p>
     <div class="stats">
@@ -416,7 +419,7 @@ line:'Línea',requester:'Solicitante',pn:'No. de parte',defQty:'Cantidad por def
 pickTitle:'Seleccionar circuitos',onlyAll:'Todos',onlyG:'Solo grupos',onlySel:'Seleccionados',cWn:'Circuito',cGrp:'Se hacen juntos',cMat:'Material',cCol:'Color',cLen:'Long.',cTL:'Term. izq.',cTR:'Term. der.',cSub:'Sub',
 cartTitle:'Lista de solicitud',cartClear:'Vaciar',qty:'Cant.',add:'Agregar',cartEmpty:'Elija circuitos a la izquierda o capture No. de parte, circuito y cantidad arriba.',lines:'circuitos',total:'Total',notePh:'Nota (opcional) — ej. se necesita antes de las 2 pm',save:'Guardar solicitud',
 recentTitle:'Solicitudes / completados',recentDesc:'Últimos 3 días + pendientes · solo se puede cancelar en estado Solicitado',mineOnly:'Solo mi línea',cTime:'Hora',cSt:'Estado',cProc:'Proceso',noReq:'No hay solicitudes.',
-from:'Desde',to:'Hasta',search:'Buscar',worker:'Responsable',recv:'Recibir',done:'Registro MES',ship:'Entrega de cable completada',rOpen:'En proceso',rShip:'Entregados',rAll:'Todos',cShip:'Entrega',reject:'Rechazar',undo:'Regresar a Solicitado',copyMes:'Copiar para MES',csv:'Guardar CSV',
+from:'Desde',to:'Hasta',search:'Buscar',worker:'Responsable',recv:'Recibir',done:'Registro MES',ship:'Entrega de cable completada',rOpen:'En proceso',rShip:'Entregados',rAll:'Todos',cShip:'Entrega',reject:'Rechazar',undo:'Regresar a Solicitado',copyMes:'Copiar para MES',xlsx:'📗 Guardar Excel',xlsxReq:'Guardar esta solicitud en Excel',xlsxMaster:'📗 Guardar sublista · LOT en Excel',xlsxLoading:'Cargando módulo Excel…',xlsxFail:'No se pudo cargar el módulo Excel.',xlsxNone:'No hay renglones para exportar.',xlsxSaved:'Excel guardado',shAll:'Todos',shSel:'Selección',shMaster:'Sublista',shLot:'LOT',xCheck:'Verif.',xNote:'Observaciones',
 mTitle:'Pegar sublista',mDesc:'Copie en Excel desde la fila de encabezados hasta los datos (Ctrl+C) y péguelos abajo (Ctrl+V). Sin encabezados se usa el formato de 69 columnas. Es la misma sublista del programa de consulta de circuitos.',saveMerge:'Guardar reemplazando por No. parte',saveAll:'Reemplazar todo',clearAll:'Borrar sublista',mHelp:'Reemplazar por No. parte: solo se borran las filas de los números de parte pegados. Los datos se comparten con todas las PC y con la consulta de circuitos.',sRows:'Circuitos guardados',sPn:'No. de parte',sUpd:'Último guardado',
 all:'Todos',st1:'Solicitado',st2:'Recibido',st3:'Reg. MES',st4:'Entregado',st5:'Rechazado',st6:'Cancelado',stAll:'Todos',cancel:'Cancelar',noMaster:'No hay sublista. Péguela en la pestaña Sublista.',choosePn:'Seleccione un No. de parte.',noHit:'Sin resultados.',
 needLine:'Capture línea y solicitante.',needItems:'La lista está vacía.',badQty:'Revise las cantidades (mayor que 0).',saved:'Solicitud guardada',confirmSave:'¿Guardar la solicitud?',notInMaster:'No está en la sublista',addedNoMaster:'No está en la sublista. Se agregó tal cual.',needPnWn:'Capture No. de parte y circuito.',
@@ -438,7 +441,7 @@ Object.assign(ES,{roleAsm:'Jefe de ensamble',roleProc:'Jefe de corte',pinDesc:'C
  rangeNote:'Los pendientes (solicitado · recibido · entregado) se muestran sin importar la fecha',qPh:'No. parte · circuito · línea · LOT',aRecv:'Confirmar recepción de cable',aRecvUndo:'Deshacer recepción',aCancel:'Cancelar solicitud',
  pRecv:'Recibir',lotPh:'LOT MES utilizado',pShip:'Completar / entregar',undo:'Regresar un paso',cSpec:'Especificación',cTerm:'Term. izq. / der.',cFlow:'Historial (solicitud → corte → entrega → ensamble)',
  fReq:'Solicitud',fRcv:'Corte recibe',fShip:'Entrega',fRecv:'Ensamble recibe',inProg:'En proceso',needLot:'Capture el LOT MES.',needName:'Capture el solicitante (confirma la recepción).'});
-Object.assign(KO,{roleAsm:'조립팀장',roleProc:'가공팀장',pinDesc:'팀장 PIN을 입력하세요. 확인 후 10분 동안은 다시 묻지 않습니다.',pinLabel:'PIN',pinEmpty:'모든 칸을 입력하세요.',pinWrong:'PIN이 맞지 않습니다.',pinChgT:'변경',pinChgDesc:'현재 PIN을 확인한 뒤 새 PIN으로 바꿉니다 (4자 이상).',pinCur:'현재 PIN',pinNew:'새 PIN',pinNew2:'새 PIN 확인',pinMismatch:'새 PIN이 서로 다릅니다.',pinShort:'새 PIN은 4자 이상이어야 합니다.',pinChanged:'PIN을 변경했습니다.',st1:'승인대기',st2:'조립승인',st3:'가공접수',st4:'가공승인',st5:'출고',st6:'조립접수완료',st7:'반려',st8:'취소',fAppr:'조립승인',fPAppr:'가공승인',needAsmWorker:'처리자(팀장·확인자) 이름을 입력하세요.',confirmCancelProc:'가공에서 이미 접수한 건이 포함되어 있습니다. 취소할까요?',savedAppr:'저장했습니다. 조립팀장 승인 후 가공에 전달됩니다.',qty:'수량',today:'오늘',reqCnt:'건',fReq:'신청',fRcv:'가공접수',fShip:'출고',fRecv:'조립접수',inProg:'진행 중',needLot:'투입 MES LOT를 입력하세요.',needName:'신청자(접수 확인자) 이름을 입력하세요.'});
+Object.assign(KO,{roleAsm:'조립팀장',roleProc:'가공팀장',pinDesc:'팀장 PIN을 입력하세요. 확인 후 10분 동안은 다시 묻지 않습니다.',pinLabel:'PIN',pinEmpty:'모든 칸을 입력하세요.',pinWrong:'PIN이 맞지 않습니다.',pinChgT:'변경',pinChgDesc:'현재 PIN을 확인한 뒤 새 PIN으로 바꿉니다 (4자 이상).',pinCur:'현재 PIN',pinNew:'새 PIN',pinNew2:'새 PIN 확인',pinMismatch:'새 PIN이 서로 다릅니다.',pinShort:'새 PIN은 4자 이상이어야 합니다.',pinChanged:'PIN을 변경했습니다.',st1:'승인대기',st2:'조립승인',st3:'가공접수',st4:'가공승인',st5:'출고',st6:'조립접수완료',st7:'반려',st8:'취소',fAppr:'조립승인',fPAppr:'가공승인',needAsmWorker:'처리자(팀장·확인자) 이름을 입력하세요.',confirmCancelProc:'가공에서 이미 접수한 건이 포함되어 있습니다. 취소할까요?',savedAppr:'저장했습니다. 조립팀장 승인 후 가공에 전달됩니다.',qty:'수량',today:'오늘',reqCnt:'건',xlsx:'📗 엑셀 저장',xlsxReq:'이 신청건만 엑셀로 저장',xlsxMaster:'📗 서브리스트 · LOT 엑셀 저장',xlsxLoading:'엑셀 모듈 불러오는 중…',xlsxFail:'엑셀 모듈을 불러오지 못했습니다.',xlsxNone:'내보낼 내역이 없습니다.',xlsxSaved:'엑셀 저장 완료',shAll:'전체',shSel:'선택',shMaster:'서브리스트',shLot:'LOT매칭표',xCheck:'확인',xNote:'비고',fReq:'신청',fRcv:'가공접수',fShip:'출고',fRecv:'조립접수',inProg:'진행 중',needLot:'투입 MES LOT를 입력하세요.',needName:'신청자(접수 확인자) 이름을 입력하세요.'});
 let lang='ko';
 const koText={};document.querySelectorAll('[data-i]').forEach(el=>koText[el.dataset.i]=el.innerHTML);
 const koPh={};document.querySelectorAll('[data-ph]').forEach(el=>koPh[el.dataset.ph]=el.placeholder);
@@ -976,7 +979,7 @@ function renderHist(p){
     const fold=d.k!==today&&!auto&&!S.open.has(d.k),nOpen=its.filter(isOpen).length;
     return `<tr class="dt${fold?' fold':''}" data-dk="${d.k}"><td><input type="checkbox" data-day="${d.k}" ${dOn?'checked':''} aria-label="${d.k}"></td><td colspan="6"><span class="car">▸</span><span class="dd">${esc(dlabel(d.k))}</span>${d.k===today?` <span class="today">${esc(T('today'))}</span>`:''}<span class="ds">${d.gs.length}${esc(T('reqCnt'))} · ${its.length}${esc(T('groupOf'))} · ${esc(T('qty'))} ${its.reduce((t,r)=>t+r.qty,0).toLocaleString()}</span>${nOpen&&d.k!==today?`<span class="dopen">${esc(T('inProg'))} ${nOpen}</span>`:''}</td></tr>`+
     (fold?'':d.gs.map(g=>{const h=g.items[0],allOn=g.items.every(r=>S.sel.has(r.id)),sum=g.items.reduce((t,r)=>t+r.qty,0);
-    return `<tr class="rq"><td><input type="checkbox" data-req="${esc(g.no)}" ${allOn?'checked':''} aria-label="${esc(g.no)}"></td><td colspan="6"><b>${fmtT(h.created_at).slice(6)}</b> · ${esc(T('line'))} <b>${esc(h.line||'-')}</b> · ${esc(T('reqBy'))} <b>${esc(h.requester||'')}</b> · ${g.items.length}${esc(T('groupOf'))} / ${sum.toLocaleString()}${(()=>{const L=[...new Set(g.items.map(r=>r.asm_lot).filter(Boolean))];return ' · '+esc(T('origLot'))+' '+(L.length?L.map(x=>`<span class="olot">${esc(x)}</span>`).join(' '):'<span class="olot none">—</span>');})()}${h.req_note?' · '+esc(T('note'))+': <b>'+esc(h.req_note)+'</b>':''} <span style="opacity:.5">${esc(g.no)}</span></td></tr>`+
+    return `<tr class="rq"><td><input type="checkbox" data-req="${esc(g.no)}" ${allOn?'checked':''} aria-label="${esc(g.no)}"></td><td colspan="6"><b>${fmtT(h.created_at).slice(6)}</b> · ${esc(T('line'))} <b>${esc(h.line||'-')}</b> · ${esc(T('reqBy'))} <b>${esc(h.requester||'')}</b> · ${g.items.length}${esc(T('groupOf'))} / ${sum.toLocaleString()}${(()=>{const L=[...new Set(g.items.map(r=>r.asm_lot).filter(Boolean))];return ' · '+esc(T('origLot'))+' '+(L.length?L.map(x=>`<span class="olot">${esc(x)}</span>`).join(' '):'<span class="olot none">—</span>');})()}${h.req_note?' · '+esc(T('note'))+': <b>'+esc(h.req_note)+'</b>':''} <span style="opacity:.5">${esc(g.no)}</span><button class="btn sm rqx" data-rqx="${esc(g.no)}" type="button" title="${esc(T('xlsxReq'))}">📗 Excel</button></td></tr>`+
       g.items.map(r=>`<tr class="it${S.sel.has(r.id)?' sel':''}" data-id="${r.id}"><td><input type="checkbox" ${S.sel.has(r.id)?'checked':''} tabindex="-1" aria-label="${esc(r.wn)}"></td>
         <td><div class="wn2">${esc(r.wn)}</div><div class="sub2">${esc(r.pn)}</div>${r.asm_lot?`<span class="olot">${esc(r.asm_lot)}</span>`:''}</td><td class="grp2">${badgeDb(r)}</td>
         <td>${r.mat?`<div>${esc(r.mat)} ${esc(r.sq)} ${chip(r.col)} <span class="status">· ${esc(r.len)}</span></div>`:''}<div class="sub2">${esc(r.t_l||'')}${r.t_r?' / '+esc(r.t_r):''}</div></td>
@@ -1006,6 +1009,7 @@ const renderRecent=()=>renderHist('ha'),renderProc=()=>renderHist('hp');
     const dt=e.target.closest('tr.dt');
     if(dt&&!e.target.closest('input')){const k=dt.dataset.dk,today=ymd(new Date());
       if(k!==today&&!$(p+'Q').value.trim()){S.open.has(k)?S.open.delete(k):S.open.add(k);renderHist(p);}return;}
+    const bx=e.target.closest('button[data-rqx]');if(bx){e.preventDefault();exportReqXlsx(p,bx.dataset.rqx);return;}
     const dc=e.target.closest('input[data-day]');
     if(dc){const ids=histRows(p).filter(r=>dkey(r.created_at)===dc.dataset.day&&(!S.st||r.status===S.st)).map(r=>r.id);ids.forEach(i=>dc.checked?S.sel.add(i):S.sel.delete(i));renderHist(p);return;}
     const rq=e.target.closest('input[data-req]');
@@ -1088,19 +1092,195 @@ $('hpUndo').onclick=async()=>{
   if(pa.length){const w=need('hpName','needWorker');if(!w)return;const keep=new Set(rest.flatMap(j=>j[0]));if(!await leaderAction('proc','unapprove',pa,w))return;keep.forEach(i=>H.hp.sel.add(i));}
   if(rest.some(j=>j[0].length))run(rest);};
 
-function exportRows(){const S=H.hp,s=REQS.filter(r=>S.sel.has(r.id));return s.length?s:histRows('hp').filter(r=>!S.st||r.status===S.st);}
+function exportRows(p){const S=H[p],s=REQS.filter(r=>S.sel.has(r.id));return s.length?s:histRows(p).filter(r=>!S.st||r.status===S.st);}
 $('hpCopy').onclick=async()=>{
-  const rows=exportRows();const txt=['품번\t선번\t수량'].concat(rows.map(r=>`${r.pn}\t${r.wn}\t${r.qty}`)).join('\n');
+  const rows=exportRows('hp');const txt=['품번\t선번\t수량'].concat(rows.map(r=>`${r.pn}\t${r.wn}\t${r.qty}`)).join('\n');
   try{await navigator.clipboard.writeText(txt);}catch(e){const ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();try{document.execCommand('copy')}catch(_){}ta.remove();}
   toast(`${T('copied')} (${rows.length})`);};
-$('hpCsv').onclick=()=>{
-  const rows=exportRows();const HD=['신청시각','요청번호','라인','신청자','원 LOT','품번','선번','함께만드는선','구분','재질','SQ','색상','길이','좌단자','우단자','수량','상태','조립승인자','조립승인시각','가공접수자','가공접수시각','가공승인자','가공승인시각','출고자','출고시각','MES LOT','조립접수자','조립접수시각','메모','반려/취소 처리자','반려/취소 시각','반려/취소 사유'];
-  const q=v=>{v=v==null?'':String(v);return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};
-  const L=rows.map(r=>[fmtT(r.created_at),r.req_no,r.line,r.requester,r.asm_lot,r.pn,r.wn,r.grp,r.grp_type,r.mat,r.sq,r.col,r.len,r.t_l,r.t_r,r.qty,T('st'+(ST.indexOf(r.status)+1)),
-    r.approved_by,fmtT(r.approved_at),r.received_by,fmtT(r.received_at),r.p_approved_by,fmtT(r.p_approved_at),r.ship_by,fmtT(r.ship_at),r.mes_no,r.recv_by,fmtT(r.recv_at),r.req_note,
-    (r.status==='반려'||r.status==='취소')?r.done_by:'',(r.status==='반려'||r.status==='취소')?fmtT(r.done_at):'',r.proc_note].map(q).join(','));
-  const blob=new Blob(['\ufeff'+[HD.join(',')].concat(L).join('\r\n')],{type:'text/csv;charset=utf-8'});
-  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`부족회로_P${PLANT}_${ymd(new Date())}.csv`;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},500);};
+
+/* ---------- 엑셀 내보내기 (ExcelJS, 필요할 때만 로드) ---------- */
+const XL={
+  hdr:'1F2D3A',hdrInk:'FFFFFF',title:'0F1A22',titleInk:'C9A84C',zebra:'F4F7F9',line:'C9D2DA',chk:'FFF6D6',
+  st:{'신청':'E3A84F','승인':'F6D37B','접수':'9CD2E6','가공승인':'4FA9C9','출고':'5BBE7A','수령':'2E8B57','반려':'F2867E','취소':'BBBBBB'},
+  stInk:{'수령':'FFFFFF','가공승인':'06222D'}
+};
+async function xlReady(){
+  if(window.ExcelJS)return true;
+  toast(T('xlsxLoading'));
+  for(const u of ['https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js','https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js','https://unpkg.com/exceljs@4.4.0/dist/exceljs.min.js']){
+    try{await loadScript(u);if(window.ExcelJS)return true;}catch(e){}
+  }
+  toast(T('xlsxFail'));return false;
+}
+const xlFill=hex=>({type:'pattern',pattern:'solid',fgColor:{argb:'FF'+hex}});
+const xlBorder=hex=>{const b={style:'thin',color:{argb:'FF'+hex}};return {top:b,left:b,bottom:b,right:b};};
+const fmtD=s=>{if(!s)return '';const d=new Date(s);return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;};
+const fmtDT=s=>{if(!s)return '';const d=new Date(s);return `${fmtD(s)} ${pad(d.getHours())}:${pad(d.getMinutes())}`;};
+const sheetName=n=>String(n).replace(/[\\\/\?\*\[\]:]/g,' ').slice(0,31)||'Sheet';
+function xlSave(wb,name){
+  return wb.xlsx.writeBuffer().then(buf=>{
+    const blob=new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},800);
+  });
+}
+// 공통: 제목행 + 머리글 + 데이터 + 서식(고정창·필터·줄무늬·테두리·확인칸)
+function xlTable(wb,name,title,sub,cols,rows,opt={}){
+  const ws=wb.addWorksheet(sheetName(name),{views:[{state:'frozen',ySplit:3,xSplit:opt.xSplit||0,showGridLines:false}],properties:{defaultRowHeight:18}});
+  const n=cols.length;
+  ws.mergeCells(1,1,1,n);const t=ws.getCell(1,1);t.value=title;t.font={name:'Malgun Gothic',size:14,bold:true,color:{argb:'FF'+XL.titleInk}};t.fill=xlFill(XL.title);t.alignment={vertical:'middle',indent:1};ws.getRow(1).height=30;
+  ws.mergeCells(2,1,2,n);const u=ws.getCell(2,1);u.value=sub;u.font={name:'Malgun Gothic',size:9,color:{argb:'FF6B7A88'}};u.alignment={vertical:'middle',indent:1};ws.getRow(2).height=18;
+  const hr=ws.getRow(3);hr.height=24;
+  cols.forEach((c,i)=>{const cell=hr.getCell(i+1);cell.value=c.h;cell.font={name:'Malgun Gothic',size:10,bold:true,color:{argb:'FF'+XL.hdrInk}};cell.fill=xlFill(XL.hdr);cell.alignment={horizontal:'center',vertical:'middle',wrapText:true};cell.border=xlBorder(XL.hdr);ws.getColumn(i+1).width=c.w||12;});
+  rows.forEach((r,ri)=>{
+    const row=ws.getRow(ri+4);row.height=opt.rowH||20;
+    cols.forEach((c,i)=>{
+      const v=c.v(r),cell=row.getCell(i+1);cell.value=v==null?'':v;
+      cell.font={name:'Malgun Gothic',size:10,color:{argb:'FF1B2530'}};
+      cell.border=xlBorder(XL.line);
+      cell.alignment={vertical:'middle',horizontal:c.a||(typeof v==='number'?'right':'left'),wrapText:!!c.wrap,indent:c.a?0:(typeof v==='number'?0:1)};
+      if(c.fmt)cell.numFmt=c.fmt;
+      if(ri%2)cell.fill=xlFill(XL.zebra);
+      if(c.kind==='check'){cell.fill=xlFill(XL.chk);cell.alignment={horizontal:'center',vertical:'middle'};cell.font={name:'Segoe UI Symbol',size:12};
+        cell.dataValidation={type:'list',allowBlank:true,formulae:['"✔,✘"'],showErrorMessage:false};}
+      if(c.kind==='status'){const bg=XL.st[r.status];if(bg){cell.fill=xlFill(bg);cell.font={name:'Malgun Gothic',size:10,bold:true,color:{argb:'FF'+(XL.stInk[r.status]||'1B2530')}};}cell.alignment={horizontal:'center',vertical:'middle'};}
+      if(c.kind==='pn'){cell.font={name:'Malgun Gothic',size:10,bold:true,color:{argb:'FF0F3A52'}};}
+      if(c.kind==='qty'){cell.font={name:'Malgun Gothic',size:11,bold:true,color:{argb:'FF1B2530'}};}
+      if(c.kind==='note'){cell.fill=xlFill(XL.chk);}
+    });
+  });
+  if(rows.length){ws.autoFilter={from:{row:3,column:1},to:{row:3+rows.length,column:n}};}
+  else{const row=ws.getRow(4);row.getCell(1).value=T('noReq');ws.mergeCells(4,1,4,n);row.getCell(1).alignment={horizontal:'center'};row.getCell(1).font={name:'Malgun Gothic',size:10,italic:true,color:{argb:'FF8A96A3'}};}
+  ws.pageSetup={orientation:'landscape',fitToPage:true,fitToWidth:1,fitToHeight:0,paperSize:9,margins:{left:0.3,right:0.3,top:0.4,bottom:0.4,header:0.2,footer:0.2}};
+  ws.pageSetup.printTitlesRow='3:3';
+  return ws;
+}
+const stKo=r=>T('st'+(ST.indexOf(r.status)+1));
+const isDone=r=>r.status==='반려'||r.status==='취소';
+function reqCols(){return [
+  {h:'☑ '+T('xCheck'),w:6,kind:'check',v:()=>''},
+  {h:'No.',w:5,a:'center',v:(r,i)=>''},
+  {h:'신청일',w:11,a:'center',v:r=>fmtD(r.created_at)},
+  {h:'신청시각',w:16,a:'center',v:r=>fmtDT(r.created_at)},
+  {h:'요청번호',w:21,a:'center',v:r=>r.req_no},
+  {h:'라인',w:8,a:'center',v:r=>r.line},
+  {h:'신청자',w:10,v:r=>r.requester},
+  {h:'원 LOT',w:14,a:'center',v:r=>r.asm_lot},
+  {h:'품번',w:17,kind:'pn',v:r=>r.pn},
+  {h:'선번',w:12,kind:'pn',a:'center',v:r=>r.wn},
+  {h:'함께 만드는 선',w:22,wrap:true,v:r=>r.grp},
+  {h:'구분',w:9,a:'center',v:r=>r.grp_type},
+  {h:'재질',w:8,a:'center',v:r=>r.mat},
+  {h:'SQ',w:6,a:'center',v:r=>r.sq},
+  {h:'색상',w:7,a:'center',v:r=>r.col},
+  {h:'길이',w:7,fmt:'#,##0',v:r=>{const t=String(r.len??'').replace(/,/g,'').trim();const n=Number(t);return t===''||isNaN(n)?r.len:n;}},
+  {h:'좌단자',w:16,v:r=>r.t_l},
+  {h:'우단자',w:16,v:r=>r.t_r},
+  {h:'수량',w:8,kind:'qty',fmt:'#,##0',v:r=>Number(r.qty)||0},
+  {h:'상태',w:13,kind:'status',v:r=>stKo(r)},
+  {h:'MES LOT',w:16,a:'center',v:r=>r.mes_no},
+  {h:'조립승인자',w:10,v:r=>r.approved_by},{h:'조립승인',w:14,a:'center',v:r=>fmtDT(r.approved_at)},
+  {h:'가공접수자',w:10,v:r=>r.received_by},{h:'가공접수',w:14,a:'center',v:r=>fmtDT(r.received_at)},
+  {h:'가공승인자',w:10,v:r=>r.p_approved_by},{h:'가공승인',w:14,a:'center',v:r=>fmtDT(r.p_approved_at)},
+  {h:'출고자',w:10,v:r=>r.ship_by},{h:'출고',w:14,a:'center',v:r=>fmtDT(r.ship_at)},
+  {h:'조립접수자',w:10,v:r=>r.recv_by},{h:'조립접수',w:14,a:'center',v:r=>fmtDT(r.recv_at)},
+  {h:'메모',w:18,wrap:true,v:r=>r.req_note},
+  {h:'반려/취소 처리자',w:12,v:r=>isDone(r)?r.done_by:''},{h:'반려/취소 시각',w:14,a:'center',v:r=>isDone(r)?fmtDT(r.done_at):''},{h:'반려/취소 사유',w:20,wrap:true,v:r=>r.proc_note},
+  {h:T('xNote'),w:22,kind:'note',v:()=>''}
+];}
+async function exportHistXlsx(p){
+  if(!await xlReady())return;
+  const S=H[p],sel=REQS.filter(r=>S.sel.has(r.id)),base=histRows(p);
+  const srcRows=sel.length?sel:base;
+  if(!srcRows.length){toast(T('xlsxNone'));return;}
+  const sortRows=a=>a.slice().sort((x,y)=>new Date(y.created_at)-new Date(x.created_at)||String(x.pn).localeCompare(String(y.pn))||String(x.wn).localeCompare(String(y.wn)));
+  const wb=new ExcelJS.Workbook();wb.creator='YURA HARNESS MÉXICO';wb.created=new Date();
+  const plant=`PLANT ${PLANT}`,who=p==='ha'?'조립생산':'가공생산',when=fmtDT(now());
+  const range=`${$(p+'From').value||'…'} ~ ${$(p+'To').value||'…'}`,q=$(p+'Q').value.trim();
+  const sub=`${plant} · ${who} · 기간 ${range}${q?` · 검색 "${q}"`:''}${sel.length?` · 선택 ${sel.length}건`:''} · 출력 ${when}`;
+  const cols=reqCols();const num=cols[1];num.v=(r)=>r.__n;
+  const withNo=a=>{a.forEach((r,i)=>r.__n=i+1);return a;};
+  const sheets=sel.length?[[T('shSel'),srcRows]]:[[T('shAll'),srcRows],...CHIPS[p].map(st=>[stKo({status:st}),srcRows.filter(r=>r.status===st)]).filter(x=>x[1].length)];
+  sheets.forEach(([nm,rows])=>{const rs=withNo(sortRows(rows));xlTable(wb,`${nm} (${rs.length})`,`부족회로 신청 이력 — ${nm} ${rs.length}건`,sub,cols,rs,{xSplit:10});});
+  // 품번별 집계 시트
+  const agg={};srcRows.forEach(r=>{const k=r.pn+'\u0001'+r.wn;const o=agg[k]=agg[k]||{pn:r.pn,wn:r.wn,grp:r.grp,cnt:0,qty:0,st:{}};o.cnt++;o.qty+=Number(r.qty)||0;o.st[r.status]=(o.st[r.status]||0)+1;});
+  const aggRows=Object.values(agg).sort((a,b)=>String(a.pn).localeCompare(String(b.pn))||String(a.wn).localeCompare(String(b.wn)));
+  aggRows.forEach((r,i)=>r.__n=i+1);
+  xlTable(wb,'품번별 집계',`품번 · 선번별 집계 — ${aggRows.length}건`,sub,[
+    {h:'☑ '+T('xCheck'),w:6,kind:'check',v:()=>''},{h:'No.',w:5,a:'center',v:r=>r.__n},
+    {h:'품번',w:17,kind:'pn',v:r=>r.pn},{h:'선번',w:12,kind:'pn',a:'center',v:r=>r.wn},{h:'함께 만드는 선',w:24,wrap:true,v:r=>r.grp},
+    {h:'신청 건수',w:9,fmt:'#,##0',v:r=>r.cnt},{h:'수량 합계',w:10,kind:'qty',fmt:'#,##0',v:r=>r.qty},
+    ...ST.map(st=>({h:stKo({status:st}),w:9,fmt:'#,##0;;""',a:'center',v:r=>r.st[st]||0})),
+    {h:T('xNote'),w:22,kind:'note',v:()=>''}
+  ],aggRows,{xSplit:4});
+  await xlSave(wb,`부족회로_${who}_P${PLANT}_${ymd(new Date())}.xlsx`);
+  toast(`${T('xlsxSaved')} (${srcRows.length})`);
+}
+// 신청건 1건 → 전표형 엑셀 (상단 신청 정보 + 회로 목록)
+async function exportReqXlsx(p,reqNo){
+  if(!await xlReady())return;
+  const items=REQS.filter(r=>r.req_no===reqNo).slice().sort((a,b)=>a.id-b.id);
+  if(!items.length){toast(T('xlsxNone'));return;}
+  const h=items[0],sum=items.reduce((t,r)=>t+(Number(r.qty)||0),0);
+  const lots=[...new Set(items.map(r=>r.asm_lot).filter(Boolean))].join(', ');
+  const stc={};items.forEach(r=>stc[r.status]=(stc[r.status]||0)+1);
+  const stSum=ST.filter(s=>stc[s]).map(s=>`${stKo({status:s})} ${stc[s]}`).join(' · ');
+  const wb=new ExcelJS.Workbook();wb.creator='YURA HARNESS MÉXICO';
+  const ws=wb.addWorksheet(sheetName('신청서 '+reqNo.slice(-10)),{views:[{state:'frozen',ySplit:9,showGridLines:false}]});
+  const cols=[
+    {h:'☑ '+T('xCheck'),w:6,kind:'check',v:()=>''},{h:'No.',w:5,a:'center',v:(r,i)=>i+1},
+    {h:'품번',w:17,kind:'pn',v:r=>r.pn},{h:'선번',w:11,kind:'pn',a:'center',v:r=>r.wn},{h:'함께 만드는 선',w:20,wrap:true,v:r=>r.grp},{h:'구분',w:8,a:'center',v:r=>r.grp_type},
+    {h:'재질',w:8,a:'center',v:r=>r.mat},{h:'SQ',w:6,a:'center',v:r=>r.sq},{h:'색상',w:7,a:'center',v:r=>r.col},
+    {h:'길이',w:7,fmt:'#,##0',v:r=>{const t=String(r.len??'').replace(/,/g,'').trim();const n=Number(t);return t===''||isNaN(n)?r.len:n;}},
+    {h:'좌단자',w:16,v:r=>r.t_l},{h:'우단자',w:16,v:r=>r.t_r},{h:'원 LOT',w:14,a:'center',v:r=>r.asm_lot},
+    {h:'수량',w:8,kind:'qty',fmt:'#,##0',v:r=>Number(r.qty)||0},{h:'상태',w:13,kind:'status',v:r=>stKo(r)},{h:'MES LOT',w:16,a:'center',v:r=>r.mes_no},
+    {h:'가공접수',w:14,a:'center',v:r=>fmtDT(r.received_at)},{h:'출고',w:14,a:'center',v:r=>fmtDT(r.ship_at)},{h:'조립접수',w:14,a:'center',v:r=>fmtDT(r.recv_at)},
+    {h:T('xNote'),w:24,kind:'note',v:()=>''}];
+  const n=cols.length,F=(sz,b,c)=>({name:'Malgun Gothic',size:sz,bold:!!b,color:{argb:'FF'+(c||'1B2530')}});
+  ws.mergeCells(1,1,1,n);const t=ws.getCell(1,1);t.value=`부족회로 신청서 — ${reqNo}`;t.font=F(15,1,XL.titleInk);t.fill=xlFill(XL.title);t.alignment={vertical:'middle',indent:1};ws.getRow(1).height=32;
+  // 신청 정보 블록 (2~7행): 라벨/값 2열 × 2
+  const info=[['신청일시',fmtDT(h.created_at),'요청번호',reqNo],['라인',h.line||'-','신청자',h.requester||''],['원 LOT',lots||'—','메모',h.req_note||''],
+    ['회로수 / 수량',`${items.length}선 / ${sum.toLocaleString()}`,'상태',stSum],['조립승인',h.approved_at?`${fmtDT(h.approved_at)} ${h.approved_by||''}`:'—','가공승인',h.p_approved_at?`${fmtDT(h.p_approved_at)} ${h.p_approved_by||''}`:'—'],
+    [`PLANT ${PLANT}`,`출력 ${fmtDT(now())}`,'확인자 서명','']];
+  const half=Math.floor(n/2);
+  info.forEach((row,i)=>{const r=ws.getRow(i+2);r.height=20;
+    const put=(c1,c2,lbl,val,isLbl)=>{ws.mergeCells(i+2,c1,i+2,c2);const c=ws.getCell(i+2,c1);c.value=val;c.font=F(10,isLbl,isLbl?'FFFFFF':'1B2530');c.fill=xlFill(isLbl?'3A4B5C':(i===5&&c1>half+1?XL.chk:'F4F7F9'));c.alignment={vertical:'middle',indent:1,wrapText:true};c.border=xlBorder(XL.line);};
+    put(1,3,0,row[0],true);put(4,half,0,row[1],false);put(half+1,half+2,0,row[2],true);put(half+3,n,0,row[3],false);});
+  ws.getRow(8).height=6;
+  const hr=ws.getRow(9);hr.height=24;
+  cols.forEach((c,i)=>{const cell=hr.getCell(i+1);cell.value=c.h;cell.font=F(10,1,XL.hdrInk);cell.fill=xlFill(XL.hdr);cell.alignment={horizontal:'center',vertical:'middle',wrapText:true};cell.border=xlBorder(XL.hdr);ws.getColumn(i+1).width=c.w||12;});
+  items.forEach((r,ri)=>{const row=ws.getRow(ri+10);row.height=22;
+    cols.forEach((c,i)=>{const v=c.v(r,ri),cell=row.getCell(i+1);cell.value=v==null?'':v;cell.font=F(10);cell.border=xlBorder(XL.line);
+      cell.alignment={vertical:'middle',horizontal:c.a||(typeof v==='number'?'right':'left'),wrapText:!!c.wrap,indent:c.a?0:(typeof v==='number'?0:1)};
+      if(c.fmt)cell.numFmt=c.fmt;if(ri%2)cell.fill=xlFill(XL.zebra);
+      if(c.kind==='check'){cell.fill=xlFill(XL.chk);cell.alignment={horizontal:'center',vertical:'middle'};cell.font={name:'Segoe UI Symbol',size:13};cell.dataValidation={type:'list',allowBlank:true,formulae:['"✔,✘"'],showErrorMessage:false};}
+      if(c.kind==='status'){const bg=XL.st[r.status];if(bg){cell.fill=xlFill(bg);cell.font=F(10,1,XL.stInk[r.status]||'1B2530');}cell.alignment={horizontal:'center',vertical:'middle'};}
+      if(c.kind==='pn')cell.font=F(10,1,'0F3A52');if(c.kind==='qty')cell.font=F(12,1);if(c.kind==='note')cell.fill=xlFill(XL.chk);});});
+  // 합계행
+  const tr=ws.getRow(items.length+10);tr.height=22;const qi=cols.findIndex(c=>c.kind==='qty')+1;
+  ws.mergeCells(items.length+10,1,items.length+10,qi-1);tr.getCell(1).value=`합계 ${items.length}선`;tr.getCell(1).alignment={horizontal:'right',vertical:'middle',indent:1};
+  tr.getCell(qi).value={formula:`SUM(${ws.getColumn(qi).letter}10:${ws.getColumn(qi).letter}${items.length+9})`,result:sum};tr.getCell(qi).numFmt='#,##0';tr.getCell(qi).alignment={horizontal:'right',vertical:'middle'};
+  for(let i=1;i<=n;i++){const c=tr.getCell(i);c.font=F(11,1);c.fill=xlFill('E6ECF1');c.border=xlBorder(XL.hdr);}
+  ws.autoFilter={from:{row:9,column:1},to:{row:9+items.length,column:n}};
+  ws.pageSetup={orientation:'landscape',fitToPage:true,fitToWidth:1,fitToHeight:0,paperSize:9,printTitlesRow:'9:9',margins:{left:0.3,right:0.3,top:0.4,bottom:0.4,header:0.2,footer:0.2}};
+  await xlSave(wb,`부족회로_신청서_${reqNo}.xlsx`);toast(`${T('xlsxSaved')} (${items.length})`);
+}
+$('hpXlsx').onclick=()=>exportHistXlsx('hp');
+$('haXlsx').onclick=()=>exportHistXlsx('ha');
+$('mXlsx').onclick=async()=>{
+  if(!await xlReady())return;
+  if(!MASTER.rows.length&&!Object.keys(LOTMAP).length){toast(T('xlsxNone'));return;}
+  const wb=new ExcelJS.Workbook();wb.creator='YURA HARNESS MÉXICO';
+  const sub=`PLANT ${PLANT} · 최종 저장 ${MASTER.updated?fmtDT(MASTER.updated):'-'} · 출력 ${fmtDT(now())}`;
+  const H0=MASTER.headers.length?MASTER.headers:DEFAULT_HEADERS;
+  const cols=[{h:'☑ '+T('xCheck'),w:6,kind:'check',v:()=>''},...H0.map((h,i)=>({h,w:i===C.pn?17:(i===C.wn?11:Math.min(Math.max(String(h).length*1.6,7),20)),kind:(i===C.pn||i===C.wn)?'pn':undefined,a:[C.sq,C.col,C.len,C.wn].includes(i)?'center':undefined,v:r=>r[i]??''}))];
+  const rows=MASTER.rows.slice().sort((a,b)=>String(a[C.pn]).localeCompare(String(b[C.pn])));
+  xlTable(wb,`${T('shMaster')} (${rows.length})`,`서브리스트 — ${rows.length}행 · 품번 ${Object.keys(BYPN).length}종`,sub,cols,rows,{xSplit:4,rowH:18});
+  const lots=Object.entries(LOTMAP).sort((a,b)=>a[0].localeCompare(b[0]));
+  xlTable(wb,`${T('shLot')} (${lots.length})`,`LOT 매칭표 — ${lots.length}건 · 최종 저장 ${LOTUPD?fmtDT(LOTUPD):'-'}`,sub,[
+    {h:'☑ '+T('xCheck'),w:6,kind:'check',v:()=>''},{h:'LOT',w:16,a:'center',kind:'pn',v:r=>r[0]},{h:'품번',w:18,kind:'pn',v:r=>r[1]},{h:T('xNote'),w:24,kind:'note',v:()=>''}
+  ],lots,{xSplit:2});
+  await xlSave(wb,`서브리스트_P${PLANT}_${ymd(new Date())}.xlsx`);toast(T('xlsxSaved'));
+};
 
 /* ---------- 탭 ---------- */
 function show(v){['Asm','Proc','Master'].forEach(k=>{$('view'+k).classList.toggle('hidden',k!==v);$('tab'+k).classList.toggle('on',k===v);});LS.set('tab'+PLANT,v);}
