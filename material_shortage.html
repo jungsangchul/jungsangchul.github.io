@@ -59,6 +59,11 @@ tr.short td{background:var(--redbg)}tr.care td{background:var(--ambbg)}tr.ex td{
 .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#14233b;color:#fff;padding:10px 18px;border-radius:8px;display:none;z-index:99}
 .load{position:fixed;inset:0;background:rgba(255,255,255,.6);display:none;align-items:center;justify-content:center;z-index:98;font-weight:700}
 .prev{font-size:12px;color:var(--mute);margin:6px 0}
+td.adjc{cursor:pointer;text-decoration:underline dotted #9aa6b6}
+.tag.az{background:#14233b;color:#fff;margin-left:4px;font-size:10px;padding:1px 6px}
+.adjbox{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin:10px 0}
+.adjbox div{background:#f6f8fb;border-radius:8px;padding:8px 10px;font-size:12px;color:var(--mute)}
+.adjbox b{display:block;font-size:18px;color:var(--ink);margin-top:2px}
 </style>
 </head>
 <body>
@@ -77,6 +82,7 @@ tr.short td{background:var(--redbg)}tr.care td{background:var(--ambbg)}tr.ex td{
   <button data-tab="rec" data-t="tab_rec">현장입고 (30810)</button>
   <button data-tab="use" data-t="tab_use">사용량 (32040)</button>
   <button data-tab="mst" data-t="tab_mst">창고보유자재 (25010)</button>
+  <button data-tab="adj" data-t="tab_adj">재고조정</button>
 </nav>
 </div>
 <main>
@@ -107,7 +113,7 @@ tr.short td{background:var(--redbg)}tr.care td{background:var(--ambbg)}tr.ex td{
     <div class="kpi g" data-f="all"><span data-t="k_ex">제외 LOT 행</span><b id="kEx">-</b></div>
   </div>
   <div class="tw"><table id="sTbl"></table></div>
-  <p class="hint" data-t="formula">현재고 = 실사 − 사용량 + 입고량 · 부족예상 = 현재고 + 창고재고 − 필요량 · 필요량은 같은 자재코드 합산(제외 LOT 제외) · 현장롤수 = TML·WIRE 입고 바코드 중 0처리 안 된 롤 수 (숫자에 마우스를 올리면 롤 수량합) · 창고롤수 = 창고보유자재(25010)의 개수</p>
+  <p class="hint" data-t="formula">현재고 = 실사 − 사용량 + 입고량 + 조정 (0처리로 현장롤이 0이 되면 자동 0) · 부족예상 = 현재고 + 창고재고 − 필요량 · 필요량은 같은 자재코드 합산(제외 LOT 제외) · 현장롤수 = TML·WIRE 입고 바코드 중 0처리 안 된 롤 수 (숫자에 마우스를 올리면 롤 수량합) · 창고롤수 = 창고보유자재(25010)의 개수</p>
 </section>
 
 <!-- ===== 17000 ===== -->
@@ -192,6 +198,45 @@ tr.short td{background:var(--redbg)}tr.care td{background:var(--ambbg)}tr.ex td{
     <div class="tw"><table id="mTbl"></table></div>
   </div>
 </section>
+
+<!-- ===== 재고조정 ===== -->
+<section class="tab" id="t-adj">
+  <div class="grid2">
+    <div class="card">
+      <h3 data-t="adj_h">재고조정</h3>
+      <div class="hint" data-t="adj_hint">자재코드를 입력하고 실제 수량을 넣으면 현재고가 그 수량이 되도록 조정량(차이)이 저장됩니다. 부족예상 표의 현재고 숫자를 눌러도 여기로 옵니다.</div>
+      <div class="row" style="margin-top:10px">
+        <label class="f"><span data-t="adj_code">자재코드</span><input id="aCode" list="aCodes" style="width:180px" autocomplete="off"></label>
+        <datalist id="aCodes"></datalist>
+        <label class="f"><span data-t="date">일자</span><input type="date" id="aDate"></label>
+      </div>
+      <div class="adjbox">
+        <div><span data-t="adj_name">자재명</span><b id="aName" style="font-size:13px">-</b></div>
+        <div><span data-t="adj_cur">현재고(계산)</span><b id="aCur">-</b></div>
+        <div><span data-t="adj_roll">현장롤수</span><b id="aRoll">-</b></div>
+      </div>
+      <div class="row">
+        <label class="f"><span data-t="adj_after">조정후 수량</span><input type="number" id="aAfter" style="width:140px"></label>
+        <label class="f" style="flex:1"><span data-t="adj_memo">사유</span><input id="aMemo" placeholder="예: 현장 실측, 잔량 확인"></label>
+        <button class="btn sec" id="aZero" data-t="adj_zero">0으로</button>
+        <button class="btn" id="aSave" data-t="save">저장</button>
+      </div>
+      <div class="hint" id="aDiff" style="margin-top:6px"></div>
+    </div>
+    <div class="card">
+      <h3 data-t="adj_auto_h">0처리 자동조정</h3>
+      <div class="hint" data-t="adj_auto_hint">TML·WIRE 프로그램에서 바코드를 0처리해서 그 자재의 현장 롤이 하나도 남지 않으면, 현재고를 자동으로 0으로 맞춥니다. 0처리 이후에 수동 조정을 저장하면 수동 조정이 우선합니다.</div>
+      <div class="hint" id="aAutoInfo" style="margin-top:8px;color:var(--ink)"></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="row" style="justify-content:space-between;margin-bottom:8px">
+      <h3 style="margin:0"><span data-t="adj_list">조정 이력</span> <span class="hint" id="aInfo"></span></h3>
+      <input id="aQ" placeholder="검색" style="width:170px">
+    </div>
+    <div class="tw"><table id="aTbl"></table></div>
+  </div>
+</section>
 </main>
 <div class="toast" id="toast"></div>
 <div class="load" id="load">…</div>
@@ -206,13 +251,16 @@ const ES={title:'Pronóstico de faltantes',plant:'Planta 1 México · Monclova',
 tab_rec:'Entrada a piso (30810)',tab_use:'Consumo (32040)',tab_mst:'Material en almacén (25010)',cntDate:'Fecha inventario',from:'Desde',to:'Hasta',
 thr:'Umbral alerta (<)',run:'Consultar',search:'Buscar',filter:'Mostrar',f_all:'Todo',f_short:'Faltante',f_care:'Alerta',f_chk:'Faltante+Alerta',f_need:'Solo 17000',f_extra:'Fuera de 17000 (piso)',
 copy:'Copiar',xlsx:'Excel',k_mat:'Materiales',k_short:'Faltante (<0)',k_care:'Alerta',k_ex:'Filas LOT excluidas',
-formula:'Stock actual = Inventario − Consumo + Entrada · Pronóstico = Stock actual + Almacén − Requerido · Rollos piso = rollos recibidos (TML·WIRE) sin cierre (0) · Rollos alm. = Piezas de almacén (25010)',
+formula:'Stock actual = Inventario − Consumo + Entrada + Ajuste (sin rollos en piso tras cierre 0 → 0) · Pronóstico = Stock actual + Almacén − Requerido · Rollos piso = rollos recibidos (TML·WIRE) sin cierre (0) · Rollos alm. = Piezas de almacén (25010)',
 need_h:'Pegar material requerido (col. A~F)',need_hint:'Copie columnas A~F (código, nombre, cantidad, unidad, LOTNO, línea) y péguelas aquí.',
 mode:'Modo',m_replace:'Reemplazar todo',m_append:'Agregar a la lista',save:'Guardar',clearAll:'Borrar todo',ex_h:'LOT excluidos',
 ex_hint:'Las filas cuyo LOTNO contenga estos números no se suman.',add:'Agregar',need_list:'Lista guardada',mst_h:'Pegar material en almacén',
 mst_hint:'Código, nombre, unidad, cantidad (almacén), piezas.',m_upsert:'Agregar/actualizar',m_replace2:'Reemplazar todo',
 mst_one:'Agregar / editar',del:'Eliminar',mst_click:'Haga clic en una fila para cargarla aquí.',mst_list:'Material en almacén',
-date:'Fecha',useRowDate:'Usar fecha de cada fila (si falta, la seleccionada)',paste:'Pegar datos',savedDates:'Fechas guardadas',viewDel:'Eliminar fecha'};
+date:'Fecha',useRowDate:'Usar fecha de cada fila (si falta, la seleccionada)',paste:'Pegar datos',savedDates:'Fechas guardadas',viewDel:'Eliminar fecha',
+tab_adj:'Ajuste de stock',adj_h:'Ajuste de stock',adj_hint:'Ingrese el código y la cantidad real; se guarda la diferencia para que el stock actual quede en esa cantidad. También puede tocar el número de Stock en la tabla de faltantes.',
+adj_code:'Código',adj_name:'Nombre',adj_cur:'Stock actual (calc.)',adj_roll:'Rollos piso',adj_after:'Cantidad real',adj_memo:'Motivo',adj_zero:'A cero',
+adj_auto_h:'Ajuste automático por cierre (0)',adj_auto_hint:'Si en el programa TML·WIRE se cierran (0) los códigos de barras y no queda ningún rollo en piso, el stock se ajusta a 0 automáticamente. Un ajuste manual guardado después del cierre tiene prioridad.',adj_list:'Historial de ajustes'};
 let LANG=localStorage.getItem('mshort_lang')||'ko';
 const KO={};
 function applyLang(){
@@ -220,7 +268,7 @@ function applyLang(){
   document.getElementById('langBtn').textContent=LANG==='es'?'KO':'ES';
 }
 const tr=(ko,es)=>LANG==='es'?es:ko;
-document.getElementById('langBtn').onclick=()=>{LANG=LANG==='es'?'ko':'es';try{localStorage.setItem('mshort_lang',LANG)}catch(e){}applyLang();renderSum();renderNeed();renderMst();DAILY.forEach(d=>renderDates(d));};
+document.getElementById('langBtn').onclick=()=>{LANG=LANG==='es'?'ko':'es';try{localStorage.setItem('mshort_lang',LANG)}catch(e){}applyLang();renderSum();renderNeed();renderMst();renderAdj();showAdj();DAILY.forEach(d=>renderDates(d));};
 
 /* ---------- utils ---------- */
 const lastUpd=(list,col)=>{let m='';list.forEach(r=>{if((r[col]||'')>m)m=r[col]});if(!m)return'';
@@ -257,7 +305,7 @@ async function ins(table,data,upsertKey){
 async function del(table,q){const r=await fetch(SB+table+'?'+q,{method:'DELETE',headers:H});if(!r.ok)throw new Error(await r.text())}
 
 /* ---------- state ---------- */
-let NEED=[],EX=[],MST=[],DATES=[],CFG={threshold:'2000'},SUM=null,sortK=null,sortD=1;
+let ADJ=[],NEED=[],EX=[],MST=[],DATES=[],CFG={threshold:'2000'},SUM=null,sortK=null,sortD=1;
 
 /* ---------- tabs ---------- */
 document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>{
@@ -521,18 +569,25 @@ async function calc(){
   const cd=$('sCnt').value,f=$('sFrom').value,t=$('sTo').value;
   busy(1);
   try{
-    await Promise.all([loadNeed(),loadMst()]);
+    await Promise.all([loadNeed(),loadMst(),loadAdj()]);
     const [cnt,use,rec]=await Promise.all([
       cd?sel('mshort_count',`select=code,qty&cdate=eq.${cd}`):[],
       f&&t?sel('mshort_usage',`select=code,name,qty&udate=gte.${f}&udate=lte.${t}`):[],
       f&&t?sel('mshort_receipt',`select=code,name,unit,qty&rdate=gte.${f}&rdate=lte.${t}`):[]]);
     /* 현장 보유 롤수: TML·WIRE 입고 바코드 − 0처리(사용완료) 바코드 */
-    let RL={},RQ={},zAt='';const NM={};const nm=(c,n,u)=>{c=String(c||'').toUpperCase();if(!c)return;const o=NM[c]||(NM[c]={});if(n&&!o.name)o.name=n;if(u&&!o.unit)o.unit=u};
+    let RL={},RQ={},zAt='',HB={},LZ={};const NM={};const nm=(c,n,u)=>{c=String(c||'').toUpperCase();if(!c)return;const o=NM[c]||(NM[c]={});if(n&&!o.name)o.name=n;if(u&&!o.unit)o.unit=u};
     try{const [rr,zz]=await Promise.all([sel('tmlwire_receipts','select=barcode,mat_code,mat_name,unit,qty'),sel('tmlwire_zero','select=barcode,uploaded_at')]);
-      const Z=new Set(zz.map(z=>z.barcode));zz.forEach(z=>{if((z.uploaded_at||'')>zAt)zAt=z.uploaded_at});
-      rr.forEach(r=>{nm(r.mat_code,r.mat_name,r.unit);if(!r.barcode||Z.has(r.barcode))return;const c=String(r.mat_code||'').toUpperCase();RL[c]=(RL[c]||0)+1;RQ[c]=(RQ[c]||0)+(Number(r.qty)||0)});
+      const Z=new Map(zz.map(z=>[z.barcode,z.uploaded_at||'']));zz.forEach(z=>{if((z.uploaded_at||'')>zAt)zAt=z.uploaded_at});
+      rr.forEach(r=>{nm(r.mat_code,r.mat_name,r.unit);const c0=String(r.mat_code||'').toUpperCase();if(c0&&r.barcode)HB[c0]=1;
+        if(r.barcode&&Z.has(r.barcode)){const t=new Date(Z.get(r.barcode)).getTime()||0;if(t>(LZ[c0]||0))LZ[c0]=t}
+        if(!r.barcode||Z.has(r.barcode))return;const c=String(r.mat_code||'').toUpperCase();RL[c]=(RL[c]||0)+1;RQ[c]=(RQ[c]||0)+(Number(r.qty)||0)});
     }catch(e){console.warn('roll',e)}
     const sum=a=>{const m={};a.forEach(r=>{const c=String(r.code).toUpperCase();m[c]=(m[c]||0)+Number(r.qty)});return m};
+    /* 수동 재고조정 (사용·입고 기간 내) */
+    const A={},LA={};if(f&&t)ADJ.forEach(a=>{if(a.adj_date<f||a.adj_date>t)return;const c=String(a.code).toUpperCase();A[c]=(A[c]||0)+(Number(a.qty)||0);
+      const tm=new Date(a.created_at).getTime()||0;if(tm>(LA[c]||0))LA[c]=tm});
+    /* 0처리 자동조정: 바코드 관리 자재인데 현장롤 0 + 마지막 0처리가 마지막 수동조정보다 나중 → 현재고 0 */
+    const fin=(c,base)=>{const auto=(HB[c]&&!(RL[c])&&(LZ[c]||0)>(LA[c]||0)&&Math.abs(base)>1e-9)?-base:0;return{adj:(A[c]||0)+auto,auto,base,cur:base+auto,lz:LZ[c]||0}};
     const C=sum(cnt),U=sum(use),R=sum(rec),W={},WR={};MST.forEach(r=>{W[r.code]=Number(r.qty)||0;WR[r.code]=Number(r.cnt)||0;nm(r.code,r.name,r.unit)});
     use.forEach(r=>nm(r.code,r.name));rec.forEach(r=>nm(r.code,r.name,r.unit));
     const agg={},order=[];let exRows=0;
@@ -540,14 +595,14 @@ async function calc(){
       if(!agg[r.code]){agg[r.code]={code:r.code,name:r.name,unit:r.unit,need:0};order.push(r.code)}
       agg[r.code].need+=Number(r.qty)||0});
     const list=order.map((c,i)=>{const a=agg[c];const cnt_=C[c]||0,u=U[c]||0,rc=R[c]||0,w=W[c]||0;
-      const cur=cnt_-u+rc,sh=cur+w-a.need;return{...a,i,cnt:cnt_,use:u,rec:rc,cur,roll:RL[c]||0,rollq:RQ[c]||0,wh:w,whroll:WR[c]||0,short:sh}});
+      const F=fin(c=String(c).toUpperCase(),cnt_-u+rc+(A[c]||0)),cur=F.cur,sh=cur+w-a.need;return{...a,i,cnt:cnt_,use:u,rec:rc,...F,roll:RL[c]||0,rollq:RQ[c]||0,wh:w,whroll:WR[c]||0,short:sh}});
     /* 17000에 없는 현장보유 자재 (현재고≠0 또는 현장 롤 보유) */
     const inNeed=new Set(order.map(c=>String(c).toUpperCase()));
-    const xs=new Set([...Object.keys(C),...Object.keys(U),...Object.keys(R),...Object.keys(RL)]);
-    [...xs].filter(c=>c&&!inNeed.has(c)).sort().forEach(c=>{const cnt_=C[c]||0,u=U[c]||0,rc=R[c]||0,cur=cnt_-u+rc,rl=RL[c]||0;
+    const xs=new Set([...Object.keys(C),...Object.keys(U),...Object.keys(R),...Object.keys(RL),...Object.keys(A)]);
+    [...xs].filter(c=>c&&!inNeed.has(c)).sort().forEach(c=>{const cnt_=C[c]||0,u=U[c]||0,rc=R[c]||0,F=fin(c,cnt_-u+rc+(A[c]||0)),cur=F.cur,rl=RL[c]||0;
       if(Math.abs(cur)<1e-9&&!rl)return;const w=W[c]||0,o=NM[c]||{};
-      list.push({code:c,name:o.name||'',unit:o.unit||'',need:0,i:list.length,cnt:cnt_,use:u,rec:rc,cur,roll:rl,rollq:RQ[c]||0,wh:w,whroll:WR[c]||0,short:cur+w,extra:1})});
-    SUM={list,exRows,cd,f,t,zAt};
+      list.push({code:c,name:o.name||'',unit:o.unit||'',need:0,i:list.length,cnt:cnt_,use:u,rec:rc,...F,roll:rl,rollq:RQ[c]||0,wh:w,whroll:WR[c]||0,short:cur+w,extra:1})});
+    SUM={list,exRows,cd,f,t,zAt};fillAdjCodes();
   }catch(e){alert(e.message)}
   busy(0);renderSum();
 }
@@ -563,7 +618,7 @@ function viewList(){
 function cols(){
   const cd=SUM?SUM.cd:'',rng=SUM&&SUM.f?`${md(SUM.f)}~${md(SUM.t)}`:'';
   return[['code',tr('자재코드','Código')],['name',tr('자재명','Nombre')],['unit',tr('단위','Unid.')],['need',tr('필요량','Requerido'),1],
-   ['cnt',tr('실사','Inv.')+(cd?`(${md(cd).replace('/','')})`:''),1],['use',tr('사용량','Consumo')+`(${rng})`,1],['rec',tr('입고량','Entrada')+`(${rng})`,1],
+   ['cnt',tr('실사','Inv.')+(cd?`(${md(cd).replace('/','')})`:''),1],['use',tr('사용량','Consumo')+`(${rng})`,1],['rec',tr('입고량','Entrada')+`(${rng})`,1],['adj',tr('조정','Ajuste'),1],
    ['cur',tr('현재고','Stock')+(SUM&&SUM.t?`(${md(SUM.t)})`:''),1],['roll',tr('현장롤수','Rollos piso'),1],['wh',tr('창고재고','Almacén'),1],['whroll',tr('창고롤수','Rollos alm.'),1],['short',tr('부족예상','Pronóstico'),1],['chk','check']];
 }
 function renderSum(){
@@ -581,10 +636,13 @@ function renderSum(){
     l.map(r=>{const s=status(r);return`<tr class="${s==='ok'?'':s}">`+C.map(([k,h,n])=>{
       if(k==='chk')return`<td><span class="tag ${s}">${lab[s]}</span></td>`;
       const v=r[k];
+      if(k==='adj')return`<td class="n ${v<0?'neg':''}" title="${r.auto?tr('0처리 자동조정 포함: ','Incluye ajuste por cierre: ')+fmt(r.auto):''}">${v?fmt(v):'<span class="hint">0</span>'}${r.auto?'<span class="tag az">0</span>':''}</td>`;
+      if(k==='cur')return`<td class="n adjc ${v<0?'neg':''}" data-adj="${esc(r.code)}" title="${tr('눌러서 재고조정','Toque para ajustar')}">${fmt(v)}</td>`;
       if(k==='whroll')return`<td class="n">${v?fmt(v):'<span class="hint">0</span>'}</td>`;
       if(k==='roll')return`<td class="n" title="${tr('현장 보유 롤 수량합','Cant. en rollos')}: ${fmt(r.rollq)}">${v?fmt(v):'<span class="hint">0</span>'}</td>`;
       if(k==='code'&&r.extra)return`<td>${esc(v)}<span class="tag xt" title="${tr('17000 작업필요자재에 없음','No está en 17000')}">${tr('현장','Piso')}</span></td>`;
       return n?`<td class="n ${v<0?'neg':''}">${fmt(v)}</td>`:`<td>${esc(v)}</td>`}).join('')+'</tr>'}).join('');
+  $('sTbl').querySelectorAll('td[data-adj]').forEach(td=>td.onclick=e=>{e.stopPropagation();openAdj(td.dataset.adj)});
   $('sTbl').querySelectorAll('th').forEach(th=>th.onclick=()=>{const k=th.dataset.k==='chk'?'short':th.dataset.k;
     if(sortK===k)sortD=-sortD;else{sortK=k;sortD=1}renderSum()});
 }
@@ -597,9 +655,46 @@ $('sCopy').onclick=async()=>{if(!SUM)return;const t=exportRows().map(r=>r.join('
 $('sXlsx').onclick=()=>{if(!SUM)return;const ws=XLSX.utils.aoa_to_sheet(exportRows());ws['!cols']=cols().map((c,i)=>({wch:i===1?24:14}));
   const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'부족예상');XLSX.writeFile(wb,`재고부족예상_1공장_${SUM.t||today()}.xlsx`)};
 
+/* ---------- 재고조정 ---------- */
+async function loadAdj(){ADJ=await sel('mshort_adjust','select=*&order=created_at.desc');renderAdj()}
+const findSum=c=>SUM?SUM.list.find(r=>String(r.code).toUpperCase()===c):null;
+function fillAdjCodes(){if(!SUM)return;$('aCodes').innerHTML=SUM.list.map(r=>`<option value="${esc(r.code)}">${esc(r.name||'')}</option>`).join('');
+  const n=SUM.list.filter(r=>r.auto).length;
+  $('aAutoInfo').textContent=tr(`현재 자동 0조정 적용 자재: ${n}종`,`Materiales con ajuste automático: ${n}`)+(n?' — '+SUM.list.filter(r=>r.auto).map(r=>r.code).slice(0,30).join(', '):'');
+  showAdj()}
+function openAdj(c){document.querySelector('#nav button[data-tab="adj"]').click();$('aCode').value=c;$('aAfter').value='';$('aMemo').value='';showAdj();setTimeout(()=>$('aAfter').focus(),50)}
+function showAdj(){
+  const c=$('aCode').value.trim().toUpperCase(),r=findSum(c);
+  $('aName').textContent=r?(r.name||'-'):(c?tr('조회 결과에 없음','No encontrado'):'-');
+  $('aCur').textContent=r?fmt(r.cur):'-';$('aRoll').textContent=r?fmt(r.roll):'-';
+  const a=num($('aAfter').value);
+  $('aDiff').textContent=r&&!isNaN(a)?tr(`조정량 ${a-r.base>=0?'+':''}${fmt(a-r.base)} 이 저장됩니다`,`Se guardará ajuste de ${a-r.base>=0?'+':''}${fmt(a-r.base)}`)+(r.auto?tr(' (현재 0처리 자동조정은 해제됨)',' (reemplaza el ajuste automático)'):''):'';
+}
+['aCode','aAfter'].forEach(i=>$(i).addEventListener('input',showAdj));
+$('aZero').onclick=()=>{$('aAfter').value=0;showAdj()};
+$('aSave').onclick=async()=>{
+  const c=$('aCode').value.trim().toUpperCase(),a=num($('aAfter').value),d=$('aDate').value||today();
+  if(!SUM){alert(tr('먼저 부족예상 탭에서 조회하세요','Primero consulte en Faltantes'));return}
+  const r=findSum(c);if(!codeOk(c)){alert(tr('자재코드를 확인하세요','Revise el código'));return}
+  if(isNaN(a)){alert(tr('조정후 수량을 입력하세요','Ingrese la cantidad'));return}
+  if(SUM.f&&(d<SUM.f||d>SUM.t)&&!confirm(tr(`일자 ${d}가 조회기간(${SUM.f}~${SUM.t}) 밖이라 현재 계산에는 반영되지 않습니다. 저장할까요?`,`La fecha ${d} está fuera del periodo. ¿Guardar?`)))return;
+  const base=r?r.base:0,dq=a-base;
+  if(!r&&!confirm(tr(`${c}는 조회 결과에 없습니다. 현재고 0 기준으로 ${fmt(a)} 저장할까요?`,`${c} no está en la consulta. ¿Guardar ${fmt(a)}?`)))return;
+  busy(1);try{await ins('mshort_adjust',[{adj_date:d,code:c,before_qty:r?r.cur:0,after_qty:a,qty:dq,memo:$('aMemo').value.trim()||null}]);
+    $('aAfter').value='';$('aMemo').value='';await calc();toast(tr('조정 저장','Ajuste guardado'))}catch(e){alert(e.message)}busy(0)};
+function renderAdj(){
+  const q=$('aQ').value.trim().toUpperCase(),l=ADJ.filter(a=>!q||(a.code+' '+(a.memo||'')).toUpperCase().includes(q));
+  $('aInfo').textContent=tr(`${ADJ.length}건`,`${ADJ.length} registros`);
+  $('aTbl').innerHTML=`<tr><th>${tr('일자','Fecha')}</th><th>${tr('자재코드','Código')}</th><th class="n">${tr('조정전','Antes')}</th><th class="n">${tr('조정후','Después')}</th><th class="n">${tr('조정량','Ajuste')}</th><th>${tr('사유','Motivo')}</th><th>${tr('저장시각','Registrado')}</th><th></th></tr>`+
+    (l.map(a=>`<tr><td>${esc(a.adj_date)}</td><td>${esc(a.code)}</td><td class="n">${fmt(a.before_qty)}</td><td class="n">${fmt(a.after_qty)}</td><td class="n ${a.qty<0?'neg':''}">${a.qty>0?'+':''}${fmt(a.qty)}</td><td>${esc(a.memo||'')}</td><td class="hint">${lastUpd([a],'created_at')}</td><td><button class="btn red sm" data-id="${a.id}">${tr('삭제','Eliminar')}</button></td></tr>`).join('')||`<tr><td colspan="8" class="hint" style="padding:16px">-</td></tr>`);
+  $('aTbl').querySelectorAll('button[data-id]').forEach(b=>b.onclick=async()=>{if(!confirm(tr('이 조정을 삭제할까요?','¿Eliminar este ajuste?')))return;
+    busy(1);try{await del('mshort_adjust','id=eq.'+b.dataset.id);await calc();toast('OK')}catch(e){alert(e.message)}busy(0)});
+}
+$('aQ').oninput=renderAdj;
+
 /* ---------- init ---------- */
 (async()=>{
-  applyLang();$('sTo').value=today();busy(1);
+  applyLang();$('sTo').value=today();$('aDate').value=today();busy(1);
   try{
     const cfg=await sel('mshort_config','select=*');cfg.forEach(c=>CFG[c.key]=c.value);
     await loadEx();await Promise.all([loadNeed(),loadMst(),loadDates()]);
