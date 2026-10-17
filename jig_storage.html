@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>치구 보관함 조회 · Plant 1 | Consulta de Ubicación</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=Nanum+Gothic+Coding:wght@400;700&family=Barlow+Condensed:wght@600;700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" media="print" onload="this.media='all'">
 <style>
 :root{
   --bg:#0B0C0F; --panel:#141519; --panel2:#1B1D23; --line:#26282F; --line2:#33363F;
@@ -195,28 +195,84 @@ table.grid{width:100%;border-collapse:collapse;font-size:12px;min-width:720px}
   .mtools{flex-wrap:wrap}
   .mtools input{min-width:0}
 }
+
+/* ═══ 포털 공통 테마 (index.html 스타일) ═══ */
+:root{--bg:#0a0a0a;--panel:#141414;--panel2:#1b1b1b;--line:#2a2a2a;--line2:#333333;--txt:#f0f0f0;--dim:#8a8a8a;--gold:#c9a84c;--accent:#c9a84c;--teal:#6fb8dd;--red:#e05c5c;--green:#4caf7d;--ink:#0a0a0a;
+  --mono:'Space Mono',Consolas,'Courier New',monospace;--body:'Noto Sans KR','Malgun Gothic','Apple SD Gothic Neo',sans-serif}
+body{font-family:var(--body);background:radial-gradient(900px 420px at 50% -160px,rgba(201,168,76,.07),transparent 70%),#0a0a0a;-webkit-font-smoothing:antialiased}
+.mono,.brand,.tbtn,.modhead .mod,.modhead .sub,.plant-badge,.count-chip,.tab .es,.flabel,.ac-item .c,.ac-item .b,.ac-item .w,.tag-mid .kv span,.rrow .code,.rrow .sub,.rrow .where b,.rrow .where small,.pill,.grid th,.grid td,.sec-title span,.lbl-preview-label,.tag-loc .pos,input[type=text],input[type=number],textarea{font-family:var(--mono)}
+.ac-item .n,.tag-no,.tag-loc .loc,.rrow .no{font-family:var(--mono);letter-spacing:-.02em}
+::selection{background:#c9a84c;color:#0a0a0a}
+input,textarea{color-scheme:dark}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+header.portal{background:linear-gradient(180deg,#141414 0%,#0e0e0e 100%);border-bottom:1px solid #2a2a2a;box-shadow:0 1px 0 rgba(255,255,255,.03),0 8px 24px rgba(0,0,0,.35);position:sticky;top:0;z-index:100}
+header.portal::before{content:'';display:block;height:2px;background:linear-gradient(90deg,#c9a84c 0%,#d4651a 45%,#7c5cbf 100%);opacity:.9}
+header.portal .bar{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:11px 24px}
+header.portal .brand-text{display:flex;flex-direction:column;gap:4px;min-width:0}
+header.portal .htitle{font-family:var(--mono);font-size:14px;font-weight:700;letter-spacing:.06em;line-height:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:linear-gradient(90deg,#fafafa 0%,#d9d0b4 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+header.portal .hsub{font-size:10.5px;color:#a8a8a8;letter-spacing:.2em;text-transform:uppercase;line-height:1;display:flex;align-items:center;gap:8px;white-space:nowrap;font-weight:500}
+header.portal .hsub::before{content:'';width:14px;height:1px;background:#c9a84c}
+header.portal .tbtn{height:36px;display:inline-flex;align-items:center;padding:0 15px;border-radius:999px;background:transparent;border:1px solid #2a2a2a;color:#c8c8c8;font-family:var(--body);font-size:12px;font-weight:700;letter-spacing:0}
+header.portal .tbtn.gold{background:rgba(201,168,76,.10);border-color:rgba(201,168,76,.32);color:#c9a84c}
+.system-bar{padding:7px 24px;background:#0b0b0b;border-top:1px solid #1e1e1e;font-family:var(--mono);font-size:10.5px;color:#b0b0b0;letter-spacing:.16em;text-transform:uppercase;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.system-bar>span:first-child{display:flex;align-items:center;gap:8px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.system-bar>span:first-child::before{content:'';flex-shrink:0;width:5px;height:5px;border-radius:50%;background:#c9a84c;box-shadow:0 0 6px #c9a84c;animation:pulse 2.4s ease-in-out infinite}
+.system-bar>span:last-child{white-space:nowrap;flex-shrink:0}
+.system-bar b{color:#e2c46a;font-weight:700}
+.wrap{padding:18px 16px 60px}
+.topbar,.modhead{display:none}
+.tabs{gap:6px;margin:4px 0 16px}
+.tab{flex:0 1 auto;padding:9px 16px;background:transparent;border:1px solid transparent;border-radius:999px;color:#8a8a8a;font-size:13.5px;font-weight:600;transition:color .15s,background .15s,border-color .15s}
+.tab .es{color:#666;letter-spacing:.08em}
+.tab:hover{color:#f0f0f0;background:rgba(255,255,255,.04)}
+.tab.on{background:rgba(201,168,76,.12);color:#c9a84c;border-color:rgba(201,168,76,.35);box-shadow:0 0 0 1px rgba(201,168,76,.08),0 4px 14px rgba(201,168,76,.08)}
+.tab.on .es{color:rgba(201,168,76,.7);opacity:1}
+.panel{border-radius:12px;padding:20px}
+.flabel{font-size:10px;letter-spacing:.14em;color:#c9a84c;text-transform:uppercase;font-weight:400}
+input[type=text],input[type=number],textarea{background:#0d0d0d;border:1px solid #2a2a2a;border-radius:8px;transition:border-color .15s,box-shadow .15s}
+input:focus,textarea:focus{border-color:#c9a84c;box-shadow:0 0 0 4px rgba(201,168,76,.14)}
+.btn{border-radius:8px}
+.btn-gold{background:linear-gradient(180deg,#d9b85c 0%,#c9a84c 100%);color:#0a0a0a;box-shadow:0 4px 16px rgba(201,168,76,.25),inset 0 1px 0 rgba(255,255,255,.3)}
+.btn-gold:hover{filter:brightness(1.07)}
+.btn-ghost{background:#1b1b1b;border:1px solid #2a2a2a;color:#c8c8c8}.btn-ghost:hover{border-color:#555;color:#fff}
+.btn-red{background:transparent;border:1px solid rgba(224,92,92,.5);color:#ef9a9a}.btn-red:hover{background:rgba(224,92,92,.12)}
+.ac{background:#141414;border-color:#2a2a2a;border-radius:10px;box-shadow:0 16px 34px rgba(0,0,0,.6)}
+.ac-item{border-bottom-color:#1e1e1e}.ac-item:hover,.ac-item.sel{background:rgba(201,168,76,.10)}
+.ac-item .n{color:#e2c46a}
+.tag{background:linear-gradient(180deg,#d9b85c 0%,#c9a84c 100%);border-radius:14px;box-shadow:0 12px 40px rgba(201,168,76,.18)}
+.tag::before{background:#0a0a0a}
+.rrow{background:#141414;border:1px solid #2a2a2a;border-left:2px solid #c9a84c;border-radius:10px;transition:border-color .15s,background .15s}
+.rrow:hover{background:#181818;border-color:#444;border-left-color:#c9a84c}
+.rrow .no{color:#e2c46a}.rrow .where b{color:#8fcbe8}
+.empty{border-radius:12px;border-color:#3a3a3a;color:#777}
+.pill{border-radius:999px;padding:4px 10px}
+.preview-wrap{border-radius:10px;border-color:#2a2a2a}
+.grid th{background:#0f0f0f;color:#777;letter-spacing:.12em;font-weight:400;border-bottom:1px solid #2a2a2a}
+.grid td{border-top-color:#1e1e1e;color:#d8d8d8}.grid td.k{color:#e2c46a}
+.msg{border-radius:10px}
+.msg.ok{background:rgba(76,175,125,.08);color:#4caf7d;border-color:rgba(76,175,125,.4)}
+.msg.err{background:rgba(224,92,92,.08);color:#ef9a9a;border-color:rgba(224,92,92,.4)}
+.sec-title{color:#fafafa;font-weight:700;display:flex;align-items:center;gap:10px}
+.sec-title::after{content:'';flex:1;height:1px;background:#2a2a2a}
+.multi-note{color:#e2c46a}
+.lblbox{border-radius:10px}
+.lbl-preview-label{color:#c9a84c;font-weight:400}
+@media(max-width:600px){header.portal .bar{padding:10px 12px}.system-bar{padding:7px 12px}header.portal .htitle{font-size:12px}header.portal .hsub{display:none}.tab{padding:8px 12px;font-size:12.5px}}
+.scan-row .btn,.mrow .btn,.print-set .btn{white-space:nowrap;flex-shrink:0}
 </style>
 </head>
 <body>
+<header class="portal">
+  <div class="bar">
+    <div class="brand-text">
+      <div class="htitle" data-i18n="title">치구 보관함 조회</div>
+      <div class="hsub">Yura Harness México · Plant 1 · Monclova</div>
+    </div>
+    <div class="top-right"><button class="tbtn gold" id="langBtn" onclick="toggleLang()">ESPAÑOL</button></div>
+  </div>
+  <div class="system-bar"><span>Module 11 · Jig Storage Lookup / 치구 보관함</span><span><b>Plant 1</b> · Monclova&nbsp;&nbsp;<span data-i18n="master">마스터</span> <b id="totalCount">-</b></span></div>
+</header>
 <div class="wrap">
-  <div class="topbar">
-    <div class="brand">YURA HARNESS MÉXICO<small>SISTEMA DE GESTIÓN DE PRODUCCIÓN</small></div>
-    <div class="top-right">
-      <button class="tbtn gold" id="langBtn" onclick="toggleLang()">ESPAÑOL</button>
-      <a class="tbtn" href="index.html">◂ MAIN</a>
-    </div>
-  </div>
-
-  <div class="modhead">
-    <div class="plantdot"></div>
-    <div>
-      <div class="mod">MODULE 11 · JIG STORAGE LOOKUP</div>
-      <h1 data-i18n="title">치구 보관함 조회</h1>
-      <div class="sub" data-i18n="subtitle">CONSULTA DE UBICACIÓN DE HERRAMENTALES</div>
-    </div>
-    <div class="plant-badge">PLANT 1</div>
-    <div class="count-chip"><span data-i18n="master">마스터</span> <b id="totalCount">-</b></div>
-  </div>
 
   <div class="tabs">
     <button class="tab on" data-page="search">🔍 <span data-i18n="tabSearch">조회</span> <span class="es">BUSCAR</span></button>
