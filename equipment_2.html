@@ -5973,4 +5973,67 @@ body{-webkit-font-smoothing:antialiased}
 .sidebar{width:222px}
 .sb-item{padding:9px 10px 9px 12px;gap:7px}
 </style>
+
+<style id="sidebar-portal-v2">
+.sidebar{width:216px!important;background:linear-gradient(180deg,#121212 0%,#0d0d0d 100%)!important;border-right:1px solid #222!important;padding:10px 10px 20px!important}
+.sidebar .sb-sect{margin:14px 8px 6px!important;padding:0!important;height:auto!important;background:none!important;border:none!important;border-radius:0!important;display:flex;align-items:center;gap:8px;font-family:'Space Mono',Consolas,monospace!important;font-size:9px!important;letter-spacing:.22em!important;text-transform:uppercase!important;color:#666!important;font-weight:400!important;box-shadow:none!important}
+.sidebar .sb-sect::before{content:'';display:block;width:12px!important;height:1px!important;background:#c9a84c!important;flex-shrink:0;border-radius:0!important}
+.sidebar .sb-sect::after{content:'';flex:1;height:1px;background:#1e1e1e}
+.sidebar .sb-sect-label{padding:0!important;flex:none!important;color:inherit!important;font:inherit!important;letter-spacing:inherit!important}
+.sidebar .sb-sect-label::before{display:none!important}
+.sidebar .sb-item{margin:2px 0!important;padding:0 12px!important;height:38px;border-radius:999px!important;border:1px solid transparent!important;border-left:1px solid transparent!important;display:flex;align-items:center;gap:9px;color:#8f8f8f!important;background:none!important;box-shadow:none!important;transform:none!important;transition:color .15s,background .15s,border-color .15s!important;font-size:13px!important}
+.sidebar .sb-item:hover{background:rgba(255,255,255,.04)!important;color:#f0f0f0!important;border-color:transparent!important;transform:none!important}
+.sidebar .sb-item.on{background:rgba(201,168,76,.12)!important;border-color:rgba(201,168,76,.35)!important;color:#c9a84c!important;box-shadow:0 0 0 1px rgba(201,168,76,.08),0 4px 14px rgba(201,168,76,.08)!important}
+.sidebar .sb-icon{width:16px!important;height:16px!important;font-size:0!important;display:inline-flex!important;align-items:center;justify-content:center;flex-shrink:0;opacity:.85}
+.sidebar .sb-icon svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.sidebar .sb-item.on .sb-icon{opacity:1}
+.sidebar .sb-name{font-size:13px!important;font-weight:600!important;letter-spacing:.02em;white-space:nowrap;color:inherit!important}
+.sidebar .sb-cnt{margin-left:auto!important;background:transparent!important;border:1px solid #2a2a2a!important;color:#666!important;border-radius:999px!important;padding:1px 7px!important;font-family:'Space Mono',Consolas,monospace!important;font-size:9px!important;letter-spacing:.04em}
+.sidebar .sb-item.on .sb-cnt{border-color:rgba(201,168,76,.4)!important;color:#e2c46a!important;background:transparent!important}
+#sbsMaster ~ .sb-item{color:#8f8f8f!important}
+#sbsMaster ~ .sb-item:hover{color:#f0f0f0!important;background:rgba(255,255,255,.04)!important}
+#sbsMaster ~ .sb-item.on{background:rgba(124,92,191,.14)!important;border-color:rgba(124,92,191,.45)!important;color:#b9a6ea!important;box-shadow:0 0 0 1px rgba(124,92,191,.1),0 4px 14px rgba(124,92,191,.1)!important}
+#sbsMaster ~ .sb-item.on .sb-cnt{border-color:rgba(124,92,191,.5)!important;color:#b9a6ea!important}
+#sbsMaster::before{background:#7c5cbf!important}
+#sbsData::before{background:#d4651a!important}
+#sbsData ~ .sb-item.on{background:rgba(212,101,26,.12)!important;border-color:rgba(212,101,26,.42)!important;color:#e8905a!important;box-shadow:0 0 0 1px rgba(212,101,26,.08),0 4px 14px rgba(212,101,26,.08)!important}
+#sbsData ~ .sb-item.on .sb-cnt{border-color:rgba(212,101,26,.45)!important;color:#e8905a!important}
+#sbsMaster ~ .sb-item.on .sb-cnt{border-color:rgba(124,92,191,.5)!important;color:#b9a6ea!important}
+</style>
+<script id="sidebar-portal-v2-js">
+(function(){
+var I={
+  dash:'<rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/>',
+  byMachine:'<path d="M3 21V9l6 4V9l6 4V5l6 3v13z"/>',
+  causeAction:'<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.8-3.8a6 6 0 0 1-7.9 7.9L6.7 20.3a2.1 2.1 0 0 1-3-3l6.9-6.9a6 6 0 0 1 7.9-7.9z"/>',
+  downtime:'<circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M9 2h6"/>',
+  timeAnalysis:'<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4M8 14h3M13 17h3"/>',
+  moldAnalysis:'<path d="M9 3h6v4l4 9a4 4 0 0 1-4 5H9a4 4 0 0 1-4-5l4-9z"/><path d="M8 15h8"/>',
+  records:'<path d="M8 3h8l1 2h3v16H4V5h3z"/><path d="M8 11h8M8 15h5"/>',
+  moldRecords:'<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/>',
+  mWorker:'<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
+  mMachine:'<circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1.2l2-1.6-2-3.4-2.4.9a7 7 0 0 0-2-1.2L14 3h-4l-.5 2.5a7 7 0 0 0-2 1.2l-2.4-.9-2 3.4 2 1.6A7 7 0 0 0 5 12a7 7 0 0 0 .1 1.2l-2 1.6 2 3.4 2.4-.9a7 7 0 0 0 2 1.2L10 21h4l.5-2.5a7 7 0 0 0 2-1.2l2.4.9 2-3.4-2-1.6A7 7 0 0 0 19 12z"/>',
+  mPart:'<path d="M12 2l8 4.5v11L12 22l-8-4.5v-11z"/><circle cx="12" cy="12" r="3"/>',
+  mCause:'<path d="M12 3l9.5 17h-19z"/><path d="M12 10v4M12 17.5v.5"/>',
+  mAction:'<path d="M20 6L9 17l-5-5"/>',
+  mMold:'<rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6" rx="1"/>'
+};
+function iconize(){
+  document.querySelectorAll('.sidebar .sb-item').forEach(function(it){
+    var n=it.querySelector('.sb-name'),ic=it.querySelector('.sb-icon');if(!n||!ic)return;
+    var k=(n.id||'').replace(/^sb_/,'');if(!I[k]||ic.dataset.svg===k)return;
+    ic.innerHTML='<svg viewBox="0 0 24 24">'+I[k]+'</svg>';ic.dataset.svg=k;
+  });
+}
+iconize();
+new MutationObserver(iconize).observe(document.querySelector('.sidebar')||document.body,{childList:true,subtree:true});
+/* 기간 기본값: 당월 1일 ~ 오늘 */
+function pad(n){return (n<10?'0':'')+n}
+var d=new Date(),y=d.getFullYear(),m=pad(d.getMonth()+1),today=y+'-'+m+'-'+pad(d.getDate()),first=y+'-'+m+'-01';
+var f=document.getElementById('dtFrom'),t=document.getElementById('dtTo');
+if(f&&!f.value)f.value=first;if(t&&!t.value)t.value=today;
+try{fFrom=f.value||null;fTo=t.value||null}catch(e){}
+if(typeof renderPage==='function'){try{renderPage()}catch(e){}}
+})();
+</script>
 </body></html>
