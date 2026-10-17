@@ -293,6 +293,8 @@
   .btn-lang.login-lang{position:fixed;top:18px;right:18px;height:38px;}
   html[lang="es"] .card[target="_blank"]::after{content:'Nueva ventana ↗';}
   @media(max-width:760px){ .btn-lang:not(.login-lang){order:2;flex:1 1 28%;min-width:0;height:38px;font-size:12px;padding:0 6px;} }
+  /* QR 있는 카드: 새창 뱃지를 왼쪽 상단으로 이동해 QR과 겹치지 않게 */
+  .card:has(.qr-wrap)[target="_blank"]::after{right:auto;left:auto;top:auto;bottom:10px;right:10px;}
 </style>
 </head>
 <body>
