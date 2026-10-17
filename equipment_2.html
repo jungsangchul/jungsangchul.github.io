@@ -540,7 +540,7 @@ function sbToMoldRec(r) {
       <div class="fgrp">
         <label class="flbl" id="wfl_photo">사진</label>
         <div style="display:flex;gap:12px;align-items:center">
-          <img id="wPhotoPreview" class="avatar avatar-lg" src="" alt="👤" onerror="this.src='';this.style.display='none';document.getElementById('wPhotoPlaceholder').style.display='flex'" style="display: none;">
+          <img id="wPhotoPreview" class="avatar avatar-lg" alt="👤" onerror="if(this.getAttribute('src')){this.removeAttribute('src');this.style.display='none';document.getElementById('wPhotoPlaceholder').style.display='flex'}" style="display: none;">
           <div id="wPhotoPlaceholder" class="avatar avatar-lg" style="display:flex">👤</div>
           <div style="display:flex;flex-direction:column;gap:6px">
             <button class="abtn" onclick="document.getElementById('wPhotoInput').click()">📷 사진 선택</button>
@@ -1590,11 +1590,11 @@ function openWorkerModal(id=null){
       document.getElementById('wf_role').value=w.role||'';
       document.getElementById('wf_phone').value=w.phone||'';
       if(w.photo){prev.src=w.photo;prev.style.display='';plc.style.display='none';}
-      else{prev.src='';prev.style.display='none';plc.style.display='flex';}
+      else{prev.removeAttribute('src');prev.style.display='none';plc.style.display='flex';}
     }
   } else {
     ['wf_id','wf_name','wf_role','wf_phone'].forEach(i=>document.getElementById(i).value='');
-    prev.src='';prev.style.display='none';plc.style.display='flex';
+    prev.removeAttribute('src');prev.style.display='none';plc.style.display='flex';
   }
   document.getElementById('workerModal').classList.add('show');
 }
@@ -1611,7 +1611,7 @@ function clearWorkerPhoto(){
   wPhotoData='clear';
   const prev=document.getElementById('wPhotoPreview');
   const plc=document.getElementById('wPhotoPlaceholder');
-  prev.src='';prev.style.display='none';plc.style.display='flex';
+  prev.removeAttribute('src');prev.style.display='none';plc.style.display='flex';
 }
 function saveWorker(){
   const id=document.getElementById('wId').value;
