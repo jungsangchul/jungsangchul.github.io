@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="preconnect" href="https://cdn.jsdelivr.net">
-<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@1.3.9/dist/web/variable/pretendardvariable.min.css">
 <title>금형 지정장소 라벨 출력 · 2공장</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" media="print" onload="this.media='all'">
 <style>
   /* ===== 디자인 토큰 (밝은 미니멀) ===== */
   :root{
@@ -202,14 +202,93 @@
   .plabel .pl-rule { background:#0f172a; border-radius:2px; margin:1mm 0 0; flex:none; }
   .plabel .pl2 { font-family:'Pretendard Variable',Pretendard,'맑은 고딕',sans-serif; line-height:1.2; margin-top:1mm; white-space:nowrap; color:#1e293b; }
   .plabel .pl2.mono { font-family:ui-monospace,SFMono-Regular,Consolas,monospace; letter-spacing:.3px; }
+
+  /* ═══ 포털 공통 테마 (index.html 스타일) ═══ */
+  :root{--bg:#0a0a0a;--surface:#141414;--surface-2:#0f0f0f;--border:#2a2a2a;--border-strong:#3a3a3a;
+    --text:#f0f0f0;--text-2:#d0d0d0;--muted:#8a8a8a;
+    --primary:#c9a84c;--primary-600:#e2c46a;--primary-050:rgba(201,168,76,.10);--primary-100:rgba(201,168,76,.28);
+    --ok:#4caf7d;--ok-bg:rgba(76,175,125,.08);--ok-bd:rgba(76,175,125,.4);
+    --err:#ef9a9a;--err-bg:rgba(224,92,92,.08);--err-bd:rgba(224,92,92,.4);
+    --amber:#e0a84a;--amber-bg:rgba(224,168,74,.08);--amber-bd:rgba(224,168,74,.4);
+    --shadow-sm:none;--shadow-md:none;--shadow-lg:0 24px 60px rgba(0,0,0,.6);--r-lg:12px;--r-md:10px;--r-sm:8px;
+    --font:'Noto Sans KR','Malgun Gothic','Apple SD Gothic Neo',sans-serif;--mono:'Space Mono',Consolas,'Courier New',monospace}
+  body{background:radial-gradient(900px 420px at 50% -160px,rgba(201,168,76,.07),transparent 70%),#0a0a0a;letter-spacing:0}
+  ::selection{background:#c9a84c;color:#0a0a0a}
+  input,select,textarea{color-scheme:dark}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+  .listtbl-wrap::-webkit-scrollbar-thumb,.qbody::-webkit-scrollbar-thumb,.pv-wrap::-webkit-scrollbar-thumb,.ppv::-webkit-scrollbar-thumb{background:#333;background-clip:content-box}
+  .topbar{display:block;padding:0;background:linear-gradient(180deg,#141414 0%,#0e0e0e 100%);border-bottom:1px solid #2a2a2a;box-shadow:0 1px 0 rgba(255,255,255,.03),0 8px 24px rgba(0,0,0,.35)}
+  .topbar::before{content:'';display:block;height:2px;background:linear-gradient(90deg,#c9a84c 0%,#d4651a 45%,#7c5cbf 100%);opacity:.9}
+  .topbar .bar{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:11px 24px;flex-wrap:wrap}
+  .brand-text{display:flex;flex-direction:column;gap:4px;min-width:0}
+  .topbar h1{font-family:var(--mono);font-size:14px;font-weight:700;letter-spacing:.06em;line-height:1;white-space:nowrap;background:linear-gradient(90deg,#fafafa 0%,#d9d0b4 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .hsub{font-size:10.5px;color:#a8a8a8;letter-spacing:.2em;text-transform:uppercase;line-height:1;display:flex;align-items:center;gap:8px;white-space:nowrap;font-weight:500}
+  .hsub::before{content:'';width:14px;height:1px;background:#c9a84c}
+  .facbadge{display:none}
+  .upzone{margin-left:auto;gap:8px}
+  .upbtn,.upbtn.gray,.upbtn.dl,.upbtn.lang{height:36px;padding:0 15px;border-radius:999px;background:transparent;border:1px solid #2a2a2a;color:#c8c8c8;font-weight:600;font-size:12.5px;transition:color .15s,border-color .15s,background .15s}
+  .upbtn:hover,.upbtn.gray:hover{background:rgba(255,255,255,.03);border-color:#555;color:#fff;transform:none}
+  .upbtn.dl{border-color:rgba(76,175,125,.45);color:#4caf7d}.upbtn.dl:hover{background:rgba(76,175,125,.1)}
+  .upbtn.lang{background:rgba(201,168,76,.10);border-color:rgba(201,168,76,.32);color:#c9a84c}.upbtn.lang:hover{background:rgba(201,168,76,.16)}
+  .system-bar{padding:7px 24px;background:#0b0b0b;border-top:1px solid #1e1e1e;font-family:var(--mono);font-size:10.5px;color:#b0b0b0;letter-spacing:.16em;text-transform:uppercase;display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .system-bar>span:first-child{display:flex;align-items:center;gap:8px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .system-bar>span:first-child::before{content:'';flex-shrink:0;width:5px;height:5px;border-radius:50%;background:#c9a84c;box-shadow:0 0 6px #c9a84c;animation:pulse 2.4s ease-in-out infinite}
+  .system-bar>span:last-child{white-space:nowrap;flex-shrink:0}
+  .system-bar b,.topbar .ver #dataSrc,.topbar .ver #totalCnt{color:#e2c46a;font-weight:700}
+  .topbar .ver{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;color:#999;text-transform:none}
+  .wrap{padding:22px 24px 60px;gap:18px}
+  .panel{background:#141414;border:1px solid #2a2a2a;border-radius:12px}
+  .tabs{background:#0f0f0f;padding:10px 12px;gap:6px;border-bottom:1px solid #2a2a2a}
+  .tab{border-radius:999px;padding:9px 14px;font-size:13.5px;font-weight:600;color:#8a8a8a;border:1px solid transparent;top:0}
+  .tab:hover{background:rgba(255,255,255,.04);color:#f0f0f0}
+  .tab.on{background:rgba(201,168,76,.12);color:#c9a84c;border:1px solid rgba(201,168,76,.35);box-shadow:0 0 0 1px rgba(201,168,76,.08),0 4px 14px rgba(201,168,76,.08)}
+  .scanbox input,.searchrow input,#pasteArea,.qitem .qty,.printopts select,.printopts input[type=number]{background:#0d0d0d;border:1px solid #2a2a2a;color:#f0f0f0;border-radius:8px}
+  .scanbox input:focus,.searchrow input:focus,#pasteArea:focus,.qitem .qty:focus,.printopts select:focus,.printopts input[type=number]:focus{background:#0d0d0d;border-color:#c9a84c;box-shadow:0 0 0 4px rgba(201,168,76,.14)}
+  .scanbox input{font-family:var(--mono)}
+  .scanbox button,.btn-add,.printbtn,.pbtns button:not(.pclose){background:linear-gradient(180deg,#d9b85c 0%,#c9a84c 100%);color:#0a0a0a;border-radius:8px;box-shadow:0 4px 16px rgba(201,168,76,.25),inset 0 1px 0 rgba(255,255,255,.3)}
+  .scanbox button:hover,.btn-add:hover,.printbtn:hover{background:linear-gradient(180deg,#d9b85c 0%,#c9a84c 100%);filter:brightness(1.07);transform:none}
+  .btn-gray,.pclose,.mode-cancel{background:#1b1b1b!important;color:#c8c8c8!important;border:1px solid #2a2a2a!important;border-radius:8px}
+  .btn-gray:hover,.pclose:hover,.mode-cancel:hover{border-color:#555!important;color:#fff!important}
+  .searchrow .exA{border-color:#2a2a2a;color:#c8c8c8;border-radius:8px;background:#0d0d0d}
+  .listtbl-wrap{border-color:#2a2a2a;border-radius:10px}
+  table.listtbl th{background:#0f0f0f;color:#777;font-family:var(--mono);font-size:10px;letter-spacing:.1em;font-weight:400;border-bottom-color:#2a2a2a}
+  table.listtbl td{border-bottom-color:#1e1e1e;color:#d8d8d8;font-family:var(--mono);font-size:12.5px}
+  table.listtbl tbody tr:hover{background:rgba(255,255,255,.03)}
+  table.listtbl tr.sel{background:rgba(201,168,76,.10)}table.listtbl tr.sel td{color:#e2c46a}
+  table.listtbl input[type=checkbox],.printopts>label input[type=checkbox],.exA input{accent-color:#c9a84c}
+  .right .head{border-bottom-color:#2a2a2a}.right .head h2{color:#fafafa}
+  .right .head .cnt{background:transparent;border:1px solid rgba(201,168,76,.45);color:#e2c46a;font-family:var(--mono);font-weight:700}
+  .qitem{background:#0f0f0f;border-color:#2a2a2a;border-radius:10px}.qitem:hover{border-color:#444;box-shadow:none}
+  .qitem .lab .l1{color:#fafafa}.qitem .lab .l2{color:#888}
+  .qitem .del{background:transparent;border:1px solid rgba(224,92,92,.45);color:#ef9a9a;border-radius:999px}.qitem .del:hover{background:rgba(224,92,92,.12)}
+  .printopts{background:#0f0f0f;border-top-color:#2a2a2a}
+  .optgrid label,.pv-title,.printopts>label{color:#c8c8c8}
+  .optgrid label{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#c9a84c;font-weight:400}
+  .pv-wrap{border:1px dashed #3a3a3a;background:#fff}
+  .hint,.selcount,.qempty{color:#777}
+  .scanmsg{border-radius:10px}
+  .lockbox,.pastebox,.modebox{background:#0f0f0f;border:1px solid #2a2a2a;color:#d0d0d0;border-radius:14px}
+  .lockbox .spin{border-color:rgba(201,168,76,.25);border-top-color:#c9a84c}
+  .lockbox button{background:linear-gradient(180deg,#d9b85c 0%,#c9a84c 100%);color:#0a0a0a;border-radius:8px}
+  .pastebox h3,.modebox h3{color:#fafafa}
+  .pguide{background:rgba(201,168,76,.04);border:1px solid rgba(201,168,76,.2);color:#b0b0b0;border-radius:10px}.pguide b{color:#e2c46a}
+  .ppv table{border-color:#2a2a2a}.ppv th{background:#141414;color:#999}.ppv th,.ppv td{border-color:#2a2a2a}
+  .mode-merge{background:rgba(76,175,125,.08);color:#4caf7d;border-color:rgba(76,175,125,.4)!important}.mode-merge:hover{background:rgba(76,175,125,.14);border-color:#4caf7d!important}
+  .mode-replace{background:rgba(224,92,92,.08);color:#ef9a9a;border-color:rgba(224,92,92,.4)!important}.mode-replace:hover{background:rgba(224,92,92,.14);border-color:#e05c5c!important}
+  #lockOverlay,#pasteModal,#modeModal{background:rgba(0,0,0,.74)}
+  @media(max-width:820px){.topbar .bar{padding:10px 12px}.system-bar{padding:7px 12px}.topbar h1{font-size:12px}.hsub{display:none}.upzone{margin-left:0;width:100%}.upbtn{height:32px;padding:0 11px;font-size:11.5px}.wrap{padding:14px 12px 60px}.left,.right{min-width:0;flex:1 1 100%}}
+  .topbar h1{font-size:14px}
 </style>
 </head>
 <body>
 
 <div class="topbar">
-  <h1 data-i18n="title">🏷️ 금형 지정장소 라벨 출력</h1>
+ <div class="bar">
+  <div class="brand-text">
+    <h1 data-i18n="title">🏷️ 금형 지정장소 라벨 출력</h1>
+    <div class="hsub">Yura Harness México · Plant 2 · Torreón</div>
+  </div>
   <span class="facbadge" data-i18n="facBadge">🏭 2공장</span>
-  <span class="ver">v2.6 · LETTER · <span id="dataSrc">-</span> · <span data-i18n="total">총</span> <span id="totalCnt">-</span></span>
   <div class="upzone">
     <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" style="display:none" onchange="handleFile(this.files[0]); this.value='';">
     <button class="upbtn" data-i18n="btnUpload" onclick="document.getElementById('fileInput').click()">📂 리스트 업로드</button>
@@ -218,6 +297,8 @@
     <button class="upbtn dl" data-i18n="btnDownload" onclick="downloadExcel()">⬇ 엑셀 다운로드</button>
     <button class="upbtn lang" id="langBtn" onclick="toggleLang()">🌐 Español</button>
   </div>
+ </div>
+ <div class="system-bar"><span>Mold Location Label Print / 금형 지정장소 라벨</span><span class="ver">v2.6 · LETTER · <span id="dataSrc">-</span> · <span data-i18n="total">총</span> <span id="totalCnt">-</span></span></div>
 </div>
 
 <div class="wrap">
