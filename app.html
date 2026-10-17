@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0a0a0a">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="robots" content="noindex">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<title>YURA HARNESS MÉXICO</title>
+<style>
+  html,body{margin:0;height:100%;background:#0a0a0a;overflow:hidden}
+  iframe{position:fixed;inset:0;width:100%;height:100%;border:0;background:#0a0a0a;opacity:0;transition:opacity .25s}
+  iframe.on{opacity:1}
+  #ld{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;color:#555;font:10px 'Space Mono',Consolas,monospace;letter-spacing:.22em;text-transform:uppercase;pointer-events:none}
+  #ld i{width:6px;height:6px;border-radius:50%;background:#c9a84c;box-shadow:0 0 8px #c9a84c;animation:p 1.2s ease-in-out infinite}
+  @keyframes p{0%,100%{opacity:1}50%{opacity:.25}}
+  #home{position:fixed;right:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:5;display:none;width:42px;height:42px;border-radius:50%;border:1px solid rgba(201,168,76,.4);background:rgba(17,17,17,.85);backdrop-filter:blur(10px);color:#c9a84c;align-items:center;justify-content:center;text-decoration:none;box-shadow:0 6px 20px rgba(0,0,0,.5)}
+  #home svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  @media (display-mode:standalone){#home{display:flex}}
+  body.sa #home{display:flex}
+</style>
+</head>
+<body>
+<div id="ld"><i></i><span>YURA HARNESS MÉXICO</span></div>
+<iframe id="f" allow="camera; microphone; clipboard-read; clipboard-write; fullscreen; geolocation; autoplay" allowfullscreen referrerpolicy="same-origin"></iframe>
+<a id="home" href="./" title="메뉴 / Menú" aria-label="menu"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></a>
+<script>
+(function(){
+  var q = new URLSearchParams(location.search), m = q.get('m') || '';
+  if(m){
+    // 한 번 읽고 주소에서 지움 — 주소창에는 /app 만 남고, 새로고침 시 sessionStorage에서 복원
+    try{ sessionStorage.setItem('yura_app', m); }catch(e){}
+    history.replaceState({m:m}, '', location.pathname);
+  }else{
+    try{ m = (history.state && history.state.m) || sessionStorage.getItem('yura_app') || ''; }catch(e){}
+  }
+  if(!/^[A-Za-z0-9_\-]+$/.test(m)){ location.replace('./'); return; }
+  if(navigator.standalone) document.body.classList.add('sa');
+  var f = document.getElementById('f');
+  f.addEventListener('load', function(){
+    f.classList.add('on');
+    var ld = document.getElementById('ld'); if(ld) ld.remove();
+    try{
+      var pth = f.contentWindow.location.pathname;
+      if(/(^|\/)(index(\.html)?)?$/.test(pth)){ location.href = './'; return; }   // 앱 안의 '메인' 링크 → 포털로
+      var t = f.contentDocument && f.contentDocument.title; if(t) document.title = t;
+    }catch(e){}
+  });
+  f.src = m + '.html';
+  if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(function(){});
+})();
+</script>
+</body>
+</html>
