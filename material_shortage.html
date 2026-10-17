@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>재고부족예상 · 1공장</title>
+<title>가공생산팀 자재관리 · 1공장</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 :root{--bg:#f3f5f8;--card:#fff;--ink:#1c2430;--mute:#6b7685;--line:#dde2e9;--pri:#1f5fbf;--pri2:#e8f0fc;
@@ -71,7 +71,7 @@ td.adjc{cursor:pointer;text-decoration:underline dotted #9aa6b6}
 <div class="top">
 <header>
   <a class="logo" href="index.html">YURA</a>
-  <h1 data-t="title">재고부족예상</h1>
+  <h1 data-t="title">가공생산팀 자재관리</h1>
   <span class="plant" data-t="plant">멕시코 1공장 · Monclova</span>
   <span class="sp"></span>
   <button id="langBtn">ES</button>
@@ -249,7 +249,7 @@ const KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6
 const H={apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json'};
 
 /* ---------- i18n ---------- */
-const ES={title:'Pronóstico de faltantes',plant:'Planta 1 México · Monclova',tab_sum:'Faltantes',tab_need:'Material requerido (17000)',tab_cnt:'Inventario físico',
+const ES={title:'Gestión de materiales · Corte',plant:'Planta 1 México · Monclova',tab_sum:'Faltantes',tab_need:'Material requerido (17000)',tab_cnt:'Inventario físico',
 tab_rec:'Entrada a piso (30810)',tab_use:'Consumo (32040)',tab_mst:'Material en almacén (25010)',cntDate:'Fecha inventario',from:'Desde',to:'Hasta',
 thr:'Umbral alerta (<)',run:'Consultar',search:'Buscar',filter:'Mostrar',type:'Tipo',f_all:'Todo',f_short:'Faltante',f_care:'Alerta',f_chk:'Faltante+Alerta',f_need:'Solo 17000',f_extra:'Fuera de 17000 (piso)',
 copy:'Copiar',xlsx:'Excel',k_mat:'Materiales',k_short:'Faltante (<0)',k_care:'Alerta',k_ex:'Filas LOT excluidas',
