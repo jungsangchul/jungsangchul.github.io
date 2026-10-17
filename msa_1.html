@@ -232,6 +232,27 @@ hr{border-top-color:#2a2a2a}
 .card>h2,label,.emphd,.kpi span,.modalbody h4,.card>h2 small{font-family:'Noto Sans KR','Malgun Gothic','Apple SD Gothic Neo',sans-serif!important;letter-spacing:.02em!important;text-transform:none!important;font-weight:600!important}
 .card>h2,label,.emphd,.kpi span,.modalbody h4,.card>h2 small{font-size:12px!important}
 .card>h2{color:#fafafa!important}
+
+/* ═══ 가독성 보강 v2: 측정표 글자 확대 · 평가자 목록 hover/선택 강조 ═══ */
+.opblk h3{font-size:15px}
+.opblk table{font-size:14px}
+.opblk th{font-family:'Noto Sans KR','Malgun Gothic',sans-serif!important;font-size:13px!important;letter-spacing:0!important;color:#d0d0d0!important;font-weight:700!important;background:#141414!important;padding:8px 6px}
+.opblk thead th:first-child,.opblk tbody th{color:#e2c46a!important;font-size:13px!important}
+.opblk td{font-size:14px;color:#e8e8e8;padding:5px 4px}
+.opblk input.num,.opblk td input{height:38px;font-size:16px!important;font-weight:600;color:#fff;text-align:center;font-variant-numeric:tabular-nums}
+.cell{font-size:13px;width:38px;height:38px;flex:0 0 38px}
+.cell.hd{font-size:13px;color:#d0d0d0;font-weight:700}
+.cellrow .cell.hd:first-child{color:#e2c46a;min-width:52px;flex-basis:52px}
+.emprow{padding:9px 10px;transition:background .12s,border-color .12s;border-left:3px solid transparent}
+.emprow:hover{background:rgba(201,168,76,.10)!important;border-left-color:rgba(201,168,76,.6)}
+.emprow:hover .c-nm{color:#fff}
+.emprow:hover .c-ord{background:#2a2a2a;color:#e2c46a;border:1px solid rgba(201,168,76,.5)}
+.emprow .c-nm{font-size:14px;color:#c8c8c8}
+.emprow.on{background:rgba(201,168,76,.16)!important;border-left-color:#c9a84c}
+.emprow.on .c-nm{color:#fafafa}
+.emprow.on .c-nm small{color:#e2c46a}
+.emprow .c-ord{width:28px;height:28px;font-size:12px;border:1px solid transparent}
+.emprow.on .c-ord{box-shadow:0 0 0 3px rgba(201,168,76,.18)}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
