@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/png" href="/favicon.png">
 <title>MSA 측정시스템 분석 · 2공장 · YURA HARNESS MÉXICO</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" media="print" onload="this.media='all'">
 <style>
 :root{
   --navy:#0f2b4c; --navy2:#17395f; --gold:#c9a227; --gold-l:#e8c95a;
@@ -148,6 +150,88 @@ tr.clickrow td:first-child::after{content:' ▸';color:var(--gold);font-weight:8
 .glos table{margin:8px 0}
 .glos .interp{margin-top:8px;padding-top:8px;border-top:1px dashed var(--line);color:var(--navy)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* ═══ 포털 공통 테마 (index.html 스타일) ═══ */
+:root{--navy:#c9a84c;--navy2:#b8923a;--gold:#c9a84c;--gold-l:#e2c46a;--ok:#4caf7d;--ng:#e05c5c;--warn:#e0a84a;--bg:#0a0a0a;--card:#141414;--line:#2a2a2a;--txt:#f0f0f0;--mut:#8a8a8a;
+  --mono:'Space Mono',Consolas,'Courier New',monospace;--body:'Noto Sans KR','Malgun Gothic','Apple SD Gothic Neo',sans-serif}
+body{font-family:var(--body);background:radial-gradient(900px 420px at 50% -160px,rgba(201,168,76,.07),transparent 70%),#0a0a0a;-webkit-font-smoothing:antialiased}
+::selection{background:#c9a84c;color:#0a0a0a}
+input,select,textarea{color-scheme:dark}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+.topbar{box-shadow:0 1px 0 rgba(255,255,255,.03),0 8px 24px rgba(0,0,0,.35)}
+header{background:linear-gradient(180deg,#141414 0%,#0e0e0e 100%);padding:0;border-bottom:1px solid #2a2a2a}
+header::before{content:'';display:block;height:2px;background:linear-gradient(90deg,#c9a84c 0%,#d4651a 45%,#7c5cbf 100%);opacity:.9}
+header .bar{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:11px 24px}
+header .brand-text{display:flex;flex-direction:column;gap:4px;min-width:0}
+header h1{font-family:var(--mono);font-size:14px;font-weight:700;letter-spacing:.06em;line-height:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:linear-gradient(90deg,#fafafa 0%,#d9d0b4 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+header h1 span{color:inherit;-webkit-text-fill-color:inherit}
+header p{margin:0;font-size:10.5px;color:#a8a8a8;letter-spacing:.2em;text-transform:uppercase;line-height:1;display:flex;align-items:center;gap:8px;white-space:nowrap;font-weight:500}
+header p::before{content:'';width:14px;height:1px;background:#c9a84c}
+.langbtn{position:static;height:36px;padding:0 15px;border-radius:999px;background:rgba(201,168,76,.10);border:1px solid rgba(201,168,76,.32);color:#c9a84c;font-size:12px;font-weight:700}
+.langbtn:hover{background:rgba(201,168,76,.16)}
+.system-bar{padding:7px 24px;background:#0b0b0b;border-top:1px solid #1e1e1e;font-family:var(--mono);font-size:10.5px;color:#b0b0b0;letter-spacing:.16em;text-transform:uppercase;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.system-bar>span:first-child{display:flex;align-items:center;gap:8px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.system-bar>span:first-child::before{content:'';flex-shrink:0;width:5px;height:5px;border-radius:50%;background:#c9a84c;box-shadow:0 0 6px #c9a84c;animation:pulse 2.4s ease-in-out infinite}
+.system-bar>span:last-child{white-space:nowrap;flex-shrink:0}
+.system-bar b{color:#e2c46a;font-weight:700}
+.tabwrap{background:#111;padding:10px 24px;border-bottom:1px solid #2a2a2a}
+nav.tabs{gap:6px;max-width:none;scrollbar-width:none}nav.tabs::-webkit-scrollbar{display:none}
+nav.tabs button{flex:0 0 auto;min-width:0;padding:8px 16px;border:1px solid transparent;border-radius:999px;color:#8a8a8a;font-weight:600;font-size:13px;transition:color .15s,background .15s,border-color .15s}
+nav.tabs button:hover:not(.on){color:#f0f0f0;background:rgba(255,255,255,.04)}
+nav.tabs button.on{background:rgba(201,168,76,.12);color:#c9a84c;border-color:rgba(201,168,76,.35);box-shadow:0 0 0 1px rgba(201,168,76,.08),0 4px 14px rgba(201,168,76,.08)}
+.wrap{padding:22px 24px 60px}
+.card{background:#141414;border:1px solid #2a2a2a;border-radius:12px;padding:18px 20px}
+.card>h2{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:#999;font-weight:400;border-left:3px solid #c9a84c;padding-left:10px}
+.card>h2 small{font-family:var(--body);text-transform:none;letter-spacing:0;color:#666}
+label{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#c9a84c;font-weight:400}
+input,select,textarea{background:#0d0d0d;border:1px solid #2a2a2a;border-radius:8px;color:#f0f0f0;transition:border-color .15s,box-shadow .15s}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#c9a84c;box-shadow:0 0 0 4px rgba(201,168,76,.14)}
+select option{background:#141414}
+textarea{font-family:var(--mono)}
+button{border-radius:999px}
+.btn,.btn-gold{background:linear-gradient(180deg,#d9b85c 0%,#c9a84c 100%);color:#0a0a0a;box-shadow:0 4px 16px rgba(201,168,76,.22),inset 0 1px 0 rgba(255,255,255,.3)}
+.btn:hover,.btn-gold:hover{filter:brightness(1.07)}
+.btn-line{background:#1b1b1b;color:#c8c8c8;border-color:#2a2a2a}.btn-line:hover{border-color:#555;color:#fff}
+.btn-danger{background:transparent;color:#ef9a9a;border-color:rgba(224,92,92,.5)}.btn-danger:hover{background:rgba(224,92,92,.12)}
+.delbtn{background:transparent;color:#ef9a9a;border-color:rgba(224,92,92,.45);border-radius:999px}
+th,td{border-color:#1e1e1e}
+th{background:#0f0f0f;font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:#777;font-weight:400}
+td{color:#d8d8d8}
+tbody tr:nth-child(even){background:#121212}
+tr.clickrow:hover{background:#1b1b1b!important}
+.pill{border:1px solid transparent;background:transparent;font-weight:600}
+.p-ok{color:#4caf7d;border-color:rgba(76,175,125,.45)}.p-ng{color:#ef9a9a;border-color:rgba(224,92,92,.45)}.p-wa{color:#e0a84a;border-color:rgba(224,168,74,.45)}.p-mut{color:#888;border-color:#2a2a2a}
+.emplist{background:#0f0f0f;border-color:#2a2a2a;border-radius:10px}
+.emphd{background:#0f0f0f;border-bottom-color:#2a2a2a;color:#777;font-family:var(--mono);font-size:10px;letter-spacing:.1em}
+.emprow{border-bottom-color:#1e1e1e}.emprow:hover{background:rgba(255,255,255,.03)}.emprow.on{background:rgba(201,168,76,.10)}
+.emprow .c-ord{background:#1b1b1b;color:#777;font-family:var(--mono)}.emprow.on .c-ord{background:#c9a84c;color:#0a0a0a}
+.emprow .c-gr{color:#e2c46a;font-family:var(--mono)}
+.cell{background:#0d0d0d;border-color:#2a2a2a;color:#555;font-family:var(--mono)}
+.cell.hd{background:#141414;color:#999}
+.cell.ok{background:rgba(76,175,125,.85);border-color:#4caf7d;color:#0a0a0a}.cell.ng{background:rgba(224,92,92,.85);border-color:#e05c5c;color:#fff}
+.cell.miss{box-shadow:inset 0 0 0 2px #c9a84c}
+.opblk{background:#0f0f0f;border-color:#2a2a2a;border-radius:10px}.opblk h3{color:#fafafa}
+.gtab{background:#0d0d0d;border-color:#2a2a2a;color:#888;border-radius:999px}
+.gtab.on{background:rgba(201,168,76,.14);border-color:#c9a84c;color:#c9a84c}
+.gtab.filled{border-color:rgba(201,168,76,.5);color:#e2c46a}.gtab.filled.on{color:#c9a84c}
+.gmem{background:#0f0f0f;border-color:#2a2a2a;color:#c8c8c8;border-radius:10px}.gmem b{color:#e2c46a}
+.kpi div{background:#0f0f0f;border-color:#2a2a2a;border-radius:10px;text-align:left;padding:14px}
+.kpi b{font-family:var(--mono);color:#fafafa;font-weight:700;font-size:22px}.kpi span{font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:#777}
+.note,.empty{color:#777}
+#toast{background:#1b1b1b;border:1px solid #2a2a2a;color:#f0f0f0;box-shadow:0 8px 24px rgba(0,0,0,.6)}
+.chartbox{background:#0f0f0f;border-color:#2a2a2a;border-radius:10px}
+hr{border-top-color:#2a2a2a}
+.modal{background:rgba(0,0,0,.74)}
+.modalbox{background:#0f0f0f;border:1px solid #2a2a2a;border-radius:14px}
+.modalhd{background:#0f0f0f;border-bottom-color:#2a2a2a}.modalhd h3{color:#fafafa}
+.modalbody h4{color:#c9a84c;font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;font-weight:400}
+.glos{background:#141414;border-color:#2a2a2a;color:#b0b0b0;border-radius:10px}.glos b{color:#e2c46a}.glos .interp{color:#e0e0e0;border-top-color:#2a2a2a}
+@media(max-width:520px){header .bar{padding:10px 12px}.system-bar{padding:7px 12px}.tabwrap{padding:8px 12px}header h1{font-size:12px}.wrap{padding:14px 12px 60px}.langbtn{height:32px;padding:0 11px}}
+
+/* ═══ 한글 캡션 가독성: 본문 폰트 사용 ═══ */
+.card>h2,label,.emphd,.kpi span,.modalbody h4,.card>h2 small{font-family:'Noto Sans KR','Malgun Gothic','Apple SD Gothic Neo',sans-serif!important;letter-spacing:.02em!important;text-transform:none!important;font-weight:600!important}
+.card>h2,label,.emphd,.kpi span,.modalbody h4,.card>h2 small{font-size:12px!important}
+.card>h2{color:#fafafa!important}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
@@ -155,9 +239,14 @@ tr.clickrow td:first-child::after{content:' ▸';color:var(--gold);font-weight:8
 
 <div class="topbar">
   <header>
+   <div class="bar">
+    <div class="brand-text">
+      <h1>MSA <span>측정시스템 분석</span></h1>
+      <p>Yura Harness México · Plant 2 · Torreón</p>
+    </div>
     <button class="langbtn" id="langBtn" onclick="toggleLang()">ES</button>
-    <h1>MSA <span>측정시스템 분석 · 2공장 (Torreón)</span></h1>
-    <p>Análisis del Sistema de Medición — YURA HARNESS MÉXICO</p>
+   </div>
+   <div class="system-bar"><span>Module 11 · Measurement System Analysis / 측정시스템 분석</span><span><b>Plant 2</b> · Torreón</span></div>
   </header>
   <div class="tabwrap">
     <nav class="tabs">
@@ -822,7 +911,7 @@ function saveGInfo(){
 }
 function updTolNote(){
   const el=$('vTolNote'), has=num($('vTol').value)>0;
-  el.style.color = has ? '' : '#c0392b';
+  el.style.color = has ? '' : '#e05c5c';
   el.innerHTML = has
     ? '계측기·규격·조치계획은 <b>조별로 따로</b> 저장됩니다. USL·LSL을 넣으면 공차가 자동 계산됩니다.'
     : '⚠ <b>규격공차가 비어 있어 % Tolerance 를 계산할 수 없습니다.</b> USL·LSL 또는 공차를 입력하세요. '+
@@ -966,7 +1055,7 @@ function calcVar(){
   const V=res, vTV=V.TV*V.TV;
   let h='<div class="kpi">'+
     '<div><b>'+V.pctC.toFixed(2)+'%</b><span>% Contribution</span></div>'+
-    '<div><b'+(V.pctT===null?' style="color:#c0392b;font-size:13px"':'')+'>'+
+    '<div><b'+(V.pctT===null?' style="color:#e05c5c;font-size:13px"':'')+'>'+
       (V.pctT===null?'규격 미입력':V.pctT.toFixed(2)+'%')+'</b><span>% Tolerance (5.15σ)</span></div>'+
     '<div><b>'+V.ndc+'</b><span>distinct categories (ndc)</span></div>'+
     '<div><b>'+V.grade+'</b><span>'+LVL_ES[V.grade]+' · '+V.result+'</span></div></div>';
@@ -1038,8 +1127,8 @@ function renderSummary(){
 /* ══════════════════════════════════════════
    그래프 — 6분할 (Minitab 형식)
    ══════════════════════════════════════════ */
-const OPC=['#4472c4','#ed7d31','#70ad47'];   // 측정자 1·2·3
-const SER=['#4472c4','#ed7d31','#a5a5a5'];   // %Contribution / %Study / %Tol
+const OPC=['#6fb8dd','#d4651a','#4caf7d'];   // 측정자 1·2·3
+const SER=['#6fb8dd','#d4651a','#999999'];   // %Contribution / %Study / %Tol
 
 function cc(id,H){
   const c=$(id), dpr=window.devicePixelRatio||1, w=c.clientWidth||360, h=H||200;
@@ -1048,19 +1137,19 @@ function cc(id,H){
   return {x,w,h};
 }
 function title(x,w,t){
-  x.fillStyle='#0f2b4c'; x.font='bold 11px sans-serif'; x.textAlign='center';
+  x.fillStyle='#f0f0f0'; x.font='bold 11px sans-serif'; x.textAlign='center';
   x.fillText(t,w/2,13);
 }
 function axes(x,pad,w,h){
-  x.strokeStyle='#c8d0da'; x.lineWidth=1; x.beginPath();
+  x.strokeStyle='#333333'; x.lineWidth=1; x.beginPath();
   x.moveTo(pad.l,pad.t); x.lineTo(pad.l,h-pad.b); x.lineTo(w-pad.r,h-pad.b); x.stroke();
 }
 function yTicks(x,pad,w,h,min,max,fmt,n){
-  n=n||4; x.font='8px sans-serif'; x.textAlign='right'; x.fillStyle='#6b7887';
+  n=n||4; x.font='8px sans-serif'; x.textAlign='right'; x.fillStyle='#8a8a8a';
   for(let i=0;i<=n;i++){
     const v=min+(max-min)*i/n, y=h-pad.b-(v-min)/(max-min)*(h-pad.t-pad.b);
     x.fillText(fmt(v),pad.l-3,y+3);
-    if(i>0&&i<n){ x.strokeStyle='#f0f3f7'; x.beginPath();
+    if(i>0&&i<n){ x.strokeStyle='#1e1e1e'; x.beginPath();
       x.moveTo(pad.l,y); x.lineTo(w-pad.r,y); x.stroke(); }
   }
 }
@@ -1071,7 +1160,7 @@ function legend(x,w,pad,items){
     const tw=x.measureText(it[0]).width+16;
     if(lx+tw>w-pad.r){ lx=pad.l; ly+=10; }
     x.fillStyle=it[1]; x.fillRect(lx,ly-5,8,4);
-    x.fillStyle='#4a5560'; x.fillText(it[0],lx+11,ly);
+    x.fillStyle='#b0b0b0'; x.fillText(it[0],lx+11,ly);
     lx+=tw;
   });
   return ly+6;
@@ -1080,7 +1169,7 @@ function drawSet(V,pf){
   const ids=[1,2,3,4,5,6].map(i=>pf+i);
   ids.forEach(id=>{ const c=$(id); if(c) c.getContext('2d').clearRect(0,0,c.width,c.height); });
   if(!ids.every(id=>$(id))) return;
-  if(!V){ ids.forEach(id=>{ const {x,w,h}=cc(id); x.fillStyle='#aab3bf'; x.font='11px sans-serif';
+  if(!V){ ids.forEach(id=>{ const {x,w,h}=cc(id); x.fillStyle='#666666'; x.font='11px sans-serif';
       x.textAlign='center'; x.fillText('데이터 없음',w/2,h/2); }); return; }
   chComponents(V,ids[0]); chByPart(V,ids[1]); chRChart(V,ids[2]);
   chByOper(V,ids[3]);   chXChart(V,ids[4]);  chInteract(V,ids[5]);
@@ -1114,7 +1203,7 @@ function chComponents(V,id){
       const by=h-pad.b-(v/max)*(h-pad.t-pad.b);
       x.fillStyle=SER[si]; x.fillRect(bx,by,sw-1,h-pad.b-by);
     });
-    x.fillStyle='#4a5560'; x.font='8px sans-serif'; x.textAlign='center';
+    x.fillStyle='#b0b0b0'; x.font='8px sans-serif'; x.textAlign='center';
     x.fillText(c[0],cx,h-pad.b+11);
   });
 }
@@ -1130,13 +1219,13 @@ function chByPart(V,id){
   const X=i=>pad.l+(V.p<2?.5:i/(V.p-1))*(w-pad.l-pad.r);
   const Y=v=>h-pad.b-(v-min)/(max-min)*(h-pad.t-pad.b);
   axes(x,pad,w,h); yTicks(x,pad,w,h,min,max,v=>v.toFixed(2));
-  raw.forEach(r=>{ x.fillStyle='rgba(120,132,148,.5)';
+  raw.forEach(r=>{ x.fillStyle='rgba(160,160,160,.5)';
     x.beginPath(); x.arc(X(r[0]),Y(r[1]),2,0,6.3); x.fill(); });
-  x.strokeStyle='#b8a33a'; x.lineWidth=2; x.beginPath();
+  x.strokeStyle='#c9a84c'; x.lineWidth=2; x.beginPath();
   V.partAvg.forEach((v,i)=> i?x.lineTo(X(i),Y(v)):x.moveTo(X(i),Y(v))); x.stroke();
-  V.partAvg.forEach((v,i)=>{ x.fillStyle='#0f2b4c';
+  V.partAvg.forEach((v,i)=>{ x.fillStyle='#f0f0f0';
     x.beginPath(); x.arc(X(i),Y(v),2.6,0,6.3); x.fill(); });
-  x.fillStyle='#6b7887'; x.font='8px sans-serif'; x.textAlign='center';
+  x.fillStyle='#8a8a8a'; x.font='8px sans-serif'; x.textAlign='center';
   const step=V.p>10?2:1;
   for(let i=0;i<V.p;i+=step) x.fillText(String(i+1),X(i),h-pad.b+10);
 }
@@ -1146,7 +1235,7 @@ function chRChart(V,id){
   const pad={l:38,r:8,t:24,b:24};
   title(x,w,tw('R관리도(측정자기준)'));
   pad.t=legend(x,w,pad,V.ops.map((o,i)=>[shortName(o.name),OPC[i%3]])
-    .concat([['R̿','#000'],['UCL R','#c0392b']]))+2;
+    .concat([['R̿','#000'],['UCL R','#e05c5c']]))+2;
   const all=[].concat(...V.rangesByOp);
   const max=Math.max(V.UCLR,...all)*1.15||1, N=V.o*V.p;
   const X=i=>pad.l+(N<2?.5:i/(N-1))*(w-pad.l-pad.r);
@@ -1154,15 +1243,15 @@ function chRChart(V,id){
   axes(x,pad,w,h); yTicks(x,pad,w,h,0,max,v=>v.toFixed(3));
   x.strokeStyle='#000'; x.lineWidth=1; x.beginPath();
   x.moveTo(pad.l,Y(V.Rbb)); x.lineTo(w-pad.r,Y(V.Rbb)); x.stroke();
-  x.strokeStyle='#c0392b'; x.beginPath();
+  x.strokeStyle='#e05c5c'; x.beginPath();
   x.moveTo(pad.l,Y(V.UCLR)); x.lineTo(w-pad.r,Y(V.UCLR)); x.stroke();
   let k=0;
   V.rangesByOp.forEach((rg,oi)=>{
-    if(oi){ x.strokeStyle='#e6eaf0'; x.beginPath();
+    if(oi){ x.strokeStyle='#2a2a2a'; x.beginPath();
       x.moveTo(X(k-0.5),pad.t); x.lineTo(X(k-0.5),h-pad.b); x.stroke(); }
     x.strokeStyle=OPC[oi%3]; x.lineWidth=1.2; x.beginPath();
     rg.forEach((v,i)=>{ const px=X(k+i),py=Y(v); i?x.lineTo(px,py):x.moveTo(px,py); }); x.stroke();
-    rg.forEach((v,i)=>{ x.fillStyle=v>V.UCLR?'#c0392b':OPC[oi%3];
+    rg.forEach((v,i)=>{ x.fillStyle=v>V.UCLR?'#e05c5c':OPC[oi%3];
       x.beginPath(); x.arc(X(k+i),Y(v),2.2,0,6.3); x.fill(); });
     x.fillStyle=OPC[oi%3]; x.font='8px sans-serif'; x.textAlign='center';
     x.fillText(shortName(V.ops[oi].name),X(k+(V.p-1)/2),h-pad.b+11);
@@ -1184,11 +1273,11 @@ function chByOper(V,id){
     tr.forEach(r=>r.forEach(v=>{ x.fillStyle='rgba(120,132,148,.45)';
       x.beginPath(); x.arc(X(oi),Y(v),2.2,0,6.3); x.fill(); }));
   });
-  x.strokeStyle='#4472c4'; x.lineWidth=2; x.beginPath();
+  x.strokeStyle='#6fb8dd'; x.lineWidth=2; x.beginPath();
   V.Xbars.forEach((v,i)=> i?x.lineTo(X(i),Y(v)):x.moveTo(X(i),Y(v))); x.stroke();
-  V.Xbars.forEach((v,i)=>{ x.fillStyle='#0f2b4c';
+  V.Xbars.forEach((v,i)=>{ x.fillStyle='#f0f0f0';
     x.beginPath(); x.arc(X(i),Y(v),3,0,6.3); x.fill(); });
-  x.fillStyle='#4a5560'; x.font='8px sans-serif'; x.textAlign='center';
+  x.fillStyle='#b0b0b0'; x.font='8px sans-serif'; x.textAlign='center';
   V.ops.forEach((o,i)=> x.fillText(shortName(o.name),X(i),h-pad.b+11));
 }
 /* ⑤ XBAR 관리도 */
@@ -1197,24 +1286,24 @@ function chXChart(V,id){
   const pad={l:38,r:8,t:24,b:24};
   title(x,w,tw('XBAR관리도'));
   pad.t=legend(x,w,pad,V.ops.map((o,i)=>[shortName(o.name),OPC[i%3]])
-    .concat([['average','#000'],['UCL/LCL X','#c0392b']]))+2;
+    .concat([['average','#000'],['UCL/LCL X','#e05c5c']]))+2;
   const all=[].concat(...V.opPartMean);
   const lo=Math.min(V.LCLX,...all), hi=Math.max(V.UCLX,...all), sp=(hi-lo)||1;
   const min=lo-sp*.12, max=hi+sp*.12, N=V.o*V.p;
   const X=i=>pad.l+(N<2?.5:i/(N-1))*(w-pad.l-pad.r);
   const Y=v=>h-pad.b-(v-min)/(max-min)*(h-pad.t-pad.b);
   axes(x,pad,w,h); yTicks(x,pad,w,h,min,max,v=>v.toFixed(2));
-  [[V.UCLX,'#c0392b'],[V.LCLX,'#c0392b'],[V.Xbb,'#000']].forEach(a=>{
+  [[V.UCLX,'#e05c5c'],[V.LCLX,'#e05c5c'],[V.Xbb,'#000']].forEach(a=>{
     x.strokeStyle=a[1]; x.lineWidth=1; x.beginPath();
     x.moveTo(pad.l,Y(a[0])); x.lineTo(w-pad.r,Y(a[0])); x.stroke();
   });
   let k=0;
   V.opPartMean.forEach((pm,oi)=>{
-    if(oi){ x.strokeStyle='#e6eaf0'; x.beginPath();
+    if(oi){ x.strokeStyle='#2a2a2a'; x.beginPath();
       x.moveTo(X(k-0.5),pad.t); x.lineTo(X(k-0.5),h-pad.b); x.stroke(); }
     x.strokeStyle=OPC[oi%3]; x.lineWidth=1.2; x.beginPath();
     pm.forEach((v,i)=>{ const px=X(k+i),py=Y(v); i?x.lineTo(px,py):x.moveTo(px,py); }); x.stroke();
-    pm.forEach((v,i)=>{ x.fillStyle=(v>V.UCLX||v<V.LCLX)?'#c0392b':OPC[oi%3];
+    pm.forEach((v,i)=>{ x.fillStyle=(v>V.UCLX||v<V.LCLX)?'#e05c5c':OPC[oi%3];
       x.beginPath(); x.arc(X(k+i),Y(v),2.2,0,6.3); x.fill(); });
     x.fillStyle=OPC[oi%3]; x.font='8px sans-serif'; x.textAlign='center';
     x.fillText(shortName(V.ops[oi].name),X(k+(V.p-1)/2),h-pad.b+11);
@@ -1239,7 +1328,7 @@ function chInteract(V,id){
     pm.forEach((v,i)=>{ x.fillStyle=OPC[oi%3];
       x.beginPath(); x.arc(X(i),Y(v),2.4,0,6.3); x.fill(); });
   });
-  x.fillStyle='#6b7887'; x.font='8px sans-serif'; x.textAlign='center';
+  x.fillStyle='#8a8a8a'; x.font='8px sans-serif'; x.textAlign='center';
   const step=V.p>10?2:1;
   for(let i=0;i<V.p;i+=step) x.fillText(String(i+1),X(i),h-pad.b+10);
 }
@@ -1269,7 +1358,7 @@ function varGlossary(V){
        ratio.toFixed(1)+'배</b> 큽니다. ';
     h+= ratio>=4 ? '시료를 구분하는 데 충분한 분해능입니다 (ndc '+V.ndc+').'
       : ratio>=2.8 ? '구분은 가능하지만 여유가 크지 않습니다 (ndc '+V.ndc+').'
-      : '<span style="color:#c0392b">측정오차에 시료 차이가 묻혀 합격·불합격 구분이 어렵습니다 (ndc '+V.ndc+').</span>';
+      : '<span style="color:#e05c5c">측정오차에 시료 차이가 묻혀 합격·불합격 구분이 어렵습니다 (ndc '+V.ndc+').</span>';
     h+='<br>· ';
     h+= evav>=1.3
       ? 'EV('+V.EV.toFixed(4)+') > AV('+V.AV.toFixed(4)+') — <b>사람 간 차이보다 계측기 반복오차가 큽니다.</b> '+
@@ -1282,9 +1371,9 @@ function varGlossary(V){
       const pt=5.15*V.GRR/V.TOL*100;
       h+='<br>· 측정오차 폭(5.15σ)이 규격공차의 <b>'+pt.toFixed(1)+'%</b>를 차지합니다. ';
       h+= pt<10 ? '규격 대비 충분히 정밀합니다.' : pt<=30 ? '사용 가능한 수준입니다.'
-        : '<span style="color:#c0392b">규격을 판정하기에 오차가 너무 큽니다.</span>';
+        : '<span style="color:#e05c5c">규격을 판정하기에 오차가 너무 큽니다.</span>';
     }else{
-      h+='<br>· <span style="color:#c0392b">규격공차가 입력되지 않아 % Tolerance 판정은 빠져 있습니다.</span>';
+      h+='<br>· <span style="color:#e05c5c">규격공차가 입력되지 않아 % Tolerance 판정은 빠져 있습니다.</span>';
     }
     h+='</div>';
   }
@@ -1317,7 +1406,7 @@ function admSpec(){
     ? '규격 <b>'+(c-t).toFixed(4).replace(/0+$/,'').replace(/\.$/,'')+' ~ '+
       (c+t).toFixed(4).replace(/0+$/,'').replace(/\.$/,'')+'</b> · 규격공차(전폭) <b>'+
       (2*t).toFixed(4).replace(/0+$/,'').replace(/\.$/,'')+'</b>'
-    : '<span style="color:#c0392b">기준값과 공차를 입력하세요</span>';
+    : '<span style="color:#e05c5c">기준값과 공차를 입력하세요</span>';
 }
 function admRender(){
   if(!adminOK) return;
@@ -1744,7 +1833,7 @@ async function openVarDetail(id){
       '<td>'+(r.pct_contrib!=null?(+r.pct_contrib).toFixed(3)+'%':'—')+'</td>'+
       '<td>'+(r.pct_study!=null?(+r.pct_study).toFixed(3)+'%':'—')+'</td>'+
       '<td>'+(r.pct_tol!=null?(+r.pct_tol).toFixed(3)+'%':
-        '<span style="color:#c0392b">규격 미입력</span>')+'</td>'+
+        '<span style="color:#e05c5c">규격 미입력</span>')+'</td>'+
       '<td>'+(r.ndc==null?'—':r.ndc)+'</td>'+
       '<td><span class="pill '+gcls+'">'+esc(r.grade)+'</span></td>'+
       '<td>'+esc(r.result)+'</td></tr></tbody></table></div>';
@@ -1839,7 +1928,7 @@ async function openAttDetail(id){
     for(let i=0;i<n;i++) h+='<div class="cell '+(refs[i]==='OK'?'ok':'ng')+'">'+esc(refs[i]||'')+'</div>';
     h+='</div>';
     ops.forEach(o=>{
-      h+='<div style="margin-top:8px;font-size:12px;font-weight:700;color:#0f2b4c">'+esc(o.name)+'</div>';
+      h+='<div style="margin-top:8px;font-size:12px;font-weight:700;color:#f0f0f0">'+esc(o.name)+'</div>';
       o.trials.slice().sort((a,b)=>a.trial-b.trial).forEach(t=>{
         h+='<div class="cellrow"><div class="cell hd">'+t.trial+'차</div>';
         for(let i=0;i<n;i++){
