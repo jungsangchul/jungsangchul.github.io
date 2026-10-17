@@ -18,29 +18,30 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>유라하네스멕시코 자격인증 시스템 - 조립생산팀 1공장</title>
-<script id="embeddedData" type="application/json">{"questions": [], "results": [], "students": [], "practicalItems": [{"name": "불량판별능력 평가", "max": 20, "_sbId": "2ac30a77-043c-4490-8f4d-5eededcf1a0d"}, {"name": "압착고측정능력 평가", "max": 30, "_sbId": "b751ce34-002f-4b3d-a2a9-00ca3ba85b78"}], "gradeConfig": [{"label": "L0", "minScore": 90, "color": "#f1c40f", "desc": "최우수"}, {"label": "L1", "minScore": 80, "color": "#2ecc71", "desc": "우수"}, {"label": "L2", "minScore": 70, "color": "#4a90d9", "desc": "양호"}, {"label": "L3", "minScore": 60, "color": "#9b7ee8", "desc": "보통"}, {"label": "L5", "minScore": 50, "color": "#e87a2a", "desc": "합격"}], "examCfg": {"title": "와이어링 하네스 기초 평가", "date": "2026-05-31", "team": "", "passingScore": "60", "examDuration": "60", "pointsPerQ": "5", "theoryPct": "50", "practicalPct": "50", "practicalMax": "100", "mobileExamTitle": "", "mobileExamLang": "ko"}, "exportedAt": "2026-06-02T23:50:34.708Z", "version": "4_all_data_embed"}</script>
+<script id="embeddedData" type="application/json">{"questions": [], "results": [], "students": [], "practicalItems": [{"name": "불량판별능력 평가", "max": 20, "_sbId": "2ac30a77-043c-4490-8f4d-5eededcf1a0d"}, {"name": "압착고측정능력 평가", "max": 30, "_sbId": "b751ce34-002f-4b3d-a2a9-00ca3ba85b78"}], "gradeConfig": [{"label": "L0", "minScore": 90, "color": "#f1c40f", "desc": "최우수"}, {"label": "L1", "minScore": 80, "color": "#2ecc71", "desc": "우수"}, {"label": "L2", "minScore": 70, "color": "#c9a84c", "desc": "양호"}, {"label": "L3", "minScore": 60, "color": "#9b7ee8", "desc": "보통"}, {"label": "L5", "minScore": 50, "color": "#e87a2a", "desc": "합격"}], "examCfg": {"title": "와이어링 하네스 기초 평가", "date": "2026-05-31", "team": "", "passingScore": "60", "examDuration": "60", "pointsPerQ": "5", "theoryPct": "50", "practicalPct": "50", "practicalMax": "100", "mobileExamTitle": "", "mobileExamLang": "ko"}, "exportedAt": "2026-06-02T23:50:34.708Z", "version": "4_all_data_embed"}</script>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&amp;family=JetBrains+Mono:wght@400;700&amp;display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.11.5/JsBarcode.all.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Noto+Sans+KR:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#1e2535;--surface:#252d3d;--surface2:#2d3649;--border:#3a4560;
-  --navy:#0f1f3d;--accent:#4a90d9;--sky:#5ba3e8;--text:#dde4f0;--text2:#8a9bbf;
-  --green:#2ecc7a;--red:#e05252;--blue:#4a90d9;--purple:#9b7ee8;
-  --gold:#e8b84b;--teal:#2ab8a8;--orange:#e87a2a;
+  --bg:#0a0a0a;--surface:#141414;--surface2:#1b1b1b;--border:#2a2a2a;
+  --navy:#141414;--accent:#c9a84c;--sky:#e2c46a;--text:#f0f0f0;--text2:#8a8a8a;
+  --green:#2ecc7a;--red:#e05252;--blue:#c9a84c;--purple:#9b7ee8;
+  --gold:#e2c46a;--teal:#2ab8a8;--orange:#e87a2a;
 }
 *{margin:0;padding:0;box-sizing:border-box;}
 body{background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-serif;min-height:100vh;}
 
-header{background:#0f1f3d;border-bottom:2px solid #1e3a6e;padding:0 1.2rem;display:flex;align-items:center;gap:12px;justify-content:space-between;height:60px;position:sticky;top:0;z-index:100;box-shadow:0 2px 16px rgba(0,0,0,0.4);}
+header{background:#141414;border-bottom:2px solid #2a2a2a;padding:0 1.2rem;display:flex;align-items:center;gap:12px;justify-content:space-between;height:60px;position:sticky;top:0;z-index:100;box-shadow:0 2px 16px rgba(0,0,0,0.4);}
 .header-left{display:flex;align-items:center;gap:12px;flex-shrink:0;}
-.home-btn{display:flex;align-items:center;gap:6px;padding:6px 12px;background:rgba(0,200,255,0.1);border:1px solid rgba(0,200,255,0.35);color:#00c8ff;font-size:11px;font-weight:700;letter-spacing:1.5px;cursor:pointer;text-decoration:none;border-radius:4px;transition:all 0.2s;flex-shrink:0;font-family:inherit;white-space:nowrap;}
-.home-btn:hover{background:rgba(0,200,255,0.22);border-color:#00c8ff;transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,200,255,0.2);}
-.home-btn svg{width:14px;height:14px;fill:none;stroke:#00c8ff;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;}
+.home-btn{display:flex;align-items:center;gap:6px;padding:6px 12px;background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.35);color:#c9a84c;font-size:11px;font-weight:700;letter-spacing:1.5px;cursor:pointer;text-decoration:none;border-radius:4px;transition:all 0.2s;flex-shrink:0;font-family:inherit;white-space:nowrap;}
+.home-btn:hover{background:rgba(201,168,76,0.22);border-color:#c9a84c;transform:translateY(-1px);box-shadow:0 4px 12px rgba(201,168,76,0.2);}
+.home-btn svg{width:14px;height:14px;fill:none;stroke:#c9a84c;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;}
 .divider{width:1px;height:28px;background:rgba(255,255,255,0.12);flex-shrink:0;}
 .logo{display:flex;align-items:center;gap:0.8rem;flex-shrink:0;}
-.logo-text .logo-es{font-size:0.82rem;font-weight:700;color:#e8f0ff;}
-.logo-text .logo-kr{font-size:0.72rem;font-weight:600;color:#7eb8f7;}
+.logo-text .logo-es{font-size:0.82rem;font-weight:700;color:#fafafa;}
+.logo-text .logo-kr{font-size:0.72rem;font-weight:600;color:#a8a8a8;}
 .tab-nav{display:flex;overflow-x:auto;}
 .tab-btn{padding:0 1rem;height:60px;background:none;border:none;color:rgba(255,255,255,0.45);font-family:inherit;font-size:0.78rem;font-weight:500;cursor:pointer;border-bottom:2px solid transparent;transition:all .18s;white-space:nowrap;}
 .tab-btn.active{color:#ffffff;border-bottom-color:var(--sky);background:rgba(255,255,255,0.06);}
@@ -70,7 +71,7 @@ header{background:#0f1f3d;border-bottom:2px solid #1e3a6e;padding:0 1.2rem;displ
 .card-title.blue{color:var(--blue);}.card-title.purple{color:var(--purple);}.card-title.green{color:var(--green);}.card-title.gold{color:var(--gold);}.card-title.teal{color:var(--teal);}
 
 input,select,textarea{background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:inherit;font-size:0.88rem;padding:0.55rem 0.85rem;outline:none;transition:border-color .2s,box-shadow .2s;width:100%;}
-input:focus,select:focus,textarea:focus{border-color:var(--sky);box-shadow:0 0 0 3px rgba(91,163,232,0.15);}
+input:focus,select:focus,textarea:focus{border-color:var(--sky);box-shadow:0 0 0 3px rgba(201,168,76,0.15);}
 input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(0.7) brightness(1.5);cursor:pointer;}
 label{font-size:0.78rem;color:var(--text2);margin-bottom:0.3rem;display:block;}
 .form-row{display:grid;gap:1rem;margin-bottom:1rem;}
@@ -84,7 +85,7 @@ label{font-size:0.78rem;color:var(--text2);margin-bottom:0.3rem;display:block;}
 .btn-gold{background:#b88a0a;color:#fff;}.btn-gold:hover{background:var(--gold);color:#000;}
 .btn-teal{background:#1a8a7c;color:#fff;}.btn-teal:hover{background:var(--teal);}
 .btn-sm{padding:0.32rem 0.75rem;font-size:0.76rem;}
-.btn-outline{background:none;color:var(--accent);border:1px solid var(--accent);}.btn-outline:hover{background:rgba(74,144,217,0.12);}
+.btn-outline{background:none;color:var(--accent);border:1px solid var(--accent);}.btn-outline:hover{background:rgba(201,168,76,0.12);}
 
 /* Score config */
 .score-config{display:grid;grid-template-columns:1fr 1fr;gap:1.4rem;margin-bottom:1rem;}
@@ -96,7 +97,7 @@ label{font-size:0.78rem;color:var(--text2);margin-bottom:0.3rem;display:block;}
 
 /* Tags */
 .tag{display:inline-block;padding:0.12rem 0.45rem;border-radius:4px;font-size:0.7rem;font-weight:700;}
-.tag-t{background:rgba(74,144,217,0.15);color:var(--blue);border:1px solid rgba(74,144,217,0.3);}
+.tag-t{background:rgba(201,168,76,0.15);color:var(--blue);border:1px solid rgba(201,168,76,0.3);}
 .tag-p{background:rgba(155,126,232,0.15);color:var(--purple);border:1px solid rgba(155,126,232,0.3);}
 
 /* Questions */
@@ -107,7 +108,7 @@ label{font-size:0.78rem;color:var(--text2);margin-bottom:0.3rem;display:block;}
 .q-opt{background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:0.2rem 0.55rem;font-size:0.76rem;color:var(--text2);}
 .q-opt.correct{background:rgba(46,204,122,0.12);border-color:var(--green);color:var(--green);}
 .q-delete{background:none;border:none;color:var(--text2);cursor:pointer;font-size:1rem;}.q-delete:hover{color:var(--red);}
-.q-edit{padding:0.2rem 0.45rem;font-size:0.72rem;background:rgba(74,144,217,0.1);border:1px solid rgba(74,144,217,0.3);color:var(--sky);border-radius:4px;cursor:pointer;line-height:1;}.q-edit:hover{background:rgba(74,144,217,0.25);border-color:var(--sky);}
+.q-edit{padding:0.2rem 0.45rem;font-size:0.72rem;background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.3);color:var(--sky);border-radius:4px;cursor:pointer;line-height:1;}.q-edit:hover{background:rgba(201,168,76,0.25);border-color:var(--sky);}
 
 /* OMR */
 .omr-sheet{background:#fff;color:#000;padding:1.1rem 1.4rem;border-radius:8px;font-family:'Noto Sans KR',sans-serif;border:1px solid #ccc;}
@@ -125,7 +126,7 @@ label{font-size:0.78rem;color:var(--text2);margin-bottom:0.3rem;display:block;}
 
 /* Upload zone */
 .upload-zone{border:2px dashed var(--border);border-radius:8px;padding:1.8rem;text-align:center;cursor:pointer;transition:all .2s;}
-.upload-zone:hover,.upload-zone.drag{border-color:var(--sky);background:rgba(91,163,232,0.06);}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--sky);background:rgba(201,168,76,0.06);}
 .upload-zone input{display:none;}
 .upload-icon{font-size:2.2rem;margin-bottom:0.4rem;}
 .upload-text{color:var(--text2);font-size:0.83rem;}.upload-text strong{color:var(--sky);}
@@ -145,9 +146,9 @@ label{font-size:0.78rem;color:var(--text2);margin-bottom:0.3rem;display:block;}
 .results-table tr:hover td{background:rgba(255,255,255,0.03);}
 .score-badge{display:inline-block;padding:0.18rem 0.55rem;border-radius:20px;font-size:0.76rem;font-weight:700;}
 .score-high{background:rgba(46,204,122,0.15);color:var(--green);}
-.score-mid{background:rgba(232,184,75,0.15);color:var(--gold);}
+.score-mid{background:rgba(226,196,106,0.15);color:var(--gold);}
 .score-low{background:rgba(224,82,82,0.15);color:var(--red);}
-.score-t{background:rgba(74,144,217,0.15);color:var(--blue);font-size:0.73rem;padding:0.12rem 0.45rem;border-radius:4px;font-weight:600;}
+.score-t{background:rgba(201,168,76,0.15);color:var(--blue);font-size:0.73rem;padding:0.12rem 0.45rem;border-radius:4px;font-weight:600;}
 .score-p{background:rgba(155,126,232,0.15);color:var(--purple);font-size:0.73rem;padding:0.12rem 0.45rem;border-radius:4px;font-weight:600;}
 
 /* Stats */
@@ -175,14 +176,14 @@ label{font-size:0.78rem;color:var(--text2);margin-bottom:0.3rem;display:block;}
 .pending-table th{color:var(--sky);font-size:0.7rem;text-transform:uppercase;font-weight:700;}
 .pending-table input[type="number"]{width:80px;text-align:center;padding:0.25rem 0.4rem;font-size:0.8rem;}
 .done-badge{background:rgba(46,204,122,0.12);color:var(--green);border:1px solid rgba(46,204,122,0.3);border-radius:4px;padding:0.12rem 0.45rem;font-size:0.7rem;font-weight:700;}
-.pend-badge{background:rgba(232,184,75,0.12);color:var(--gold);border:1px solid rgba(232,184,75,0.3);border-radius:4px;padding:0.12rem 0.45rem;font-size:0.7rem;font-weight:700;}
+.pend-badge{background:rgba(226,196,106,0.12);color:var(--gold);border:1px solid rgba(226,196,106,0.3);border-radius:4px;padding:0.12rem 0.45rem;font-size:0.7rem;font-weight:700;}
 
 /* Grade badges */
 .grade-s{background:linear-gradient(135deg,#f1c40f,#f39c12);color:#000;border-radius:6px;padding:0.15rem 0.55rem;font-size:0.8rem;font-weight:900;}
 .grade-a{background:rgba(46,204,122,0.2);color:var(--green);border:1px solid rgba(46,204,122,0.5);border-radius:6px;padding:0.15rem 0.55rem;font-size:0.78rem;font-weight:700;}
-.grade-b{background:rgba(74,144,217,0.2);color:var(--blue);border:1px solid rgba(74,144,217,0.5);border-radius:6px;padding:0.15rem 0.55rem;font-size:0.78rem;font-weight:700;}
+.grade-b{background:rgba(201,168,76,0.2);color:var(--blue);border:1px solid rgba(201,168,76,0.5);border-radius:6px;padding:0.15rem 0.55rem;font-size:0.78rem;font-weight:700;}
 .grade-c{background:rgba(155,126,232,0.2);color:var(--purple);border:1px solid rgba(155,126,232,0.5);border-radius:6px;padding:0.15rem 0.55rem;font-size:0.78rem;font-weight:700;}
-.grade-d{background:rgba(232,184,75,0.15);color:var(--gold);border:1px solid rgba(232,184,75,0.4);border-radius:6px;padding:0.15rem 0.55rem;font-size:0.78rem;font-weight:700;}
+.grade-d{background:rgba(226,196,106,0.15);color:var(--gold);border:1px solid rgba(226,196,106,0.4);border-radius:6px;padding:0.15rem 0.55rem;font-size:0.78rem;font-weight:700;}
 .grade-fail{background:rgba(224,82,82,0.15);color:var(--red);border:1px solid rgba(224,82,82,0.4);border-radius:6px;padding:0.15rem 0.55rem;font-size:0.78rem;font-weight:700;}
 .multi-badge{background:linear-gradient(135deg,var(--teal),var(--blue));color:#fff;border-radius:12px;padding:0.1rem 0.5rem;font-size:0.68rem;font-weight:700;margin-left:0.3rem;}
 
@@ -221,7 +222,7 @@ textarea{resize:vertical;}
 .hint code{font-family:'JetBrains Mono',monospace;background:var(--surface2);padding:1px 5px;border-radius:3px;color:var(--sky);}
 .info-box{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:0.7rem 1rem;font-size:0.77rem;color:var(--text2);margin-bottom:1rem;}
 .info-box .hl{color:var(--sky);font-weight:600;}
-.warn-box{background:rgba(232,184,75,0.08);border:1px solid rgba(232,184,75,0.3);border-radius:6px;padding:0.65rem 0.9rem;font-size:0.78rem;color:var(--gold);margin-bottom:0.8rem;}
+.warn-box{background:rgba(226,196,106,0.08);border:1px solid rgba(226,196,106,0.3);border-radius:6px;padding:0.65rem 0.9rem;font-size:0.78rem;color:var(--gold);margin-bottom:0.8rem;}
 .success-box{background:rgba(46,204,122,0.08);border:1px solid rgba(46,204,122,0.3);border-radius:6px;padding:0.65rem 0.9rem;font-size:0.78rem;color:var(--green);}
 .error-box{background:rgba(224,82,82,0.08);border:1px solid rgba(224,82,82,0.3);border-radius:6px;padding:0.65rem 0.9rem;font-size:0.78rem;color:var(--red);}
 #uploadedImgPreview{max-width:100%;border-radius:8px;margin-top:1rem;border:1px solid var(--border);display:none;}
@@ -247,13 +248,44 @@ textarea{resize:vertical;}
 
 
 .role-badge{display:inline-block;padding:0.12rem 0.45rem;border-radius:4px;font-size:0.7rem;font-weight:700;}
-.role-admin{background:rgba(232,184,75,0.15);color:var(--gold);border:1px solid rgba(232,184,75,0.3);}
-.role-user{background:rgba(74,144,217,0.12);color:var(--sky);border:1px solid rgba(74,144,217,0.25);}
+.role-admin{background:rgba(226,196,106,0.15);color:var(--gold);border:1px solid rgba(226,196,106,0.3);}
+.role-user{background:rgba(201,168,76,0.12);color:var(--sky);border:1px solid rgba(201,168,76,0.25);}
 .user-table{width:100%;border-collapse:collapse;}
 .user-table th,.user-table td{padding:0.5rem 0.75rem;border-bottom:1px solid var(--border);font-size:0.8rem;}
 .user-table th{background:var(--surface2);color:var(--sky);font-size:0.7rem;text-transform:uppercase;}
 #appWrapper{display:block;}
 .no-print{}.@media print{body{background:#fff;}header,.no-print{display:none!important;}.page{display:block!important;padding:0;}.omr-sheet{page-break-after:always;border:none;}}
+
+/* ═══ 포털 공통 테마 (index.html 스타일) ═══ */
+:root{--mono:'Space Mono',Consolas,'Courier New',monospace;--body:'Noto Sans KR','Malgun Gothic','Apple SD Gothic Neo',sans-serif}
+body{font-family:var(--body);background:radial-gradient(900px 420px at 50% -160px,rgba(201,168,76,.07),transparent 70%),#0a0a0a;-webkit-font-smoothing:antialiased}
+::selection{background:#c9a84c;color:#0a0a0a}
+input,select,textarea{color-scheme:dark}
+header{height:auto;min-height:60px;padding:0 24px;background:linear-gradient(180deg,#141414 0%,#0e0e0e 100%);border-bottom:1px solid #2a2a2a;box-shadow:0 1px 0 rgba(255,255,255,.03),0 8px 24px rgba(0,0,0,.35);position:relative;gap:16px}
+header::before{content:'';position:absolute;left:0;right:0;top:0;height:2px;background:linear-gradient(90deg,#c9a84c 0%,#d4651a 45%,#7c5cbf 100%);opacity:.9}
+.logo-text{display:flex;flex-direction:column;gap:4px;min-width:0}
+.logo-text .logo-es{font-family:var(--mono);font-size:13px;font-weight:700;letter-spacing:.06em;line-height:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:linear-gradient(90deg,#fafafa 0%,#d9d0b4 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.logo-text .logo-kr{font-size:10.5px;color:#a8a8a8;letter-spacing:.2em;text-transform:uppercase;line-height:1;display:flex;align-items:center;gap:8px;white-space:nowrap;font-weight:500}
+.logo-text .logo-kr::before{content:'';width:14px;height:1px;background:#c9a84c;flex-shrink:0}
+.tab-nav{gap:4px;padding:10px 0;scrollbar-width:none}.tab-nav::-webkit-scrollbar{display:none}
+.tab-btn{height:36px;padding:0 15px;border:1px solid transparent;border-radius:999px;color:#8a8a8a;font-size:13px;font-weight:600;letter-spacing:.02em;border-bottom-width:1px}
+.tab-btn:hover:not(.active){color:#f0f0f0;background:rgba(255,255,255,.04)}
+.tab-btn.active{color:#c9a84c;background:rgba(201,168,76,.12);border-color:rgba(201,168,76,.35);box-shadow:0 0 0 1px rgba(201,168,76,.08),0 4px 14px rgba(201,168,76,.08)}
+header>div[style*="flex-shrink:0"] button,.lang-btn{height:34px;padding:0 14px!important;border-radius:999px!important;font-size:12px!important;font-weight:600!important;font-family:var(--body)!important;border:1px solid #2a2a2a!important;background:#1b1b1b!important;color:#c8c8c8!important}
+header>div[style*="flex-shrink:0"] button#langBtn,.lang-btn{background:rgba(201,168,76,.10)!important;border-color:rgba(201,168,76,.32)!important;color:#c9a84c!important}
+header>div[style*="flex-shrink:0"] button[onclick*="syncImagesToSupabase"]{background:transparent!important;border-color:rgba(224,92,92,.5)!important;color:#ef9a9a!important}
+.card{background:#141414;border:1px solid #2a2a2a;border-radius:12px;box-shadow:none}
+.card-title{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;color:#999;font-weight:400;border-bottom-color:#2a2a2a}
+.card-title.blue{color:#c9a84c}.card-title.gold{color:#e2c46a}
+input[type=text],input[type=number],input[type=date],input[type=password],input[type=email],input[type=tel],select,textarea{border-radius:8px}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#c9a84c!important;box-shadow:0 0 0 4px rgba(201,168,76,.14)!important}
+label{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase}
+@media(max-width:900px){
+  header{padding:8px 12px}
+  .logo-text .logo-es{font-size:12px}.logo-text .logo-kr{display:none}
+  .tab-nav{padding:6px 0;border-top:1px solid #2a2a2a}
+  .tab-btn{height:32px;padding:0 12px;font-size:12px}
+}
 </style>
 
 <script>
@@ -3053,11 +3085,6 @@ document.addEventListener('DOMContentLoaded', renderExamQr);
 
 <header>
   <div class="header-left">
-    <a href="index.html" class="home-btn" title="메인 메뉴로 돌아가기">
-      <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-      MAIN
-    </a>
-    <div class="divider"></div>
     <div class="logo">
       <div class="logo-text">
         <div class="logo-es">YURA Harness México — Sistema de Certificación</div>
@@ -3066,7 +3093,6 @@ document.addEventListener('DOMContentLoaded', renderExamQr);
     </div>
   </div>
   <nav class="tab-nav">
-    <button class="tab-btn" onclick="switchTab('manual',this)"><span data-kr="📖 사용설명서" data-es="📖 Manual">📖 사용설명서</span></button>
     <button class="tab-btn active" onclick="switchTab('exam',this)"><span data-kr="① 시험 설정" data-es="① Configuración">① 시험 설정</span></button>
     <button class="tab-btn" onclick="switchTab('sheet',this)"><span data-kr="② 배포" data-es="② Distribución">② 배포</span></button>
     <button class="tab-btn" onclick="switchTab('grade',this)"><span data-kr="③ 채점하기" data-es="③ Calificación">③ 채점하기</span></button>
@@ -3075,9 +3101,8 @@ document.addEventListener('DOMContentLoaded', renderExamQr);
     <button class="tab-btn" onclick="switchTab('skills',this)"><span data-kr="⑥ 숙련도·다기능" data-es="⑥ Habilidades">⑥ 숙련도·다기능</span></button>
   </nav>
   <div style="display:flex;align-items:center;gap:0.5rem;flex-shrink:0;padding-left:0.5rem">
-    <button type="button" onclick="exportHtmlWithData()" style="padding:5px 11px;background:#1a8a7c;color:#fff;border:none;border-radius:5px;cursor:pointer;font-family:inherit;font-size:0.75rem;font-weight:700;white-space:nowrap" title="배포용 HTML 저장">💾 HTML 저장</button>
     <button type="button" onclick="syncImagesToSupabase()" style="padding:5px 11px;background:#c0392b;color:#fff;border:none;border-radius:5px;cursor:pointer;font-family:inherit;font-size:0.75rem;font-weight:700;white-space:nowrap" title="로컬 이미지를 Supabase에 재업로드">🖼️ 이미지 복구</button>
-    <button type="button" id="langBtn" onclick="toggleLang()" style="padding:5px 10px;background:rgba(0,200,255,0.1);border:1px solid rgba(0,200,255,0.35);color:#00c8ff;border-radius:5px;cursor:pointer;font-family:inherit;font-size:0.75rem;font-weight:700;white-space:nowrap">🌐 ES</button>
+    <button type="button" id="langBtn" onclick="toggleLang()" style="padding:5px 10px;background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.35);color:#c9a84c;border-radius:5px;cursor:pointer;font-family:inherit;font-size:0.75rem;font-weight:700;white-space:nowrap">🌐 ES</button>
   </div>
 </header>
 </div><!-- /stickyWrap -->
@@ -3468,15 +3493,15 @@ document.addEventListener('DOMContentLoaded', renderExamQr);
       <div style="font-size:0.78rem;color:var(--text2);line-height:1.5"><span data-kr="응시자가 휴대폰 카메라로 스캔하면 시험 페이지가 바로 열립니다. QR을 클릭하면 크게 표시됩니다." data-es="El aspirante escanea con la cámara del celular y el examen se abre directamente. Haga clic en el QR para ampliarlo.">응시자가 휴대폰 카메라로 스캔하면 시험 페이지가 바로 열립니다. QR을 클릭하면 크게 표시됩니다.</span></div>
       <div style="font-size:0.72rem;margin-top:0.25rem;word-break:break-all"><a href="exam_1_a.html" target="_blank" style="color:var(--teal);text-decoration:none">🔗 https://jungsangchul.github.io/exam_1_a.html</a><script>(function(e){if(e){var h=location.host||'jungsangchul.github.io';if(e.tagName==='INPUT')e.value=e.value.replace('jungsangchul.github.io',h);else e.textContent=e.textContent.replace('jungsangchul.github.io',h);}})(document.currentScript.previousElementSibling)</script></div>
     </div>
-    <button type="button" onclick="openExamQrModal()" style="padding:8px 16px;background:rgba(0,200,255,0.12);border:1px solid rgba(0,200,255,0.4);color:#00c8ff;border-radius:6px;cursor:pointer;font-family:inherit;font-size:0.8rem;font-weight:700;white-space:nowrap;flex-shrink:0">🔍 <span data-kr="크게 보기" data-es="Ampliar">크게 보기</span></button>
+    <button type="button" onclick="openExamQrModal()" style="padding:8px 16px;background:rgba(201,168,76,0.12);border:1px solid rgba(201,168,76,0.4);color:#c9a84c;border-radius:6px;cursor:pointer;font-family:inherit;font-size:0.8rem;font-weight:700;white-space:nowrap;flex-shrink:0">🔍 <span data-kr="크게 보기" data-es="Ampliar">크게 보기</span></button>
   </div>
 
   <!-- QR 확대 모달 -->
   <div id="examQrModal" onclick="this.style.display='none'" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:9999;align-items:center;justify-content:center;cursor:zoom-out">
     <div style="background:#fff;padding:26px 30px;border-radius:18px;text-align:center;max-width:92vw">
       <div id="examQrBig" style="line-height:0;display:flex;justify-content:center"></div>
-      <div style="margin-top:14px;font-weight:800;color:#0f1f3d;font-size:1.05rem">조립 자격인증 평가 · 1공장</div>
-      <div style="color:#0f1f3d;font-size:0.9rem;font-weight:600">Certificación Ensamble · Planta 1</div>
+      <div style="margin-top:14px;font-weight:800;color:#141414;font-size:1.05rem">조립 자격인증 평가 · 1공장</div>
+      <div style="color:#141414;font-size:0.9rem;font-weight:600">Certificación Ensamble · Planta 1</div>
       <div style="color:#666;font-size:0.75rem;margin-top:6px;word-break:break-all">jungsangchul.github.io/exam_1_a.html</div><script>(function(e){if(e){var h=location.host||'jungsangchul.github.io';if(e.tagName==='INPUT')e.value=e.value.replace('jungsangchul.github.io',h);else e.textContent=e.textContent.replace('jungsangchul.github.io',h);}})(document.currentScript.previousElementSibling)</script>
       <div style="color:#999;font-size:0.7rem;margin-top:8px">화면을 클릭하면 닫힙니다 / Clic para cerrar</div>
     </div>
@@ -3617,7 +3642,7 @@ document.addEventListener('DOMContentLoaded', renderExamQr);
       </div>
     </div>
 
-    <div class="card" style="background:rgba(74,144,217,0.04);border-color:rgba(74,144,217,0.25)">
+    <div class="card" style="background:rgba(201,168,76,0.04);border-color:rgba(201,168,76,0.25)">
       <div class="card-title blue"><span data-kr="💡 발송 방법" data-es="💡 Método de Distribución">💡 발송 방법</span></div>
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:0.8rem">
         <div style="background:var(--surface2);border-radius:8px;padding:0.8rem">
@@ -3744,7 +3769,7 @@ document.addEventListener('DOMContentLoaded', renderExamQr);
               <span style="font-size:0.8rem;color:var(--text2)">사번: <span id="pdi-empid" style="font-family:'JetBrains Mono',monospace">-</span></span>
               <span style="font-size:0.8rem;color:var(--text2)">공정: <span id="pdi-process">-</span></span>
               <span style="font-size:0.8rem;color:var(--text2)">근속: <span id="pdi-tenure" style="color:var(--teal)">-</span></span>
-              <span id="pdi-theory-badge" style="display:none;background:rgba(74,144,217,0.15);color:var(--blue);border-radius:4px;padding:0.12rem 0.5rem;font-size:0.8rem;font-weight:700">이론 <span id="pdi-theory-score">-</span>점</span>
+              <span id="pdi-theory-badge" style="display:none;background:rgba(201,168,76,0.15);color:var(--blue);border-radius:4px;padding:0.12rem 0.5rem;font-size:0.8rem;font-weight:700">이론 <span id="pdi-theory-score">-</span>점</span>
             </div>
           </div>
           <div id="practicalDirectInputs"></div>
@@ -4160,7 +4185,7 @@ document.addEventListener('DOMContentLoaded', renderExamQr);
         <td style="font-weight:600">김동준</td>
         <td style="font-family:'JetBrains Mono',monospace;font-size:0.73rem;color:var(--text2)">1111</td>
         <td style="font-size:0.76rem;color:var(--teal)">0년 0개월 (1일)</td>
-        <td><span style="background:rgba(91,163,232,0.12);color:var(--sky);border:1px solid rgba(91,163,232,0.3);border-radius:4px;padding:0.12rem 0.5rem;font-size:0.78rem;font-weight:700">총무</span></td>
+        <td><span style="background:rgba(201,168,76,0.12);color:var(--sky);border:1px solid rgba(201,168,76,0.3);border-radius:4px;padding:0.12rem 0.5rem;font-size:0.78rem;font-weight:700">총무</span></td>
         <td style="font-size:0.75rem;color:var(--text2)">2026-05-31</td>
         <td><span class="score-t">12.5점</span></td>
         <td><span class="score-p">0점</span></td>
@@ -4172,7 +4197,7 @@ document.addEventListener('DOMContentLoaded', renderExamQr);
         <td style="font-weight:600">정상철</td>
         <td style="font-family:'JetBrains Mono',monospace;font-size:0.73rem;color:var(--text2)">0400223519</td>
         <td style="font-size:0.76rem;color:var(--teal)">0년 0개월 (28일)</td>
-        <td><span style="background:rgba(91,163,232,0.12);color:var(--sky);border:1px solid rgba(91,163,232,0.3);border-radius:4px;padding:0.12rem 0.5rem;font-size:0.78rem;font-weight:700">미분류</span></td>
+        <td><span style="background:rgba(201,168,76,0.12);color:var(--sky);border:1px solid rgba(201,168,76,0.3);border-radius:4px;padding:0.12rem 0.5rem;font-size:0.78rem;font-weight:700">미분류</span></td>
         <td style="font-size:0.75rem;color:var(--text2)">2026-04-04</td>
         <td><span class="score-t">20점</span></td>
         <td><span class="score-p">47.5점</span></td>
@@ -4184,7 +4209,7 @@ document.addEventListener('DOMContentLoaded', renderExamQr);
         <td style="font-weight:600">정상철</td>
         <td style="font-family:'JetBrains Mono',monospace;font-size:0.73rem;color:var(--text2)">0400223519</td>
         <td style="font-size:0.76rem;color:var(--teal)">0년 0개월 (28일)</td>
-        <td><span style="background:rgba(91,163,232,0.12);color:var(--sky);border:1px solid rgba(91,163,232,0.3);border-radius:4px;padding:0.12rem 0.5rem;font-size:0.78rem;font-weight:700">수동압착공정</span></td>
+        <td><span style="background:rgba(201,168,76,0.12);color:var(--sky);border:1px solid rgba(201,168,76,0.3);border-radius:4px;padding:0.12rem 0.5rem;font-size:0.78rem;font-weight:700">수동압착공정</span></td>
         <td style="font-size:0.75rem;color:var(--text2)">2026-05-24</td>
         <td><span class="score-t">25점</span></td>
         <td><span class="score-p">35점</span></td>
@@ -4196,7 +4221,7 @@ document.addEventListener('DOMContentLoaded', renderExamQr);
         <td style="font-weight:600">홍길동</td>
         <td style="font-family:'JetBrains Mono',monospace;font-size:0.73rem;color:var(--text2)">223232323</td>
         <td style="font-size:0.76rem;color:var(--teal)">-</td>
-        <td><span style="background:rgba(91,163,232,0.12);color:var(--sky);border:1px solid rgba(91,163,232,0.3);border-radius:4px;padding:0.12rem 0.5rem;font-size:0.78rem;font-weight:700">압착공정</span></td>
+        <td><span style="background:rgba(201,168,76,0.12);color:var(--sky);border:1px solid rgba(201,168,76,0.3);border-radius:4px;padding:0.12rem 0.5rem;font-size:0.78rem;font-weight:700">압착공정</span></td>
         <td style="font-size:0.75rem;color:var(--text2)">2026-06-01</td>
         <td><span class="score-t">47.5점</span></td>
         <td><span class="score-p">0점</span></td>
@@ -4258,7 +4283,7 @@ document.addEventListener('DOMContentLoaded', renderExamQr);
     </div>
     <div style="margin-bottom:0.9rem">
       <label>문제 사진 첨부 (선택)</label>
-      <button type="button" onclick="openGhImgPicker()" style="display:block;width:100%;margin-bottom:0.45rem;padding:7px;background:rgba(56,139,253,0.15);border:1px solid #388bfd;color:#79b8ff;border-radius:6px;cursor:pointer;font-family:inherit;font-size:0.82rem;font-weight:600">📁 GitHub 폴더에서 선택</button>
+      <button type="button" onclick="openGhImgPicker()" style="display:block;width:100%;margin-bottom:0.45rem;padding:7px;background:rgba(56,139,253,0.15);border:1px solid #c9a84c;color:#e2c46a;border-radius:6px;cursor:pointer;font-family:inherit;font-size:0.82rem;font-weight:600">📁 GitHub 폴더에서 선택</button>
       <input type="file" id="qImgInput" accept="image/*" style="display:none" onchange="handleQImgSelect(event)">
       <label for="qImgInput" id="qImgUploadZone" class="upload-zone upload-zone-sm" style="display: block; cursor: pointer;" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="handleQImgDrop(event)">
         <div class="upload-icon" style="font-size:1.3rem;margin-bottom:0.2rem">🖼️</div>
@@ -7380,4 +7405,4 @@ showApp();
 </script>
 
 
-<div id="_saveToast" style="position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: rgb(26, 138, 124); color: rgb(255, 255, 255); padding: 0.6rem 1.4rem; border-radius: 8px; font-size: 0.88rem; font-weight: 700; z-index: 99999; box-shadow: rgba(0, 0, 0, 0.4) 0px 4px 16px; transition: opacity 0.4s; opacity: 0;">✅ 저장 완료 — 응시자 5명</div><div id="ghImgPicker" style="display:none;position:fixed;inset:0;z-index:100000;background:rgba(0,0,0,0.7);align-items:center;justify-content:center;padding:1rem"><div style="background:var(--card,#161b22);border:1px solid var(--border,#30363d);border-radius:12px;max-width:680px;width:100%;max-height:85vh;display:flex;flex-direction:column"><div style="padding:0.8rem 1rem;border-bottom:1px solid var(--border,#30363d);display:flex;align-items:center;gap:0.5rem"><strong style="flex:1">📁 GitHub 이미지 선택</strong><button type="button" onclick="closeGhImgPicker()" style="background:none;border:none;color:#888;font-size:1.3rem;cursor:pointer;font-family:inherit">✕</button></div><div style="padding:0.6rem 1rem;display:flex;gap:0.4rem;align-items:center;border-bottom:1px solid var(--border,#30363d)"><span style="font-size:0.78rem;color:#9aa">폴더</span><input id="ghImgDirInput" style="flex:1;padding:5px 8px;font-size:0.8rem;border-radius:6px;border:1px solid var(--border,#444);background:#0d1117;color:#fff;font-family:inherit"><button type="button" onclick="applyGhImgDir()" style="padding:5px 12px;font-size:0.78rem;background:#388bfd;border:none;color:#fff;border-radius:6px;cursor:pointer;font-family:inherit">조회</button></div><div id="ghImgList" style="padding:0.8rem;overflow-y:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:0.5rem;align-content:start"></div></div></div></body></html>
+<div id="_saveToast" style="position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: rgb(26, 138, 124); color: rgb(255, 255, 255); padding: 0.6rem 1.4rem; border-radius: 8px; font-size: 0.88rem; font-weight: 700; z-index: 99999; box-shadow: rgba(0, 0, 0, 0.4) 0px 4px 16px; transition: opacity 0.4s; opacity: 0;">✅ 저장 완료 — 응시자 5명</div><div id="ghImgPicker" style="display:none;position:fixed;inset:0;z-index:100000;background:rgba(0,0,0,0.7);align-items:center;justify-content:center;padding:1rem"><div style="background:var(--card,#161b22);border:1px solid var(--border,#30363d);border-radius:12px;max-width:680px;width:100%;max-height:85vh;display:flex;flex-direction:column"><div style="padding:0.8rem 1rem;border-bottom:1px solid var(--border,#30363d);display:flex;align-items:center;gap:0.5rem"><strong style="flex:1">📁 GitHub 이미지 선택</strong><button type="button" onclick="closeGhImgPicker()" style="background:none;border:none;color:#888;font-size:1.3rem;cursor:pointer;font-family:inherit">✕</button></div><div style="padding:0.6rem 1rem;display:flex;gap:0.4rem;align-items:center;border-bottom:1px solid var(--border,#30363d)"><span style="font-size:0.78rem;color:#9aa">폴더</span><input id="ghImgDirInput" style="flex:1;padding:5px 8px;font-size:0.8rem;border-radius:6px;border:1px solid var(--border,#444);background:#0d0d0d;color:#fff;font-family:inherit"><button type="button" onclick="applyGhImgDir()" style="padding:5px 12px;font-size:0.78rem;background:#c9a84c;border:none;color:#fff;border-radius:6px;cursor:pointer;font-family:inherit">조회</button></div><div id="ghImgList" style="padding:0.8rem;overflow-y:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:0.5rem;align-content:start"></div></div></div></body></html>
