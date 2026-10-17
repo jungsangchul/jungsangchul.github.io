@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>관리자 대시보드 · Panel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root{
     --navy:#0c2444;--navy2:#163a66;--gold:#c9a14a;--gold2:#e3c878;
@@ -258,6 +261,156 @@
   .langtog button{border:none;background:transparent;color:rgba(255,255,255,.62);font-weight:800;font-size:12px;padding:9px 13px;cursor:pointer;transition:.15s;min-width:38px}
   .langtog button:hover{color:#fff}
   .langtog button.on{background:linear-gradient(135deg,#e3c878,#c9a14a);color:#1a1407}
+  /* ═══ 포털 공통 테마 (index.html 스타일) ═══ */
+  :root{--bg:#0a0a0a;--panel:#141414;--line:#1e1e1e;--line2:#2a2a2a;--gold:#c9a84c;--gold2:#e2c46a;--muted:#8a8a8a;
+    --mono:'Space Mono',Consolas,'Courier New',monospace;--body:'Noto Sans KR','Malgun Gothic','Apple SD Gothic Neo',sans-serif}
+  body{font-family:var(--body);color:#f0f0f0;-webkit-font-smoothing:antialiased;
+    background:radial-gradient(900px 420px at 50% -160px,rgba(201,168,76,.07),transparent 70%),#0a0a0a}
+  ::selection{background:var(--gold);color:#0a0a0a}
+  :focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+  input,select,textarea{color-scheme:dark}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+  .wrap{max-width:none;padding:0 0 40px}
+  .wrap>*:not(header):not(.toolbar){margin-left:auto;margin-right:auto;max-width:1160px}
+  .kpi-hint,.kpis,.tabs,.card,.foot{width:calc(100% - 32px)}
+  .kpi-hint{margin-top:18px}
+
+  header{display:block;padding:0;border-radius:0;overflow:visible;margin-bottom:0;position:sticky;top:0;z-index:40;
+    background:linear-gradient(180deg,#141414 0%,#0e0e0e 100%);border-bottom:1px solid var(--line2);
+    box-shadow:0 1px 0 rgba(255,255,255,.03),0 8px 24px rgba(0,0,0,.35)}
+  header::before{position:static;display:block;height:2px;background:linear-gradient(90deg,var(--gold) 0%,#d4651a 45%,#7c5cbf 100%);opacity:.9}
+  header::after{display:none}
+  .bar{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:11px 24px}
+  .brand{gap:14px}
+  .brand-text{display:flex;flex-direction:column;gap:4px;min-width:0}
+  .brand-name{font-family:var(--mono);font-size:15px;font-weight:700;letter-spacing:.08em;line-height:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    background:linear-gradient(90deg,#fafafa 0%,#d9d0b4 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .brand-sub{font-size:11.5px;color:#a8a8a8;letter-spacing:.26em;text-transform:uppercase;line-height:1;display:flex;align-items:center;gap:8px;white-space:nowrap;margin-top:0;font-weight:500}
+  .brand-sub::before{content:'';width:14px;height:1px;background:var(--gold)}
+  .brand-sub b{color:var(--gold2);font-weight:700}
+  .hdr-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
+  .langtog{background:none;border:none;border-radius:0;gap:6px;overflow:visible}
+  .langtog button{height:36px;padding:0 15px;border:1px solid var(--line2);border-radius:999px;color:var(--muted);font-size:12px;font-weight:700;min-width:0;transition:color .15s,border-color .15s,background .15s}
+  .langtog button:hover{color:#f0f0f0}
+  .langtog button.on{background:rgba(74,158,201,.10);border-color:rgba(74,158,201,.32);color:#6fb8dd}
+  .langtog button#langKo.on{background:rgba(201,168,76,.10);border-color:rgba(201,168,76,.32);color:var(--gold)}
+  .system-bar{padding:7px 24px;background:#0b0b0b;border-top:1px solid var(--line);font-family:var(--mono);font-size:11px;color:#b0b0b0;letter-spacing:.16em;text-transform:uppercase;display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .system-bar>span:first-child{display:flex;align-items:center;gap:8px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .system-bar>span:first-child::before{content:'';flex-shrink:0;width:5px;height:5px;border-radius:50%;background:var(--gold);box-shadow:0 0 6px var(--gold);animation:pulse 2.4s ease-in-out infinite}
+  .system-bar b{color:var(--gold2);font-weight:700}
+  .updated{flex-basis:auto;font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:none;opacity:1;color:#777;margin:0;white-space:nowrap;flex-shrink:0}
+
+  .toolbar{background:#111;border-bottom:1px solid var(--line2);padding:12px 24px}
+  .filters{max-width:1160px;margin:0 auto;gap:10px}
+  .filters label{font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;color:#777;opacity:1;font-weight:400}
+  .filters select,.filters input[type=date]{height:38px;padding:0 12px;border:1px solid var(--line2);border-radius:8px;background:#0d0d0d;color:#f0f0f0;font-weight:500;font-family:var(--body)}
+  .filters select:focus,.filters input[type=date]:focus{border-color:var(--gold);background:#0d0d0d;box-shadow:0 0 0 4px rgba(201,168,76,.14)}
+  .filters select option{color:#f0f0f0;background:#141414}
+  .filters .fld{gap:4px}
+  .filters .rbtn,.filters .addbtn,.filters .toggle{align-self:flex-end}
+  .rbtn{height:38px;padding:0 18px;border-radius:8px;background:linear-gradient(180deg,#d9b85c 0%,#c9a84c 100%);color:#0a0a0a;font-weight:700;
+    box-shadow:0 4px 16px rgba(201,168,76,.28),inset 0 1px 0 rgba(255,255,255,.3)}
+  .rbtn:hover{transform:none;filter:brightness(1.07)}
+  .addbtn{height:38px;padding:0 15px;border-radius:999px;background:none;border:1px solid var(--line2);color:#c8c8c8;font-weight:600;font-size:12.5px}
+  .addbtn:hover{background:rgba(255,255,255,.03);border-color:#555;color:#fff}
+  .toggle{height:38px;opacity:1;color:#aaa;font-weight:500;font-family:var(--body)}
+  .filters .toggle span{font-family:var(--body);font-size:12.5px;letter-spacing:0;text-transform:none;color:#aaa}
+  .toggle input{accent-color:var(--gold)}
+
+  .kpi-hint{color:#777;font-weight:500;font-size:12.5px;margin-bottom:12px}
+  .kpis{gap:12px}
+  .kpi{background:var(--panel);border:1px solid var(--line2);border-radius:12px;box-shadow:none;padding:16px 18px}
+  .kpi:hover{transform:translateY(-2px);border-color:#444;box-shadow:0 12px 30px -16px rgba(0,0,0,.8)}
+  .kpi .l{color:#aaa;font-weight:600}
+  .kpi .v{font-family:var(--mono);font-size:30px;font-weight:700;color:#fafafa;letter-spacing:-.02em}
+  .kpi .unit{color:#777;font-weight:500}
+  .kpi-ic{border-radius:10px;background:rgba(255,255,255,.05);color:#bbb;border:1px solid var(--line2)}
+  .kpi.green .kpi-ic{background:rgba(76,175,125,.12);color:#4caf7d;border-color:rgba(76,175,125,.3)}
+  .kpi.amber .kpi-ic{background:rgba(224,168,74,.12);color:#e0a84a;border-color:rgba(224,168,74,.3)}
+  .kpi.slate .kpi-ic{background:rgba(255,255,255,.06);color:#bbb}
+  .kpi.red .kpi-ic{background:rgba(224,92,92,.12);color:#e05c5c;border-color:rgba(224,92,92,.3)}
+  .kpi.teal .kpi-ic{background:rgba(111,184,221,.12);color:#6fb8dd;border-color:rgba(111,184,221,.3)}
+  .kpi.violet .kpi-ic{background:rgba(124,92,191,.14);color:#b39ddb;border-color:rgba(124,92,191,.35)}
+  .kpi-rate,.kpi.teal .kpi-rate{font-family:var(--mono);font-size:11px;background:transparent;border:1px solid rgba(76,175,125,.4);color:#4caf7d}
+  .kpi.teal .kpi-rate{border-color:rgba(111,184,221,.4);color:#6fb8dd}
+  .kpi.sel{border-color:var(--gold);box-shadow:0 0 0 1px rgba(201,168,76,.35),0 0 24px rgba(201,168,76,.12)}
+
+  .tabs{background:transparent;padding:0;gap:6px;box-shadow:none;border-radius:0}
+  .tab{border:1px solid transparent;border-radius:999px;padding:8px 16px;font-weight:600;font-size:13.5px;color:var(--muted)}
+  .tab:hover{color:#f0f0f0;background:rgba(255,255,255,.04)}
+  .tab.active{color:var(--gold);background:rgba(201,168,76,.12);border-color:rgba(201,168,76,.35);box-shadow:0 0 0 1px rgba(201,168,76,.08),0 4px 14px rgba(201,168,76,.08)}
+
+  .card{background:var(--panel);border:1px solid var(--line2);border-radius:12px;box-shadow:none;padding:18px 20px}
+  .card .head h3{color:#fafafa;font-weight:700;font-size:14.5px}
+  .card .head h3::before{width:3px;background:var(--gold);border-radius:2px}
+  .xbtn{background:transparent;border:1px solid rgba(76,175,125,.45);color:#4caf7d;border-radius:999px;box-shadow:none;font-weight:600}
+  .xbtn:hover{transform:none;background:rgba(76,175,125,.1)}
+  .bar-track{background:rgba(255,255,255,.05);box-shadow:none;border-radius:4px;height:16px}
+  .bar-fill{border-radius:4px;box-shadow:none}
+  .bar-row .lab{color:#c8c8c8;font-weight:500}
+  .bar-row .num{font-family:var(--mono);color:#fafafa;font-weight:700}
+  thead th{font-family:var(--mono);font-size:10px;letter-spacing:.12em;color:#777;border-bottom:1px solid var(--line2);font-weight:400}
+  thead th:hover{color:var(--gold)}
+  tbody td{border-bottom-color:var(--line);color:#d8d8d8;font-weight:400}
+  tbody tr:hover{background:rgba(255,255,255,.03)}
+  thead th:last-child,tbody td:last-child{background:var(--panel);box-shadow:-12px 0 14px -10px rgba(0,0,0,.7)}
+  tbody tr:hover td:last-child{background:#1a1a1a}
+  .pill{font-size:10.5px;font-weight:600;letter-spacing:.04em;border:1px solid transparent;background:transparent}
+  .pill.in,.pill.normal{border-color:rgba(76,175,125,.4);color:#4caf7d;background:rgba(76,175,125,.06)}
+  .pill.out{border-color:var(--line2);color:#999}
+  .pill.late{border-color:rgba(224,92,92,.4);color:#ef9a9a;background:rgba(224,92,92,.06)}
+  .pill.early{border-color:rgba(224,168,74,.4);color:#e0a84a;background:rgba(224,168,74,.06)}
+  .photo-btn{background:transparent;border:1px solid var(--line2);color:#c8c8c8;border-radius:999px;font-weight:600}
+  .photo-btn:hover{background:rgba(201,168,76,.1);border-color:var(--gold);color:var(--gold)}
+  .act-btn{background:transparent;border:1px solid rgba(76,175,125,.45);color:#4caf7d;border-radius:999px}
+  .empty{color:#666;font-weight:500}
+  .foot{color:#666;font-family:var(--mono);font-size:10.5px;letter-spacing:.08em}.foot b{color:var(--gold)}
+
+  .modal{background:rgba(0,0,0,.74)}
+  .modal .box{background:#0f0f0f;border:1px solid var(--line2);border-radius:14px;color:#f0f0f0}
+  .modal img{background:#141414}
+  .modal .mname{color:#fafafa}
+  .modal button{background:#1b1b1b;border:1px solid var(--line2);color:#f0f0f0;border-radius:8px}
+  .modal button:hover{border-color:#555}
+  .abtn-ok,.qrun,.mqio-btn.up{background:linear-gradient(180deg,#d9b85c 0%,#c9a84c 100%)!important;color:#0a0a0a!important;border:none!important}
+  .abtn-cancel,.mqio-btn.dl,.mqbtn.edit{background:#1b1b1b!important;color:#c8c8c8!important;border:1px solid var(--line2)!important}
+  .qexp{background:transparent;border:1px solid rgba(76,175,125,.45);color:#4caf7d}
+  .addform label,.qfld label{color:var(--gold);font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;font-weight:400}
+  .addform input,.addform select,.qfld select,.qfld input[type=date],.mqsearch{background:#0d0d0d;border-color:var(--line2);color:#f0f0f0;border-radius:8px}
+  .addform input:focus,.addform select:focus,.qfld select:focus,.qfld input:focus,.mqsearch:focus{border-color:var(--gold);background:#0d0d0d;box-shadow:0 0 0 4px rgba(201,168,76,.14)}
+  .addform input:read-only{background:#161616;color:#777}
+  .amsg{color:#e05c5c}
+  .qsum{color:#c8c8c8}
+  .qwrap{border-color:var(--line2)}
+  table.qt th{background:#141414;color:#999;font-family:var(--mono);font-size:10px;letter-spacing:.1em;font-weight:400}
+  table.qt td{color:#d8d8d8;border-top-color:var(--line)}
+  table.qt tr:hover td{background:rgba(255,255,255,.03)}
+  table.qt thead th:last-child{background:#141414}
+  table.qt tbody tr:hover td:last-child{background:rgba(255,255,255,.03)}
+  .mqrow{background:#141414;border-color:var(--line2);border-radius:10px}
+  .mqrow .nm{color:#fafafa}.mqrow .id{color:#777}.mqrow .tm{color:#6fb8dd}.mqrow .tm .noteam{color:#666}
+  .mqrow.off{background:#0f0f0f;opacity:.5}
+  .mqbtn.res{background:rgba(224,92,92,.12);color:#ef9a9a;border:1px solid rgba(224,92,92,.4)}
+  .mqbtn.rst{background:rgba(76,175,125,.12);color:#4caf7d;border:1px solid rgba(76,175,125,.4)}
+  .mqfilter{background:#0d0d0d;border:1px solid var(--line2)}
+  .mqf{color:#888}.mqf.active{background:rgba(201,168,76,.12);color:var(--gold);box-shadow:none}
+  .mqio-hint{color:#777}
+
+  .gate{background:radial-gradient(900px 420px at 50% -160px,rgba(201,168,76,.10),transparent 70%),#0a0a0a;color:#f0f0f0}
+  .gate .glogo{display:none}
+  .gate input{background:#0d0d0d;border:1px solid var(--line2);color:#fafafa;border-radius:8px;font-family:var(--mono)}
+  .gate input:focus{border-color:var(--gold);outline:none;box-shadow:0 0 0 4px rgba(201,168,76,.14)}
+  .gate button{background:linear-gradient(180deg,#d9b85c 0%,#c9a84c 100%);color:#0a0a0a;border-radius:8px;box-shadow:0 4px 16px rgba(201,168,76,.28)}
+  .gate .msg{color:#ef9a9a}
+
+  @media (max-width:820px){
+    .bar{padding:10px 12px}.system-bar{padding:7px 12px}.toolbar{padding:10px 12px}
+    .brand-name{font-size:12px;letter-spacing:.05em}.brand-sub{display:none}
+    .langtog button{height:32px;padding:0 11px;font-size:11.5px}
+    .kpi-hint,.kpis,.tabs,.card,.foot{width:calc(100% - 22px)}
+    .system-bar>span:last-child{white-space:nowrap;flex-shrink:0}
+    .system-bar .updated{display:none}
+  }
 </style>
 </head>
 <body>
@@ -278,13 +431,23 @@
 
 <div class="wrap" id="app" style="display:none">
   <header>
-    <div class="brand">
-      <div class="logo">YH</div>
-      <div>
-        <div class="brand-name">YURA HARNESS MÉXICO</div>
-        <div class="brand-sub">유라하네스멕시코 · <b id="hTitle">출석 · 식사 관리 대시보드</b></div>
+    <div class="bar">
+      <div class="brand">
+        <div class="brand-text">
+          <div class="brand-name" id="hTitle">출석 · 식사 관리 대시보드</div>
+          <div class="brand-sub">Yura Harness México · Plant 1 · Monclova</div>
+        </div>
+      </div>
+      <div class="hdr-right">
+        <div class="langtog" id="langTog">
+          <button id="langKo" onclick="setLang('ko')">한국어</button>
+          <button id="langEs" onclick="setLang('es')">Español</button>
+        </div>
       </div>
     </div>
+    <div class="system-bar"><span>Attendance · Meal Dashboard / 출석 · 식사 관리</span><span><b>Plant 1</b> · Monclova&nbsp;&nbsp;<span class="updated" id="updated">v7.15</span></span></div>
+  </header>
+  <div class="toolbar">
     <div class="filters">
       <span class="fld"><label id="lDate">날짜</label><input type="date" id="fDate"></span>
       <span class="fld"><label id="lPlant">공장</label><select id="fFactory"></select></span>
@@ -294,13 +457,8 @@
       <button class="addbtn" id="bAdd" onclick="openAdd()">+ 직원</button>
       <button class="addbtn" id="bQuery" onclick="openQuery()">조회</button>
       <button class="addbtn" id="bManage" onclick="openManage()">직원 관리</button>
-      <div class="langtog" id="langTog">
-        <button id="langKo" onclick="setLang('ko')">한</button>
-        <button id="langEs" onclick="setLang('es')">ES</button>
-      </div>
     </div>
-    <div class="updated" id="updated">v7.15</div>
-  </header>
+  </div>
 
   <div class="kpi-hint" id="kpiHint">💡 아래 카드를 누르면 하단에서 세부 명단을 조회할 수 있습니다</div>
 
