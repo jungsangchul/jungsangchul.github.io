@@ -100,6 +100,8 @@ tr.g td:first-child{box-shadow:inset 3px 0 0 var(--gc,transparent)}
 .st{display:inline-block;font-size:12px;font-weight:700;border-radius:4px;padding:1px 8px}
 .st.s1{background:var(--req);color:#231503}.st.s2{background:#E3C46A;color:#231a03}.st.s3{background:var(--rcv);color:var(--accent-ink)}.st.s4{background:#7CC7E0;color:#06222D}
 .st.s5{background:#B98CF0;color:#1d0a33}.st.s6{background:var(--ok);color:#06210f}.st.s7{background:transparent;color:var(--danger);border:1px solid var(--danger)}.st.s8{background:transparent;color:var(--sub);border:1px solid var(--line)}
+.st.s9{background:#E07A3F;color:#2a1003}.st.s10{background:#8A5A3C;color:#fff}
+.tl.ret{border-left-color:#E07A3F!important}.tl.bad.ret b{color:#F0A070}
 .agrp{display:inline-flex;gap:4px;padding:0 8px;border-left:1px solid var(--line)}
 label.f.inl{min-width:150px}label.f.inl > input{padding:6px 9px}
 .hist{margin-top:16px}
@@ -212,7 +214,7 @@ textarea#lotBox{width:100%;min-height:160px;padding:10px;border:1px solid var(--
   <span class="plant">PLANT 2 · 라하트</span>
   <nav class="tabs">
     <button id="tabAsm" class="on"><span data-i="tAsm">조립생산</span><span class="cnt" id="apprCnt" title="팀장 승인대기"></span><span class="cnt" id="asmCnt" style="background:var(--ok);color:#06210f"></span></button>
-    <button id="tabProc"><span data-i="tProc">가공생산</span><span class="cnt" id="newCnt"></span></button>
+    <button id="tabProc"><span data-i="tProc">가공생산</span><span class="cnt" id="newCnt"></span><span class="cnt" id="retCnt" title="반납 확인 대기" style="background:#E07A3F;color:#2a1003"></span></button>
     <button id="tabMaster"><span data-i="tMaster">서브리스트</span></button>
   </nav>
   <span class="status" id="netStat"></span>
@@ -300,6 +302,7 @@ textarea#lotBox{width:100%;min-height:160px;padding:10px;border:1px solid var(--
       <label class="f inl"><span data-i="asmWorker">처리자 (팀장·확인자)</span><input id="haName" autocomplete="off"></label>
       <span class="agrp"><button class="btn pri" id="haAppr" data-i="aAppr">🔒 팀장 승인</button><button class="btn" id="haApprUndo" data-i="aApprUndo">🔒 승인 취소</button><button class="btn warn" id="haReject" data-i="aReject">🔒 반려</button></span>
       <span class="agrp"><button class="btn ok" id="haRecv" data-i="aRecv">선재 접수 확인</button><button class="btn" id="haRecvUndo" data-i="aRecvUndo">접수 취소</button></span>
+      <span class="agrp"><button class="btn warn" id="haRet" data-i="aRet">↩ 가공 반납</button><button class="btn" id="haRetUndo" data-i="aRetUndo">반납 취소</button></span>
       <button class="btn warn" id="haCancel" data-i="aCancel">신청 취소</button>
       <span style="flex:1"></span><button class="btn ok" id="haXlsx" data-i="xlsx">📗 엑셀 저장</button><button class="btn sm lock" id="haPinChg" data-i="pinChg">🔒 팀장 PIN 변경</button>
     </div>
@@ -330,6 +333,7 @@ textarea#lotBox{width:100%;min-height:160px;padding:10px;border:1px solid var(--
       <span class="lotbox"><input id="hpLot" data-ph="lotPh" placeholder="투입 MES LOT" autocomplete="off"><button class="btn ok" id="hpShip" data-i="pShip">완료 / 출고</button></span>
       <button class="btn warn" id="hpReject" data-i="reject">반려</button>
       <button class="btn" id="hpUndo" data-i="undo">한 단계 되돌리기</button>
+      <span class="agrp"><button class="btn ok" id="hpRetOk" data-i="pRetOk">↩ 반납 확인</button><button class="btn" id="hpRetOkUndo" data-i="pRetOkUndo">반납확인 취소</button></span>
       <span style="flex:1"></span>
       <button class="btn" id="hpCopy" data-i="copyMes">MES 입력용 복사</button>
       <button class="btn ok" id="hpXlsx" data-i="xlsx">📗 엑셀 저장</button>
@@ -437,11 +441,11 @@ needLine:'라인과 신청자를 입력하세요.',needItems:'신청 목록이 �
 needWorker:'처리자 이름을 입력하세요.',noSel:'행을 선택하세요.',mesNoPh:'MES 등록번호 (선택)',rejectWhy:'반려 사유',updated:'처리했습니다',copied:'복사했습니다. MES에 붙여넣으세요.',confirmCancel:'이 신청을 취소할까요?',
 online:'서버 연결',offline:'오프라인 (캐시 사용)',saving:'저장 중…',loading:'불러오는 중…',saveErr:'서버 저장 실패',parsed:'행 읽음',cleared:'서브리스트를 삭제했습니다',confirmClear:'서브리스트 전체를 삭제할까요?',confirmAll:'기존 서브리스트를 모두 지우고 새로 저장합니다. 계속할까요?',nothing:'저장할 행이 없습니다.',
 removeGroup:'같은 그룹의 선도 함께 빠집니다.',sel:'선택',skipped:'일부 행은 이미 상태가 바뀌어 처리하지 않았습니다.',reqBy:'신청',note:'메모',groupOf:'선',gDbl:'쌍압착',gBind:'결속',gTw:'트위스트',gSh:'쉴드'};
-Object.assign(ES,{roleAsm:'Jefe de ensamble',roleProc:'Jefe de corte',pinDesc:'Capture el PIN del jefe. No se volverá a pedir durante 10 minutos.',pinLabel:'PIN',pinEmpty:'Llene todos los campos.',pinWrong:'PIN incorrecto.',pinChgT:'cambio',pinChgDesc:'Confirme el PIN actual y capture el nuevo (mínimo 4 caracteres).',pinCur:'PIN actual',pinNew:'PIN nuevo',pinNew2:'Confirmar PIN nuevo',pinMismatch:'Los PIN nuevos no coinciden.',pinShort:'El PIN nuevo debe tener al menos 4 caracteres.',pinChanged:'PIN cambiado.',pinChg:'🔒 Cambiar PIN de jefe',aAppr:'🔒 Aprobar (jefe)',aApprUndo:'🔒 Deshacer aprobación',aReject:'🔒 Rechazar',pAppr:'🔒 Aprobar recepción',cancelBtn:'Cancelar',okBtn:'Aceptar',st1:'Por aprobar',st2:'Aprobado (ensamble)',st3:'Recibido (corte)',st4:'Aprobado (corte)',st5:'Entregado',st6:'Recibido (ensamble)',st7:'Rechazado',st8:'Cancelado',fReq:'Solicitud',fAppr:'Aprob. ens.',fRcv:'Corte recibe',fPAppr:'Aprob. corte',fShip:'Entrega',fRecv:'Ens. recibe',asmWorker:'Responsable (jefe / confirma)',aAppr:'Aprobar (jefe)',aApprUndo:'Deshacer aprobación',pAppr:'Aprobar recepción',aRecvUndo:'Deshacer recepción',needAsmWorker:'Capture el nombre del responsable.',confirmCancelProc:'Incluye renglones ya recibidos por corte. ¿Cancelar?',savedAppr:'Guardado. Pasa a corte después de la aprobación del jefe.',today:'Hoy',reqCnt:' sol.',cWnPn:'Circuito / No. parte',cSpecTerm:'Especificación / terminales',cStLot:'Estado / LOT MES',cFlow2:'Historial',histAsm:'Historial: solicitud · entrega · recepción',histProc:'Historial: solicitud · entrega · recepción',
+Object.assign(ES,{roleAsm:'Jefe de ensamble',roleProc:'Jefe de corte',pinDesc:'Capture el PIN del jefe. No se volverá a pedir durante 10 minutos.',pinLabel:'PIN',pinEmpty:'Llene todos los campos.',pinWrong:'PIN incorrecto.',pinChgT:'cambio',pinChgDesc:'Confirme el PIN actual y capture el nuevo (mínimo 4 caracteres).',pinCur:'PIN actual',pinNew:'PIN nuevo',pinNew2:'Confirmar PIN nuevo',pinMismatch:'Los PIN nuevos no coinciden.',pinShort:'El PIN nuevo debe tener al menos 4 caracteres.',pinChanged:'PIN cambiado.',pinChg:'🔒 Cambiar PIN de jefe',aAppr:'🔒 Aprobar (jefe)',aApprUndo:'🔒 Deshacer aprobación',aReject:'🔒 Rechazar',pAppr:'🔒 Aprobar recepción',cancelBtn:'Cancelar',okBtn:'Aceptar',st1:'Por aprobar',st2:'Aprobado (ensamble)',st3:'Recibido (corte)',st4:'Aprobado (corte)',st5:'Entregado',st6:'Recibido (ensamble)',st7:'Rechazado',st8:'Cancelado',st9:'Devuelto a corte',st10:'Devolución confirmada',fRet:'Devuelto a corte',fRetOk:'Corte confirma dev.',pRetOk:'↩ Confirmar devolución',pRetOkUndo:'Deshacer confirmación',aRet:'↩ Devolver a corte',aRetUndo:'Deshacer devolución',retWhy:'Devolver a corte {n} renglones (cant. {q}).\nMotivo (opcional) — ej.: se encontró el cable original',retUndoQ:'¿Deshacer la devolución? Regresa a «Recibido (ensamble)».',fReq:'Solicitud',fAppr:'Aprob. ens.',fRcv:'Corte recibe',fPAppr:'Aprob. corte',fShip:'Entrega',fRecv:'Ens. recibe',asmWorker:'Responsable (jefe / confirma)',aAppr:'Aprobar (jefe)',aApprUndo:'Deshacer aprobación',pAppr:'Aprobar recepción',aRecvUndo:'Deshacer recepción',needAsmWorker:'Capture el nombre del responsable.',confirmCancelProc:'Incluye renglones ya recibidos por corte. ¿Cancelar?',savedAppr:'Guardado. Pasa a corte después de la aprobación del jefe.',today:'Hoy',reqCnt:' sol.',cWnPn:'Circuito / No. parte',cSpecTerm:'Especificación / terminales',cStLot:'Estado / LOT MES',cFlow2:'Historial',histAsm:'Historial: solicitud · entrega · recepción',histProc:'Historial: solicitud · entrega · recepción',
  rangeNote:'Los pendientes (solicitado · recibido · entregado) se muestran sin importar la fecha',qPh:'No. parte · circuito · línea · LOT',aRecv:'Confirmar recepción de cable',aRecvUndo:'Deshacer recepción',aCancel:'Cancelar solicitud',
  pRecv:'Recibir',lotPh:'LOT MES utilizado',pShip:'Completar / entregar',undo:'Regresar un paso',cSpec:'Especificación',cTerm:'Term. izq. / der.',cFlow:'Historial (solicitud → corte → entrega → ensamble)',
  fReq:'Solicitud',fRcv:'Corte recibe',fShip:'Entrega',fRecv:'Ensamble recibe',inProg:'En proceso',needLot:'Capture el LOT MES.',needName:'Capture el solicitante (confirma la recepción).'});
-Object.assign(KO,{roleAsm:'조립팀장',roleProc:'가공팀장',pinDesc:'팀장 PIN을 입력하세요. 확인 후 10분 동안은 다시 묻지 않습니다.',pinLabel:'PIN',pinEmpty:'모든 칸을 입력하세요.',pinWrong:'PIN이 맞지 않습니다.',pinChgT:'변경',pinChgDesc:'현재 PIN을 확인한 뒤 새 PIN으로 바꿉니다 (4자 이상).',pinCur:'현재 PIN',pinNew:'새 PIN',pinNew2:'새 PIN 확인',pinMismatch:'새 PIN이 서로 다릅니다.',pinShort:'새 PIN은 4자 이상이어야 합니다.',pinChanged:'PIN을 변경했습니다.',st1:'승인대기',st2:'조립승인',st3:'가공접수',st4:'가공승인',st5:'출고',st6:'조립접수완료',st7:'반려',st8:'취소',fAppr:'조립승인',fPAppr:'가공승인',needAsmWorker:'처리자(팀장·확인자) 이름을 입력하세요.',confirmCancelProc:'가공에서 이미 접수한 건이 포함되어 있습니다. 취소할까요?',savedAppr:'저장했습니다. 조립팀장 승인 후 가공에 전달됩니다.',qty:'수량',today:'오늘',reqCnt:'건',xlsx:'📗 엑셀 저장',xlsxDay:'이 날짜 신청건만 엑셀로 저장',xlsxMaster:'📗 서브리스트 · LOT 엑셀 저장',xlsxLoading:'엑셀 모듈 불러오는 중…',xlsxFail:'엑셀 모듈을 불러오지 못했습니다.',xlsxNone:'내보낼 내역이 없습니다.',xlsxSaved:'엑셀 저장 완료',shAll:'전체',shSel:'선택',shMaster:'서브리스트',shLot:'LOT매칭표',xCheck:'확인',xNote:'비고',fReq:'신청',fRcv:'가공접수',fShip:'출고',fRecv:'조립접수',inProg:'진행 중',needLot:'투입 MES LOT를 입력하세요.',needName:'신청자(접수 확인자) 이름을 입력하세요.'});
+Object.assign(KO,{roleAsm:'조립팀장',roleProc:'가공팀장',pinDesc:'팀장 PIN을 입력하세요. 확인 후 10분 동안은 다시 묻지 않습니다.',pinLabel:'PIN',pinEmpty:'모든 칸을 입력하세요.',pinWrong:'PIN이 맞지 않습니다.',pinChgT:'변경',pinChgDesc:'현재 PIN을 확인한 뒤 새 PIN으로 바꿉니다 (4자 이상).',pinCur:'현재 PIN',pinNew:'새 PIN',pinNew2:'새 PIN 확인',pinMismatch:'새 PIN이 서로 다릅니다.',pinShort:'새 PIN은 4자 이상이어야 합니다.',pinChanged:'PIN을 변경했습니다.',st1:'승인대기',st2:'조립승인',st3:'가공접수',st4:'가공승인',st5:'출고',st6:'조립접수완료',st7:'반려',st8:'취소',st9:'가공반납',st10:'반납확인',fRet:'가공반납',fRetOk:'반납확인',pRetOk:'↩ 반납 확인',pRetOkUndo:'반납확인 취소',aRet:'↩ 가공 반납',aRetUndo:'반납 취소',retWhy:'{n}선 (수량 {q})을 가공으로 반납합니다.\n사유 (선택) — 예) 원래 선 찾음',retUndoQ:'반납을 취소하고 조립접수완료로 되돌릴까요?',fAppr:'조립승인',fPAppr:'가공승인',needAsmWorker:'처리자(팀장·확인자) 이름을 입력하세요.',confirmCancelProc:'가공에서 이미 접수한 건이 포함되어 있습니다. 취소할까요?',savedAppr:'저장했습니다. 조립팀장 승인 후 가공에 전달됩니다.',qty:'수량',today:'오늘',reqCnt:'건',xlsx:'📗 엑셀 저장',xlsxDay:'이 날짜 신청건만 엑셀로 저장',xlsxMaster:'📗 서브리스트 · LOT 엑셀 저장',xlsxLoading:'엑셀 모듈 불러오는 중…',xlsxFail:'엑셀 모듈을 불러오지 못했습니다.',xlsxNone:'내보낼 내역이 없습니다.',xlsxSaved:'엑셀 저장 완료',shAll:'전체',shSel:'선택',shMaster:'서브리스트',shLot:'LOT매칭표',xCheck:'확인',xNote:'비고',fReq:'신청',fRcv:'가공접수',fShip:'출고',fRecv:'조립접수',inProg:'진행 중',needLot:'투입 MES LOT를 입력하세요.',needName:'신청자(접수 확인자) 이름을 입력하세요.'});
 let lang='ko';
 const koText={};document.querySelectorAll('[data-i]').forEach(el=>koText[el.dataset.i]=el.innerHTML);
 const koPh={};document.querySelectorAll('[data-ph]').forEach(el=>koPh[el.dataset.ph]=el.placeholder);
@@ -897,11 +901,11 @@ $('aSave').onclick=saveReq;
 /* ---------- 신청 데이터 ---------- */
 let REQS=[];
 // 신청(조립 승인대기) → 승인(조립팀장) → 접수(가공) → 가공승인 → 출고(MES LOT) → 수령(조립접수)
-const ST=['신청','승인','접수','가공승인','출고','수령','반려','취소'];
-const OPEN=['신청','승인','접수','가공승인','출고'];
+const ST=['신청','승인','접수','가공승인','출고','수령','반려','취소','반납','반납확인'];
+const OPEN=['신청','승인','접수','가공승인','출고','반납'];
 const isOpen=r=>OPEN.includes(r.status);
 const stTag=s=>{const k=ST.indexOf(s)+1;return `<span class="st s${k}">${esc(T('st'+k))}</span>`;};
-const lastAt=r=>r.recv_at||r.done_at||r.ship_at||r.p_approved_at||r.received_at||r.approved_at||r.created_at;
+const lastAt=r=>r.ret_ok_at||r.ret_at||r.recv_at||r.done_at||r.ship_at||r.p_approved_at||r.received_at||r.approved_at||r.created_at;
 const procVisible=r=>!(r.status==='신청'||((r.status==='반려'||r.status==='취소')&&!r.approved_at));// 가공은 조립팀장 승인 건부터
 async function loadReqs(){
   const ds=['haFrom','hpFrom'].map(id=>$(id).value).filter(Boolean).map(v=>new Date(v+'T00:00:00'));
@@ -939,7 +943,7 @@ function histRows(p){
     if(p==='hp'&&!procVisible(r))return false;
     if(mine&&r.line&&U(r.line)!==U(line))return false;
     if(!isOpen(r)){const d=new Date(lastAt(r));if(a&&d<a)return false;if(b&&d>b)return false;}
-    if(q&&![r.pn,r.wn,r.line,r.requester,r.req_no,r.mes_no,r.approved_by,r.asm_lot].some(v=>U(v).includes(q)))return false;
+    if(q&&![r.pn,r.wn,r.line,r.requester,r.req_no,r.mes_no,r.approved_by,r.asm_lot,r.ret_by,r.ret_note].some(v=>U(v).includes(q)))return false;
     return true;});
 }
 function step(lbl,at,by){return `<span class="tl${at?' on':''}"><b>${esc(lbl)}</b>${at?`${fmtT(at)}${by?` <em>${esc(by)}</em>`:''}`:'—'}</span>`;}
@@ -950,6 +954,7 @@ function flow(r){
     const done=S.filter(x=>x[1]);
     return `<div class="fl">${done.map(x=>step(...x)).join('')}<span class="tl bad on"><b>${esc(T(r.status==='반려'?'st7':'st8'))}</b>${fmtT(r.done_at)}${r.done_by?` <em>${esc(r.done_by)}</em>`:''}${r.proc_note?` · ${esc(r.proc_note)}`:''}</span></div>`;
   }
+  if(r.status==='반납'||r.status==='반납확인')return `<div class="fl">${S.map(x=>step(...x)).join('')}<span class="tl bad on ret"><b>${esc(T('fRet'))}</b>${fmtT(r.ret_at)}${r.ret_by?` <em>${esc(r.ret_by)}</em>`:''}${r.ret_note?` · ${esc(r.ret_note)}`:''}</span><span class="tl bad ret${r.ret_ok_at?' on':''}"><b>${esc(T('fRetOk'))}</b>${r.ret_ok_at?`${fmtT(r.ret_ok_at)}${r.ret_ok_by?` <em>${esc(r.ret_ok_by)}</em>`:''}`:'—'}</span></div>`;
   return `<div class="fl">${S.map(x=>step(...x)).join('')}</div>`;
 }
 const WD={ko:['일','월','화','수','목','금','토'],es:['dom','lun','mar','mié','jue','vie','sáb']};
@@ -990,15 +995,15 @@ function renderHist(p){
   $(p+'Sel').textContent=`${sr.length} ${T('sel')} · ${sr.reduce((t,r)=>t+r.qty,0).toLocaleString()}`;
   if(p==='hp'){
     $('hpRecv').disabled=!has(['승인']);$('hpAppr').disabled=!has(['접수']);$('hpShip').disabled=!has(['가공승인']);
-    $('hpReject').disabled=!has(['승인','접수','가공승인']);$('hpUndo').disabled=!has(['접수','가공승인','출고']);
+    $('hpReject').disabled=!has(['승인','접수','가공승인']);$('hpUndo').disabled=!has(['접수','가공승인','출고']);$('hpRetOk').disabled=!has(['반납']);$('hpRetOkUndo').disabled=!has(['반납확인']);
   }else{
     $('haAppr').disabled=!has(['신청']);$('haApprUndo').disabled=!has(['승인']);$('haReject').disabled=!has(['신청']);
-    $('haRecv').disabled=!has(['출고']);$('haRecvUndo').disabled=!has(['수령']);$('haCancel').disabled=!has(['신청','승인','접수','가공승인']);
+    $('haRecv').disabled=!has(['출고']);$('haRecvUndo').disabled=!has(['수령']);$('haRet').disabled=!has(['수령']);$('haRetUndo').disabled=!has(['반납']);$('haCancel').disabled=!has(['신청','승인','접수','가공승인']);
   }
   // 탭 배지: 조립=팀장 승인대기·접수대기(출고), 가공=가공접수 대기(조립승인)
   const ln=$('aLine').value.trim(),myLine=r=>!ln||!$('haMine').checked||!r.line||U(r.line)===U(ln);
   const nAp=REQS.filter(r=>r.status==='신청'&&myLine(r)).length,nA=REQS.filter(r=>r.status==='출고'&&myLine(r)).length,nP=REQS.filter(r=>r.status==='승인').length;
-  $('apprCnt').textContent=nAp||'';$('asmCnt').textContent=nA||'';$('newCnt').textContent=nP||'';
+  $('apprCnt').textContent=nAp||'';$('asmCnt').textContent=nA||'';$('newCnt').textContent=nP||'';$('retCnt').textContent=REQS.filter(r=>r.status==='반납').length||'';
 }
 const renderRecent=()=>renderHist('ha'),renderProc=()=>renderHist('hp');
 ['ha','hp'].forEach(p=>{
@@ -1074,6 +1079,13 @@ $('haReject').onclick=()=>{const w=need('haName','needAsmWorker');if(!w)return;c
   leaderAction('asm','reject',selOf('ha',['신청']),w,why.trim());};
 $('haRecv').onclick=()=>{const w=need('haName','needAsmWorker');if(w)run([[selOf('ha',['출고']),['출고'],{status:'수령',recv_at:now(),recv_by:w}]]);};
 $('haRecvUndo').onclick=()=>run([[selOf('ha',['수령']),['수령'],{status:'출고',recv_at:null,recv_by:null}]]);
+$('haRet').onclick=()=>{const w=need('haName','needAsmWorker');if(!w)return;
+  const ids=selOf('ha',['수령']);if(!ids.length)return toast(T('noSel'));
+  const n=REQS.filter(r=>ids.includes(r.id)).reduce((t,r)=>t+r.qty,0);
+  const why=prompt(T('retWhy').replace('{n}',ids.length).replace('{q}',n.toLocaleString()),'');if(why===null)return;
+  run([[ids,['수령'],{status:'반납',ret_at:now(),ret_by:w,ret_note:why.trim()||null}]]);};
+$('haRetUndo').onclick=()=>{const ids=selOf('ha',['반납']);if(!ids.length)return toast(T('noSel'));if(!confirm(T('retUndoQ')))return;
+  run([[ids,['반납'],{status:'수령',ret_at:null,ret_by:null,ret_note:null}]]);};
 $('haCancel').onclick=()=>{const w=need('haName','needAsmWorker');if(!w)return;
   const ids=selOf('ha',['신청','승인','접수','가공승인']);if(!ids.length)return toast(T('noSel'));
   const inProc=REQS.some(r=>ids.includes(r.id)&&(r.status==='접수'||r.status==='가공승인'));
@@ -1092,6 +1104,8 @@ $('hpUndo').onclick=async()=>{
   if(pa.length){const w=need('hpName','needWorker');if(!w)return;const keep=new Set(rest.flatMap(j=>j[0]));if(!await leaderAction('proc','unapprove',pa,w))return;keep.forEach(i=>H.hp.sel.add(i));}
   if(rest.some(j=>j[0].length))run(rest);};
 
+$('hpRetOk').onclick=()=>{const w=need('hpName','needWorker');if(w)run([[selOf('hp',['반납']),['반납'],{status:'반납확인',ret_ok_at:now(),ret_ok_by:w}]]);};
+$('hpRetOkUndo').onclick=()=>run([[selOf('hp',['반납확인']),['반납확인'],{status:'반납',ret_ok_at:null,ret_ok_by:null}]]);
 function exportRows(p){const S=H[p],s=REQS.filter(r=>S.sel.has(r.id));return s.length?s:histRows(p).filter(r=>!S.st||r.status===S.st);}
 $('hpCopy').onclick=async()=>{
   const rows=exportRows('hp');const txt=['품번\t선번\t수량'].concat(rows.map(r=>`${r.pn}\t${r.wn}\t${r.qty}`)).join('\n');
@@ -1101,8 +1115,8 @@ $('hpCopy').onclick=async()=>{
 /* ---------- 엑셀 내보내기 (ExcelJS, 필요할 때만 로드) ---------- */
 const XL={
   hdr:'1F2D3A',hdrInk:'FFFFFF',title:'0F1A22',titleInk:'C9A84C',zebra:'F4F7F9',line:'C9D2DA',chk:'FFF6D6',
-  st:{'신청':'E3A84F','승인':'F6D37B','접수':'9CD2E6','가공승인':'4FA9C9','출고':'5BBE7A','수령':'2E8B57','반려':'F2867E','취소':'BBBBBB'},
-  stInk:{'수령':'FFFFFF','가공승인':'06222D'}
+  st:{'신청':'E3A84F','승인':'F6D37B','접수':'9CD2E6','가공승인':'4FA9C9','출고':'5BBE7A','수령':'2E8B57','반려':'F2867E','취소':'BBBBBB','반납':'E07A3F','반납확인':'8A5A3C'},
+  stInk:{'반납확인':'FFFFFF','수령':'FFFFFF','가공승인':'06222D'}
 };
 async function xlReady(){
   if(window.ExcelJS)return true;
@@ -1183,6 +1197,7 @@ function reqCols(){return [
   {h:'가공승인자',w:10,v:r=>r.p_approved_by},{h:'가공승인',w:14,a:'center',v:r=>fmtDT(r.p_approved_at)},
   {h:'출고자',w:10,v:r=>r.ship_by},{h:'출고',w:14,a:'center',v:r=>fmtDT(r.ship_at)},
   {h:'조립접수자',w:10,v:r=>r.recv_by},{h:'조립접수',w:14,a:'center',v:r=>fmtDT(r.recv_at)},
+  {h:'반납자',w:10,v:r=>r.ret_by},{h:'반납',w:14,a:'center',v:r=>fmtDT(r.ret_at)},{h:'반납 사유',w:20,wrap:true,v:r=>r.ret_note},{h:'반납확인자',w:10,v:r=>r.ret_ok_by},{h:'반납확인',w:14,a:'center',v:r=>fmtDT(r.ret_ok_at)},
   {h:'메모',w:18,wrap:true,v:r=>r.req_note},
   {h:'반려/취소 처리자',w:12,v:r=>isDone(r)?r.done_by:''},{h:'반려/취소 시각',w:14,a:'center',v:r=>isDone(r)?fmtDT(r.done_at):''},{h:'반려/취소 사유',w:20,wrap:true,v:r=>r.proc_note},
   {h:T('xNote'),w:22,kind:'note',v:()=>''}
