@@ -598,7 +598,11 @@ const U=s=>String(s||'').trim().toUpperCase();
 const LS={get(k,d=''){try{return localStorage.getItem('shreq_'+k)??d}catch(e){return d}},set(k,v){try{localStorage.setItem('shreq_'+k,v)}catch(e){}}};
 function toast(m){const t=$('toast');t.textContent=m;t.classList.remove('hidden');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.add('hidden'),2200);}
 const pad=n=>String(n).padStart(2,'0');
-const fmtT=s=>{if(!s)return '';const d=new Date(s);return `${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;};
+const TZ='America/Mexico_City';// 표시·그룹핑 기준 시간대(PC 설정 무관)
+const _tzf=new Intl.DateTimeFormat('en-US',{timeZone:TZ,hourCycle:'h23',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit'});
+const toMX=d=>{const p={};_tzf.formatToParts(d).forEach(x=>p[x.type]=x.value);return new Date(+p.year,+p.month-1,+p.day,+p.hour,+p.minute,+p.second,d.getMilliseconds());};
+const nowMX=()=>toMX(new Date());
+const fmtT=s=>{if(!s)return '';const d=toMX(new Date(s));return `${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;};
 const ymd=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
 
 /* ---------- 저장소 (IndexedDB 캐시) ---------- */
@@ -1018,7 +1022,7 @@ async function saveReq(){
   lotToCart();
   const noLot=cart.filter(c=>!c.lot).length;
   if(noLot&&!confirm(noLot+T('noLotConfirm'))){$('dLot').focus();return;}
-  const d=new Date();const reqNo=`P${PLANT}-${String(d.getFullYear()).slice(2)}${pad(d.getMonth()+1)}${pad(d.getDate())}-${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}-${Math.random().toString(36).slice(2,5).toUpperCase()}`;
+  const d=nowMX();const reqNo=`P${PLANT}-${String(d.getFullYear()).slice(2)}${pad(d.getMonth()+1)}${pad(d.getDate())}-${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}-${Math.random().toString(36).slice(2,5).toUpperCase()}`;
   const note=$('aNote').value.trim();
   const rows=cart.map(c=>({plant:PLANT,req_no:reqNo,pn:c.pn,sub_no:c.sub||null,wn:c.wn,mat:c.mat||null,sq:c.sq||null,col:c.col||null,len:c.len||null,t_l:c.tL||null,t_r:c.tR||null,
     grp:c.members.length?c.members.join(','):null,grp_type:c.types.length?c.types.join('+'):null,in_master:c.inMaster,asm_lot:c.lot||null,qty:parseInt(c.qty,10),line,requester:name,req_note:note||null}));
@@ -1074,7 +1078,7 @@ function histRows(p){
   return REQS.filter(r=>{
     if(p==='hp'&&!procVisible(r))return false;
     if(mine&&r.line&&U(r.line)!==U(line))return false;
-    if(!isOpen(r)){const d=new Date(lastAt(r));if(a&&d<a)return false;if(b&&d>b)return false;}
+    if(!isOpen(r)){const d=toMX(new Date(lastAt(r)));if(a&&d<a)return false;if(b&&d>b)return false;}
     if(q&&![r.pn,r.wn,r.line,r.requester,r.req_no,r.mes_no,r.approved_by,r.asm_lot,r.ret_by,r.ret_note].some(v=>U(v).includes(q)))return false;
     return true;});
 }
@@ -1090,7 +1094,7 @@ function flow(r){
   return `<div class="fl">${S.map(x=>step(...x)).join('')}</div>`;
 }
 const WD={ko:['일','월','화','수','목','금','토'],es:['dom','lun','mar','mié','jue','vie','sáb']};
-const dkey=s=>ymd(new Date(s));
+const dkey=s=>ymd(toMX(new Date(s)));
 const dlabel=k=>{const d=new Date(k+'T12:00:00');return `${k} (${WD[lang][d.getDay()]})`;};
 const CHIPS={ha:ST,hp:ST.filter(s=>s!=='신청')};
 function renderHist(p){
@@ -1111,7 +1115,7 @@ function renderHist(p){
       g.items.sort((a,b)=>mq[gk(a)]-mq[gk(b)]||ord.get(gk(a))-ord.get(gk(b))||a.qty-b.qty||a.id-b.id);});
     days.forEach(d=>d.gs.sort((a,b)=>gq(a)-gq(b)));
   }
-  const today=ymd(new Date()),auto=!!$(p+'Q').value.trim();// 검색 중일 때만 모두 펼침
+  const today=ymd(nowMX()),auto=!!$(p+'Q').value.trim();// 검색 중일 때만 모두 펼침
   $(p+'Body').innerHTML=days.map(d=>{const its=d.gs.flatMap(g=>g.items),dOn=its.every(r=>S.sel.has(r.id));
     const fold=d.k!==today&&!auto&&!S.open.has(d.k),nOpen=its.filter(isOpen).length;
     return `<tr class="dt${fold?' fold':''}" data-dk="${d.k}"><td><input type="checkbox" data-day="${d.k}" ${dOn?'checked':''} aria-label="${d.k}"></td><td colspan="6"><span class="car">▸</span><span class="dd">${esc(dlabel(d.k))}</span>${d.k===today?` <span class="today">${esc(T('today'))}</span>`:''}<span class="ds">${d.gs.length}${esc(T('reqCnt'))} · ${its.length}${esc(T('groupOf'))} · ${esc(T('qty'))} ${its.reduce((t,r)=>t+r.qty,0).toLocaleString()}</span>${nOpen&&d.k!==today?`<span class="dopen">${esc(T('inProg'))} ${nOpen}</span>`:''}<button class="btn sm rqx" data-dayx="${d.k}" type="button" title="${esc(T('xlsxDay'))}">📗 Excel</button></td></tr>`+
@@ -1145,7 +1149,7 @@ const renderRecent=()=>renderHist('ha'),renderProc=()=>renderHist('hp');
   $(p+'Body').addEventListener('click',e=>{const S=H[p];
     const bx=e.target.closest('button[data-dayx]');if(bx){e.preventDefault();e.stopPropagation();exportHistXlsx(p,bx.dataset.dayx);return;}
     const dt=e.target.closest('tr.dt');
-    if(dt&&!e.target.closest('input')){const k=dt.dataset.dk,today=ymd(new Date());
+    if(dt&&!e.target.closest('input')){const k=dt.dataset.dk,today=ymd(nowMX());
       if(k!==today&&!$(p+'Q').value.trim()){S.open.has(k)?S.open.delete(k):S.open.add(k);renderHist(p);}return;}
     const dc=e.target.closest('input[data-day]');
     if(dc){const ids=histRows(p).filter(r=>dkey(r.created_at)===dc.dataset.day&&(!S.st||r.status===S.st)).map(r=>r.id);ids.forEach(i=>dc.checked?S.sel.add(i):S.sel.delete(i));renderHist(p);return;}
@@ -1260,8 +1264,8 @@ async function xlReady(){
 }
 const xlFill=hex=>({type:'pattern',pattern:'solid',fgColor:{argb:'FF'+hex}});
 const xlBorder=hex=>{const b={style:'thin',color:{argb:'FF'+hex}};return {top:b,left:b,bottom:b,right:b};};
-const fmtD=s=>{if(!s)return '';const d=new Date(s);return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;};
-const fmtDT=s=>{if(!s)return '';const d=new Date(s);return `${fmtD(s)} ${pad(d.getHours())}:${pad(d.getMinutes())}`;};
+const fmtD=s=>{if(!s)return '';const d=toMX(new Date(s));return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;};
+const fmtDT=s=>{if(!s)return '';const d=toMX(new Date(s));return `${fmtD(s)} ${pad(d.getHours())}:${pad(d.getMinutes())}`;};
 const sheetName=n=>String(n).replace(/[\\\/\?\*\[\]:]/g,' ').slice(0,31)||'Sheet';
 function xlSave(wb,name){
   return wb.xlsx.writeBuffer().then(buf=>{
@@ -1360,7 +1364,7 @@ async function exportHistXlsx(p,day){
     ...ST.map(st=>({h:stKo({status:st}),w:9,fmt:'#,##0;;""',a:'center',v:r=>r.st[st]||0})),
     {h:T('xNote'),w:22,kind:'note',v:()=>''}
   ],aggRows,{xSplit:4});
-  await xlSave(wb,`부족회로_${who}_P${PLANT}_${day||ymd(new Date())}.xlsx`);
+  await xlSave(wb,`부족회로_${who}_P${PLANT}_${day||ymd(nowMX())}.xlsx`);
   toast(`${T('xlsxSaved')} (${srcRows.length})`);
 }
 $('hpXlsx').onclick=()=>exportHistXlsx('hp');
@@ -1378,7 +1382,7 @@ $('mXlsx').onclick=async()=>{
   xlTable(wb,`${T('shLot')} (${lots.length})`,`LOT 매칭표 — ${lots.length}건 · 최종 저장 ${LOTUPD?fmtDT(LOTUPD):'-'}`,sub,[
     {h:'☑ '+T('xCheck'),w:6,kind:'check',v:()=>''},{h:'LOT',w:16,a:'center',kind:'pn',v:r=>r[0]},{h:'품번',w:18,kind:'pn',v:r=>r[1]},{h:T('xNote'),w:24,kind:'note',v:()=>''}
   ],lots,{xSplit:2});
-  await xlSave(wb,`서브리스트_P${PLANT}_${ymd(new Date())}.xlsx`);toast(T('xlsxSaved'));
+  await xlSave(wb,`서브리스트_P${PLANT}_${ymd(nowMX())}.xlsx`);toast(T('xlsxSaved'));
 };
 
 /* ---------- REWORK 삭제회로 관리 ---------- */
@@ -1554,7 +1558,7 @@ $('rwXlsx').onclick=async()=>{
   const outs=rows.flatMap(r=>r.outs);outs.forEach((r,i)=>r.__n=i+1);
   xlTable(wb,`사용 (${outs.length})`,`삭제회로 사용(출고) — ${outs.length}건`,sub,[
     {h:'No.',w:5,a:'center',v:r=>r.__n},{h:'재고번호',w:15,kind:'pn',a:'center',v:r=>r.stock_no},{h:'와이어',w:12,a:'center',v:r=>r.wire_code},{h:'와이어명',w:16,v:r=>r.wire_name},{h:'길이',w:7,fmt:'#,##0',v:r=>num(r.len)??r.len},{h:'좌단자',w:15,v:r=>r.term_l},{h:'L_St',w:6,a:'center',v:r=>r.l_st},{h:'L_CH',w:7,v:r=>num(r.l_ch)??r.l_ch},{h:'L_IH',w:7,v:r=>num(r.l_ih)??r.l_ih},{h:'우단자',w:15,v:r=>r.term_r},{h:'R_St',w:6,a:'center',v:r=>r.r_st},{h:'R_CH',w:7,v:r=>num(r.r_ch)??r.r_ch},{h:'R_IH',w:7,v:r=>num(r.r_ih)??r.r_ih},{h:'수량',w:8,kind:'qty',fmt:'#,##0',v:r=>Number(r.qty)||0},{h:'LOTNO',w:14,a:'center',v:r=>r.lotno},{h:'선번',w:10,kind:'pn',a:'center',v:r=>r.wn},{h:'출고자',w:9,v:r=>r.out_by},{h:'출고일',w:11,a:'center',v:r=>r.out_date},{h:'출고시간',w:10,a:'center',v:r=>r.out_time},{h:'호기',w:8,a:'center',v:r=>r.machine}],outs,{xSplit:2});
-  await xlSave(wb,`REWORK삭제회로_P${PLANT}_${ymd(new Date())}.xlsx`);toast(`${T('xlsxSaved')} (${rows.length})`);
+  await xlSave(wb,`REWORK삭제회로_P${PLANT}_${ymd(nowMX())}.xlsx`);toast(`${T('xlsxSaved')} (${rows.length})`);
 };
 /* ---- 삭제회로 계획 · 입고 체크 ---- */
 const RWP='rework_wire_plan';
@@ -1570,7 +1574,7 @@ function rwpParse(text){
   const m=new Map(),dDate=$('rwpDDate').value,dLot=U($('rwpDLot').value);
   rows.forEach(r=>{const o={plant:PLANT};RWP_COLS.forEach(([k],i)=>{o[k]=idx[i]>=0?String(r[idx[i]]??'').trim():'';});
     o.pn=U(o.pn);o.wn=U(o.wn);o.lot=U(o.lot)||dLot;o.pn_new=U(o.pn_new);o.qty=num(o.qty)||0;o.wire_code=U(o.wire_code);o.len=nlen(o.len);o.term_l=U(o.term_l);o.term_r=U(o.term_r);
-    o.plan_date=(o.plan_date||dDate||ymd(new Date())).replace(/\./g,'-').replace(/\//g,'-');
+    o.plan_date=(o.plan_date||dDate||ymd(nowMX())).replace(/\./g,'-').replace(/\//g,'-');
     if(!o.pn||!o.wn||o.qty<=0)return;m.set([o.plan_date,o.lot,o.pn,o.wn].join('|'),o);});
   return [...m.values()];
 }
@@ -1588,7 +1592,7 @@ async function rwpSave(rows){
 }
 $('rwpSave').onclick=()=>rwpSave(rwpParse($('rwpBox').value));
 $('rwpDAdd').onclick=()=>{const pn=U($('rwpDPn').value),wn=U($('rwpDWn').value),qty=num($('rwpDQty').value)||0;if(!pn||!wn||qty<=0){toast(T('rwpNeedPn'));return;}
-  rwpSave([{plant:PLANT,plan_date:$('rwpDDate').value||ymd(new Date()),lot:U($('rwpDLot').value),pn,pn_new:'',wn,qty,wire_code:'',len:'',term_l:'',term_r:''}]);$('rwpDWn').value='';$('rwpDWn').focus();};
+  rwpSave([{plant:PLANT,plan_date:$('rwpDDate').value||ymd(nowMX()),lot:U($('rwpDLot').value),pn,pn_new:'',wn,qty,wire_code:'',len:'',term_l:'',term_r:''}]);$('rwpDWn').value='';$('rwpDWn').focus();};
 $('rwpDel').onclick=async()=>{const ids=[...RP.sel];if(!ids.length){toast(T('noSel'));return;}if(!confirm(T('rwpConfirmDel').replace('{n}',ids.length)))return;setStat(T('saving'));
   try{for(let i=0;i<ids.length;i+=200)await sb(`${RWP}?plant=eq.${PLANT}&id=in.(${ids.slice(i,i+200).join(',')})`,{method:'DELETE'});setNet(true);toast(T('updated'));RP.sel.clear();}
   catch(e){console.error(e);setNet(false);alert(T('saveErr')+'\n'+e.message);}
@@ -1660,7 +1664,7 @@ $('rwpXlsx').onclick=async()=>{
     {h:'와이어',w:12,a:'center',v:r=>r.sp?.wire||''},{h:'길이',w:7,fmt:'#,##0',v:r=>r.sp?num(r.sp.len):null},{h:'좌단자',w:15,v:r=>r.sp?.tl||''},{h:'우단자',w:15,v:r=>r.sp?.tr||''},
     {h:'계획 수량',w:9,kind:'qty',fmt:'#,##0',v:r=>r.need},{h:'입고 수량',w:9,kind:'qty',fmt:'#,##0',v:r=>r.got},{h:'입고율',w:8,fmt:'0.0%',a:'center',v:r=>r.sp?r.rate/100:null},{h:'상태',w:11,a:'center',v:r=>stL[r.st]},{h:'매칭 재고번호',w:36,wrap:true,v:r=>r.m.map(x=>`${x.sn}(${x.q})`).join(', ')},{h:T('xNote'),w:22,kind:'note',v:()=>''}],rows,{xSplit:7});
   rows.forEach((r,i)=>{const c=ws.getRow(i+4).getCell(15);c.fill=xlFill(XST[r.st]);c.font={name:'Malgun Gothic',size:10,bold:true,color:{argb:'FF1B2530'}};});
-  await xlSave(wb,`삭제회로계획_입고체크_P${PLANT}_${ymd(new Date())}.xlsx`);toast(T('xlsxSaved'));
+  await xlSave(wb,`삭제회로계획_입고체크_P${PLANT}_${ymd(nowMX())}.xlsx`);toast(T('xlsxSaved'));
 };
 $('hpRework').onclick=()=>{show('Rework');if(!RW.loaded)loadRework();};
 $('rwBack').onclick=()=>{show('Proc');loadReqs();};
@@ -1676,7 +1680,7 @@ function renderAll(){renderPick();renderCart();renderRecent();renderProc();rende
   lang=LS.get('lang','ko');
   $('aLine').value=LS.get('aLine');$('aName').value=LS.get('aName');$('aDefQty').value=LS.get('aDefQty','1')||'1';$('hpName').value=LS.get('pName');$('haName').value=LS.get('haName');
   pickPn=LS.get('pn'+PLANT);$('dPn').value=pickPn;
-  const t=new Date(),f=new Date();f.setMonth(f.getMonth()-1);['ha','hp','rw'].forEach(p=>{$(p+'From').value=ymd(f);$(p+'To').value=ymd(t);});$('rwpDDate').value=ymd(t);// 기본: 현재일 기준 1달 전 ~ 오늘
+  const t=nowMX(),f=nowMX();f.setMonth(f.getMonth()-1);['ha','hp','rw'].forEach(p=>{$(p+'From').value=ymd(f);$(p+'To').value=ymd(t);});$('rwpDDate').value=ymd(t);// 기본: 현재일 기준 1달 전 ~ 오늘
   db=await idbOpen();
   applyLang();
   show('Asm');// 접속 시 항상 메인(조립생산) 화면으로 시작
