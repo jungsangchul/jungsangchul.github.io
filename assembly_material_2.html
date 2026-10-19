@@ -198,7 +198,7 @@ table.cfg input{width:17px;height:17px}
   <div class="grid2">
     <div class="card">
       <h3 data-t="pl_h">일생산계획 등록</h3>
-      <div class="hint" data-t="pl_hint">계획일자를 정하고 품번-개정을 골라 수량을 추가하거나, 엑셀에서 「품번-개정 · 수량」 또는 「품번 · 개정 · 수량」을 붙여넣으세요(머릿글 없어도 됨). 품번 91500-GG920-46은 BOM의 자재코드 91500-GG920 + 개정 46과 맞춥니다. 같은 날짜·품번·개정은 수량이 덮어써집니다.</div>
+      <div class="hint" data-t="pl_hint">계획일자를 정하고 품번-개정을 골라 수량을 추가하거나, 엑셀에서 「품번-개정 · 수량」 또는 「품번 · 개정 · 수량」을 붙여넣으세요(머릿글 없어도 됨, 직접 입력 시 띄어쓰기로 구분해도 됨). 품번 91500-GG920-46은 BOM의 자재코드 91500-GG920 + 개정 46과 맞춥니다. 같은 날짜·품번·개정은 수량이 덮어써집니다.</div>
       <div class="row" style="margin:10px 0">
         <label class="f"><span data-t="pl_date">계획일자</span><input type="date" id="pDate"></label>
         <label class="f" style="flex:1;min-width:220px"><span data-t="product">완제품 (품번)</span><select id="pProd"></select></label>
@@ -1281,7 +1281,7 @@ function planAddManual(){const key=$('pProd').value,q=num($('pQty').value);if(!k
   const [top,rev]=key.split('|');const p=PRODIDX.byKey.get(nz(key));
   if(!PLP)PLP={rows:[],skip:0};const ex=PLP.rows.find(r=>r.top===top&&r.rev===rev);if(ex)ex.qty=q;else PLP.rows.push({part:top+'-'+rev,top,rev,qty:q,p,how:'ok'});
   $('pQty').value='';planRender()}
-function planParse(t){const rows=parseTSV(t);const out=[];let skip=0;const fb=$('pFb').checked;
+function planParse(t){const rows=parseTSV(t).map(r=>r.length===1?r[0].split(/[\s,]+/).filter(Boolean):r);const out=[];let skip=0;const fb=$('pFb').checked;
   rows.forEach(r=>{if(r.length<2){skip++;return}const qs=r[r.length-1];if(qs===''){skip++;return}const q=num(qs);if(isNaN(q)||!r[0]){skip++;return}
     const mid=r.length>=3?r[r.length-2]:'';const x=resolvePart(r[0],/^[A-Z0-9]{1,4}$/i.test(mid)?mid:'',fb);
     const ex=out.find(o=>o.top===x.top&&o.rev===x.rev);if(ex){ex.qty+=q;return}out.push({part:r[0].trim()+(mid&&/^[A-Z0-9]{1,4}$/i.test(mid)?'-'+mid:''),...x,qty:q})});
