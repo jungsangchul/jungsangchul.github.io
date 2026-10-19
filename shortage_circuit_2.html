@@ -205,6 +205,29 @@ textarea#lotBox{width:100%;min-height:160px;padding:10px;border:1px solid var(--
 .mbtns{display:flex;gap:8px;justify-content:flex-end;margin-top:6px}
 .lock{font-size:12px}
 .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--panel);padding:10px 18px;border-radius:6px;z-index:40;font-size:13px}
+/* rework */
+.btn.rw{border-color:var(--gold);color:var(--gold);font-weight:700}
+.btn.rw:hover{background:#2a2410}
+.rw-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;padding:12px 14px;border-bottom:1px solid var(--line)}
+.rw-stats div{background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:8px 10px;font-size:11.5px;color:var(--sub)}
+.rw-stats b{display:block;font-size:20px;color:var(--ink);line-height:1.2;margin-top:2px}
+.rw-stats b small{font-size:12px;color:var(--sub);font-weight:400;margin-left:4px}
+.rw-stats div.hi{border-color:var(--gold)}.rw-stats div.hi b{color:var(--gold)}
+.rwbar{display:inline-block;width:90px;height:9px;border:1px solid var(--line);border-radius:5px;overflow:hidden;vertical-align:middle;background:#0a0d10;margin-right:6px}
+.rwbar i{display:block;height:100%;background:var(--accent)}
+.rwbar i.done{background:var(--ok)}.rwbar i.over{background:var(--danger)}
+.rw .scroll{max-height:calc(100vh - 420px);min-height:220px}
+.rw td{vertical-align:top}
+.rw tbody tr.it{cursor:pointer}.rw tbody tr.it:hover{background:var(--hit)}.rw tbody tr.it.sel{background:#173341}
+.rw input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px}
+.rwo{display:block;font-size:11.5px;color:var(--sub);white-space:nowrap;padding-left:7px;border-left:2px solid var(--ok)}
+.rwo b{color:var(--ink);font-weight:600}.rwo em{font-style:normal;color:var(--accent);font-family:Consolas,"D2Coding",monospace}
+.rwo.over{border-left-color:var(--danger)}
+.st.rw-none{background:transparent;color:var(--danger);border:1px solid var(--danger)}.st.rw-unused{background:transparent;color:var(--sub);border:1px solid var(--line)}.st.rw-part{background:var(--accent);color:var(--accent-ink)}.st.rw-done{background:var(--ok);color:#06210f}
+.rw-paste{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+@media (max-width:1000px){.rw-paste{grid-template-columns:1fr}}
+.rw-paste textarea{width:100%;min-height:150px;padding:10px;border:1px solid var(--line);border-radius:6px;background:var(--bg);font:12px/1.4 Consolas,"D2Coding",monospace;white-space:pre;overflow:auto}
+.rw-paste h2 small{font-weight:400;color:var(--sub);font-size:12px;margin-left:6px}
 </style>
 </head>
 <body>
@@ -319,7 +342,7 @@ textarea#lotBox{width:100%;min-height:160px;padding:10px;border:1px solid var(--
 <!-- ============ 가공생산 ============ -->
 <section id="viewProc" class="hidden">
   <div class="panel hist" style="margin-top:0">
-    <div class="ph"><h2 data-i="histProc">신청 · 출고 · 조립접수 이력</h2><div class="stchips" id="hpChips"></div></div>
+    <div class="ph"><h2 data-i="histProc">신청 · 출고 · 조립접수 이력</h2><div class="stchips" id="hpChips"></div><span class="grow"></span><button class="btn rw" id="hpRework" data-i="rwBtn">🔁 REWORK 삭제회로 관리</button></div>
     <div class="proc-bar">
       <label class="f"><span data-i="from">시작일</span><input type="date" id="hpFrom"></label>
       <label class="f"><span data-i="to">종료일</span><input type="date" id="hpTo"></label>
@@ -345,6 +368,56 @@ textarea#lotBox{width:100%;min-height:160px;padding:10px;border:1px solid var(--
         <tbody id="hpBody"></tbody>
       </table>
       <div class="empty hidden" id="hpEmpty" data-i="noReq">신청 내역이 없습니다.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ REWORK 삭제회로 관리 ============ -->
+<section id="viewRework" class="hidden">
+  <div class="panel hist rw" style="margin-top:0">
+    <div class="ph">
+      <button class="btn pri" id="rwBack" data-i="rwBack" style="font-size:15px;padding:9px 18px;box-shadow:0 0 0 3px rgba(79,169,201,.25)">◀ 부족회로 이력으로 돌아가기</button>
+      <h2 data-i="rwTitle">🔁 REWORK 삭제회로 관리<small style="font-weight:400;color:var(--sub);font-size:12px;margin-left:8px" data-i="rwSub">입고(30360) · 사용(30370) 엑셀 붙여넣기 → 재고번호 기준 사용률</small></h2>
+      <div class="stchips" id="rwChips"></div>
+      <span class="grow"></span>
+      <button class="btn ok" id="rwXlsx" data-i="xlsx">📗 엑셀 저장</button>
+    </div>
+    <div class="rw-stats" id="rwStats"></div>
+    <div class="proc-bar">
+      <label class="f"><span data-i="rwFrom">입고 시작일</span><input type="date" id="rwFrom"></label>
+      <label class="f"><span data-i="rwTo">입고 종료일</span><input type="date" id="rwTo"></label>
+      <label class="f"><span data-i="search">검색</span><input id="rwQ" data-ph="rwQPh" placeholder="재고번호 · 와이어 · 단자 · LOT · 선번 · 호기 · 보관위치" autocomplete="off"></label>
+      <span class="status" style="flex:1;align-self:center" data-i="rwRangeNote">미사용·일부사용은 입고일과 관계없이 모두 표시 · 사용완료만 기간 적용</span>
+    </div>
+    <div class="act">
+      <span class="selinfo" id="rwSel">0</span>
+      <button class="btn warn" id="rwDel" data-i="rwDel">선택 삭제 (입고 + 사용이력)</button>
+      <button class="btn" id="rwDelOut" data-i="rwDelOut">선택 사용이력만 삭제</button>
+      <span style="flex:1"></span>
+      <span class="status" id="rwUpd"></span>
+    </div>
+    <div class="scroll">
+      <table>
+        <thead><tr><th><input type="checkbox" id="rwAll" aria-label="all"></th><th data-i="rwcSn">재고번호</th><th data-i="rwcWire">와이어 / 와이어명</th><th class="num" data-i="cLen">길이</th><th data-i="rwcTerm">좌단자 / 우단자</th><th data-i="rwcIn">입고 (일 · 입고자 · 위치)</th><th class="num" data-i="rwcInQ">입고</th><th class="num" data-i="rwcUsedQ">사용</th><th class="num" data-i="rwcRem">잔량</th><th data-i="rwcRate">사용률</th><th data-i="rwcSt">상태</th><th data-i="rwcOuts">사용 내역 (출고일 · LOT · 선번 · 호기 · 출고자 · 수량)</th></tr></thead>
+        <tbody id="rwBody"></tbody>
+      </table>
+      <div class="empty hidden" id="rwEmpty" data-i="rwNoData">입고 · 사용 내역이 없습니다. 아래에 엑셀을 붙여넣어 저장하세요.</div>
+    </div>
+  </div>
+  <div class="rw-paste">
+    <div class="panel master">
+      <h2 data-i="rwInT">삭제회로 입고 붙여넣기<small>[30360] 재활용 선재 입고현황</small></h2>
+      <p data-i="rwInDesc">ERP 재활용 선재 입고현황을 머리글 행부터 복사(Ctrl+C)해 붙여넣으세요. 머리글이 없으면 12열(재고번호 · 와이어 · 와이어명 · 길이 · 단자(좌) · 단자(우) · 수량 · 보관위치 · 입고자 · 입고일 · 등록일 · 등록시간) 순서로 읽습니다. 같은 재고번호는 덮어씁니다.</p>
+      <textarea id="rwInBox" spellcheck="false" placeholder="재고번호	와이어	와이어명	길이	단자(좌)	단자(우)	수량	보관위치	입고자	입고일	등록일	등록시간"></textarea>
+      <div class="status" id="rwInInfo" style="margin-top:6px;min-height:18px"></div>
+      <div class="row-btns"><button class="btn pri" id="rwInSave" data-i="rwInSave">입고 추가 · 갱신 저장</button><button class="btn" id="rwInClear" data-i="cartClear">비우기</button></div>
+    </div>
+    <div class="panel master">
+      <h2 data-i="rwOutT">삭제회로 사용(출고) 붙여넣기<small>[30370] 재활용 선재 출고현황</small></h2>
+      <p data-i="rwOutDesc">ERP 재활용 선재 출고현황을 머리글 행부터 복사해 붙여넣으세요. 머리글이 없으면 19열(재고번호 … 수량 · LOTNO · 선번 · 출고자 · 출고일 · 출고시간 · 호기) 순서로 읽습니다. 재고번호 + 출고일시 + 선번이 같으면 덮어씁니다.</p>
+      <textarea id="rwOutBox" spellcheck="false" placeholder="재고번호	와이어	와이어명	길이	좌단자	L_St	L_CH	L_IH	우단자	R_St	R_CH	R_IH	수량	LOTNO	선번	출고자	출고일	출고시간	호기"></textarea>
+      <div class="status" id="rwOutInfo" style="margin-top:6px;min-height:18px"></div>
+      <div class="row-btns"><button class="btn pri" id="rwOutSave" data-i="rwOutSave">사용 추가 · 갱신 저장</button><button class="btn" id="rwOutClear" data-i="cartClear">비우기</button></div>
     </div>
   </div>
 </section>
@@ -446,6 +519,11 @@ Object.assign(ES,{roleAsm:'Jefe de ensamble',roleProc:'Jefe de corte',pinDesc:'C
  pRecv:'Recibir',lotPh:'LOT MES utilizado',pShip:'Completar / entregar',undo:'Regresar un paso',cSpec:'Especificación',cTerm:'Term. izq. / der.',cFlow:'Historial (solicitud → corte → entrega → ensamble)',
  fReq:'Solicitud',fRcv:'Corte recibe',fShip:'Entrega',fRecv:'Ensamble recibe',inProg:'En proceso',needLot:'Capture el LOT MES.',needName:'Capture el solicitante (confirma la recepción).'});
 Object.assign(KO,{roleAsm:'조립팀장',roleProc:'가공팀장',pinDesc:'팀장 PIN을 입력하세요. 확인 후 10분 동안은 다시 묻지 않습니다.',pinLabel:'PIN',pinEmpty:'모든 칸을 입력하세요.',pinWrong:'PIN이 맞지 않습니다.',pinChgT:'변경',pinChgDesc:'현재 PIN을 확인한 뒤 새 PIN으로 바꿉니다 (4자 이상).',pinCur:'현재 PIN',pinNew:'새 PIN',pinNew2:'새 PIN 확인',pinMismatch:'새 PIN이 서로 다릅니다.',pinShort:'새 PIN은 4자 이상이어야 합니다.',pinChanged:'PIN을 변경했습니다.',st1:'승인대기',st2:'조립승인',st3:'가공접수',st4:'가공승인',st5:'출고',st6:'조립접수완료',st7:'반려',st8:'취소',st9:'가공반납',st10:'반납확인',fRet:'가공반납',fRetOk:'반납확인',pRetOk:'↩ 반납 확인',pRetOkUndo:'반납확인 취소',aRet:'↩ 가공 반납',aRetUndo:'반납 취소',retWhy:'{n}선 (수량 {q})을 가공으로 반납합니다.\n사유 (선택) — 예) 원래 선 찾음',retUndoQ:'반납을 취소하고 조립접수완료로 되돌릴까요?',fAppr:'조립승인',fPAppr:'가공승인',needAsmWorker:'처리자(팀장·확인자) 이름을 입력하세요.',confirmCancelProc:'가공에서 이미 접수한 건이 포함되어 있습니다. 취소할까요?',savedAppr:'저장했습니다. 조립팀장 승인 후 가공에 전달됩니다.',qty:'수량',today:'오늘',reqCnt:'건',xlsx:'📗 엑셀 저장',xlsxDay:'이 날짜 신청건만 엑셀로 저장',xlsxMaster:'📗 서브리스트 · LOT 엑셀 저장',xlsxLoading:'엑셀 모듈 불러오는 중…',xlsxFail:'엑셀 모듈을 불러오지 못했습니다.',xlsxNone:'내보낼 내역이 없습니다.',xlsxSaved:'엑셀 저장 완료',shAll:'전체',shSel:'선택',shMaster:'서브리스트',shLot:'LOT매칭표',xCheck:'확인',xNote:'비고',fReq:'신청',fRcv:'가공접수',fShip:'출고',fRecv:'조립접수',inProg:'진행 중',needLot:'투입 MES LOT를 입력하세요.',needName:'신청자(접수 확인자) 이름을 입력하세요.'});
+Object.assign(ES,{rwBtn:'🔁 Cables REWORK eliminados',rwBack:'◀ Volver al historial de faltantes',rwTitle:'🔁 Cables REWORK eliminados',rwSub:'Pegue entradas (30360) y salidas (30370) de Excel → % de uso por No. de inventario',rwFrom:'Entrada desde',rwTo:'Entrada hasta',rwQPh:'No. inventario · cable · terminal · LOT · circuito · máquina · ubicación',rwRangeNote:'Sin usar y parcial se muestran sin importar la fecha · solo "usado" aplica el rango',rwDel:'Borrar selección (entrada + uso)',rwDelOut:'Borrar solo el uso de la selección',
+ rwcSn:'No. inventario',rwcWire:'Cable / nombre',rwcTerm:'Term. izq. / der.',rwcIn:'Entrada (fecha · quién · ubicación)',rwcInQ:'Entr.',rwcUsedQ:'Usado',rwcRem:'Resta',rwcRate:'% uso',rwcSt:'Estado',rwcOuts:'Uso (fecha · LOT · circuito · máquina · quién · cant.)',rwNoData:'No hay entradas ni usos. Pegue el Excel abajo y guarde.',
+ rwInT:'Pegar entradas de cables eliminados',rwInDesc:'Copie de ERP (entradas de cable reciclado) desde el encabezado y pegue. Sin encabezado se leen 12 columnas en orden. El mismo No. de inventario se sobrescribe.',rwOutT:'Pegar uso (salidas) de cables eliminados',rwOutDesc:'Copie de ERP (salidas de cable reciclado) desde el encabezado y pegue. Sin encabezado se leen 19 columnas en orden. Misma clave (No. inventario + fecha/hora + circuito) se sobrescribe.',rwInSave:'Guardar entradas (agregar · actualizar)',rwOutSave:'Guardar uso (agregar · actualizar)',
+ rwAll:'Todos',rwUnused:'Sin usar',rwPart:'Parcial',rwDone:'Usado',rwNone:'Sin entrada',rwSIn:'No. inventario (entradas)',rwSInQ:'Cant. entrada',rwSUsedQ:'Cant. usada',rwSRem:'Restante',rwSDone:'Usados por completo',rwSDoneRate:'% completados',rwSQtyRate:'% uso por cantidad',rwSNone:'Uso sin entrada',rwParsed:'filas leídas',rwWrongFmt:'Parece el otro formato (por No. de columnas). Péguelo en el otro cuadro.',rwConfirmDel:'¿Borrar {n} No. de inventario con sus entradas y usos?',rwConfirmDelOut:'¿Borrar solo los usos de {n} No. de inventario?',rwOver:'Uso mayor que la entrada',rwUpd:'Último guardado'});
+Object.assign(KO,{rwAll:'전체',rwUnused:'미사용',rwPart:'일부사용',rwDone:'사용완료',rwNone:'입고없음',rwSIn:'입고 재고번호',rwSInQ:'입고 수량',rwSUsedQ:'사용 수량',rwSRem:'잔량',rwSDone:'사용완료 건',rwSDoneRate:'사용완료율 (건)',rwSQtyRate:'수량 사용률',rwSNone:'입고없는 사용',rwParsed:'행 읽음',rwWrongFmt:'열 수로 보아 다른 형식(입고↔출고)입니다. 반대쪽 칸에 붙여넣으세요.',rwConfirmDel:'재고번호 {n}건의 입고와 사용이력을 모두 삭제할까요?',rwConfirmDelOut:'재고번호 {n}건의 사용이력만 삭제할까요?',rwOver:'입고보다 사용이 많음',rwUpd:'최종 저장'});
 let lang='ko';
 const koText={};document.querySelectorAll('[data-i]').forEach(el=>koText[el.dataset.i]=el.innerHTML);
 const koPh={};document.querySelectorAll('[data-ph]').forEach(el=>koPh[el.dataset.ph]=el.placeholder);
@@ -1249,21 +1327,169 @@ $('mXlsx').onclick=async()=>{
   await xlSave(wb,`서브리스트_P${PLANT}_${ymd(new Date())}.xlsx`);toast(T('xlsxSaved'));
 };
 
+/* ---------- REWORK 삭제회로 관리 ---------- */
+const RWI='rework_wire_in', RWO='rework_wire_out';
+const RW={ins:[],outs:[],st:'',sel:new Set(),loaded:false,upd:null};
+const rwNorm=s=>String(s||'').replace(/[\s()（）_\-·.]/g,'').toUpperCase();
+const RW_IN=[['stock_no',['재고번호']],['wire_code',['와이어']],['wire_name',['와이어명']],['len',['길이']],['term_l',['단자(좌)','좌단자']],['term_r',['단자(우)','우단자']],['qty',['수량']],['loc',['보관위치']],['in_by',['입고자']],['in_date',['입고일','입고일자']],['reg_date',['등록일','등록일자']],['reg_time',['등록시간']]];
+const RW_OUT=[['stock_no',['재고번호']],['wire_code',['와이어']],['wire_name',['와이어명']],['len',['길이']],['term_l',['좌단자','단자(좌)']],['l_st',['L_St']],['l_ch',['L_CH']],['l_ih',['L_IH']],['term_r',['우단자','단자(우)']],['r_st',['R_St']],['r_ch',['R_CH']],['r_ih',['R_IH']],['qty',['수량']],['lotno',['LOTNO','LOT']],['wn',['선번']],['out_by',['출고자']],['out_date',['출고일','출고일자']],['out_time',['출고시간']],['machine',['호기']]];
+const rwKey=o=>[o.stock_no,o.out_date,o.out_time,o.wn].join('|');
+function rwParse(text,spec,other){
+  const rows=parseTSV(text);if(!rows.length)return {rows:[],err:''};
+  const hk=rows.findIndex(r=>r.some(c=>rwNorm(c)==='재고번호'));
+  let idx;
+  if(hk>=0){const h=rows[hk].map(rwNorm);idx=spec.map(([k,al])=>h.findIndex(c=>al.some(a=>rwNorm(a)===c)));rows.splice(0,hk+1);}
+  else{const w=Math.max(...rows.map(r=>r.length));if(w!==spec.length&&w===other.length)return {rows:[],err:T('rwWrongFmt')};idx=spec.map((_,i)=>i);}
+  const m=new Map();
+  rows.forEach(r=>{const o={plant:PLANT};spec.forEach(([k],i)=>{o[k]=idx[i]>=0?String(r[idx[i]]??'').trim():'';});
+    o.stock_no=U(o.stock_no);if(!/^[A-Z0-9]{6,}$/.test(o.stock_no))return;
+    o.qty=num(o.qty)||0;if(o.in_date)o.in_date=o.in_date.replace(/\./g,'-').replace(/\//g,'-');if(o.out_date)o.out_date=o.out_date.replace(/\./g,'-').replace(/\//g,'-');
+    m.set(spec===RW_IN?o.stock_no:rwKey(o),o);});
+  return {rows:[...m.values()],err:''};
+}
+function rwInfo(box,info,spec,other){
+  const {rows,err}=rwParse($(box).value,spec,other);
+  $(info).style.color=err?'var(--danger)':'';
+  $(info).textContent=err||(rows.length?`${rows.length.toLocaleString()} ${T('rwParsed')} · ${T('qty')} ${rows.reduce((s,r)=>s+r.qty,0).toLocaleString()} · ${rows.slice(0,3).map(r=>r.stock_no).join(', ')}${rows.length>3?' …':''}`:'');
+  return err?[]:rows;
+}
+$('rwInBox').addEventListener('input',()=>rwInfo('rwInBox','rwInInfo',RW_IN,RW_OUT));
+$('rwOutBox').addEventListener('input',()=>rwInfo('rwOutBox','rwOutInfo',RW_OUT,RW_IN));
+$('rwInClear').onclick=()=>{$('rwInBox').value='';$('rwInInfo').textContent='';};
+$('rwOutClear').onclick=()=>{$('rwOutBox').value='';$('rwOutInfo').textContent='';};
+async function rwSave(table,conflict,rows,box,info){
+  if(!rows.length){toast(T('nothing'));return;}
+  const btns=['rwInSave','rwOutSave','rwDel','rwDelOut'].map($);btns.forEach(b=>b.disabled=true);setStat(T('saving'));
+  try{
+    for(let i=0;i<rows.length;i+=400){
+      await sb(`${table}?on_conflict=${conflict}`,{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify(rows.slice(i,i+400).map(r=>({...r,updated_at:now()})))});
+    }
+    setNet(true);toast(`${T('saved')} · ${rows.length}`);$(box).value='';$(info).textContent='';
+  }catch(e){console.error(e);setNet(false);alert(T('saveErr')+'\n'+e.message);}
+  finally{btns.forEach(b=>b.disabled=false);}
+  await loadRework();
+}
+$('rwInSave').onclick=()=>rwSave(RWI,'plant,stock_no',rwInfo('rwInBox','rwInInfo',RW_IN,RW_OUT),'rwInBox','rwInInfo');
+$('rwOutSave').onclick=()=>rwSave(RWO,'plant,stock_no,out_date,out_time,wn',rwInfo('rwOutBox','rwOutInfo',RW_OUT,RW_IN),'rwOutBox','rwOutInfo');
+async function loadRework(){
+  const get=async t=>{const a=[];const PAGE=1000;for(let off=0;;off+=PAGE){const d=await(await sb(`${t}?plant=eq.${PLANT}&select=*&order=id.asc&limit=${PAGE}&offset=${off}`)).json();a.push(...d);if(d.length<PAGE)break;}return a;};
+  try{const [ins,outs]=await Promise.all([get(RWI),get(RWO)]);RW.ins=ins;RW.outs=outs;setNet(true);idbSet('rework',{ins,outs});}
+  catch(e){console.warn(e);setNet(false);const c=await idbGet('rework');if(c){RW.ins=c.ins||[];RW.outs=c.outs||[];}}
+  RW.upd=[...RW.ins,...RW.outs].reduce((m,r)=>!m||r.updated_at>m?r.updated_at:m,null);
+  RW.loaded=true;renderRework();
+}
+function rwRows(){
+  const by={};RW.ins.forEach(r=>{by[r.stock_no]={in:r,outs:[]};});
+  RW.outs.forEach(o=>{(by[o.stock_no]=by[o.stock_no]||{in:null,outs:[]}).outs.push(o);});
+  return Object.entries(by).map(([sn,x])=>{
+    x.outs.sort((a,b)=>String(a.out_date+' '+a.out_time).localeCompare(String(b.out_date+' '+b.out_time)));
+    const inQ=x.in?Number(x.in.qty)||0:0,used=x.outs.reduce((s,o)=>s+(Number(o.qty)||0),0);
+    const st=!x.in?'none':used<=0?'unused':used>=inQ?'done':'part';
+    const b=x.in||x.outs[0];
+    return {sn,in:x.in,outs:x.outs,inQ,used,rem:Math.max(0,inQ-used),over:!!x.in&&used>inQ,rate:inQ?Math.min(100,used/inQ*100):0,st,
+      wire:b.wire_code,wname:b.wire_name,len:b.len,tl:b.term_l,tr:b.term_r,date:x.in?(x.in.in_date||''):(x.outs[0]?.out_date||''),lastOut:x.outs.length?x.outs[x.outs.length-1].out_date:''};
+  }).sort((a,b)=>String(b.date).localeCompare(String(a.date))||a.sn.localeCompare(b.sn));
+}
+function rwFiltered(){
+  const f=$('rwFrom').value,t=$('rwTo').value,q=U($('rwQ').value);
+  return rwRows().filter(r=>{
+    if(r.st==='done'||r.st==='none'){if(f&&r.date<f)return false;if(t&&r.date>t+'~')return false;}
+    if(RW.st&&r.st!==RW.st)return false;
+    if(q){const hay=U([r.sn,r.wire,r.wname,r.tl,r.tr,r.in?.loc,r.in?.in_by,...r.outs.map(o=>[o.lotno,o.wn,o.machine,o.out_by].join(' '))].join(' '));if(!hay.includes(q))return false;}
+    return true;});
+}
+const pct=v=>(Math.round(v*10)/10).toLocaleString()+'%';
+function renderRework(){
+  if(!RW.loaded)return;
+  const all=rwRows(),rows=rwFiltered();
+  // chips
+  const cnt=k=>all.filter(r=>!k||r.st===k).length;
+  $('rwChips').innerHTML=[['',T('rwAll')],['unused',T('rwUnused')],['part',T('rwPart')],['done',T('rwDone')],['none',T('rwNone')]].map(([k,l])=>`<button data-st="${k}" class="${RW.st===k?'on':''}">${l}<b>${cnt(k)}</b></button>`).join('');
+  $('rwChips').querySelectorAll('button').forEach(b=>b.onclick=()=>{RW.st=b.dataset.st;renderRework();});
+  // stats (표시 중인 행 기준)
+  const withIn=rows.filter(r=>r.in),inQ=withIn.reduce((s,r)=>s+r.inQ,0),used=withIn.reduce((s,r)=>s+Math.min(r.used,r.inQ),0),done=withIn.filter(r=>r.st==='done').length,none=rows.filter(r=>r.st==='none').length;
+  $('rwStats').innerHTML=`<div>${T('rwSIn')}<b>${withIn.length.toLocaleString()}</b></div><div>${T('rwSInQ')}<b>${inQ.toLocaleString()}</b></div><div>${T('rwSUsedQ')}<b>${used.toLocaleString()}</b></div><div>${T('rwSRem')}<b>${(inQ-used).toLocaleString()}</b></div><div>${T('rwSDone')}<b>${done}<small>/ ${withIn.length}</small></b></div><div class="hi">${T('rwSDoneRate')}<b>${withIn.length?pct(done/withIn.length*100):'-'}</b></div><div class="hi">${T('rwSQtyRate')}<b>${inQ?pct(used/inQ*100):'-'}</b></div><div>${T('rwSNone')}<b>${none}</b></div>`;
+  $('rwUpd').textContent=RW.upd?`${T('rwUpd')} ${fmtDT(RW.upd)}`:'';
+  // table
+  const stL={none:T('rwNone'),unused:T('rwUnused'),part:T('rwPart'),done:T('rwDone')};
+  RW.sel.forEach(k=>{if(!all.some(r=>r.sn===k))RW.sel.delete(k);});
+  $('rwBody').innerHTML=rows.map(r=>`<tr class="it${RW.sel.has(r.sn)?' sel':''}" data-sn="${esc(r.sn)}">
+    <td><input type="checkbox" ${RW.sel.has(r.sn)?'checked':''}></td>
+    <td class="wn2" style="font-family:Consolas,'D2Coding',monospace">${esc(r.sn)}</td>
+    <td><div class="wn2">${esc(r.wname)}</div><div class="sub2">${esc(r.wire)}</div></td>
+    <td class="num">${esc(r.len)}</td>
+    <td><div class="sub2" style="color:var(--ink)">${esc(r.tl)||'-'}</div><div class="sub2">${esc(r.tr)||'-'}</div></td>
+    <td>${r.in?`<div>${esc(r.in.in_date)}</div><div class="sub2">${esc(r.in.in_by)}${r.in.loc?' · '+esc(r.in.loc):''}</div>`:`<span class="sub2" style="color:var(--danger)">${T('rwNone')}</span>`}</td>
+    <td class="num"><b>${r.in?r.inQ.toLocaleString():'-'}</b></td>
+    <td class="num"><b style="color:${r.over?'var(--danger)':'var(--ink)'}">${r.used.toLocaleString()}</b></td>
+    <td class="num">${r.in?r.rem.toLocaleString():'-'}</td>
+    <td>${r.in?`<span class="rwbar"><i class="${r.over?'over':r.st==='done'?'done':''}" style="width:${r.rate}%"></i></span><b>${pct(r.rate)}</b>${r.over?`<div class="sub2" style="color:var(--danger)">${T('rwOver')}</div>`:''}`:'-'}</td>
+    <td><span class="st rw-${r.st}">${stL[r.st]}</span></td>
+    <td>${r.outs.map(o=>`<span class="rwo${r.over?' over':''}"><b>${esc(o.out_date)}</b> ${esc(o.out_time)} · <em>${esc(o.lotno)}</em> · <b>${esc(o.wn)}</b> · ${esc(o.machine)} · ${esc(o.out_by)} · ${T('qty')} <b>${(Number(o.qty)||0).toLocaleString()}</b></span>`).join('')||'<span class="sub2">-</span>'}</td>
+  </tr>`).join('');
+  $('rwEmpty').classList.toggle('hidden',rows.length>0);
+  $('rwBody').querySelectorAll('tr.it').forEach(tr=>tr.onclick=e=>{const k=tr.dataset.sn;if(RW.sel.has(k))RW.sel.delete(k);else RW.sel.add(k);tr.classList.toggle('sel',RW.sel.has(k));tr.querySelector('input').checked=RW.sel.has(k);rwSelInfo();});
+  $('rwAll').checked=rows.length>0&&rows.every(r=>RW.sel.has(r.sn));
+  rwSelInfo();
+}
+function rwSelInfo(){$('rwSel').textContent=`${RW.sel.size} ${T('sel')}`;}
+$('rwAll').onclick=()=>{const rows=rwFiltered();if($('rwAll').checked)rows.forEach(r=>RW.sel.add(r.sn));else rows.forEach(r=>RW.sel.delete(r.sn));renderRework();};
+['rwFrom','rwTo'].forEach(id=>$(id).addEventListener('change',renderRework));
+$('rwQ').addEventListener('input',renderRework);
+async function rwDelete(onlyOut){
+  const sns=[...RW.sel];if(!sns.length){toast(T('noSel'));return;}
+  if(!confirm(T(onlyOut?'rwConfirmDelOut':'rwConfirmDel').replace('{n}',sns.length)))return;
+  setStat(T('saving'));
+  try{for(let i=0;i<sns.length;i+=200){const f=`plant=eq.${PLANT}&stock_no=in.(${sns.slice(i,i+200).map(encodeURIComponent).join(',')})`;
+      await sb(`${RWO}?${f}`,{method:'DELETE'});if(!onlyOut)await sb(`${RWI}?${f}`,{method:'DELETE'});}
+    setNet(true);toast(T('updated'));RW.sel.clear();
+  }catch(e){console.error(e);setNet(false);alert(T('saveErr')+'\n'+e.message);}
+  await loadRework();
+}
+$('rwDel').onclick=()=>rwDelete(false);$('rwDelOut').onclick=()=>rwDelete(true);
+$('rwXlsx').onclick=async()=>{
+  if(!await xlReady())return;
+  const rows=rwFiltered();if(!rows.length){toast(T('xlsxNone'));return;}
+  const stL={none:T('rwNone'),unused:T('rwUnused'),part:T('rwPart'),done:T('rwDone')};
+  const wb=new ExcelJS.Workbook();wb.creator='YURA HARNESS MÉXICO';wb.created=new Date();
+  const withIn=rows.filter(r=>r.in),inQ=withIn.reduce((s,r)=>s+r.inQ,0),used=withIn.reduce((s,r)=>s+Math.min(r.used,r.inQ),0),done=withIn.filter(r=>r.st==='done').length;
+  const sub=`PLANT ${PLANT} · ${T('rwSIn')} ${withIn.length} · ${T('rwSDoneRate')} ${withIn.length?pct(done/withIn.length*100):'-'} · ${T('rwSQtyRate')} ${inQ?pct(used/inQ*100):'-'} · ${$('rwFrom').value||'…'} ~ ${$('rwTo').value||'…'}${RW.st?' · '+stL[RW.st]:''} · 출력 ${fmtDT(now())}`;
+  rows.forEach((r,i)=>r.__n=i+1);
+  const XST={none:'F2867E',unused:'DDDDDD',part:'9CD2E6',done:'5BBE7A'};
+  const ws=xlTable(wb,`현황 (${rows.length})`,`REWORK 삭제회로 사용현황 — ${rows.length}건`,sub,[
+    {h:'☑ '+T('xCheck'),w:6,kind:'check',v:()=>''},{h:'No.',w:5,a:'center',v:r=>r.__n},
+    {h:'재고번호',w:15,kind:'pn',a:'center',v:r=>r.sn},{h:'와이어',w:12,a:'center',v:r=>r.wire},{h:'와이어명',w:16,v:r=>r.wname},{h:'길이',w:7,fmt:'#,##0',v:r=>num(r.len)??r.len},
+    {h:'좌단자',w:15,v:r=>r.tl},{h:'우단자',w:15,v:r=>r.tr},{h:'입고일',w:11,a:'center',v:r=>r.in?.in_date||''},{h:'입고자',w:9,v:r=>r.in?.in_by||''},{h:'보관위치',w:10,a:'center',v:r=>r.in?.loc||''},
+    {h:'입고수량',w:9,kind:'qty',fmt:'#,##0',v:r=>r.in?r.inQ:null},{h:'사용수량',w:9,kind:'qty',fmt:'#,##0',v:r=>r.used},{h:'잔량',w:8,fmt:'#,##0',v:r=>r.in?r.rem:null},{h:'사용률',w:8,fmt:'0.0%',a:'center',v:r=>r.in?r.rate/100:null},
+    {h:'상태',w:11,a:'center',v:r=>stL[r.st]},{h:'사용 횟수',w:8,fmt:'#,##0',v:r=>r.outs.length},{h:'최근 사용일',w:11,a:'center',v:r=>r.lastOut},{h:'사용 LOT',w:22,wrap:true,v:r=>[...new Set(r.outs.map(o=>o.lotno))].join(', ')},{h:'사용 선번',w:18,wrap:true,v:r=>[...new Set(r.outs.map(o=>o.wn))].join(', ')},{h:'호기',w:12,wrap:true,v:r=>[...new Set(r.outs.map(o=>o.machine))].join(', ')},
+    {h:T('xNote'),w:22,kind:'note',v:()=>''}],rows,{xSplit:3});
+  rows.forEach((r,i)=>{const c=ws.getRow(i+4).getCell(16);c.fill=xlFill(XST[r.st]);c.font={name:'Malgun Gothic',size:10,bold:true,color:{argb:'FF1B2530'}};});
+  const ins=rows.filter(r=>r.in).map(r=>r.in);ins.forEach((r,i)=>r.__n=i+1);
+  xlTable(wb,`입고 (${ins.length})`,`삭제회로 입고 — ${ins.length}건`,sub,[
+    {h:'No.',w:5,a:'center',v:r=>r.__n},{h:'재고번호',w:15,kind:'pn',a:'center',v:r=>r.stock_no},{h:'와이어',w:12,a:'center',v:r=>r.wire_code},{h:'와이어명',w:16,v:r=>r.wire_name},{h:'길이',w:7,fmt:'#,##0',v:r=>num(r.len)??r.len},{h:'단자(좌)',w:15,v:r=>r.term_l},{h:'단자(우)',w:15,v:r=>r.term_r},{h:'수량',w:8,kind:'qty',fmt:'#,##0',v:r=>Number(r.qty)||0},{h:'보관위치',w:10,a:'center',v:r=>r.loc},{h:'입고자',w:9,v:r=>r.in_by},{h:'입고일',w:11,a:'center',v:r=>r.in_date},{h:'등록일',w:11,a:'center',v:r=>r.reg_date},{h:'등록시간',w:10,a:'center',v:r=>r.reg_time}],ins,{xSplit:2});
+  const outs=rows.flatMap(r=>r.outs);outs.forEach((r,i)=>r.__n=i+1);
+  xlTable(wb,`사용 (${outs.length})`,`삭제회로 사용(출고) — ${outs.length}건`,sub,[
+    {h:'No.',w:5,a:'center',v:r=>r.__n},{h:'재고번호',w:15,kind:'pn',a:'center',v:r=>r.stock_no},{h:'와이어',w:12,a:'center',v:r=>r.wire_code},{h:'와이어명',w:16,v:r=>r.wire_name},{h:'길이',w:7,fmt:'#,##0',v:r=>num(r.len)??r.len},{h:'좌단자',w:15,v:r=>r.term_l},{h:'L_St',w:6,a:'center',v:r=>r.l_st},{h:'L_CH',w:7,v:r=>num(r.l_ch)??r.l_ch},{h:'L_IH',w:7,v:r=>num(r.l_ih)??r.l_ih},{h:'우단자',w:15,v:r=>r.term_r},{h:'R_St',w:6,a:'center',v:r=>r.r_st},{h:'R_CH',w:7,v:r=>num(r.r_ch)??r.r_ch},{h:'R_IH',w:7,v:r=>num(r.r_ih)??r.r_ih},{h:'수량',w:8,kind:'qty',fmt:'#,##0',v:r=>Number(r.qty)||0},{h:'LOTNO',w:14,a:'center',v:r=>r.lotno},{h:'선번',w:10,kind:'pn',a:'center',v:r=>r.wn},{h:'출고자',w:9,v:r=>r.out_by},{h:'출고일',w:11,a:'center',v:r=>r.out_date},{h:'출고시간',w:10,a:'center',v:r=>r.out_time},{h:'호기',w:8,a:'center',v:r=>r.machine}],outs,{xSplit:2});
+  await xlSave(wb,`REWORK삭제회로_P${PLANT}_${ymd(new Date())}.xlsx`);toast(`${T('xlsxSaved')} (${rows.length})`);
+};
+$('hpRework').onclick=()=>{show('Rework');if(!RW.loaded)loadRework();};
+$('rwBack').onclick=()=>{show('Proc');loadReqs();};
+
 /* ---------- 탭 ---------- */
-function show(v){['Asm','Proc','Master'].forEach(k=>{$('view'+k).classList.toggle('hidden',k!==v);$('tab'+k).classList.toggle('on',k===v);});LS.set('tab'+PLANT,v);}
+function show(v){['Asm','Proc','Master','Rework'].forEach(k=>{$('view'+k).classList.toggle('hidden',k!==v);const t=$('tab'+k);if(t)t.classList.toggle('on',k===v||(v==='Rework'&&k==='Proc'));});LS.set('tab'+PLANT,v);}
 $('tabAsm').onclick=()=>{show('Asm');loadReqs();if(!TOUCH)$('scanIn').focus();};$('tabProc').onclick=()=>{show('Proc');loadReqs();};$('tabMaster').onclick=()=>show('Master');
-$('reloadBtn').onclick=()=>{loadMaster();loadReqs();loadLots();};
+$('reloadBtn').onclick=()=>{loadMaster();loadReqs();loadLots();if(RW.loaded)loadRework();};
 $('langBtn').onclick=()=>{lang=lang==='ko'?'es':'ko';LS.set('lang',lang);applyLang();};
-function renderAll(){renderPick();renderCart();renderRecent();renderProc();}
+function renderAll(){renderPick();renderCart();renderRecent();renderProc();renderRework();}
 
 (async()=>{
   lang=LS.get('lang','ko');
   $('aLine').value=LS.get('aLine');$('aName').value=LS.get('aName');$('aDefQty').value=LS.get('aDefQty','1')||'1';$('hpName').value=LS.get('pName');$('haName').value=LS.get('haName');
   pickPn=LS.get('pn'+PLANT);$('dPn').value=pickPn;
-  const t=new Date(),f=new Date();f.setMonth(f.getMonth()-1);['ha','hp'].forEach(p=>{$(p+'From').value=ymd(f);$(p+'To').value=ymd(t);});// 기본: 현재일 기준 1달 전 ~ 오늘
+  const t=new Date(),f=new Date();f.setMonth(f.getMonth()-1);['ha','hp','rw'].forEach(p=>{$(p+'From').value=ymd(f);$(p+'To').value=ymd(t);});// 기본: 현재일 기준 1달 전 ~ 오늘
   db=await idbOpen();
   applyLang();
-  const tab=LS.get('tab'+PLANT,'Asm');show(['Asm','Proc','Master'].includes(tab)?tab:'Asm');
+  const tab=LS.get('tab'+PLANT,'Asm');show(['Asm','Proc','Master','Rework'].includes(tab)?tab:'Asm');if(tab==='Rework')loadRework();
   await Promise.all([loadMaster(),loadReqs(),loadLots()]);
   if(!TOUCH&&!$('viewAsm').classList.contains('hidden'))$('scanIn').focus();
   if(!MASTER.rows.length)show('Master');
