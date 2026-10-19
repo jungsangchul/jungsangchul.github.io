@@ -1679,7 +1679,7 @@ function renderAll(){renderPick();renderCart();renderRecent();renderProc();rende
   const t=new Date(),f=new Date();f.setMonth(f.getMonth()-1);['ha','hp','rw'].forEach(p=>{$(p+'From').value=ymd(f);$(p+'To').value=ymd(t);});$('rwpDDate').value=ymd(t);// 기본: 현재일 기준 1달 전 ~ 오늘
   db=await idbOpen();
   applyLang();
-  const tab=LS.get('tab'+PLANT,'Asm');show(['Asm','Proc','Master','Rework'].includes(tab)?tab:'Asm');if(tab==='Rework')loadRework();
+  show('Asm');// 접속 시 항상 메인(조립생산) 화면으로 시작
   await Promise.all([loadMaster(),loadReqs(),loadLots()]);
   if(!TOUCH&&!$('viewAsm').classList.contains('hidden'))$('scanIn').focus();
   if(!MASTER.rows.length)show('Master');
