@@ -151,14 +151,15 @@ table.cfg th,table.cfg td{text-align:center;padding:8px 14px;cursor:default}
 table.cfg td:first-child{text-align:left;font-weight:600;color:#fff}
 table.cfg input{width:17px;height:17px}
 .mc{width:150px;height:30px;padding:0 8px;font-size:12px}
-.mdl{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(3px);display:none;align-items:flex-start;justify-content:center;z-index:90;padding:4vh 12px;overflow:auto}
+.mdl{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(3px);display:none;align-items:center;justify-content:center;z-index:200;padding:3vh 12px;overflow:auto}
 .mdl.on{display:flex}
-.mbox{background:var(--panel);border:1px solid var(--line2);border-radius:10px;width:min(1100px,100%);box-shadow:0 24px 60px rgba(0,0,0,.6);overflow:hidden}
+.mbox{background:var(--panel);border:1px solid var(--line2);border-radius:10px;width:min(1100px,100%);box-shadow:0 24px 60px rgba(0,0,0,.6);overflow:hidden;display:flex;flex-direction:column;max-height:94vh}
 .mhd{background:linear-gradient(180deg,#1a1a1a,#141414);border-bottom:1px solid var(--line2);color:#fff;padding:12px 18px;display:flex;align-items:center;gap:10px}
 .mhd b{flex:1;font-size:15px}
 .mhd button{background:transparent;border:0;color:var(--mute);font-size:22px;cursor:pointer;line-height:1}
 .mhd button:hover{color:#fff}
-.mbd{padding:16px 18px}
+.mbd{padding:16px 18px;overflow:auto;flex:1;min-height:0}
+.mft{border-top:1px solid var(--line2);padding:10px 18px;display:flex;justify-content:flex-end;background:#121212}
 @media(max-width:640px){main{padding:14px 14px 80px}}
 </style>
 </head>
@@ -441,7 +442,7 @@ table.cfg input{width:17px;height:17px}
 </main>
 
 <datalist id="itemList"></datalist>
-<div class="mdl" id="mdl"><div class="mbox"><div class="mhd"><b id="mTitle"></b><button id="mClose" aria-label="close">×</button></div><div class="mbd" id="mBody"></div></div></div>
+<div class="mdl" id="mdl"><div class="mbox"><div class="mhd"><b id="mTitle"></b><button id="mClose" aria-label="close">×</button></div><div class="mbd" id="mBody"></div><div class="mft"><button class="btn sec sm" id="mClose2">닫기</button></div></div></div>
 <div class="toast" id="toast"></div>
 <div class="load" id="load"><span id="loadMsg"></span></div>
 
@@ -777,7 +778,7 @@ async function openItem(code){
     <div>${tr('조정','Ajuste')}<b>${fmt(it.q_adj)}</b></div><div>${tr('현재고','Stock actual')}<b class="${it.stock<0?'neg':''}">${fmt(it.stock)}</b></div></div>
     <div class="row hd"><h4 style="margin:4px 0">${tr('입출 이력','Movimientos')} <span class="hint">(${tr('최근 500건','últimos 500')})</span></h4><button class="btn sec sm" id="mAdj">${tr('재고조정','Ajustar')}</button></div>
     <div class="tw m"><table id="mHist"><tr><td class="empty">…</td></tr></table></div>`;
-  $('mdl').classList.add('on');
+  $('mClose2').textContent=tr('닫기','Cerrar');$('mdl').classList.add('on');
   $('mAdj').onclick=()=>{closeModal();goAdj(code)};
   try{
     const rows=await sel(`binv_ledger?select=id,batch_id,kind,work_date,qty,input_qty,mode,stock_after,memo,cancelled,created_at,src_name,src_vendor,binv_batch(worker)&code=eq.${enc(code)}&order=id.desc&limit=500`);
@@ -1368,7 +1369,7 @@ async function boot(){
   $('worker').addEventListener('change',()=>{try{localStorage.setItem('binv_worker',$('worker').value.trim())}catch(e){}});
   $('langBtn').onclick=()=>{LANG=LANG==='es'?'ko':'es';try{localStorage.setItem('binv_lang',LANG)}catch(e){}applyLang();rerenderAll()};
   document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>showTab(b.dataset.tab));
-  $('mClose').onclick=closeModal;$('mdl').addEventListener('click',e=>{if(e.target.id==='mdl')closeModal()});document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});
+  $('mClose').onclick=closeModal;$('mClose2').onclick=closeModal;$('mdl').addEventListener('click',e=>{if(e.target.id==='mdl')closeModal()});document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});
   // 재고현황
   $('sQ').addEventListener('input',renderStock);document.querySelectorAll('#sProc input').forEach(x=>x.addEventListener('change',renderStock));$('sShow').onchange=renderStock;
   $('sProd').onchange=async()=>{const v=$('sProd').value;if(v){busy(true);try{await prodBom(v)}catch(e){toast(errMsg(e),1)}finally{busy(false)}}SPROD=v;SORT.sTbl={i:1,d:1};renderStock()};
