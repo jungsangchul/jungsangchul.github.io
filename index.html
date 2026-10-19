@@ -123,7 +123,7 @@
   .sb-sep{width:1px;height:12px;background:var(--border);}
   .sb-dot{width:7px;height:7px;border-radius:50%;background:#4caf7d;box-shadow:0 0 6px #4caf7d;animation:pulse 2.4s ease-in-out infinite;display:inline-block;}
   .system-bar-user{font-family:'Noto Sans KR','Malgun Gothic','Apple SD Gothic Neo',sans-serif;font-size:13px;font-weight:600;letter-spacing:0.02em;text-transform:none;color:#c8c8c8;}
-  .system-bar>span:first-child::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--accent-gold);box-shadow:0 0 6px var(--accent-gold);animation:pulse 2.4s ease-in-out infinite;}
+  .system-bar>span:first-child::before{content:'';width:10px;height:10px;border-radius:50%;background:var(--accent-gold);box-shadow:0 0 12px var(--accent-gold);flex-shrink:0;animation:pulse 2.4s ease-in-out infinite;}
   .system-bar-user #sysbar-user{color:var(--accent-gold);font-weight:700;font-size:14px;}
 
   /* ── GRID : 행 기반 줄맞춤 ── */
@@ -134,8 +134,8 @@
   .plant-col:first-child .plant-header{background:linear-gradient(90deg,rgba(212,101,26,0.07),transparent 60%),#0d0d0d;}
   .plant-col:last-child  .plant-header{background:linear-gradient(90deg,rgba(124,92,191,0.08),transparent 60%),#0d0d0d;}
   .plant-label{font-family:'Space Mono',Consolas,'Courier New',monospace;font-size:19px;font-weight:700;letter-spacing:0.08em;color:var(--accent-gold);}
-  .plant-dot{width:8px;height:8px;border-radius:50%;background:var(--plant1-line);animation:pulse 2.4s ease-in-out infinite;}
-  .plant-col:last-child .plant-dot{background:var(--plant2-line);animation-delay:1.2s;}
+  .plant-dot{width:14px;height:14px;border-radius:50%;background:var(--plant1-line);box-shadow:0 0 14px var(--plant1-line);flex-shrink:0;animation:pulse 2.4s ease-in-out infinite;}
+  .plant-col:last-child .plant-dot{background:var(--plant2-line);box-shadow:0 0 14px var(--plant2-line);animation-delay:1.2s;}
   @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.4;transform:scale(0.7)}}
 
   /* plant-header 하단 구분선 색상 */
