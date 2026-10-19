@@ -60,6 +60,30 @@
   .btn-close-admin{background:none;border:1px solid var(--border);border-radius:4px;color:var(--text-muted);cursor:pointer;font-size:16px;padding:2px 9px 4px;transition:color 0.15s,border-color 0.15s;}
   .btn-close-admin:hover{color:var(--text-primary);border-color:#555;}
   .admin-body{flex:1;overflow-y:auto;padding:18px 22px;}
+  .admin-tabs{display:flex;gap:6px;padding:10px 22px 0;border-bottom:1px solid var(--border);background:#0d0d0d;}
+  .admin-tab{background:none;border:1px solid transparent;border-bottom:none;border-radius:6px 6px 0 0;color:var(--text-muted);cursor:pointer;font-size:12px;font-weight:700;padding:8px 14px;letter-spacing:0.04em;transition:color 0.15s,background 0.15s;}
+  .admin-tab:hover{color:var(--text-primary);}
+  .admin-tab.active{color:var(--accent-gold);background:var(--surface);border-color:var(--border);margin-bottom:-1px;}
+  .admin-pane{display:none;} .admin-pane.active{display:block;}
+  .acc-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px;}
+  .acc-kpi{background:var(--card);border:1px solid var(--border);border-radius:6px;padding:10px 12px;}
+  .acc-kpi-k{font-family:'Space Mono',Consolas,'Courier New',monospace;font-size:9px;color:var(--text-muted);letter-spacing:0.12em;text-transform:uppercase;}
+  .acc-kpi-v{font-size:22px;font-weight:700;color:var(--accent-gold);margin-top:2px;line-height:1.1;}
+  .acc-kpi-v.on{color:#5ec97a;}
+  .acc-section{margin-bottom:16px;}
+  .acc-online-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#5ec97a;box-shadow:0 0 6px #5ec97a;margin-right:7px;vertical-align:middle;}
+  .acc-rank{font-family:'Space Mono',Consolas,'Courier New',monospace;font-size:10px;color:var(--text-muted);}
+  .acc-rank.top{color:var(--accent-gold);font-weight:700;}
+  .acc-bar{display:inline-block;height:6px;background:rgba(201,168,76,0.35);border-radius:3px;vertical-align:middle;margin-right:6px;}
+  .acc-daily{display:flex;align-items:flex-end;gap:3px;height:70px;padding:8px 12px 4px;border-top:1px solid var(--divider);}
+  .acc-day{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;min-width:0;}
+  .acc-day-bar{width:100%;max-width:22px;background:rgba(201,168,76,0.55);border-radius:2px 2px 0 0;min-height:1px;}
+  .acc-day-bar.today{background:var(--accent-gold);}
+  .acc-day-l{font-family:'Space Mono',Consolas,'Courier New',monospace;font-size:8px;color:var(--text-muted);margin-top:4px;white-space:nowrap;}
+  .acc-day-n{font-size:9px;color:var(--text-secondary);margin-bottom:2px;}
+  .btn-acc-refresh{background:none;border:1px solid var(--border);border-radius:3px;color:var(--text-muted);cursor:pointer;font-size:11px;padding:3px 9px;transition:color 0.15s,border-color 0.15s;}
+  .btn-acc-refresh:hover{color:var(--accent-gold);border-color:var(--accent-gold);}
+  @media (max-width:600px){ .acc-kpis{grid-template-columns:repeat(3,1fr);gap:6px;} .acc-kpi-v{font-size:18px;} .admin-tabs{padding:8px 14px 0;} .acc-day:nth-child(odd) .acc-day-l{visibility:hidden;} }
 
   .add-user-form{background:var(--card);border:1px solid var(--border);border-radius:6px;padding:14px 16px;margin-bottom:20px;}
   .add-user-form-title{font-size:11px;font-weight:700;color:var(--text-secondary);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:12px;}
@@ -335,7 +359,12 @@
       </div>
       <button class="btn-close-admin" onclick="closeAdmin()">✕</button>
     </div>
+    <div class="admin-tabs">
+      <button class="admin-tab active" id="atab-users" onclick="switchAdminTab('users')">👤 회원</button>
+      <button class="admin-tab" id="atab-access" onclick="switchAdminTab('access')">📡 접속 현황</button>
+    </div>
     <div class="admin-body">
+     <div class="admin-pane active" id="apane-users">
       <!-- 추가 폼 -->
       <div class="add-user-form">
         <div class="add-user-form-title">신규 사용자 등록 / Agregar Usuario</div>
@@ -361,6 +390,42 @@
           <tbody id="user-tbody"></tbody>
         </table>
       </div>
+     </div>
+     <div class="admin-pane" id="apane-access">
+      <div class="acc-kpis">
+        <div class="acc-kpi"><div class="acc-kpi-k" data-i18n="접속중">접속중</div><div class="acc-kpi-v on" id="acc-k-online">—</div></div>
+        <div class="acc-kpi"><div class="acc-kpi-k" data-i18n="오늘">오늘</div><div class="acc-kpi-v" id="acc-k-today">—</div></div>
+        <div class="acc-kpi"><div class="acc-kpi-k" data-i18n="누적 접속">누적 접속</div><div class="acc-kpi-v" id="acc-k-total">—</div></div>
+      </div>
+      <div class="user-table-wrap acc-section">
+        <div class="uth">
+          <div class="uth-title"><span class="acc-online-dot"></span><span data-i18n="현재 접속자">현재 접속자</span></div>
+          <div style="display:flex;gap:8px;align-items:center;"><div class="uth-badge" id="acc-online-count">—</div><button class="btn-acc-refresh" onclick="loadAccessStats()" data-i18n="새로고침">새로고침</button></div>
+        </div>
+        <table class="users">
+          <thead><tr><th data-i18n="이름">이름</th><th data-i18n="아이디">아이디</th><th data-i18n="세션">세션</th><th data-i18n="마지막 활동">마지막 활동</th></tr></thead>
+          <tbody id="acc-online-tbody"></tbody>
+        </table>
+      </div>
+      <div class="user-table-wrap acc-section">
+        <div class="uth">
+          <div class="uth-title" data-i18n="사용자별 접속 순위">사용자별 접속 순위</div>
+          <div class="uth-badge" id="acc-rank-count">—</div>
+        </div>
+        <table class="users">
+          <thead><tr><th>#</th><th data-i18n="이름">이름</th><th data-i18n="누적">누적</th><th data-i18n="오늘">오늘</th><th data-i18n="7일">7일</th><th data-i18n="최근 접속">최근 접속</th></tr></thead>
+          <tbody id="acc-rank-tbody"></tbody>
+        </table>
+      </div>
+      <div class="user-table-wrap acc-section">
+        <div class="uth">
+          <div class="uth-title" data-i18n="최근 14일 접속 추이">최근 14일 접속 추이</div>
+          <div class="uth-badge" data-i18n="일별 접속 횟수">일별 접속 횟수</div>
+        </div>
+        <div class="acc-daily" id="acc-daily"></div>
+      </div>
+      <div id="acc-msg" style="font-size:11px;color:#e05c5c;min-height:14px;"></div>
+     </div>
     </div>
   </div>
 </div>
@@ -1136,7 +1201,11 @@ const I18N_ES = {
   '보전자 이론평가(QR 응시)·설비별 실기평가 입력, S/A/B/C 등급 및 자격인증 현황 관리':'Evaluación teórica (por QR) y práctica por equipo, niveles S/A/B/C y estado de certificaciones',
   '이론·실기 통합':'Teoría · Práctica',
   '소모품 관리':'Gestión de consumibles',
-  '접속중':'En línea','오늘':'Hoy','누적 접속':'Visitas totales','접속':'Usuario',
+  '접속중':'En línea','오늘':'Hoy','누적 접속':'Visitas totales',
+  '👤 회원':'👤 Usuarios','📡 접속 현황':'📡 Conexiones','현재 접속자':'Conectados ahora','새로고침':'Actualizar',
+  '세션':'Sesiones','마지막 활동':'Última actividad','사용자별 접속 순위':'Ranking de accesos por usuario',
+  '누적':'Total','7일':'7 días','최근 접속':'Último acceso','최근 14일 접속 추이':'Accesos últimos 14 días','일별 접속 횟수':'Accesos por día',
+  '접속자 없음':'Sin usuarios conectados','접속 기록 없음':'Sin registros','접속 현황 조회 실패':'Error al consultar conexiones','접속':'Usuario',
   '소모품 입출고 현황, 재고 관리, 사용 이력 및 발주 현황 통계 조회':'Entradas y salidas de consumibles, inventario, historial de uso y estadísticas de pedidos',
   '재고·발주 관리':'Inventario · Pedidos',
   '설비고장분석':'Análisis de fallas de equipo',
@@ -1242,6 +1311,7 @@ function setLang(lang) {
   try { const u = loadSession(); if (u && document.getElementById('main-content').style.display === 'block') showMain(u); } catch(e){}
   if (typeof tick === 'function') tick();
   if (document.getElementById('admin-overlay').classList.contains('open') && window._lastUsers) renderUserTable(window._lastUsers, getMe().id);
+  if (document.getElementById('admin-overlay').classList.contains('open') && window._lastAccess) renderAccessStats(window._lastAccess);
 }
 function toggleLang() { setLang(curLang === 'es' ? 'ko' : 'es'); }
 
@@ -1486,6 +1556,63 @@ async function openAdmin() {
 }
 function closeAdmin() {
   document.getElementById('admin-overlay').classList.remove('open');
+  if (window._accTimer) { clearInterval(window._accTimer); window._accTimer = null; }
+}
+function switchAdminTab(tab) {
+  ['users','access'].forEach(k => {
+    document.getElementById('atab-'+k).classList.toggle('active', k === tab);
+    document.getElementById('apane-'+k).classList.toggle('active', k === tab);
+  });
+  if (tab === 'access') {
+    loadAccessStats();
+    if (!window._accTimer) window._accTimer = setInterval(() => {
+      if (document.getElementById('admin-overlay').classList.contains('open') && document.getElementById('apane-access').classList.contains('active')) loadAccessStats(true);
+    }, 30000);
+  } else if (window._accTimer) { clearInterval(window._accTimer); window._accTimer = null; }
+}
+
+// ── 접속 현황 (관리자 전용 RPC portal_access_admin) ──
+async function loadAccessStats(silent) {
+  const me = getMe();
+  const msg = document.getElementById('acc-msg');
+  if (!silent) { document.getElementById('acc-online-tbody').innerHTML = '<tr><td colspan="4" style="text-align:center;padding:16px;color:var(--text-muted);">' + t('로딩 중...') + '</td></tr>'; }
+  msg.textContent = '';
+  try {
+    const pw = await getAdminPw();
+    const res = await sbFetch('/rest/v1/rpc/portal_access_admin', { method:'POST', body: JSON.stringify({ p_admin_id: me.id, p_admin_pw: pw }) });
+    const d = await res.json();
+    if (!res.ok) { if ((d && d.message || '').includes('unauthorized')) _adminPwCache = ''; throw new Error((d && d.message) || res.status); }
+    window._lastAccess = d;
+    renderAccessStats(d);
+  } catch(e) {
+    msg.textContent = t('접속 현황 조회 실패') + ' — ' + e.message;
+  }
+}
+function renderAccessStats(d) {
+  const online = d.online || [], rank = d.ranking || [], daily = d.daily || [];
+  const totalAll = rank.reduce((a,r)=>a+Number(r.total||0),0);
+  const todayAll = rank.reduce((a,r)=>a+Number(r.today||0),0);
+  document.getElementById('acc-k-online').textContent = online.length;
+  document.getElementById('acc-k-today').textContent  = todayAll;
+  document.getElementById('acc-k-total').textContent  = totalAll;
+  document.getElementById('acc-online-count').textContent = `${online.length} ${t('명')}`;
+  document.getElementById('acc-rank-count').textContent   = `${rank.length} ${t('명')}`;
+
+  const ot = document.getElementById('acc-online-tbody');
+  ot.innerHTML = online.length ? online.map(r =>
+    `<tr><td style="color:var(--text-primary);font-weight:600;"><span class="acc-online-dot"></span>${esc(r.user_name)}</td><td class="acc-rank">${esc(r.user_id||'—')}</td><td>${r.sessions}</td><td class="acc-rank">${esc(r.last_seen)}</td></tr>`).join('')
+    : `<tr><td colspan="4" style="text-align:center;padding:16px;color:var(--text-muted);">${t('접속자 없음')}</td></tr>`;
+
+  const max = rank.length ? Number(rank[0].total) : 1;
+  const rt = document.getElementById('acc-rank-tbody');
+  rt.innerHTML = rank.length ? rank.map((r,i) =>
+    `<tr><td class="acc-rank ${i===0?'top':''}">${i+1}</td><td style="color:var(--text-primary);font-weight:600;">${esc(r.user_name)}<div class="acc-rank">${esc(r.user_id||'')}</div></td><td><span class="acc-bar" style="width:${Math.max(4, Math.round(60*Number(r.total)/max))}px"></span><b>${r.total}</b></td><td>${r.today}</td><td>${r.week}</td><td class="acc-rank">${esc(r.last_visit||'')}</td></tr>`).join('')
+    : `<tr><td colspan="6" style="text-align:center;padding:16px;color:var(--text-muted);">${t('접속 기록 없음')}</td></tr>`;
+
+  const dmax = Math.max(1, ...daily.map(x=>Number(x.visits)));
+  const dd = document.getElementById('acc-daily');
+  dd.innerHTML = daily.map((x,i) =>
+    `<div class="acc-day" title="${esc(x.day)}: ${x.visits} / ${x.users}${t('명')}"><div class="acc-day-n">${x.visits||''}</div><div class="acc-day-bar ${i===daily.length-1?'today':''}" style="height:${Math.round(48*Number(x.visits)/dmax)}px"></div><div class="acc-day-l">${esc(x.day)}</div></div>`).join('');
 }
 document.getElementById('admin-overlay').addEventListener('click', function(e) {
   if (e.target === this) closeAdmin();
