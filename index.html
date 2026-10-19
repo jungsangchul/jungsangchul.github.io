@@ -126,9 +126,9 @@
   .system-bar-user #sysbar-user{color:var(--accent-gold);font-weight:700;font-size:14px;}
 
   /* ── GRID : 행 기반 줄맞춤 ── */
-  .grid-wrapper{display:grid;grid-template-columns:1fr 1px 1fr;align-items:start;}
+  .grid-wrapper{display:grid;grid-template-columns:minmax(0,1fr) 1px minmax(0,1fr);align-items:start;}
   .divider-v{background:var(--border);width:1px;align-self:stretch;}
-  .plant-col{padding:0;}
+  .plant-col{padding:0;min-width:0;}
   .plant-header{padding:16px 28px 14px;display:flex;align-items:center;gap:12px;background:#0d0d0d;position:relative;}
   .plant-col:first-child .plant-header{background:linear-gradient(90deg,rgba(212,101,26,0.07),transparent 60%),#0d0d0d;}
   .plant-col:last-child  .plant-header{background:linear-gradient(90deg,rgba(124,92,191,0.08),transparent 60%),#0d0d0d;}
@@ -142,9 +142,9 @@
   .plant-col:last-child  .plant-header{border-bottom:2px solid var(--plant2-line);}
 
   /* row-grid: 카드 행 기반 그리드 */
-  .row-grid{display:grid;grid-template-columns:1fr 1px 1fr;width:100%;}
+  .row-grid{display:grid;grid-template-columns:minmax(0,1fr) 1px minmax(0,1fr);width:100%;}
   .divider-cell{background:var(--border);width:1px;}
-  .card-cell{padding:8px 16px;display:flex;flex-direction:column;}
+  .card-cell{padding:8px 16px;display:flex;flex-direction:column;min-width:0;}
   .card-cell-empty{padding:8px 16px;}
 
   .card{background:linear-gradient(180deg,#181818,#141414);border:1px solid var(--border);border-radius:8px;padding:9px 15px;text-decoration:none;color:inherit;display:block;position:relative;overflow:hidden;transition:border-color 0.2s,background 0.2s,transform 0.15s;cursor:pointer;}

@@ -15,8 +15,8 @@
   html,body{margin:0;height:100%;background:#0a0a0a;overflow:hidden}
   iframe{position:fixed;inset:0;width:100%;height:100%;border:0;background:#0a0a0a;opacity:0;transition:opacity .25s}
   iframe.on{opacity:1}
-  #ld{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;color:#555;font:10px 'Space Mono',Consolas,monospace;letter-spacing:.22em;text-transform:uppercase;pointer-events:none}
-  #ld i{width:6px;height:6px;border-radius:50%;background:#c9a84c;box-shadow:0 0 8px #c9a84c;animation:p 1.2s ease-in-out infinite}
+  #ld{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;color:#8a7a4a;font:16px 'Space Mono',Consolas,monospace;letter-spacing:.3em;text-transform:uppercase;pointer-events:none}
+  #ld i{width:14px;height:14px;border-radius:50%;background:#c9a84c;box-shadow:0 0 22px #c9a84c,0 0 48px rgba(201,168,76,.45);animation:p 1.2s ease-in-out infinite}
   @keyframes p{0%,100%{opacity:1}50%{opacity:.25}}
   #home{position:fixed;right:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:5;display:none;width:42px;height:42px;border-radius:50%;border:1px solid rgba(201,168,76,.4);background:rgba(17,17,17,.85);backdrop-filter:blur(10px);color:#c9a84c;align-items:center;justify-content:center;text-decoration:none;box-shadow:0 6px 20px rgba(0,0,0,.5)}
   #home svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
