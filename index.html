@@ -141,7 +141,23 @@
   .system-bar{padding:7px 32px;background:#0b0b0b;border-bottom:1px solid var(--divider);font-family:'Space Mono',Consolas,'Courier New',monospace;font-size:9.5px;color:var(--text-muted);letter-spacing:0.16em;text-transform:uppercase;display:flex;align-items:center;justify-content:space-between;}
   .system-bar>span:first-child{display:flex;align-items:center;gap:14px;font-family:'Noto Sans KR','Malgun Gothic','Apple SD Gothic Neo',sans-serif;font-size:13px;font-weight:600;letter-spacing:0.02em;text-transform:none;color:#d8d8d8;}
   .system-bar>span:first-child::before{display:none;}
-  .sb-stat{display:inline-flex;align-items:center;gap:6px;}
+  .sb-stat{display:inline-flex;align-items:center;gap:6px;position:relative;}
+  .sb-stat.sb-click{cursor:pointer;border-radius:999px;padding:2px 8px;margin-left:-8px;transition:background 0.15s;}
+  .sb-stat.sb-click:hover{background:rgba(94,201,122,0.10);}
+  .sb-stat.sb-click .sb-k::after{content:' ▾';font-size:9px;color:#5ec97a;}
+  #online-pop{display:none;position:absolute;top:calc(100% + 8px);left:0;z-index:7000;min-width:280px;max-width:92vw;background:var(--surface);border:1px solid var(--border);border-radius:8px;box-shadow:0 12px 32px rgba(0,0,0,0.6);overflow:hidden;cursor:default;}
+  #online-pop.open{display:block;}
+  .op-head{display:flex;align-items:center;justify-content:space-between;padding:9px 12px;background:#0d0d0d;border-bottom:1px solid var(--border);font-size:11px;font-weight:700;color:var(--text-secondary);letter-spacing:0.06em;}
+  .op-head b{font-family:'Space Mono',Consolas,'Courier New',monospace;color:#5ec97a;font-size:12px;}
+  .op-row{display:flex;align-items:center;gap:10px;padding:8px 12px;border-bottom:1px solid var(--divider);font-size:12px;}
+  .op-row:last-child{border-bottom:none;}
+  .op-dot{width:7px;height:7px;border-radius:50%;background:#5ec97a;box-shadow:0 0 6px #5ec97a;flex:none;}
+  .op-dot.idle{background:#c9a84c;box-shadow:none;}
+  .op-name{color:var(--text-primary);font-weight:600;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .op-id{font-family:'Space Mono',Consolas,'Courier New',monospace;font-size:9px;color:var(--text-muted);margin-left:6px;font-weight:400;}
+  .op-time{font-family:'Space Mono',Consolas,'Courier New',monospace;font-size:10px;color:var(--text-muted);flex:none;}
+  .op-empty{padding:16px 12px;text-align:center;font-size:11px;color:var(--text-muted);}
+  .op-foot{padding:6px 12px;font-family:'Space Mono',Consolas,'Courier New',monospace;font-size:8.5px;color:var(--text-muted);letter-spacing:0.08em;text-align:right;border-top:1px solid var(--divider);}
   .sb-k{color:#999;font-weight:500;}
   .sb-stat b{font-family:'Space Mono',Consolas,'Courier New',monospace;font-size:14px;color:#e2c46a;font-weight:700;}
   .sb-sep{width:1px;height:12px;background:var(--border);}
@@ -456,7 +472,7 @@
 </header>
 
 <div class="system-bar">
-  <span class="system-bar-stats"><span class="sb-stat"><i class="sb-dot on"></i><span class="sb-k" data-i18n="접속중">접속중</span> <b id="sb-online">—</b></span><span class="sb-sep"></span><span class="sb-stat"><span class="sb-k" data-i18n="오늘">오늘</span> <b id="sb-today">—</b></span><span class="sb-sep"></span><span class="sb-stat"><span class="sb-k" data-i18n="누적 접속">누적 접속</span> <b id="sb-total">—</b></span></span>
+  <span class="system-bar-stats"><span class="sb-stat" id="sb-online-stat" onclick="toggleOnlinePop(event)"><i class="sb-dot on"></i><span class="sb-k" data-i18n="접속중">접속중</span> <b id="sb-online">—</b><div id="online-pop" onclick="event.stopPropagation()"><div class="op-head"><span><span data-i18n="현재 접속자">현재 접속자</span> <b id="op-count">—</b></span><span style="font-weight:400;color:var(--text-muted);font-size:10px;" id="op-upd"></span></div><div id="op-body"><div class="op-empty" data-i18n="로딩 중...">로딩 중...</div></div><div class="op-foot">ADMIN · HEARTBEAT 90s · AUTO 15s</div></div></span><span class="sb-sep"></span><span class="sb-stat"><span class="sb-k" data-i18n="오늘">오늘</span> <b id="sb-today">—</b></span><span class="sb-sep"></span><span class="sb-stat"><span class="sb-k" data-i18n="누적 접속">누적 접속</span> <b id="sb-total">—</b></span></span>
   <span class="system-bar-user"><span data-i18n="접속">접속</span>: <span id="sysbar-user">—</span></span>
 </div>
 
@@ -1205,7 +1221,7 @@ const I18N_ES = {
   '👤 회원':'👤 Usuarios','📡 접속 현황':'📡 Conexiones','현재 접속자':'Conectados ahora','새로고침':'Actualizar',
   '세션':'Sesiones','마지막 활동':'Última actividad','사용자별 접속 순위':'Ranking de accesos por usuario',
   '누적':'Total','7일':'7 días','최근 접속':'Último acceso','최근 14일 접속 추이':'Accesos últimos 14 días','일별 접속 횟수':'Accesos por día',
-  '접속자 없음':'Sin usuarios conectados','접속 기록 없음':'Sin registros','접속 현황 조회 실패':'Error al consultar conexiones','접속':'Usuario',
+  '접속자 없음':'Sin usuarios conectados','방금':'ahora','초 전':'s atrás','분 전':'min atrás','접속 기록 없음':'Sin registros','접속 현황 조회 실패':'Error al consultar conexiones','접속':'Usuario',
   '소모품 입출고 현황, 재고 관리, 사용 이력 및 발주 현황 통계 조회':'Entradas y salidas de consumibles, inventario, historial de uso y estadísticas de pedidos',
   '재고·발주 관리':'Inventario · Pedidos',
   '설비고장분석':'Análisis de fallas de equipo',
@@ -1514,6 +1530,7 @@ function showMain(u) {
   document.getElementById('sysbar-user').textContent = `${u.name} (${u.id})`;
   startPresence(u);
   if (u.role === 'admin') document.getElementById('btn-admin').style.display = 'inline-block';
+  document.getElementById('sb-online-stat').classList.toggle('sb-click', u.role === 'admin');
 }
 
 
@@ -1532,6 +1549,38 @@ async function _presBeat(isNew){
     const set=(id,v)=>{ const el=document.getElementById(id); if(el&&v!=null) el.textContent=Number(v).toLocaleString(); };
     set('sb-online',d.online); set('sb-today',d.today); set('sb-total',d.total);
   }catch(e){ /* 서버 미설정·오프라인 시 조용히 무시 */ }
+}
+// ── 관리자 원클릭 현재 접속자 팝오버 (RPC portal_online_list: 접속중인 admin 세션만 허용, 비밀번호 불필요)
+let _opTimer = null;
+function toggleOnlinePop(ev){
+  const me = getMe(); if (me.role !== 'admin') return;
+  ev && ev.stopPropagation();
+  const pop = document.getElementById('online-pop');
+  if (pop.classList.contains('open')) { closeOnlinePop(); return; }
+  pop.classList.add('open');
+  loadOnlinePop();
+  _opTimer = setInterval(loadOnlinePop, 15000);
+  setTimeout(() => document.addEventListener('click', closeOnlinePop, { once:true }), 0);
+}
+function closeOnlinePop(){
+  document.getElementById('online-pop').classList.remove('open');
+  if (_opTimer) { clearInterval(_opTimer); _opTimer = null; }
+}
+async function loadOnlinePop(){
+  const me = getMe(); const body = document.getElementById('op-body');
+  try{
+    const list = await sbFetch('/rest/v1/rpc/portal_online_list', { method:'POST', body: JSON.stringify({ p_uid: me.id, p_sid: _presSid() }) });
+    const arr = Array.isArray(list) ? list : [];
+    document.getElementById('op-count').textContent = arr.length;
+    document.getElementById('sb-online').textContent = arr.length;
+    const ago = s => s < 5 ? t('방금') : s < 60 ? s + t('초 전') : Math.floor(s/60) + t('분 전');
+    body.innerHTML = arr.length ? arr.map(r =>
+      `<div class="op-row"><span class="op-dot ${r.ago_sec > 40 ? 'idle' : ''}"></span><span class="op-name">${esc(r.user_name)}<span class="op-id">${esc(r.user_id||'')}${Number(r.sessions)>1?' ×'+r.sessions:''}</span></span><span class="op-time">${ago(Number(r.ago_sec))}</span></div>`).join('')
+      : `<div class="op-empty">${t('접속자 없음')}</div>`;
+    document.getElementById('op-upd').textContent = new Date().toLocaleTimeString('ko-KR', { hour12:false });
+  }catch(e){
+    body.innerHTML = `<div class="op-empty" style="color:#e05c5c;">${esc(e.message)}</div>`;
+  }
 }
 function startPresence(u){
   _presUser = u;
@@ -1579,12 +1628,11 @@ async function loadAccessStats(silent) {
   msg.textContent = '';
   try {
     const pw = await getAdminPw();
-    const res = await sbFetch('/rest/v1/rpc/portal_access_admin', { method:'POST', body: JSON.stringify({ p_admin_id: me.id, p_admin_pw: pw }) });
-    const d = await res.json();
-    if (!res.ok) { if ((d && d.message || '').includes('unauthorized')) _adminPwCache = ''; throw new Error((d && d.message) || res.status); }
+    const d = await sbFetch('/rest/v1/rpc/portal_access_admin', { method:'POST', body: JSON.stringify({ p_admin_id: me.id, p_admin_pw: pw }) });
     window._lastAccess = d;
     renderAccessStats(d);
   } catch(e) {
+    if ((e.message || '').includes('unauthorized')) _adminPwCache = '';
     msg.textContent = t('접속 현황 조회 실패') + ' — ' + e.message;
   }
 }
