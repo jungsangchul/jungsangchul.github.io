@@ -210,7 +210,8 @@ table.cfg input{width:17px;height:17px}
         <label class="chkl" style="padding:0"><input type="checkbox" id="pFb" checked><span data-t="pl_fb">개정이 BOM과 다르면 BOM 개정 사용</span></label></div>
       <div class="tw m" id="pPrevW" hidden style="margin-top:10px"><table id="pPrev"></table></div>
     </div>
-    <div class="card"><h3 data-t="pl_dates">저장된 계획 날짜</h3><div class="dl" id="pDates"></div></div>
+    <div class="card"><h3 data-t="pl_dates">저장된 계획 날짜</h3><div class="dl" id="pDates" style="max-height:200px"></div>
+      <div id="pDayW" hidden style="margin-top:12px"><div class="prev" id="pDayInfo"></div><div class="tw m" style="max-height:48vh"><table id="pDay"></table></div></div></div>
   </div>
   <div class="card">
     <h3 data-t="pl_req_h">필요량 산출 · 신청 리스트</h3>
@@ -1296,10 +1297,17 @@ function planRender(){const P=PLP;$('pPrevW').hidden=!(P&&P.rows.length);if(!P||
 async function planSave(){const P=PLP;if(!P)return;const d=$('pDate').value;if(!d){toast(tr('계획일자를 선택하세요','Seleccione la fecha'),1);return}
   const rows=P.rows.filter(r=>r.p).map(r=>({plan_date:d,top_code:r.top,rev:r.rev,qty:r.qty,worker:worker(),updated_at:new Date().toISOString()}));if(!rows.length)return;
   busy(true);try{await ins('binv2_plan',rows,'plan_date,top_code,rev');toast(tr(`${d} 계획 ${rows.length}건 저장`,`Plan ${d}: ${rows.length} filas guardadas`));clearPaste('pPaste');PLP=null;planRender();
-    if($('rF').value>d)$('rF').value=d;if($('rT').value<d)$('rT').value=d;await Promise.all([planDates(),planLoad()])}catch(e){toast(errMsg(e),1)}finally{busy(false)}}
+    if($('rF').value>d)$('rF').value=d;if($('rT').value<d)$('rT').value=d;PLSEL=d;await Promise.all([planDates(),planDay(),planLoad()])}catch(e){toast(errMsg(e),1)}finally{busy(false)}}
 async function planDates(){try{const r=await sel('binv2_plan?select=plan_date,qty&order=plan_date.desc');const m=new Map();r.forEach(x=>{const o=m.get(x.plan_date)||{d:x.plan_date,lines:0,qty:0};o.lines++;o.qty+=Number(x.qty)||0;m.set(x.plan_date,o)});PLDATES=[...m.values()]}catch(e){PLDATES=[]}
   const el=$('pDates');el.innerHTML=PLDATES.length?PLDATES.map(d=>`<div data-d="${d.d}" class="${PLSEL===d.d?'sel':''}"><b>${d.d}</b><small>${d.lines}${tr('품번 · 계획 ','partes · ')}${fmt(d.qty)}</small></div>`).join(''):`<div class="hint" style="cursor:default">${tr('저장된 계획이 없습니다','Sin planes guardados')}</div>`;
-  el.onclick=e=>{const r=e.target.closest('div[data-d]');if(!r)return;PLSEL=r.dataset.d;$('pDate').value=PLSEL;$('rF').value=PLSEL;$('rT').value=PLSEL;planDates();planLoad()}}
+  el.onclick=e=>{const r=e.target.closest('div[data-d]');if(!r)return;PLSEL=r.dataset.d;$('pDate').value=PLSEL;$('rF').value=PLSEL;$('rT').value=PLSEL;planDates();planDay();planLoad()}}
+async function planDay(){const d=PLSEL;$('pDayW').hidden=!d;if(!d)return;let rows=[];try{rows=await sel(`binv2_plan?select=*&plan_date=eq.${d}&order=top_code,rev`)}catch(e){toast(errMsg(e),1)}
+  const fb=$('pFb').checked;rows.forEach(r=>r._x=resolvePart(r.top_code,r.rev,fb));const tot=rows.reduce((a,r)=>a+(Number(r.qty)||0),0);
+  $('pDayInfo').innerHTML=`<b>${d}</b> · ${tr(`${rows.length}품번 · 계획 ${fmt(tot)}`,`${rows.length} partes · ${fmt(tot)}`)}`;
+  tbl('pDay',[{h:['자재코드','Código'],k:'top_code'},{h:['개정','Rev.'],k:'rev'},{h:['품명','Producto'],v:r=>r._x&&r._x.p?r._x.p.name||'':'',cls:'mute',html:r=>{const n=r._x&&r._x.p?r._x.p.name||'':'';return `<span title="${esc(n)}" style="display:inline-block;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:middle">${esc(n)}</span>`}},{h:['계획수량','Cantidad'],k:'qty',t:'n',cls:'b'},
+    {h:['',''],html:r=>`<button class="btn sec" style="height:28px;padding:0 10px" data-ddel="${r.id}">✕</button>`}],rows,{limit:3000,rowCls:r=>r._x&&r._x.p?'':'short'});
+  $('pDay').querySelectorAll('button[data-ddel]').forEach(b=>b.onclick=async()=>{const r=rows.find(x=>x.id==b.dataset.ddel);if(!r||!confirm(tr(`${r.plan_date} ${r.top_code}-${r.rev} 계획을 삭제할까요?`,`¿Eliminar el plan ${r.plan_date} ${r.top_code}-${r.rev}?`)))return;
+    busy(true);try{await del('binv2_plan','id=eq.'+r.id);await Promise.all([planDates(),planDay(),planLoad()])}catch(e){toast(errMsg(e),1)}finally{busy(false)}})}
 async function planLoad(){const f=$('rF').value,t=$('rT').value;let q='binv2_plan?select=*&order=plan_date,top_code,rev';if(f)q+=`&plan_date=gte.${f}`;if(t)q+=`&plan_date=lte.${t}`;
   busy(true,tr('산출 중…','Calculando…'));try{PLAN=await sel(q);await planCalc()}catch(e){toast(errMsg(e),1)}finally{busy(false)}planListRender();reqRender()}
 async function planCalc(){const need=new Map(),fb=$('pFb').checked;let nq=0;const parts=new Set();
@@ -1311,7 +1319,7 @@ function planListRender(){tbl('pTbl',[{h:['계획일자','Fecha'],k:'plan_date',
   {h:['계획수량','Cantidad'],k:'qty',t:'n',sum:1,cls:'b'},{h:['BOM','BOM'],html:r=>phowTag(r._x?r._x.how:'none')},{h:['작업자','Operador'],k:'worker',cls:'mute'},{h:['등록','Registrado'],v:r=>dt(r.updated_at||r.created_at),cls:'mute'},
   {h:['',''],html:r=>`<button class="btn sec" style="height:28px;padding:0 10px" data-pdel="${r.id}">${tr('삭제','Eliminar')}</button>`}],PLAN,{limit:3000,rowCls:r=>r._x&&r._x.p?'':'short'});
   $('pTbl').querySelectorAll('button[data-pdel]').forEach(b=>b.onclick=async()=>{const r=PLAN.find(x=>x.id==b.dataset.pdel);if(!r||!confirm(tr(`${r.plan_date} ${r.top_code}-${r.rev} 계획을 삭제할까요?`,`¿Eliminar el plan ${r.plan_date} ${r.top_code}-${r.rev}?`)))return;
-    busy(true);try{await del('binv2_plan','id=eq.'+r.id);await Promise.all([planDates(),planLoad()])}catch(e){toast(errMsg(e),1)}finally{busy(false)}})}
+    busy(true);try{await del('binv2_plan','id=eq.'+r.id);await Promise.all([planDates(),planDay(),planLoad()])}catch(e){toast(errMsg(e),1)}finally{busy(false)}})}
 function reqCols(){return[
   {h:['공정','Proceso'],k:'procs',w:7},{h:['자재코드','Código'],k:'code',w:16},
   {h:['자재명','Nombre'],k:'name',w:30,html:r=>esc(r.name||'')+(r.missing?`<span class="tag short" style="margin-left:6px">${tr('미등록','No existe')}</span>`:'')},
