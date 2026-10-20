@@ -32,6 +32,11 @@ h1 small{font-weight:400;color:var(--sub);font-size:13px;margin-left:6px}
 .tabs button.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
 .tabs .cnt{display:inline-block;min-width:20px;margin-left:6px;padding:0 6px;border-radius:10px;background:var(--req);color:#231503;font-size:12px;font-weight:700;text-align:center}
 .tabs .cnt:empty{display:none}
+.tabs button.rw-tab{margin-left:10px;border:1.5px solid var(--gold);color:var(--gold);font-weight:700;background:linear-gradient(180deg,#2a2410,#1a160a);box-shadow:0 0 0 0 rgba(201,168,76,.45);animation:rwGlow 2.4s ease-in-out infinite}
+.tabs button.rw-tab:hover{background:#3a3014}
+.tabs button.rw-tab.on{background:var(--gold);color:#1a1400;border-color:var(--gold);animation:none}
+.tabs button.rw-tab .rw-ico{margin-right:6px}
+@keyframes rwGlow{0%,100%{box-shadow:0 0 0 0 rgba(201,168,76,0)}50%{box-shadow:0 0 0 4px rgba(201,168,76,.28)}}
 #apprCnt{background:var(--req);color:#231503}
 #netStat{display:inline-flex;align-items:center;gap:6px}
 #netStat::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--sub)}
@@ -245,6 +250,7 @@ textarea#lotBox{width:100%;min-height:160px;padding:10px;border:1px solid var(--
   <nav class="tabs">
     <button id="tabAsm" class="on"><span data-i="tAsm">조립생산</span><span class="cnt" id="apprCnt" title="팀장 승인대기"></span><span class="cnt" id="asmCnt" style="background:var(--ok);color:#06210f"></span></button>
     <button id="tabProc"><span data-i="tProc">가공생산</span><span class="cnt" id="newCnt"></span><span class="cnt" id="retCnt" title="반납 확인 대기" style="background:#E07A3F;color:#2a1003"></span></button>
+    <button id="tabRework" class="rw-tab"><span class="rw-ico">🔁</span><span data-i="rwBtn">REWORK 삭제회로 관리</span></button>
     <button id="tabMaster"><span data-i="tMaster">서브리스트</span></button>
   </nav>
   <span class="status" id="netStat"></span>
@@ -349,7 +355,7 @@ textarea#lotBox{width:100%;min-height:160px;padding:10px;border:1px solid var(--
 <!-- ============ 가공생산 ============ -->
 <section id="viewProc" class="hidden">
   <div class="panel hist" style="margin-top:0">
-    <div class="ph"><h2 data-i="histProc">신청 · 출고 · 조립접수 이력</h2><div class="stchips" id="hpChips"></div><span class="grow"></span><button class="btn rw" id="hpRework" data-i="rwBtn">🔁 REWORK 삭제회로 관리</button></div>
+    <div class="ph"><h2 data-i="histProc">신청 · 출고 · 조립접수 이력</h2><div class="stchips" id="hpChips"></div></div>
     <div class="proc-bar">
       <label class="f"><span data-i="from">시작일</span><input type="date" id="hpFrom"></label>
       <label class="f"><span data-i="to">종료일</span><input type="date" id="hpTo"></label>
@@ -570,7 +576,7 @@ Object.assign(ES,{roleAsm:'Jefe de ensamble',roleProc:'Jefe de corte',pinDesc:'C
  pRecv:'Recibir',lotPh:'LOT MES utilizado',pShip:'Completar / entregar',undo:'Regresar un paso',cSpec:'Especificación',cTerm:'Term. izq. / der.',cFlow:'Historial (solicitud → corte → entrega → ensamble)',
  fReq:'Solicitud',fRcv:'Corte recibe',fShip:'Entrega',fRecv:'Ensamble recibe',inProg:'En proceso',needLot:'Capture el LOT MES.',needName:'Capture el solicitante (confirma la recepción).'});
 Object.assign(KO,{roleAsm:'조립팀장',roleProc:'가공팀장',pinDesc:'팀장 PIN을 입력하세요. 확인 후 10분 동안은 다시 묻지 않습니다.',pinLabel:'PIN',pinEmpty:'모든 칸을 입력하세요.',pinWrong:'PIN이 맞지 않습니다.',pinChgT:'변경',pinChgDesc:'현재 PIN을 확인한 뒤 새 PIN으로 바꿉니다 (4자 이상).',pinCur:'현재 PIN',pinNew:'새 PIN',pinNew2:'새 PIN 확인',pinMismatch:'새 PIN이 서로 다릅니다.',pinShort:'새 PIN은 4자 이상이어야 합니다.',pinChanged:'PIN을 변경했습니다.',st1:'승인대기',st2:'조립승인',st3:'가공접수',st4:'가공승인',st5:'출고',st6:'조립접수완료',st7:'반려',st8:'취소',st9:'가공반납',st10:'반납확인',fRet:'가공반납',fRetOk:'반납확인',pRetOk:'↩ 반납 확인',pRetOkUndo:'반납확인 취소',aRet:'↩ 가공 반납',aRetUndo:'반납 취소',retWhy:'{n}선 (수량 {q})을 가공으로 반납합니다.\n사유 (선택) — 예) 원래 선 찾음',retUndoQ:'반납을 취소하고 조립접수완료로 되돌릴까요?',fAppr:'조립승인',fPAppr:'가공승인',needAsmWorker:'처리자(팀장·확인자) 이름을 입력하세요.',confirmCancelProc:'가공에서 이미 접수한 건이 포함되어 있습니다. 취소할까요?',savedAppr:'저장했습니다. 조립팀장 승인 후 가공에 전달됩니다.',qty:'수량',today:'오늘',reqCnt:'건',xlsx:'📗 엑셀 저장',xlsxDay:'이 날짜 신청건만 엑셀로 저장',xlsxMaster:'📗 서브리스트 · LOT 엑셀 저장',xlsxLoading:'엑셀 모듈 불러오는 중…',xlsxFail:'엑셀 모듈을 불러오지 못했습니다.',xlsxNone:'내보낼 내역이 없습니다.',xlsxSaved:'엑셀 저장 완료',shAll:'전체',shSel:'선택',shMaster:'서브리스트',shLot:'LOT매칭표',xCheck:'확인',xNote:'비고',fReq:'신청',fRcv:'가공접수',fShip:'출고',fRecv:'조립접수',inProg:'진행 중',needLot:'투입 MES LOT를 입력하세요.',needName:'신청자(접수 확인자) 이름을 입력하세요.'});
-Object.assign(ES,{rwBtn:'🔁 Cables REWORK eliminados',rwBack:'◀ Volver al historial de faltantes',rwTitle:'🔁 Cables REWORK eliminados',rwSub:'Pegue entradas (30360) y salidas (30370) de Excel → % de uso por No. de inventario',rwFrom:'Entrada desde',rwTo:'Entrada hasta',rwQPh:'No. inventario · cable · terminal · LOT · circuito · máquina · ubicación',rwRangeNote:'Sin usar y parcial se muestran sin importar la fecha · solo "usado" aplica el rango',rwDel:'Borrar selección (entrada + uso)',rwDelOut:'Borrar solo el uso de la selección',
+Object.assign(ES,{rwBtn:'Cables REWORK eliminados',rwBack:'◀ Volver al historial de faltantes',rwTitle:'🔁 Cables REWORK eliminados',rwSub:'Pegue entradas (30360) y salidas (30370) de Excel → % de uso por No. de inventario',rwFrom:'Entrada desde',rwTo:'Entrada hasta',rwQPh:'No. inventario · cable · terminal · LOT · circuito · máquina · ubicación',rwRangeNote:'Sin usar y parcial se muestran sin importar la fecha · solo "usado" aplica el rango',rwDel:'Borrar selección (entrada + uso)',rwDelOut:'Borrar solo el uso de la selección',
  rwcSn:'No. inventario',rwcWn:'Circuito eliminado',rwcWire:'Cable / nombre',rwcTerm:'Term. izq. / der.',rwcIn:'Entrada (fecha · quién · ubicación)',rwcInQ:'Entr.',rwcUsedQ:'Usado',rwcRem:'Resta',rwcRate:'% uso',rwcSt:'Estado',rwcOuts:'Uso (fecha · LOT · circuito · máquina · quién · cant.)',rwNoData:'No hay entradas ni usos. Pegue el Excel abajo y guarde.',
  rwInT:'Pegar entradas de cables eliminados',rwInDesc:'Copie de MES (entradas de cable reciclado) desde el encabezado, agregue a la derecha una columna «선번» con el circuito eliminado y pegue. Sin encabezado se leen 12 columnas + circuito. El mismo No. de inventario se sobrescribe; el circuito también se edita en la tabla.',rwOutT:'Pegar uso (salidas) de cables eliminados',rwOutDesc:'Copie de MES (salidas de cable reciclado) desde el encabezado y pegue. Sin encabezado se leen 19 columnas en orden. Misma clave (No. inventario + fecha/hora + circuito) se sobrescribe.',rwInSave:'Guardar entradas (agregar · actualizar)',rwOutSave:'Guardar uso (agregar · actualizar)',
  rwAll:'Todos',rwUnused:'Sin usar',rwPart:'Parcial',rwDone:'Usado',rwNone:'Sin entrada',rwSIn:'No. inventario (entradas)',rwSInQ:'Cant. entrada',rwSUsedQ:'Cant. usada',rwSRem:'Restante',rwSDone:'Usados por completo',rwSDoneRate:'% completados',rwSQtyRate:'% uso por cantidad',rwSNone:'Uso sin entrada',rwParsed:'filas leídas',rwWrongFmt:'Parece el otro formato (por No. de columnas). Péguelo en el otro cuadro.',rwConfirmDel:'¿Borrar {n} No. de inventario con sus entradas y usos?',rwConfirmDelOut:'¿Borrar solo los usos de {n} No. de inventario?',rwOver:'Uso mayor que la entrada',rwUpd:'Último guardado'});
@@ -1666,11 +1672,11 @@ $('rwpXlsx').onclick=async()=>{
   rows.forEach((r,i)=>{const c=ws.getRow(i+4).getCell(15);c.fill=xlFill(XST[r.st]);c.font={name:'Malgun Gothic',size:10,bold:true,color:{argb:'FF1B2530'}};});
   await xlSave(wb,`삭제회로계획_입고체크_P${PLANT}_${ymd(nowMX())}.xlsx`);toast(T('xlsxSaved'));
 };
-$('hpRework').onclick=()=>{show('Rework');if(!RW.loaded)loadRework();};
+$('tabRework').onclick=()=>{show('Rework');if(!RW.loaded)loadRework();};
 $('rwBack').onclick=()=>{show('Proc');loadReqs();};
 
 /* ---------- 탭 ---------- */
-function show(v){['Asm','Proc','Master','Rework'].forEach(k=>{$('view'+k).classList.toggle('hidden',k!==v);const t=$('tab'+k);if(t)t.classList.toggle('on',k===v||(v==='Rework'&&k==='Proc'));});LS.set('tab'+PLANT,v);}
+function show(v){['Asm','Proc','Master','Rework'].forEach(k=>{$('view'+k).classList.toggle('hidden',k!==v);const t=$('tab'+k);if(t)t.classList.toggle('on',k===v);});LS.set('tab'+PLANT,v);}
 $('tabAsm').onclick=()=>{show('Asm');loadReqs();if(!TOUCH)$('scanIn').focus();};$('tabProc').onclick=()=>{show('Proc');loadReqs();};$('tabMaster').onclick=()=>show('Master');
 $('reloadBtn').onclick=()=>{loadMaster();loadReqs();loadLots();if(RW.loaded)loadRework();};
 $('langBtn').onclick=()=>{lang=lang==='ko'?'es':'ko';LS.set('lang',lang);applyLang();};
