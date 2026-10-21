@@ -467,7 +467,7 @@
         </div>
       </div>
     </div>
-    <div class="system-bar"><span>Attendance · Meal Dashboard / 출석 · 식사 관리</span><span><b>Plant 1</b> · Monclova&nbsp;&nbsp;<span class="updated" id="updated">v7.21</span></span></div>
+    <div class="system-bar"><span>Attendance · Meal Dashboard / 출석 · 식사 관리</span><span><b>Plant 1</b> · Monclova&nbsp;&nbsp;<span class="updated" id="updated">v7.22</span></span></div>
   </header>
   <div class="toolbar">
     <div class="filters">
@@ -737,6 +737,8 @@ const I18N={
     qUnitEmp:"개인별", qUnitTeam:"팀별", qRun:"조회", qLoading:"조회 중…", qNoData:"결과 없음",
     qItemAtt:"출근 일수", qItemLate:"지각", qItemNoout:"퇴근 미타각", qItemEarly:"조퇴", qItemMeal:"식사 신청",
     qItemIn:"출근 시간", qItemWork:"근무시간(일별)", qColTotal:"합계", qColTotalH:"합계(h)", qAbsent:"결석", qResigned:"퇴사",
+    qItemRate:"출근율(일별·팀별)", rRate:"출근율(%)", rAtt:"출근", rHead:"재직", rAll:"전체", rKind:"구분", rAvg:"평균",
+    qSumRate:(wd,avg,tm)=>`근무일 ${wd}일 · 전체 평균 출근율 ${avg}% · 팀 ${tm}개 · 출근율=출근/재직(재직=입사일~퇴사일 기준), 주말·타각 없는 날은 빈칸`,
     qItemHH:"Horas-hombre(붙여넣기용)", hhAbsent:"결근", hhNo:"Número", hhOp:"Operador", hhChkId:"확인:사번", hhChkName:"풀네임", hhChkSt:"상태", hhHire:"입사일", hhResign:"퇴사일", hhAtt:"출근일", hhAbs:"결근일", hhMealOnly:"식수만",
     hhActive:"재직", hhOff:"퇴사",
     qSumHH:(n,wd,att,abs,mo)=>`대상 ${n}명 · 근무일 ${wd}일 · 출근 ${att} · 결근 ${abs}${mo?` · 타각 없이 식수신청만 ${mo}건(출근 인정)`:""} · 8.46=출근(타각 또는 식수신청), 결근=재직중 근무일 미출근, 빈칸=휴무/입사전·퇴사후 · Excel 받아서 C열부터 원본에 값 붙여넣기`,
@@ -781,6 +783,8 @@ const I18N={
     qUnitEmp:"Por persona", qUnitTeam:"Por equipo", qRun:"Consultar", qLoading:"Consultando…", qNoData:"Sin resultados",
     qItemAtt:"Días asistidos", qItemLate:"Tardanzas", qItemNoout:"Sin salida", qItemEarly:"Salidas anticipadas", qItemMeal:"Comidas",
     qItemIn:"Hora de entrada", qItemWork:"Horas trabajadas (diario)", qColTotal:"Total", qColTotalH:"Total(h)", qAbsent:"Falta", qResigned:"Baja",
+    qItemRate:"Asistencia % (diaria · por equipo)", rRate:"Asist.(%)", rAtt:"Asist.", rHead:"Activos", rAll:"Total", rKind:"Tipo", rAvg:"Prom.",
+    qSumRate:(wd,avg,tm)=>`${wd} días laborables · Asist. promedio ${avg}% · ${tm} equipos · %=asist./activos (activos = entre ingreso y baja), fines de semana y días sin checadas en blanco`,
     qItemHH:"Horas-hombre (para pegar)", hhAbsent:"결근", hhNo:"Número", hhOp:"Operador", hhChkId:"Ver:N°", hhChkName:"Nombre completo", hhChkSt:"Estado", hhHire:"Ingreso", hhResign:"Baja", hhAtt:"Asist.", hhAbs:"Faltas", hhMealOnly:"Solo comida",
     hhActive:"Activo", hhOff:"Baja",
     qSumHH:(n,wd,att,abs,mo)=>`${n} personas · ${wd} días laborables · Asist. ${att} · Faltas ${abs}${mo?` · ${mo} solo con comida (cuenta asistencia)`:""} · 8.46=asistió (checada o comida), 결근=falta en día laboral, vacío=descanso/antes de ingreso/después de baja · Descargue Excel y pegue valores desde la col. C`,
@@ -967,7 +971,7 @@ async function refresh(){
     const hiredBy=e=>!e.hire_date || String(e.hire_date).slice(0,10)<=date;
     state.employees=noTest(emp).filter(hiredBy); state.att=noTest(att); state.meal=noTest(meal);
     compute();
-    $("updated").textContent=t("updated")+new Date().toLocaleTimeString(lang==="ko"?"ko-KR":"es-MX")+" · v7.21";
+    $("updated").textContent=t("updated")+new Date().toLocaleTimeString(lang==="ko"?"ko-KR":"es-MX")+" · v7.22";
   }catch(e){ $("updated").textContent=t("queryErr"); console.error(e); }
 }
 
@@ -1510,7 +1514,7 @@ function localDate(iso){ const dt=new Date(new Date(iso).getTime()+CONFIG.TZ_OFF
 let queryResult=null; // 마지막 조회 결과 {item,unit,from,to,cols,rows,valUnit}
 function buildQueryControls(){
   const itemCur=$("qItem").value, unitCur=$("qUnit").value, facCur=$("qFactory").value, teamCur=$("qTeam").value;
-  $("qItem").innerHTML=[["hh",t("qItemHH")],["att",t("qItemAtt")],["work",t("qItemWork")],["intime",t("qItemIn")],["late",t("qItemLate")],["noout",t("qItemNoout")],["early",t("qItemEarly")],["meal",t("qItemMeal")]]
+  $("qItem").innerHTML=[["rate",t("qItemRate")],["hh",t("qItemHH")],["att",t("qItemAtt")],["work",t("qItemWork")],["intime",t("qItemIn")],["late",t("qItemLate")],["noout",t("qItemNoout")],["early",t("qItemEarly")],["meal",t("qItemMeal")]]
     .map(([v,l])=>`<option value="${v}">${l}</option>`).join("");
   $("qUnit").innerHTML=[["emp",t("qUnitEmp")],["team",t("qUnitTeam")]].map(([v,l])=>`<option value="${v}">${l}</option>`).join("");
   $("qFactory").innerHTML=`<option value="">${t("all")}</option>`+Object.keys(CONFIG.FACTORIES).map(k=>`<option value="${k}">${CONFIG.FACTORIES[k][lang]}</option>`).join("");
@@ -1554,6 +1558,54 @@ async function runQuery(){
     const emp={}; for(const e of state.employees){ emp[e.employee_id]={name:e.name||e.employee_id,team:(e.team||"").trim(),factory:e.factory}; }
     const val={}; // employee_id → 값(정수)
     let timeStats=null; // 출근 시간 조회용 {days,avg,mn,mx,late}
+    /* ▼ v7.22 출근율(일별·팀별): 서버 집계 RPC att_rate_daily → 팀별 출근율/출근/재직 + 전체 */
+    if(item==="rate"){
+      const WD=t("wdShort");
+      const dates=[]; { let d=new Date(from+"T00:00:00Z"); const end=new Date(to+"T00:00:00Z");
+        while(d<=end && dates.length<200){ dates.push(d.toISOString().slice(0,10)); d=new Date(d.getTime()+86400000); } }
+      const dLabel=d=>{ const dt=new Date(d+"T00:00:00Z"); return (dt.getUTCMonth()+1)+"/"+dt.getUTCDate()+"("+WD[dt.getUTCDay()]+")"; };
+      const isWkday=d=>{ const w=new Date(d+"T00:00:00Z").getUTCDay(); return w>=1&&w<=5; };
+      const res=await fetch(REST("rpc/att_rate_daily"),{method:"POST",headers:Object.assign({},HEADERS,{"Content-Type":"application/json"}),
+        body:JSON.stringify({p_from:from,p_to:dates[dates.length-1],p_factory:factory||null})});
+      if(!res.ok){ console.error(await res.text()); throw new Error("rpc"); }
+      const data=await res.json();
+      // team → date → {h,a} ; 전체 합계
+      const byTeam={}, tot={};
+      for(const r of data){ const d=String(r.d).slice(0,10); const tm=r.team||t("noTeam");
+        if(teamSel && tm!==teamSel) continue;
+        (byTeam[tm]=byTeam[tm]||{})[d]={h:+r.headcount||0,a:+r.attended||0};
+        const g=(tot[d]=tot[d]||{h:0,a:0}); g.h+=+r.headcount||0; g.a+=+r.attended||0; }
+      /* 근무일 = 평일 중 (전체) 타각이 1건이라도 있는 날 → 공휴일·주말 제외 */
+      const workDays=new Set(dates.filter(d=>isWkday(d)&&tot[d]&&tot[d].a>0));
+      const teams=Object.keys(byTeam).sort((a,b)=>a.localeCompare(b,'ko'));
+      const allLabel=t("rAll")+(factory?" · "+plantName(factory):"");
+      const mk=(label,kind,cellOf)=>{
+        const row={team:label,kind:t(kind),_k:kind,_team:label}; let sumR=0,nR=0,sumA=0,sumH=0,nd=0;
+        dates.forEach((d,j)=>{ let v="";
+          if(workDays.has(d)){ const c=cellOf(d);
+            if(c&&c.h>0){
+              if(kind==="rRate"){ v=+((c.a/c.h)*100).toFixed(1); sumR+=c.a/c.h; nR++; }
+              else if(kind==="rAtt"){ v=c.a; sumA+=c.a; nd++; }
+              else { v=c.h; sumH+=c.h; nd++; }
+            } else if(kind!=="rRate"){ v=0; nd++; }
+          }
+          row["d"+j]=v; });
+        row.avg = kind==="rRate" ? (nR?+(sumR/nR*100).toFixed(1):"") : (nd?+((kind==="rAtt"?sumA:sumH)/nd).toFixed(1):"");
+        return row;
+      };
+      const rows=[];
+      for(const tm of teams){ ["rRate","rAtt","rHead"].forEach(k=>rows.push(mk(tm,k,d=>byTeam[tm][d]))); }
+      if(!teamSel || teams.length>1) ["rRate","rAtt","rHead"].forEach(k=>rows.push(mk(allLabel,k,d=>tot[d])));
+      const cols=[["team",t("colTeam")],["kind",t("rKind")],...dates.map((d,j)=>["d"+j,dLabel(d),true]),["avg",t("rAvg"),true]];
+      queryResult={item,unit,from,to,cols,rows};
+      renderQuery();
+      // 전체 평균 출근율 = 근무일 전체 출근합/재직합
+      let A=0,H=0; workDays.forEach(d=>{ A+=tot[d].a; H+=tot[d].h; });
+      $("qSum").textContent = rows.length ? t("qSumRate")(workDays.size, H?(A/H*100).toFixed(1):"-", teams.length) : t("qNoData");
+      if(!rows.length){ $("qTable").querySelector("tbody").innerHTML=`<tr><td>${t("qNoData")}</td></tr>`; }
+      $("qExp").disabled=!rows.length;
+      return;
+    }
     if(item==="meal"){
       const recs=await fetchRange(CONFIG.T_MEALS,"employee_id,factory,created_at",fromISO,toISO,factory);
       for(const r of recs){ val[r.employee_id]=(val[r.employee_id]||0)+1; }
@@ -1793,7 +1845,13 @@ function renderQuery(){
   const {cols,rows}=queryResult;
   $("qTable").querySelector("thead").innerHTML="<tr>"+cols.map(c=>`<th class="${c[2]?"n":""}">${escapeHtml(c[1])}</th>`).join("")+"</tr>";
   $("qTable").querySelector("tbody").innerHTML=rows.map(r=>"<tr>"+cols.map(c=>{
-    const v=r[c[0]]; const hl=(queryResult.item==="hh"&&v===t("hhAbsent"))?' style="background:#fff2cc;color:#b45309;font-weight:600"':'';
+    const v=r[c[0]]; let hl=(queryResult.item==="hh"&&v===t("hhAbsent"))?' style="background:#fff2cc;color:#b45309;font-weight:600"':'';
+    if(queryResult.item==="rate"){
+      const isAll=r._team&&String(r._team).startsWith(t("rAll")); const isRate=r._k==="rRate";
+      const bgAll="background:rgba(201,168,76,.14);";
+      if(isAll) hl=` style="${bgAll}font-weight:800"`;
+      if(isRate&&typeof v==="number"&&c[0]!=="team"&&c[0]!=="kind"){ const col=v<90?"#e05c5c":v<95?"#e0a84a":"#4caf7d"; hl=` style="${isAll?bgAll:""}color:${col};font-weight:800"`; return `<td class="n"${hl}>${v.toFixed(1)}%</td>`; }
+    }
     return `<td class="${c[2]?"n":""}"${hl}>${escapeHtml(v!=null?(typeof v==="number"&&queryResult.item==="hh"?v.toFixed(2):String(v)):"")}</td>`;
   }).join("")+"</tr>").join("");
 }
@@ -1802,7 +1860,7 @@ function exportQuery(){
   const {cols,rows,item,unit,from,to}=queryResult;
   const aoa=[cols.map(c=>c[1])];
   for(const r of rows){ aoa.push(cols.map(c=>{ const v=r[c[0]]; return v==null?"":v; })); }
-  const sheet=item==="hh"?`HorasHombre_${from}_${to}`:`${item}_${unit}_${from}_${to}`;
+  const sheet=item==="hh"?`HorasHombre_${from}_${to}`:item==="rate"?`Asistencia_${from}_${to}`:`${item}_${unit}_${from}_${to}`;
   const u8=makeXlsx(sheet.slice(0,31), aoa);
   const blob=new Blob([u8],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
   const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=sheet+".xlsx";
