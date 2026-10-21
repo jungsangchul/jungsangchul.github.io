@@ -101,7 +101,8 @@ textarea{width:100%;min-height:260px;padding:10px;border:1px solid var(--line);b
 .stats div{font-size:12px;color:var(--sub)}
 .stats b{display:block;font-size:20px;color:var(--ink)}
 .pn-list{margin-top:12px;font-size:13px}
-.pn-list span{display:inline-block;background:var(--tag);color:var(--tag-ink);border-radius:4px;padding:2px 8px;margin:0 6px 6px 0;font-weight:600}
+.pn-list span:hover{filter:brightness(1.15);outline:1px solid var(--gold)}
+.pn-list span{cursor:pointer;display:inline-block;background:var(--tag);color:var(--tag-ink);border-radius:4px;padding:2px 8px;margin:0 6px 6px 0;font-weight:600}
 .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--panel);padding:10px 18px;border-radius:6px;z-index:40;font-size:13px}
 @media (prefers-reduced-motion:no-preference){.drawer{animation:slide .18s ease-out}@keyframes slide{from{transform:translateX(30px);opacity:.6}}}
 </style>
@@ -198,8 +199,9 @@ textarea{width:100%;min-height:260px;padding:10px;border:1px solid var(--line);b
         <button class="btn pri" id="saveMerge" data-i="saveMerge">품번별 교체 저장</button>
         <button class="btn" id="saveAll" data-i="saveAll">전체 교체 저장</button>
         <button class="btn warn" id="clearAll" data-i="clearAll">마스터 전체 삭제</button>
+        <button class="btn" id="dlXlsx" data-i="dlXlsx" style="margin-left:auto">엑셀 다운로드</button>
       </div>
-      <p class="status" style="margin-top:8px" data-i="mHelp">품번별 교체: 붙여넣은 품번의 기존 행만 지우고 새로 넣습니다. 다른 품번은 그대로 유지됩니다. 저장 내용은 모든 PC에 공유됩니다.</p>
+      <p class="status" style="margin-top:8px" data-i="mHelp">품번별 교체: 붙여넣은 품번의 기존 행만 지우고 새로 넣습니다. 다른 품번은 그대로 유지됩니다. 저장 내용은 모든 PC에 공유됩니다. <span data-i="dlHelp">엑셀 다운로드는 저장된 마스터 전체를 내려받고, 아래 품번을 클릭하면 그 품번만 내려받습니다.</span></p>
       <div class="stats">
         <div><span data-i="sRows">저장된 회로</span><b id="stRows">0</b></div>
         <div><span data-i="sPn">품번 수</span><b id="stPn">0</b></div>
@@ -237,8 +239,8 @@ const C={pn:0,sub:1,wn:2,mat:3,matNo:4,sq:5,col:6,len:7,stL:12,stR:13,tL:16,tR:1
 const KEY_COLS=new Set([45,46,43,33,C.pn,C.sub,C.wn,C.mat,C.sq,C.col,C.len,C.tL,C.tR,C.p1L,C.p1R,...C.sym]);
 
 /* ---------- 언어 ---------- */
-const ES={title:'Consulta de circuitos',sub:'Cable · Terminal · Pieza · Símbolo',tLookup:'Consulta',tMaster:'Maestro',gBasic:'No. parte / Circuito',pn:'No. de parte',wn:'No. de circuito',gWire:'Por cable',mat:'Material',col:'Color',len:'Longitud (mm)',tol:'Tolerancia ±mm',gTerm:'Por terminal',tL:'Terminal izq.',tR:'Terminal der.',swap:'Buscar sin importar izq./der.',gPart:'Pieza pre-crimpado 1',pL:'Izquierda',pR:'Derecha',gSym:'Por símbolo',symCol:'Columna',sym:'Símbolo',reset:'Limpiar filtros',rows:'circuitos',mTitle:'Pegar maestro',mDesc:'Copie en Excel desde la fila de encabezados hasta los datos (Ctrl+C) y péguelos abajo (Ctrl+V). Sin encabezados se usa el formato estándar de 69 columnas.',saveMerge:'Guardar reemplazando por No. parte',saveAll:'Reemplazar todo',clearAll:'Borrar maestro',mHelp:'Reemplazar por No. parte: solo se borran las filas de los números de parte pegados; los demás se conservan. Los datos se comparten en todas las PC.',sRows:'Circuitos guardados',sPn:'No. de parte',sUpd:'Último guardado',close:'Cerrar',hideBlank:'Ocultar vacíos',copyRow:'Copiar fila',all:'Todos',anyCol:'Cualquiera',noMaster:'No hay maestro. Pegue los datos en la pestaña Maestro.',noHit:'No hay circuitos con estas condiciones. Quite un filtro.',showing:'Mostrando los primeros 500',copied:'Fila copiada',saved:'Guardado',parsed:'filas leídas',cleared:'Maestro borrado',confirmClear:'¿Borrar todo el maestro?',confirmAll:'Se reemplazará todo el maestro. ¿Continuar?',nothing:'No hay filas para guardar.',symAny:'★ Solo con símbolo',twAll:'Todos',twT:'Trenzado (T)',twS:'Blindado (S)',twN:'Normal',twLen:'Long. trenzado',twPair:'Par',twInfo:'Trenzado',shInfo:'Blindado',twAfter:'Después de trenzar',cutLen:'corte',tw:'Trenzado / blindado',online:'Servidor',offline:'Sin conexión (caché)',saving:'Guardando…',loading:'Cargando…',saveErr:'Error al guardar en el servidor'};
-const KO={all:'전체',anyCol:'전체 칸',noMaster:'마스터가 없습니다. 마스터 탭에서 엑셀 내용을 붙여넣으세요.',noHit:'조건에 맞는 회로가 없습니다. 조건을 하나 줄여 보세요.',showing:'앞 500건만 표시',copied:'행을 복사했습니다',saved:'저장했습니다',parsed:'행 읽음',cleared:'마스터를 삭제했습니다',confirmClear:'마스터 전체를 삭제할까요?',confirmAll:'기존 마스터를 모두 지우고 새로 저장합니다. 계속할까요?',nothing:'저장할 행이 없습니다.',symAny:'★ 심볼 있는 것만',twAll:'전체',twT:'트위스트 (T)',twS:'쉴드 (S)',twN:'일반 (없음)',twLen:'Tw후 길이',twPair:'짝 선번',twInfo:'트위스트',shInfo:'쉴드',twAfter:'트위스트 후',cutLen:'절단길이',online:'서버 연결',offline:'오프라인 (캐시 사용)',saving:'저장 중…',loading:'불러오는 중…',saveErr:'서버 저장 실패'};
+const ES={title:'Consulta de circuitos',sub:'Cable · Terminal · Pieza · Símbolo',tLookup:'Consulta',tMaster:'Maestro',gBasic:'No. parte / Circuito',pn:'No. de parte',wn:'No. de circuito',gWire:'Por cable',mat:'Material',col:'Color',len:'Longitud (mm)',tol:'Tolerancia ±mm',gTerm:'Por terminal',tL:'Terminal izq.',tR:'Terminal der.',swap:'Buscar sin importar izq./der.',gPart:'Pieza pre-crimpado 1',pL:'Izquierda',pR:'Derecha',gSym:'Por símbolo',symCol:'Columna',sym:'Símbolo',reset:'Limpiar filtros',rows:'circuitos',mTitle:'Pegar maestro',mDesc:'Copie en Excel desde la fila de encabezados hasta los datos (Ctrl+C) y péguelos abajo (Ctrl+V). Sin encabezados se usa el formato estándar de 69 columnas.',saveMerge:'Guardar reemplazando por No. parte',saveAll:'Reemplazar todo',clearAll:'Borrar maestro',dlXlsx:'Descargar Excel',dlHelp:'Descargar Excel baja todo el maestro guardado; al hacer clic en un No. de parte se descarga solo ese.',dlNone:'No hay maestro para descargar.',dlErr:'No se pudo cargar la librería de Excel. Revise la conexión.',mHelp:'Reemplazar por No. parte: solo se borran las filas de los números de parte pegados; los demás se conservan. Los datos se comparten en todas las PC.',sRows:'Circuitos guardados',sPn:'No. de parte',sUpd:'Último guardado',close:'Cerrar',hideBlank:'Ocultar vacíos',copyRow:'Copiar fila',all:'Todos',anyCol:'Cualquiera',noMaster:'No hay maestro. Pegue los datos en la pestaña Maestro.',noHit:'No hay circuitos con estas condiciones. Quite un filtro.',showing:'Mostrando los primeros 500',copied:'Fila copiada',saved:'Guardado',parsed:'filas leídas',cleared:'Maestro borrado',confirmClear:'¿Borrar todo el maestro?',confirmAll:'Se reemplazará todo el maestro. ¿Continuar?',nothing:'No hay filas para guardar.',symAny:'★ Solo con símbolo',twAll:'Todos',twT:'Trenzado (T)',twS:'Blindado (S)',twN:'Normal',twLen:'Long. trenzado',twPair:'Par',twInfo:'Trenzado',shInfo:'Blindado',twAfter:'Después de trenzar',cutLen:'corte',tw:'Trenzado / blindado',online:'Servidor',offline:'Sin conexión (caché)',saving:'Guardando…',loading:'Cargando…',saveErr:'Error al guardar en el servidor'};
+const KO={dlNone:'다운로드할 마스터가 없습니다.',dlErr:'엑셀 라이브러리를 불러오지 못했습니다. 인터넷 연결을 확인하세요.',all:'전체',anyCol:'전체 칸',noMaster:'마스터가 없습니다. 마스터 탭에서 엑셀 내용을 붙여넣으세요.',noHit:'조건에 맞는 회로가 없습니다. 조건을 하나 줄여 보세요.',showing:'앞 500건만 표시',copied:'행을 복사했습니다',saved:'저장했습니다',parsed:'행 읽음',cleared:'마스터를 삭제했습니다',confirmClear:'마스터 전체를 삭제할까요?',confirmAll:'기존 마스터를 모두 지우고 새로 저장합니다. 계속할까요?',nothing:'저장할 행이 없습니다.',symAny:'★ 심볼 있는 것만',twAll:'전체',twT:'트위스트 (T)',twS:'쉴드 (S)',twN:'일반 (없음)',twLen:'Tw후 길이',twPair:'짝 선번',twInfo:'트위스트',shInfo:'쉴드',twAfter:'트위스트 후',cutLen:'절단길이',online:'서버 연결',offline:'오프라인 (캐시 사용)',saving:'저장 중…',loading:'불러오는 중…',saveErr:'서버 저장 실패'};
 let lang='ko';
 const koText={};document.querySelectorAll('[data-i]').forEach(el=>koText[el.dataset.i]=el.innerHTML);
 const T=k=>lang==='es'?(ES[k]??KO[k]??k):(KO[k]??k);
@@ -338,12 +340,40 @@ document.getElementById('saveAll').onclick=()=>save('all').catch(()=>{});
 document.getElementById('clearAll').onclick=async()=>{if(!confirm(T('confirmClear')))return;try{await push([],null,true);toast(T('cleared'));}catch(e){}};
 document.getElementById('reloadBtn').onclick=()=>loadMaster();
 
+/* ---------- 엑셀 다운로드 ---------- */
+let xlsxReady=null;
+function loadXlsx(){
+  if(window.XLSX)return Promise.resolve();
+  if(xlsxReady)return xlsxReady;
+  xlsxReady=new Promise((res,rej)=>{const sc=document.createElement('script');sc.src='https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';sc.onload=res;sc.onerror=()=>{xlsxReady=null;rej(new Error('xlsx load'));};document.head.appendChild(sc);});
+  return xlsxReady;
+}
+async function downloadXlsx(pn){
+  const rows=pn?MASTER.rows.filter(r=>r[C.pn]===pn):MASTER.rows;
+  if(!rows.length){toast(T('dlNone'));return;}
+  const btn=document.getElementById('dlXlsx');btn.disabled=true;
+  try{
+    await loadXlsx();
+    const aoa=[MASTER.headers].concat(rows);
+    const ws=XLSX.utils.aoa_to_sheet(aoa);
+    ws['!cols']=MASTER.headers.map((h,i)=>({wch:Math.min(40,Math.max(8,(h||'').length+2,...rows.slice(0,200).map(r=>(r[i]||'').length+2)))}));
+    ws['!freeze']={xSplit:0,ySplit:1};
+    const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'MASTER');
+    const d=new Date(),pad=n=>String(n).padStart(2,'0');
+    const name='circuit_master'+(pn?'_'+pn.replace(/[\\/:*?"<>|]/g,'-'):'')+'_'+d.getFullYear()+pad(d.getMonth()+1)+pad(d.getDate())+'.xlsx';
+    XLSX.writeFile(wb,name);
+  }catch(e){console.error(e);toast(T('dlErr'));}
+  finally{btn.disabled=false;}
+}
+document.getElementById('dlXlsx').onclick=()=>downloadXlsx(null);
+document.getElementById('pnList').addEventListener('click',e=>{const c=e.target.closest('.pn-chip');if(c)downloadXlsx(c.dataset.pn);});
+
 function renderMasterStats(){
   const pnCount={};MASTER.rows.forEach(r=>pnCount[r[C.pn]]=(pnCount[r[C.pn]]||0)+1);
   document.getElementById('stRows').textContent=MASTER.rows.length.toLocaleString();
   document.getElementById('stPn').textContent=Object.keys(pnCount).length;
   document.getElementById('stUpd').textContent=MASTER.updated?new Date(MASTER.updated).toLocaleString():'-';
-  document.getElementById('pnList').innerHTML=Object.entries(pnCount).map(([p,n])=>`<span>${esc(p)} · ${n}</span>`).join('');
+  document.getElementById('pnList').innerHTML=Object.entries(pnCount).map(([p,n])=>`<span class="pn-chip" data-pn="${esc(p)}" title="${esc(p)} Excel ↓">${esc(p)} · ${n}</span>`).join('');
 }
 
 /* ---------- 조회 ---------- */
