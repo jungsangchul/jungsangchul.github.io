@@ -205,6 +205,24 @@
     .tab{padding:7px 14px;font-size:12.5px}
     main{padding:14px 10px 80px}
   }
+  /* ═══ 인쇄: 상세 모달만 흰 바탕으로 출력 ═══ */
+  @media print{
+    @page{margin:14mm}
+    html,body{background:#fff!important;color:#000!important;min-height:0}
+    body *{visibility:hidden}
+    #detailModal.show,#detailModal.show *{visibility:visible}
+    #detailModal.show{position:static!important;display:block!important;background:#fff!important;padding:0!important;overflow:visible!important}
+    #detailModal .mbox{background:#fff!important;color:#000!important;border:none!important;box-shadow:none!important;max-width:none;width:100%;padding:0;margin:0;border-radius:0}
+    #detailModal .mhead h3{color:#000!important;font-size:18px}
+    #detailModal .mclose,#detailModal #mActions,#detailModal #mDelete,#detailModal #mEdit,#detailModal .btn,#detailModal .noprint{display:none!important}
+    #detailModal .dl{font-size:13px;gap:8px 12px}
+    #detailModal .dl dt{color:#555!important;font-weight:700}
+    #detailModal .dl dd{color:#000!important}
+    #detailModal .badge{color:#000!important;background:#fff!important;border:1px solid #000!important}
+    #detailModal .pthumb img{border:1px solid #999!important}
+    #detailModal .pthumb .pdel{display:none!important}
+    header,main,.toast,#qrModal{display:none!important}
+  }
 </style>
 </head>
 <body>
@@ -348,7 +366,7 @@
 <!-- 상세 모달 -->
 <div class="modal" id="detailModal">
   <div class="mbox">
-    <div class="mhead"><h3 id="mTitle"></h3><button class="mclose" onclick="closeModal()">✕</button></div>
+    <div class="mhead"><h3 id="mTitle"></h3><div style="display:flex;gap:6px;align-items:center"><button class="btn gry noprint" style="padding:5px 10px;font-size:12px" onclick="printDetail()">🖨 인쇄 / Imprimir</button><button class="mclose" onclick="closeModal()">✕</button></div></div>
     <div id="mView">
       <dl class="dl" id="mBody"></dl>
       <div id="mActions" style="display:none;margin-top:16px">
@@ -967,6 +985,13 @@ function openDetailFrom(src,i){
   document.getElementById('detailModal').classList.add('show');
 }
 function closeModal(){document.getElementById('detailModal').classList.remove('show');}
+function printDetail(){
+  document.body.classList.add('printing');
+  const done=()=>{document.body.classList.remove('printing');window.removeEventListener('afterprint',done);};
+  window.addEventListener('afterprint',done);
+  window.print();
+  setTimeout(done,3000);
+}
 
 /* --- 관리자 삭제 (테스트·이상 데이터 정리) --- */
 async function deleteRecord(){
