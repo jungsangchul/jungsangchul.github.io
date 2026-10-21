@@ -114,6 +114,7 @@
   tbody tr:hover{background:#f6f9fd}
   .pill{display:inline-block;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:800;letter-spacing:.2px}
   .pill.in{background:#dcfce7;color:#15803d}.pill.out{background:#eef2f6;color:#475569}
+  .pill.night{background:#e0e7ff;color:#4338ca}
   .pill.normal{background:#dcfce7;color:#15803d}.pill.late{background:#fee2e2;color:#b91c1c}.pill.early{background:#fef3c7;color:#92400e}
   .photo-btn{background:#eef3f9;border:1px solid #e2e9f1;border-radius:8px;padding:5px 11px;font-size:12px;font-weight:700;color:var(--navy);cursor:pointer;transition:.12s}
   .photo-btn:hover{background:var(--navy);color:#fff;border-color:var(--navy)}
@@ -270,6 +271,12 @@
   .trtag.no{background:#fef3c7;color:#b45309}
   .trchk{display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;color:#334155;margin:4px 0 8px;cursor:pointer}
   .trprog{font-size:12px;font-weight:800;color:#163a66;min-height:16px;margin-top:6px}
+  .trmap{border:1px dashed #d8e0ea;border-radius:10px;padding:8px 10px;margin:4px 0 8px;background:#f8fafc}
+  .trmap-h{font-size:12px;font-weight:800;color:#b45309;margin-bottom:6px}
+  .trmap-row{display:grid;grid-template-columns:minmax(120px,1fr) 20px minmax(160px,2fr);gap:8px;align-items:center;font-size:12.5px;margin:3px 0}
+  .trmap-row>span:first-child{color:#0c2444;font-weight:700}
+  .trmap-row input{border:1px solid #d8e0ea;border-radius:8px;padding:6px 8px;font-size:12.5px;background:#fff;color:#0c2444;outline:none;width:100%}
+  .trmap-row input:focus{border-color:#163a66}
 
   .langtog{display:inline-flex;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.22);border-radius:10px;overflow:hidden}
   .langtog button{border:none;background:transparent;color:rgba(255,255,255,.62);font-weight:800;font-size:12px;padding:9px 13px;cursor:pointer;transition:.15s;min-width:38px}
@@ -372,6 +379,7 @@
   .pill{font-size:10.5px;font-weight:600;letter-spacing:.04em;border:1px solid transparent;background:transparent}
   .pill.in,.pill.normal{border-color:rgba(76,175,125,.4);color:#4caf7d;background:rgba(76,175,125,.06)}
   .pill.out{border-color:var(--line2);color:#999}
+  .pill.night{border-color:rgba(129,140,248,.45);color:#a5b4fc;background:rgba(129,140,248,.08)}
   .pill.late{border-color:rgba(224,92,92,.4);color:#ef9a9a;background:rgba(224,92,92,.06)}
   .pill.early{border-color:rgba(224,168,74,.4);color:#e0a84a;background:rgba(224,168,74,.06)}
   .photo-btn{background:transparent;border:1px solid var(--line2);color:#c8c8c8;border-radius:999px;font-weight:600}
@@ -459,7 +467,7 @@
         </div>
       </div>
     </div>
-    <div class="system-bar"><span>Attendance · Meal Dashboard / 출석 · 식사 관리</span><span><b>Plant 1</b> · Monclova&nbsp;&nbsp;<span class="updated" id="updated">v7.17</span></span></div>
+    <div class="system-bar"><span>Attendance · Meal Dashboard / 출석 · 식사 관리</span><span><b>Plant 1</b> · Monclova&nbsp;&nbsp;<span class="updated" id="updated">v7.21</span></span></div>
   </header>
   <div class="toolbar">
     <div class="filters">
@@ -633,7 +641,9 @@
       <span class="qfld"><label id="ltrFactory">장소</label><select id="trFactory"></select></span>
     </div>
     <textarea id="trText" class="trta" spellcheck="false" placeholder="TRESS 엑셀에서 행 전체(또는 B열부터) 복사 → 여기에 붙여넣기 (Ctrl+V)"></textarea>
-    <label class="trchk"><input type="checkbox" id="trReg"> <span id="ltrReg">미등록 사번은 직원으로 자동 등록 (이름·부서 사용)</span></label>
+    <label class="trchk"><input type="checkbox" id="trReg" checked onchange="renderTress()"> <span id="ltrReg">미등록 사번은 직원 마스터에 등록</span></label>
+    <div class="trmap" id="trMap" style="display:none"></div>
+    <datalist id="trTeamList"></datalist>
     <div class="qsum" id="trSum"></div>
     <div class="trdepts" id="trDepts"></div>
     <div class="qwrap" style="max-height:36vh"><table class="qt" id="trTable"><thead></thead><tbody></tbody></table></div>
@@ -683,6 +693,21 @@ const CONFIG = {
   SCHED_RULES: [
     { factory:"1", from:"2026-07-09", inBy:"08:00", outBy:"17:36" }
   ],
+  /* ✅ 야간조 (v7.18): 첫 출근 타각이 from(18:00) 이후면 야간조로 보고 야간 기준으로 지각·조퇴 판정.
+     퇴근은 다음날 새벽 — 다음날 outUntil(12:00) 이전의 'out' 타각을 전날 야간 퇴근으로 인정 */
+  NIGHT: { from:"18:00", inBy:"18:00", outBy:"03:36", outUntil:"12:00" },
+  /* ✅ TRESS 부서(Dpto) → 시스템 팀명 (v7.20). 저장 형식: 한글팀명(TRESS 부서명) */
+  TRESS_TEAMS: {
+    "Calidad":"품질관리팀",
+    "Control de Produccion":"생관",
+    "Finanzas y contabilidad":"재무원가팀",
+    "Mantenimiento":"가공보전팀",
+    "Materiales y comerio":"자재무역팀",
+    "Produccion ensamble":"조립생산팀",
+    "Produccion maquinado":"가공생산팀",
+    "Recursos humanos y Asuntos gen":"인사총무팀",
+    "Tecnicas de produccion":"생산기술팀"
+  },
   /* ✅ 근무시간 계산용 고정 공제 (분): 휴게 20 + 점심 30 */
   WORKTIME: { breakMin:20, lunchMin:30 },
   /* ✅ Horas-hombre 붙여넣기용: 출근일 1일 기준 시간값 */
@@ -701,7 +726,7 @@ const I18N={
     tabAtt:"출석 현황", tabAbsent:"미출근", tabLate:"지각 인원", tabMeal:"식사 신청", tabNoout:"퇴근 미타각", tabEarly:"조퇴",
     barPlant:"장소별 인원", barTeam:"팀별 인원", excel:"Excel 내보내기", empty:"데이터 없음",
     colId:"사번", colName:"이름", colTeam:"팀", colPlant:"장소", colIn:"출근", colOut:"퇴근", colState:"상태", colWork:"근태", colPhoto:"사진", colTime:"신청시각",
-    photoView:"보기", present:"재실", left:"퇴근", normal:"정상", late:"지각", early:"조퇴",
+    photoView:"보기", present:"재실", left:"퇴근", normal:"정상", late:"지각", early:"조퇴", night:"야간",
     photoNone:"사진 없음", photoFail:"사진 불러오기 실패", close:"닫기",
     pinTitle:"관리자 대시보드", pinSub:"비밀번호를 입력하세요", pinOpen:"열기", pinBad:"비밀번호가 올바르지 않습니다.",
     mngPinTitle:"직원 관리 · 접근 제한", mngPinSub:"직원 관리는 지정된 관리자만 접속할 수 있습니다.\n전용 비밀번호를 입력하세요.", mngPinOk:"확인", mngPinCancel:"취소", mngPinBad:"비밀번호가 올바르지 않습니다.",
@@ -731,7 +756,8 @@ const I18N={
     mealAdd:"식사 수기 등록", mealAddBtn:"+ 식사 등록", mealOk:"등록", mealDup:"이미 식사 신청됨", idBad:"등록되지 않은 사번입니다", needId:"사번을 입력하세요",
     trBtn:"TRESS 붙여넣기", trTitle:"TRESS 근태 붙여넣기 → 출결현황 반영", trDate:"반영 날짜", trFactory:"장소",
     trHint:"TRESS 「Asistencia Diaria」 엑셀에서 행을 통째로 복사해 붙여넣으세요 (B열=사번, D열=이름, G열=부서, I/J=1차 출·퇴근, K/L=2차 출·퇴근). 사번은 M0+8자리로 변환됩니다. 같은 날짜의 이전 TRESS 반영분은 교체되고 QR 타각 기록은 유지됩니다.",
-    trReg:"미등록 사번은 직원으로 자동 등록 (이름·부서 사용)",
+    trReg:"미등록 사번은 직원 마스터에 등록 (반영과 동시에)", trMapH:n=>`미등록 ${n}명 — TRESS 부서 → 시스템 팀 지정 (빈칸이면 부서명 그대로 저장)`, trMapPh:"팀 선택/입력",
+    trRegDone:n=>`신규 직원 ${n}명 마스터 등록`, trRegFail:"직원 마스터 등록 실패 — Supabase 권한 확인",
     trRun:"출결현황에 반영", trNone:"인식된 행이 없습니다 — B열 사번(8자리 숫자)이 포함되도록 붙여넣으세요",
     trSum:(n,reg,unreg,noout,sel)=>`인식 ${n}명 · 등록 ${reg} · 미등록 ${unreg} · 퇴근 없음 ${noout} · 반영 대상 ${sel}명`,
     trDept:"부서", trIn:"출근", trOut:"퇴근", trRegCol:"등록", trRegOk:"등록", trRegNo:"미등록",
@@ -744,7 +770,7 @@ const I18N={
     tabAtt:"Asistencia", tabAbsent:"Ausentes", tabLate:"Tardanzas", tabMeal:"Comidas", tabNoout:"Sin salida", tabEarly:"Salida anticipada",
     barPlant:"Por lugar", barTeam:"Por equipo", excel:"Exportar Excel", empty:"Sin datos",
     colId:"N° emp.", colName:"Nombre", colTeam:"Equipo", colPlant:"Lugar", colIn:"Entrada", colOut:"Salida", colState:"Estado", colWork:"Puntualidad", colPhoto:"Foto", colTime:"Hora",
-    photoView:"Ver", present:"Presente", left:"Salió", normal:"A tiempo", late:"Tarde", early:"Anticipada",
+    photoView:"Ver", present:"Presente", left:"Salió", normal:"A tiempo", late:"Tarde", early:"Anticipada", night:"Noct.",
     photoNone:"Sin foto", photoFail:"Error al cargar foto", close:"Cerrar",
     pinTitle:"Panel", pinSub:"Ingrese la contraseña", pinOpen:"Abrir", pinBad:"Contraseña incorrecta.",
     mngPinTitle:"Gestión de empleados · Acceso restringido", mngPinSub:"Solo administradores autorizados.\nIngrese la contraseña exclusiva.", mngPinOk:"Confirmar", mngPinCancel:"Cancelar", mngPinBad:"Contraseña incorrecta.",
@@ -774,7 +800,8 @@ const I18N={
     mealAdd:"Registro manual de comida", mealAddBtn:"+ Comida", mealOk:"Registrar", mealDup:"Comida ya registrada", idBad:"N° no registrado", needId:"Ingrese el N°",
     trBtn:"Pegar TRESS", trTitle:"Pegar asistencia TRESS → Panel", trDate:"Fecha", trFactory:"Lugar",
     trHint:"Copie las filas completas del Excel «Asistencia Diaria» de TRESS y péguelas aquí (col. B=N°, D=Nombre, G=Dpto, I/J=1ª Ent/Sal, K/L=2ª Ent/Sal). El N° se convierte a M0+8 dígitos. Los registros TRESS anteriores de la misma fecha se reemplazan; las checadas QR se conservan.",
-    trReg:"Registrar automáticamente N° no registrados como empleados (nombre y dpto)",
+    trReg:"Registrar N° no registrados en el maestro de empleados (al aplicar)", trMapH:n=>`${n} no registrados — Dpto TRESS → Equipo del sistema (vacío = usar el nombre del dpto)`, trMapPh:"Elegir/escribir equipo",
+    trRegDone:n=>`${n} empleados nuevos registrados`, trRegFail:"Error al registrar empleados — revise permisos",
     trRun:"Aplicar al panel", trNone:"No se reconoció ninguna fila — incluya la col. B (N° de 8 dígitos)",
     trSum:(n,reg,unreg,noout,sel)=>`${n} reconocidos · ${reg} registrados · ${unreg} no registrados · ${noout} sin salida · ${sel} a aplicar`,
     trDept:"Dpto", trIn:"Entrada", trOut:"Salida", trRegCol:"Reg.", trRegOk:"Sí", trRegNo:"No",
@@ -885,6 +912,43 @@ function localMin(iso){ const dt=new Date(new Date(iso).getTime()+CONFIG.TZ_OFFS
 function hhmm(iso){ const dt=new Date(new Date(iso).getTime()+CONFIG.TZ_OFFSET_HOURS*3600*1000); return String(dt.getUTCHours()).padStart(2,"0")+":"+String(dt.getUTCMinutes()).padStart(2,"0"); }
 function hmToMin(s){ const [h,m]=s.split(":").map(Number); return h*60+m; }
 function minToHm(m){ if(m==null||isNaN(m)) return "-"; const h=Math.floor(m/60), i=Math.round(m%60); return String(h).padStart(2,"0")+":"+String(i).padStart(2,"0"); }
+function prevDate(d){ const dt=new Date(d+"T00:00:00Z"); dt.setUTCDate(dt.getUTCDate()-1); return dt.toISOString().slice(0,10); }
+function nextDate(d){ const dt=new Date(d+"T00:00:00Z"); dt.setUTCDate(dt.getUTCDate()+1); return dt.toISOString().slice(0,10); }
+
+/* ---------- 교대(주간/야간) 인식 (v7.18) ----------
+   · 첫 출근 타각이 NIGHT.from(18:00) 이후 → 야간조 (cell.night=true)
+   · 야간조 퇴근 = 다음날 NIGHT.outUntil(12:00) 이전 'out' 타각 → 전날 셀에 붙임 (outMin은 1440+분)
+   · 당일 출근 전에 찍힌 새벽 'out'(전날 야간 퇴근)은 당일 집계에서 제외 */
+function nightCfg(){ return CONFIG.NIGHT||{from:"18:00",inBy:"18:00",outBy:"03:36",outUntil:"12:00"}; }
+function isNightIn(min){ return min!=null && min>=hmToMin(nightCfg().from); }
+/* 셀의 근태 기준 (분 단위, 야간은 퇴근기준이 1440+) */
+function cellSched(cell,d){
+  if(cell&&cell.night){ const N=nightCfg(); return {S:hmToMin(N.inBy),E:hmToMin(N.outBy)+1440,inBy:N.inBy,outBy:N.outBy,night:true}; }
+  const sc=plantSched(cell?cell.fac:null,d); return {S:hmToMin(sc.inBy),E:hmToMin(sc.outBy),inBy:sc.inBy,outBy:sc.outBy,night:false};
+}
+/* 시간순 기록 → { 사번: { 날짜: cell } } */
+function groupShift(recs){
+  const OUT_UNTIL=hmToMin(nightCfg().outUntil||"12:00");
+  const out={};
+  for(const r of recs){
+    const k=r.employee_id; const d=localDate(r.created_at); const m=localMin(r.created_at);
+    const emp=(out[k]=out[k]||{});
+    if(r.type==="out" && m<OUT_UNTIL){
+      const pc=emp[prevDate(d)];
+      if(pc && pc.night && pc.inMin!=null){            // 전날 야간조의 새벽 퇴근
+        const mm=m+1440; if(pc.outMin==null||mm>pc.outMin){ pc.outMin=mm; pc.outAt=r.created_at; }
+        pc.out=true; pc.last="out"; continue;
+      }
+      if(!emp[d] || emp[d].inMin==null) continue;      // 당일 출근 전 새벽 퇴근 → 당일 집계 제외
+    }
+    const c=(emp[d]=emp[d]||{inMin:null,inAt:null,outMin:null,outAt:null,out:false,night:false,fac:r.factory,name:r.name,inId:null,anyId:r.id,firstAt:r.created_at,last:null});
+    if(c.fac==null) c.fac=r.factory; if(!c.name) c.name=r.name;
+    if(r.type==="in"&&c.inMin==null){ c.inMin=m; c.inAt=r.created_at; c.inId=r.id; c.night=isNightIn(m); }
+    if(r.type==="out"){ c.out=true; if(c.outMin==null||m>c.outMin){ c.outMin=m; c.outAt=r.created_at; } }
+    c.last=r.type;
+  }
+  return out;
+}
 
 /* ---------- 로드 ---------- */
 async function getJson(url){ const r=await fetch(url,{headers:HEADERS}); if(!r.ok) throw new Error(await r.text()); return r.json(); }
@@ -895,7 +959,7 @@ async function refresh(){
     const [emp,att,meal]=await Promise.all([
       getJson(REST(`${CONFIG.T_EMPLOYEES}?active=eq.true&select=employee_id,name,team,factory,hire_date&limit=5000`))
         .catch(()=>getJson(REST(`${CONFIG.T_EMPLOYEES}?active=eq.true&select=employee_id,name,team,factory&limit=5000`)).catch(()=>[])),
-      getJson(REST(`${CONFIG.T_RECORDS}?created_at=gte.${start}&created_at=lt.${end}&select=id,employee_id,name,type,factory,created_at&order=created_at.asc&limit=20000`)),
+      getJson(REST(`${CONFIG.T_RECORDS}?created_at=gte.${start}&created_at=lt.${new Date(new Date(end).getTime()+hmToMin(nightCfg().outUntil||"12:00")*60000).toISOString()}&select=id,employee_id,name,type,factory,created_at&order=created_at.asc&limit=20000`)),
       getJson(REST(`${CONFIG.T_MEALS}?meal_date=eq.${date}&status=eq.applied&select=employee_id,name,factory,created_at&order=created_at.asc&limit=20000`))
     ]);
     const noTest=arr=>Array.isArray(arr)?arr.filter(x=>!isTestId(x.employee_id)):[];
@@ -903,7 +967,7 @@ async function refresh(){
     const hiredBy=e=>!e.hire_date || String(e.hire_date).slice(0,10)<=date;
     state.employees=noTest(emp).filter(hiredBy); state.att=noTest(att); state.meal=noTest(meal);
     compute();
-    $("updated").textContent=t("updated")+new Date().toLocaleTimeString(lang==="ko"?"ko-KR":"es-MX")+" · v7.17";
+    $("updated").textContent=t("updated")+new Date().toLocaleTimeString(lang==="ko"?"ko-KR":"es-MX")+" · v7.21";
   }catch(e){ $("updated").textContent=t("queryErr"); console.error(e); }
 }
 
@@ -918,30 +982,22 @@ function compute(){
   const teamSel=$("fTeam").value;
   const passTeam=tm=>!teamSel || (tm||"")===teamSel;
 
-  const byEmp={};
-  for(const r of state.att){
-    if(!passFactory(r)) continue;
-    const k=r.employee_id;
-    if(!byEmp[k]) byEmp[k]={employee_id:k,name:r.name,factory:r.factory,firstIn:null,firstSeen:r.created_at,lastOut:null,last:null,inId:null,anyId:r.id};
-    const g=byEmp[k];
-    if(r.type==="in"){ if(!g.firstIn) g.firstIn=r.created_at; if(!g.inId) g.inId=r.id; }
-    if(r.type==="out"){ g.lastOut=r.created_at; }
-    g.last=r.type;
-  }
-  // ✅ 당일 어떤 기록이라도 있으면 출석현황에 표시 (이전에는 'in' 기록이 있는 직원만 표시 →
-  //    스캐너가 'out'으로 기록했거나 날짜경계 문제가 있을 때 출석현황에서 누락되던 문제 해결)
-  const attRows=Object.values(byEmp);
+  // v7.18: 주간/야간 교대 인식 그룹핑 (조회일 셀만 사용, 다음날 새벽 퇴근은 야간조 셀에 붙음)
+  const viewDate=$("fDate").value||todayDate();
+  const grouped=groupShift(state.att.filter(passFactory));
+  const attRows=[]; for(const k in grouped){ const c=grouped[k][viewDate]; if(c) attRows.push(Object.assign({employee_id:k},c)); }
+  // ✅ 당일 어떤 기록이라도 있으면 출석현황에 표시
   const presentIds=new Set(attRows.map(g=>g.employee_id));
 
   view.att=attRows.map(g=>{
-    const sc=plantSched(g.factory);
-    const late = g.firstIn ? localMin(g.firstIn)>hmToMin(sc.inBy) : false;
-    const early = g.lastOut ? localMin(g.lastOut)<hmToMin(sc.outBy) : false;
-    const inSrc = g.firstIn||g.firstSeen;
-    return { employee_id:g.employee_id, name:g.name||g.employee_id, factory:g.factory, team:empTeam[g.employee_id]||"",
+    const sc=cellSched(g,viewDate);
+    const late = g.inMin!=null ? g.inMin>sc.S : false;
+    const early = g.outMin!=null ? g.outMin<sc.E : false;
+    const inSrc = g.inAt||g.firstAt;
+    return { employee_id:g.employee_id, name:g.name||g.employee_id, factory:g.fac, team:empTeam[g.employee_id]||"",
       status:(g.last==="out"?"out":"in"),
-      inTime:inSrc?hhmm(inSrc):"", outTime:g.lastOut?hhmm(g.lastOut):"",
-      noIn:!g.firstIn, late, early, photoId:g.inId||g.anyId||null };
+      inTime:inSrc?hhmm(inSrc):"", outTime:g.outAt?hhmm(g.outAt):"",
+      noIn:g.inMin==null, late, early, night:!!g.night, photoId:g.inId||g.anyId||null };
   }).filter(r=>passTeam(r.team));
 
   view.absent=state.employees.filter(e=>passFactory(e)).filter(e=>!presentIds.has(e.employee_id))
@@ -1034,9 +1090,11 @@ function renderBars(){
 }
 function workPill(r){
   if(r.status==="absent") return "–";
-  if(r.late&&r.early) return `<span class="pill late">${t("late")}</span> <span class="pill early">${t("early")}</span>`;
-  if(r.late) return `<span class="pill late">${t("late")}</span>`;
-  if(r.early) return `<span class="pill early">${t("early")}</span>`;
+  const nt=r.night?`<span class="pill night">${t("night")}</span> `:"";
+  if(r.late&&r.early) return nt+`<span class="pill late">${t("late")}</span> <span class="pill early">${t("early")}</span>`;
+  if(r.late) return nt+`<span class="pill late">${t("late")}</span>`;
+  if(r.early) return nt+`<span class="pill early">${t("early")}</span>`;
+  if(r.night) return nt+`<span class="pill normal">${t("normal")}</span>`;
   return `<span class="pill normal">${t("normal")}</span>`;
 }
 function renderTable(){
@@ -1188,7 +1246,8 @@ async function markLeft(empId, btn){
     if(!confirm(t("confirmCheckout")(row.name))) return;
   }
   if(btn){ btn.disabled=true; btn.textContent=t("processing"); }
-  const body={ employee_id:empId, name:row.name, type:"out", factory:row.factory, flag:"normal", created_at:isoAtLocal(date,sched.outBy) };
+  const outAt = row.night ? isoAtLocal(nextDate(date), nightCfg().outBy) : isoAtLocal(date,sched.outBy);
+  const body={ employee_id:empId, name:row.name, type:"out", factory:row.factory, flag:"normal", created_at:outAt };
   try{
     const r=await fetch(REST(CONFIG.T_RECORDS),{method:"POST",headers:JSON_HEADERS,body:JSON.stringify(body)});
     if(!r.ok){ console.error(await r.text()); if(btn){ btn.disabled=false; btn.textContent=t("btnCheckout"); } alert(t("opFail")); return; }
@@ -1202,7 +1261,7 @@ function openTress(){
   $("trDate").value=$("fDate").value||todayDate();
   $("trFactory").innerHTML=factoryOptions();
   const curF=fFactory(); if(curF&&CONFIG.FACTORIES[curF]) $("trFactory").value=curF;
-  $("trText").value=""; tressRows=[]; tressDeptOn={}; $("trProg").textContent="";
+  $("trText").value=""; tressRows=[]; tressDeptOn={}; tressTeamMap={}; $("trProg").textContent="";
   renderTress();
   $("tressModal").classList.add("open"); setTimeout(()=>$("trText").focus(),150);
 }
@@ -1220,6 +1279,30 @@ function tressTime(v){
   if(h>23||mi>59) return "";
   return String(h).padStart(2,"0")+":"+String(mi).padStart(2,"0");
 }
+/* TRESS 이름 "APELLIDO PATERNO MATERNO, NOMBRE" → "Nombre Apellido Paterno Materno" (Title Case) */
+function tressName(raw){
+  const s=String(raw||"").trim(); if(!s) return "";
+  const tc=x=>x.toLowerCase().replace(/(^|[\s\-'’])(\S)/g,(m,a,b)=>a+b.toUpperCase())
+             .replace(/\b(De|Del|La|Las|Los|Y|E|Da|Do|Dos|Van|Von)\b/g,m=>m.toLowerCase());
+  const i=s.indexOf(",");
+  if(i<0) return tc(s);
+  const sur=s.slice(0,i).trim(), giv=s.slice(i+1).trim();
+  return tc((giv+" "+sur).replace(/\s+/g," ").trim());
+}
+let tressTeamMap={};   // TRESS 부서 → 시스템 팀 (미등록 직원 등록용)
+function sysTeams(){ return [...new Set(state.employees.map(e=>(e.team||"").trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'ko')); }
+/* TRESS 부서 → 팀명: CONFIG.TRESS_TEAMS 고정 매핑(대소문자·악센트·공백 무시) → 없으면 기존 팀명에서 추천 */
+const normDept=x=>String(x||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9가-힣]/g,"");
+function guessTeam(dept){
+  const d=normDept(dept); if(!d) return "";
+  const M=CONFIG.TRESS_TEAMS||{};
+  for(const k in M){ if(normDept(k)===d) return `${M[k]}(${k})`; }
+  for(const k in M){ const nk=normDept(k); if(nk&&(nk.includes(d)||d.includes(nk))) return `${M[k]}(${k})`; }
+  const teams=sysTeams();
+  for(const tm of teams){ const x=tm.toLowerCase().replace(/[^a-z0-9áéíóúñü가-힣]/g,""); if(x.includes(d)) return tm; }
+  return "";
+}
+function setTressTeam(dept,v){ tressTeamMap[dept]=v; }
 /* TRESS 사번(8자리) → 시스템 사번 (M0 + 8자리) */
 function tressId(raw){
   const s=String(raw||"").trim().toUpperCase().replace(/\.0+$/,"");
@@ -1248,7 +1331,7 @@ function parseTress(){
     if(!tIn&&!tOut) continue;
     seen.add(id);
     const e=emp[id];
-    out.push({ employee_id:id, name:e?(e.name||id):name, pasteName:name, team:dept, in:tIn, out:tOut, reg:!!e });
+    out.push({ employee_id:id, name:e?(e.name||id):tressName(name), pasteName:tressName(name), team:dept, in:tIn, out:tOut, reg:!!e });
   }
   tressRows=out;
   // 부서 체크 상태 유지 (새 부서는 기본 선택)
@@ -1264,6 +1347,18 @@ function renderTress(){
   const cnt={}; tressRows.forEach(r=>{ const k=r.team||""; cnt[k]=(cnt[k]||0)+1; });
   $("trDepts").innerHTML=depts.map(d=>`<label class="trdept ${tressDeptOn[d]?"on":""}" onclick="event.preventDefault();toggleTressDept(${JSON.stringify(d)})"><input type="checkbox" ${tressDeptOn[d]?"checked":""}>${tressDeptOn[d]?"✓ ":""}${escapeHtml(d||"—")} <span style="opacity:.6">${cnt[d]||0}</span></label>`).join("");
   const sel=tressSelected();
+  /* 미등록 직원 → 부서별 팀 지정 UI */
+  const unreg=sel.filter(r=>!r.reg);
+  if(unreg.length && $("trReg").checked){
+    const ud=[...new Set(unreg.map(r=>r.team||""))].sort();
+    ud.forEach(d=>{ if(!(d in tressTeamMap)) tressTeamMap[d]=guessTeam(d); });
+    $("trTeamList").innerHTML=sysTeams().map(tm=>`<option value="${escapeHtml(tm)}">`).join("");
+    $("trMap").innerHTML=`<div class="trmap-h">${T.trMapH(unreg.length)}</div>`+ud.map(d=>{
+      const n=unreg.filter(r=>(r.team||"")===d).length;
+      return `<div class="trmap-row"><span>${escapeHtml(d||"—")} <span style="opacity:.6">${n}</span></span><span style="text-align:center;color:#94a3b8">→</span><input list="trTeamList" value="${escapeHtml(tressTeamMap[d]||"")}" placeholder="${escapeHtml(T.trMapPh)}" oninput="setTressTeam(${JSON.stringify(d)},this.value)"></div>`;
+    }).join("");
+    $("trMap").style.display="";
+  } else { $("trMap").style.display="none"; $("trMap").innerHTML=""; }
   if(!tressRows.length){
     $("trSum").textContent=$("trText").value.trim()?T.trNone:"";
     $("trTable").querySelector("thead").innerHTML=""; $("trTable").querySelector("tbody").innerHTML="";
@@ -1284,8 +1379,25 @@ async function submitTress(){
   $("trRun").disabled=true; $("trClose").disabled=true;
   const CH=200; const tot={deleted:0,ins_in:0,ins_out:0,new_emp:0,skipped:0};
   try{
+    /* 1) 미등록 사번 → 직원 마스터 등록 (부서→팀 매핑 적용, 이미 있으면 무시) */
+    if(register){
+      const unreg=rows.filter(r=>!r.reg);
+      const have=new Set();
+      for(let i=0;i<unreg.length;i+=CH){
+        const part=unreg.slice(i,i+CH);
+        const body=part.map(r=>({ employee_id:r.employee_id, name:r.pasteName||r.employee_id, name_ko:"", team:(tressTeamMap[r.team||""]||"").trim()||(r.team||""), factory, active:true }));
+        $("trProg").textContent=T.trProg(Math.min(i+CH,unreg.length),unreg.length)+" · "+T.trRegCol;
+        const res=await fetch(REST(`${CONFIG.T_EMPLOYEES}?on_conflict=employee_id`),{method:"POST",
+          headers:Object.assign({},HEADERS,{"Content-Type":"application/json","Prefer":"resolution=ignore-duplicates,return=minimal"}),body:JSON.stringify(body)});
+        if(!res.ok){ console.error(await res.text()); $("trProg").textContent=T.trRegFail; throw new Error("reg"); }
+        part.forEach(r=>have.add(r.employee_id));
+      }
+      tot.new_emp+=have.size;
+      rows.forEach(r=>{ if(have.has(r.employee_id)){ r.reg=true; r.name=r.pasteName||r.name; } });
+    }
+    /* 2) 출결 반영 */
     for(let i=0;i<rows.length;i+=CH){
-      const part=rows.slice(i,i+CH).map(r=>({employee_id:r.employee_id,name:r.pasteName||r.name,team:r.team,in:r.in,out:r.out,register}));
+      const part=rows.slice(i,i+CH).map(r=>({employee_id:r.employee_id,name:r.pasteName||r.name,team:r.team,in:r.in,out:r.out,register:false}));
       $("trProg").textContent=T.trProg(Math.min(i+CH,rows.length),rows.length);
       const res=await fetch(REST("rpc/tress_import"),{method:"POST",headers:Object.assign({},HEADERS,{"Content-Type":"application/json"}),
         body:JSON.stringify({p_date:date,p_factory:factory,p_rows:part})});
@@ -1296,7 +1408,7 @@ async function submitTress(){
     if(($("fDate").value||todayDate())!==date) $("fDate").value=date;
     await refresh();
     $("trText").value=""; tressRows=[]; tressDeptOn={}; renderTress();
-  }catch(e){ $("trProg").textContent=T.trFail; }
+  }catch(e){ if(!/reg/.test(String(e&&e.message))) $("trProg").textContent=T.trFail; }
   finally{ $("trRun").disabled=tressSelected().length===0; $("trClose").disabled=false; }
 }
 
@@ -1447,15 +1559,8 @@ async function runQuery(){
       for(const r of recs){ val[r.employee_id]=(val[r.employee_id]||0)+1; }
     } else {
       const recs=await fetchRange(CONFIG.T_RECORDS,"employee_id,factory,type,created_at",fromISO,toISO,factory);
-      // employee → date → {in:firstMin, out:bool, fac}
-      const byEmpDate={};
-      for(const r of recs){
-        const d=localDate(r.created_at); const k=r.employee_id;
-        (byEmpDate[k]=byEmpDate[k]||{});
-        const cell=(byEmpDate[k][d]=byEmpDate[k][d]||{inMin:null,out:false,outMin:null,fac:r.factory});
-        if(r.type==="in"){ const m=localMin(r.created_at); if(cell.inMin==null||m<cell.inMin) cell.inMin=m; if(cell.fac==null) cell.fac=r.factory; }
-        if(r.type==="out"){ cell.out=true; const m=localMin(r.created_at); if(cell.outMin==null||m>cell.outMin) cell.outMin=m; }
-      }
+      // employee → date → {inMin, out, outMin, fac, night}  (v7.18: 주간/야간 교대 인식, 야간 퇴근은 outMin 1440+)
+      const byEmpDate=groupShift(recs);
       /* ▼ Horas-hombre 붙여넣기용: 출근(타각 or 식수신청)=HH_VALUE, 근무일 미출근=결근, 그 외 빈칸 · 사번순 */
       if(item==="hh"){
         const HHV=CONFIG.HH_VALUE||8.46;
@@ -1551,8 +1656,8 @@ async function runQuery(){
           dates.forEach((d,j)=>{
             const cell=hasRec?byEmpDate[id][d]:null; let v="";
             if(cell && cell.inMin!=null){
-              const sc=plantSched(cell.fac,d);
-              const S=hmToMin(sc.inBy), E=hmToMin(sc.outBy);
+              const sc=cellSched(cell,d);
+              const S=sc.S, E=sc.E;
               const start=Math.max(cell.inMin,S);
               const partial=(cell.outMin==null);
               const end=Math.min(partial?E:cell.outMin,E);
@@ -1606,7 +1711,7 @@ async function runQuery(){
             days++; sum+=cell.inMin;
             if(mn==null||cell.inMin<mn) mn=cell.inMin;
             if(mx==null||cell.inMin>mx) mx=cell.inMin;
-            const sc=plantSched(cell.fac,d); if(cell.inMin>hmToMin(sc.inBy)) late++;
+            if(cell.inMin>cellSched(cell,d).S) late++;
           }
           if(days) timeStats[k]={days,avg:Math.round(sum/days),mn,mx,late};
         }
@@ -1616,9 +1721,9 @@ async function runQuery(){
         for(const d in byEmpDate[k]){
           const cell=byEmpDate[k][d]; const hasIn=cell.inMin!=null;
           if(item==="att"){ if(hasIn) c++; }
-          else if(item==="late"){ if(hasIn){ const sc=plantSched(cell.fac,d); if(cell.inMin>hmToMin(sc.inBy)) c++; } }
+          else if(item==="late"){ if(hasIn){ if(cell.inMin>cellSched(cell,d).S) c++; } }
           else if(item==="noout"){ if(hasIn && !cell.out) c++; }
-          else if(item==="early"){ if(cell.out && cell.outMin!=null){ const sc=plantSched(cell.fac,d); if(cell.outMin<hmToMin(sc.outBy)) c++; } }
+          else if(item==="early"){ if(cell.out && cell.outMin!=null){ if(cell.outMin<cellSched(cell,d).E) c++; } }
         }
         if(c>0) val[k]=c;
       }
