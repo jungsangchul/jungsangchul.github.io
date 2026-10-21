@@ -34,11 +34,11 @@ h1 small{font-weight:400;color:var(--sub);font-size:13px;margin-left:6px}
 .tabs button{border:1px solid var(--line);background:transparent;padding:7px 16px;border-radius:6px;cursor:pointer;font-weight:500}
 .tabs button.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
 .lang{border:1px solid var(--line);background:transparent;border-radius:6px;padding:7px 10px;cursor:pointer}
-main{padding:18px 20px;max-width:1500px;margin:0 auto}
+main{padding:18px 20px;max-width:none;margin:0}
 .hidden{display:none!important}
 .status{font-size:13px;color:var(--sub)}
 /* lookup layout */
-.lookup{display:grid;grid-template-columns:300px 1fr;gap:18px;align-items:start}
+.lookup{display:grid;grid-template-columns:272px minmax(0,1fr);gap:16px;align-items:start}
 @media (max-width:860px){.lookup{grid-template-columns:1fr}}
 .filters{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:14px}
 fieldset{border:0;border-top:1px solid var(--line);margin:0;padding:12px 0 4px}
@@ -59,7 +59,7 @@ label.f > input:focus,label.f > select:focus,textarea:focus{outline:2px solid va
 .res-head b{font-size:20px}
 .scroll{overflow-x:auto;max-height:calc(100vh - 200px)}
 table{border-collapse:collapse;width:100%;white-space:nowrap}
-th,td{padding:7px 10px;text-align:left;border-bottom:1px solid var(--line);font-size:13px}
+th,td{padding:6px 8px;text-align:left;border-bottom:1px solid var(--line);font-size:13px}
 th{position:sticky;top:0;background:var(--panel);color:var(--sub);font-weight:600;font-size:12px;z-index:1}
 tbody tr{cursor:pointer}
 tbody tr:hover{background:var(--hit)}
@@ -67,6 +67,7 @@ td.wn{font-weight:700}
 .twb{display:inline-block;font-size:11px;font-weight:700;padding:1px 6px;border-radius:4px;border:1px solid}
 .twb.t{color:#E3C46A;border-color:#8a7330}
 .twb.s{color:#9fd0e3;border-color:#3d6e80}
+.twb.seal{color:#9fe3b4;border-color:#3d8054}
 .twbox{border:1px solid var(--line);border-left:3px solid var(--gold);border-radius:6px;padding:10px 12px;margin-bottom:12px;display:flex;flex-wrap:wrap;gap:6px 18px;align-items:center;font-size:13px}
 .twbox b.big{font-size:18px}
 .twbox .pp{border:1px solid var(--line);background:var(--bg);border-radius:4px;padding:2px 8px;cursor:pointer;font-weight:700}
@@ -150,6 +151,10 @@ textarea{width:100%;min-height:260px;padding:10px;border:1px solid var(--line);b
           <label class="f"><span data-i="tR">우측 단자</span><input id="fTR" list="dlTR" autocomplete="off"></label>
         </div>
         <label class="chk"><input type="checkbox" id="fTSwap"><span data-i="swap">좌·우 구분 없이 찾기</span></label>
+        <div class="pair">
+          <label class="f"><span data-i="sealL">좌측 씰</span><select id="fSealL"></select></label>
+          <label class="f"><span data-i="sealR">우측 씰</span><select id="fSealR"></select></label>
+        </div>
       </fieldset>
       <fieldset>
         <legend data-i="gPart">압착전 부품 1</legend>
@@ -235,12 +240,12 @@ textarea{width:100%;min-height:260px;padding:10px;border:1px solid var(--line);b
 <script>
 /* ---------- 기본 양식 (69열) ---------- */
 const DEFAULT_HEADERS=['품번','서브그룹번호','선번','재질','자재번호','SQ','색상','길이','중간스트립 위치점,1','중간스트립 위치점,2','중간스트립 위치점,3','중간스트립 위치점,4','전선의 스트립 길이 - 좌측','전선의 스트립 길이 - 우측','단자에 납땜 유무 - 좌측단자','단자소요량 계산시 count 유무 표기(좌)','단자번호 - 좌측','단자에 납땜 유무 - 우측단자','단자소요량 계산시 count 유무 표기(우)','단자번호 - 우측','조인트,쌍압착의 경우에 전선간의 연결관계','압착전 부품 1 - 좌측','압착전 부품 2 - 좌측','압착전 부품 3 - 좌측','압착전 부품 1 - 우측','압착전 부품 2 - 우측','압착전 부품 3 - 우측','조립판도 커넥터 순번(좌)','단자가 삽입되는 커넥터의 HOLE 번호 - 좌측','조립판도 커넥터 순번(우)','단자가 삽입되는 커넥터의 HOLE 번호 - 우측','좌측 단자가 삽입되는 커넥터의 자재번호 - 좌','우측 단자가 삽입되는 커넥터의 자재번호 - 우','트위스트,쉴드선 인 경우에 동일한 값이면 한쌍의 전선','조인트,쌍압착 연결관계 표기-형식 2','심볼1','심볼2','심볼3','심볼4','심볼5','심볼6','심볼7','사용안함','OEM도면 상의 WIRE길이','관계도 표시참조용','Sh/Tw 구분','Sh/Tw 연결','기준선여부','중간스트립여부','재질코드','좌단자 자동/반자동 구분(M:자동,H:반자동)','우단자 자동/반자동 구분(M:자동,H:반자동)','JSB원본','좌 연결번호','우 연결번호','결속갯수','특수단자 뒤 기호표시','좌 단자가 씰인지(1:씰)','우 단자가 씰인지(1:씰)','와이어 걸이수(좌)','와이어 걸이수(우)','FPC 수량','FPC1 수량','FPC2 수량','TPC 수량','TPC1 수량','TPC2 수량','USM단자 가지선 HMT표기(좌)','USM단자 가지선 HMT표기(우)'];
-const C={pn:0,sub:1,wn:2,mat:3,matNo:4,sq:5,col:6,len:7,stL:12,stR:13,tL:16,tR:19,p1L:21,p2L:22,p3L:23,p1R:24,p2R:25,p3R:26,holeL:28,holeR:30,conL:31,conR:32,twPair:33,oemLen:43,shtw:45,shtwLink:46,sym:[35,36,37,38,39,40,41]};
+const C={pn:0,sub:1,wn:2,mat:3,matNo:4,sq:5,col:6,len:7,stL:12,stR:13,tL:16,tR:19,p1L:21,p2L:22,p3L:23,p1R:24,p2R:25,p3R:26,holeL:28,holeR:30,conL:31,conR:32,twPair:33,oemLen:43,shtw:45,shtwLink:46,sealL:57,sealR:58,sym:[35,36,37,38,39,40,41]};
 const KEY_COLS=new Set([45,46,43,33,C.pn,C.sub,C.wn,C.mat,C.sq,C.col,C.len,C.tL,C.tR,C.p1L,C.p1R,...C.sym]);
 
 /* ---------- 언어 ---------- */
-const ES={title:'Consulta de circuitos',sub:'Cable · Terminal · Pieza · Símbolo',tLookup:'Consulta',tMaster:'Maestro',gBasic:'No. parte / Circuito',pn:'No. de parte',wn:'No. de circuito',gWire:'Por cable',mat:'Material',col:'Color',len:'Longitud (mm)',tol:'Tolerancia ±mm',gTerm:'Por terminal',tL:'Terminal izq.',tR:'Terminal der.',swap:'Buscar sin importar izq./der.',gPart:'Pieza pre-crimpado 1',pL:'Izquierda',pR:'Derecha',gSym:'Por símbolo',symCol:'Columna',sym:'Símbolo',reset:'Limpiar filtros',rows:'circuitos',mTitle:'Pegar maestro',mDesc:'Copie en Excel desde la fila de encabezados hasta los datos (Ctrl+C) y péguelos abajo (Ctrl+V). Sin encabezados se usa el formato estándar de 69 columnas.',saveMerge:'Guardar reemplazando por No. parte',saveAll:'Reemplazar todo',clearAll:'Borrar maestro',dlXlsx:'Descargar Excel',dlHelp:'Descargar Excel baja todo el maestro guardado; al hacer clic en un No. de parte se descarga solo ese.',dlNone:'No hay maestro para descargar.',dlErr:'No se pudo cargar la librería de Excel. Revise la conexión.',mHelp:'Reemplazar por No. parte: solo se borran las filas de los números de parte pegados; los demás se conservan. Los datos se comparten en todas las PC.',sRows:'Circuitos guardados',sPn:'No. de parte',sUpd:'Último guardado',close:'Cerrar',hideBlank:'Ocultar vacíos',copyRow:'Copiar fila',all:'Todos',anyCol:'Cualquiera',noMaster:'No hay maestro. Pegue los datos en la pestaña Maestro.',noHit:'No hay circuitos con estas condiciones. Quite un filtro.',showing:'Mostrando los primeros 500',copied:'Fila copiada',saved:'Guardado',parsed:'filas leídas',cleared:'Maestro borrado',confirmClear:'¿Borrar todo el maestro?',confirmAll:'Se reemplazará todo el maestro. ¿Continuar?',nothing:'No hay filas para guardar.',symAny:'★ Solo con símbolo',twAll:'Todos',twT:'Trenzado (T)',twS:'Blindado (S)',twN:'Normal',twLen:'Long. trenzado',twPair:'Par',twInfo:'Trenzado',shInfo:'Blindado',twAfter:'Después de trenzar',cutLen:'corte',tw:'Trenzado / blindado',online:'Servidor',offline:'Sin conexión (caché)',saving:'Guardando…',loading:'Cargando…',saveErr:'Error al guardar en el servidor'};
-const KO={dlNone:'다운로드할 마스터가 없습니다.',dlErr:'엑셀 라이브러리를 불러오지 못했습니다. 인터넷 연결을 확인하세요.',all:'전체',anyCol:'전체 칸',noMaster:'마스터가 없습니다. 마스터 탭에서 엑셀 내용을 붙여넣으세요.',noHit:'조건에 맞는 회로가 없습니다. 조건을 하나 줄여 보세요.',showing:'앞 500건만 표시',copied:'행을 복사했습니다',saved:'저장했습니다',parsed:'행 읽음',cleared:'마스터를 삭제했습니다',confirmClear:'마스터 전체를 삭제할까요?',confirmAll:'기존 마스터를 모두 지우고 새로 저장합니다. 계속할까요?',nothing:'저장할 행이 없습니다.',symAny:'★ 심볼 있는 것만',twAll:'전체',twT:'트위스트 (T)',twS:'쉴드 (S)',twN:'일반 (없음)',twLen:'Tw후 길이',twPair:'짝 선번',twInfo:'트위스트',shInfo:'쉴드',twAfter:'트위스트 후',cutLen:'절단길이',online:'서버 연결',offline:'오프라인 (캐시 사용)',saving:'저장 중…',loading:'불러오는 중…',saveErr:'서버 저장 실패'};
+const ES={title:'Consulta de circuitos',sub:'Cable · Terminal · Pieza · Símbolo',tLookup:'Consulta',tMaster:'Maestro',gBasic:'No. parte / Circuito',pn:'No. de parte',wn:'No. de circuito',gWire:'Por cable',mat:'Material',col:'Color',len:'Longitud (mm)',tol:'Tolerancia ±mm',gTerm:'Por terminal',tL:'Terminal izq.',tR:'Terminal der.',swap:'Buscar sin importar izq./der.',gPart:'Pieza pre-crimpado 1',pL:'Izquierda',pR:'Derecha',gSym:'Por símbolo',symCol:'Columna',sym:'Símbolo',reset:'Limpiar filtros',rows:'circuitos',mTitle:'Pegar maestro',mDesc:'Copie en Excel desde la fila de encabezados hasta los datos (Ctrl+C) y péguelos abajo (Ctrl+V). Sin encabezados se usa el formato estándar de 69 columnas.',saveMerge:'Guardar reemplazando por No. parte',saveAll:'Reemplazar todo',clearAll:'Borrar maestro',dlXlsx:'Descargar Excel',dlHelp:'Descargar Excel baja todo el maestro guardado; al hacer clic en un No. de parte se descarga solo ese.',dlNone:'No hay maestro para descargar.',dlErr:'No se pudo cargar la librería de Excel. Revise la conexión.',mHelp:'Reemplazar por No. parte: solo se borran las filas de los números de parte pegados; los demás se conservan. Los datos se comparten en todas las PC.',sRows:'Circuitos guardados',sPn:'No. de parte',sUpd:'Último guardado',close:'Cerrar',hideBlank:'Ocultar vacíos',copyRow:'Copiar fila',all:'Todos',anyCol:'Cualquiera',noMaster:'No hay maestro. Pegue los datos en la pestaña Maestro.',noHit:'No hay circuitos con estas condiciones. Quite un filtro.',showing:'Mostrando los primeros 500',copied:'Fila copiada',saved:'Guardado',parsed:'filas leídas',cleared:'Maestro borrado',confirmClear:'¿Borrar todo el maestro?',confirmAll:'Se reemplazará todo el maestro. ¿Continuar?',nothing:'No hay filas para guardar.',symAny:'★ Solo con símbolo',twAll:'Todos',sealL:'Sello izq.',sealR:'Sello der.',sealAll:'Todos',sealYes:'Con sello',sealNo:'Sin sello',sealCol:'Sello',twT:'Trenzado (T)',twS:'Blindado (S)',twN:'Normal',twLen:'Long. trenzado',twPair:'Par',twInfo:'Trenzado',shInfo:'Blindado',twAfter:'Después de trenzar',cutLen:'corte',tw:'Trenzado / blindado',online:'Servidor',offline:'Sin conexión (caché)',saving:'Guardando…',loading:'Cargando…',saveErr:'Error al guardar en el servidor'};
+const KO={sealAll:'전체',sealYes:'씰 있음',sealNo:'씰 없음',sealCol:'씰',dlNone:'다운로드할 마스터가 없습니다.',dlErr:'엑셀 라이브러리를 불러오지 못했습니다. 인터넷 연결을 확인하세요.',all:'전체',anyCol:'전체 칸',noMaster:'마스터가 없습니다. 마스터 탭에서 엑셀 내용을 붙여넣으세요.',noHit:'조건에 맞는 회로가 없습니다. 조건을 하나 줄여 보세요.',showing:'앞 500건만 표시',copied:'행을 복사했습니다',saved:'저장했습니다',parsed:'행 읽음',cleared:'마스터를 삭제했습니다',confirmClear:'마스터 전체를 삭제할까요?',confirmAll:'기존 마스터를 모두 지우고 새로 저장합니다. 계속할까요?',nothing:'저장할 행이 없습니다.',symAny:'★ 심볼 있는 것만',twAll:'전체',twT:'트위스트 (T)',twS:'쉴드 (S)',twN:'일반 (없음)',twLen:'Tw후 길이',twPair:'짝 선번',twInfo:'트위스트',shInfo:'쉴드',twAfter:'트위스트 후',cutLen:'절단길이',online:'서버 연결',offline:'오프라인 (캐시 사용)',saving:'저장 중…',loading:'불러오는 중…',saveErr:'서버 저장 실패'};
 let lang='ko';
 const koText={};document.querySelectorAll('[data-i]').forEach(el=>koText[el.dataset.i]=el.innerHTML);
 const T=k=>lang==='es'?(ES[k]??KO[k]??k):(KO[k]??k);
@@ -383,7 +388,7 @@ const num=s=>{const v=parseFloat(String(s).replace(/,/g,''));return isNaN(v)?nul
 const U=s=>String(s||'').trim().toUpperCase();
 const F=()=>({pn:$('fPn').value,wn:U($('fWn').value),mat:$('fMat').value,sq:$('fSq').value,col:$('fCol').value,
   len:num($('fLen').value),tol:num($('fTol').value)||0,tL:U($('fTL').value),tR:U($('fTR').value),tSwap:$('fTSwap').checked,
-  pL:U($('fPL').value),pR:U($('fPR').value),pSwap:$('fPSwap').checked,symCol:$('fSymCol').value,sym:$('fSym').value,tw:$('fTw').value});
+  pL:U($('fPL').value),pR:U($('fPR').value),pSwap:$('fPSwap').checked,symCol:$('fSymCol').value,sym:$('fSym').value,tw:$('fTw').value,sealL:$('fSealL').value,sealR:$('fSealR').value});
 
 function pairMatch(l,r,qL,qR,swap){
   const has=(v,q)=>!q||U(v).includes(q);
@@ -391,6 +396,10 @@ function pairMatch(l,r,qL,qR,swap){
   if(qL&&qR)return (has(l,qL)&&has(r,qR))||(has(l,qR)&&has(r,qL));
   const q=qL||qR;return !q||has(l,q)||has(r,q);
 }
+const hasSeal=v=>{v=U(v);return v!==''&&v!=='0'&&v!=='N';};
+const sealOf=r=>(hasSeal(r[C.sealL])?'L':'')+(hasSeal(r[C.sealR])?'R':'');
+const sealOne=(v,q)=>!q||(q==='Y'?hasSeal(v):!hasSeal(v));
+function sealMatch(r,f,skip){return (skip==='sealL'||sealOne(r[C.sealL],f.sealL))&&(skip==='sealR'||sealOne(r[C.sealR],f.sealR));}
 function symVals(r,col){return col===''?C.sym.map(i=>r[i]).filter(Boolean):[r[+col]].filter(Boolean);}
 function match(r,f,skip){
   if(skip!=='pn'&&f.pn&&r[C.pn]!==f.pn)return false;
@@ -402,6 +411,7 @@ function match(r,f,skip){
   if(skip!=='t'&&!pairMatch(r[C.tL],r[C.tR],f.tL,f.tR,f.tSwap))return false;
   if(skip!=='p'&&!pairMatch(r[C.p1L],r[C.p1R],f.pL,f.pR,f.pSwap))return false;
   if(skip!=='tw'&&f.tw){const v=U(r[C.shtw]);if(f.tw==='N'?v!=='':v!==f.tw)return false;}
+  if(!sealMatch(r,f,skip))return false;
   if(skip!=='sym'&&f.sym){const sv=symVals(r,f.symCol);if(f.sym==='__ANY__'?!sv.length:!sv.includes(f.sym))return false;}
   return true;
 }
@@ -423,6 +433,8 @@ function refreshOptions(){
   const p=sub('p');fillList('dlPL',p.map(r=>r[C.p1L]).concat(f.pSwap?p.map(r=>r[C.p1R]):[]));fillList('dlPR',p.map(r=>r[C.p1R]).concat(f.pSwap?p.map(r=>r[C.p1L]):[]));
   {const tw=sub('tw'),cnt={T:0,S:0,N:0};tw.forEach(r=>{const v=U(r[C.shtw]);if(v==='T')cnt.T++;else if(v==='S')cnt.S++;else if(!v)cnt.N++;});
    $('fTw').innerHTML=`<option value="">${T('twAll')}</option><option value="T">${T('twT')} · ${cnt.T}</option><option value="S">${T('twS')} · ${cnt.S}</option><option value="N">${T('twN')} · ${cnt.N}</option>`;$('fTw').value=f.tw;}
+  [['fSealL','sealL',C.sealL],['fSealR','sealR',C.sealR]].forEach(([id,k,ci])=>{const se=sub(k);let y=0,n=0;se.forEach(r=>hasSeal(r[ci])?y++:n++);
+   $(id).innerHTML=`<option value="">${T('sealAll')}</option><option value="Y">${T('sealYes')} · ${y}</option><option value="N">${T('sealNo')} · ${n}</option>`;$(id).value=f[k];});
   const sc=$('fSymCol');const curCol=sc.value;
   sc.innerHTML=`<option value="">${T('anyCol')}</option>`+C.sym.map(i=>`<option value="${i}">${esc(MASTER.headers[i]||'심볼')}</option>`).join('');
   sc.value=curCol;
@@ -440,7 +452,7 @@ const isTw=r=>U(r[C.shtw])==='T';
 const twLen=r=>isTw(r)?(r[C.oemLen]||''):'';
 function partners(r){const k=r[C.shtwLink]||r[C.twPair];if(!U(r[C.shtw])||!k)return [];return MASTER.rows.map((x,i)=>[x,i]).filter(([x])=>x!==r&&x[C.pn]===r[C.pn]&&U(x[C.shtw])===U(r[C.shtw])&&(x[C.shtwLink]||x[C.twPair])===k);}
 let lastHits=[];
-const COLS=()=>[['품번',C.pn],['서브',C.sub],['선번',C.wn],['재질',C.mat],['SQ',C.sq],['색상',C.col],['길이',C.len],['Tw','tw'],['Tw후 길이','twlen'],['좌단자',C.tL],['우단자',C.tR],['부품1 좌',C.p1L],['부품1 우',C.p1R],['심볼','sym']].map(([k,i])=>[lang==='es'?({'품번':'No. parte','서브':'Sub','선번':'Circuito','재질':'Material','색상':'Color','길이':'Long.','Tw후 길이':'Long. trenz.','좌단자':'Term. izq.','우단자':'Term. der.','부품1 좌':'Pieza1 izq.','부품1 우':'Pieza1 der.','심볼':'Símbolo'}[k]||k):k,i]);
+const COLS=()=>[['품번',C.pn],['서브',C.sub],['선번',C.wn],['재질',C.mat],['SQ',C.sq],['색상',C.col],['길이',C.len],['Tw','tw'],['Tw후 길이','twlen'],['좌단자',C.tL],['좌씰','sealL'],['우단자',C.tR],['우씰','sealR'],['부품1 좌',C.p1L],['부품1 우',C.p1R],['심볼','sym']].map(([k,i])=>[lang==='es'?({'품번':'No. parte','서브':'Sub','선번':'Circuito','재질':'Material','색상':'Color','길이':'Long.','Tw후 길이':'Long. trenz.','좌단자':'Term. izq.','우단자':'Term. der.','좌씰':'Sello izq.','우씰':'Sello der.','부품1 좌':'Pieza1 izq.','부품1 우':'Pieza1 der.','심볼':'Símbolo'}[k]||k):k,i]);
 function render(){
   const f=F();
   lastHits=MASTER.rows.map((r,i)=>[r,i]).filter(([r])=>match(r,f));
@@ -453,6 +465,7 @@ function render(){
     if(c===C.col)return `<td>${chip(r[c])}</td>`;
     if(c==='tw'){const v=U(r[C.shtw]);return `<td>${v?`<span class="twb ${v==='T'?'t':'s'}">${esc(v)}${r[C.shtwLink]||r[C.twPair]?' '+esc(r[C.shtwLink]||r[C.twPair]):''}</span>`:''}</td>`;}
     if(c==='twlen')return `<td class="wn">${esc(twLen(r))}</td>`;
+    if(c==='sealL'||c==='sealR'){const v=hasSeal(r[c==='sealL'?C.sealL:C.sealR]);return `<td>${v?`<span class="twb seal">${T('sealCol')}</span>`:''}</td>`;}
     return `<td${c===C.wn?' class="wn"':''}>${esc(r[c])}</td>`;}).join('')+'</tr>').join('');
   const empty=$('resEmpty');
   if(!MASTER.rows.length){empty.textContent=T('noMaster');empty.classList.remove('hidden');}
