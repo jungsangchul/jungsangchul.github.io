@@ -256,6 +256,20 @@
   .mqio-btn:hover{filter:brightness(1.06)}
   .mqio-btn:disabled{opacity:.55;cursor:default}
   .mqio-hint{font-size:11px;color:#94a3b8;margin:-4px 0 8px;line-height:1.4}
+  /* TRESS 붙여넣기 */
+  .trbox{max-width:860px!important;text-align:left!important}
+  .trta{width:100%;min-height:120px;max-height:220px;border:1px solid #d8e0ea;border-radius:10px;padding:10px 12px;font-size:12px;font-family:ui-monospace,Menlo,Consolas,monospace;color:#0c2444;background:#f8fafc;outline:none;resize:vertical;white-space:pre;overflow:auto;margin:8px 0}
+  .trta:focus{border-color:#163a66;background:#fff}
+  .trhint{font-size:11.5px;color:#64748b;line-height:1.5;margin-bottom:4px}
+  .trdepts{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 8px}
+  .trdept{display:inline-flex;align-items:center;gap:5px;border:1px solid #d8e0ea;border-radius:999px;padding:5px 10px;font-size:12px;font-weight:700;color:#334155;background:#f8fafc;cursor:pointer;user-select:none}
+  .trdept.on{background:#e8eef7;border-color:#163a66;color:#0c2444}
+  .trdept input{display:none}
+  .trtag{display:inline-block;border-radius:6px;padding:2px 7px;font-size:11px;font-weight:800}
+  .trtag.ok{background:#e7f7ee;color:#15803d}
+  .trtag.no{background:#fef3c7;color:#b45309}
+  .trchk{display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;color:#334155;margin:4px 0 8px;cursor:pointer}
+  .trprog{font-size:12px;font-weight:800;color:#163a66;min-height:16px;margin-top:6px}
 
   .langtog{display:inline-flex;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.22);border-radius:10px;overflow:hidden}
   .langtog button{border:none;background:transparent;color:rgba(255,255,255,.62);font-weight:800;font-size:12px;padding:9px 13px;cursor:pointer;transition:.15s;min-width:38px}
@@ -445,7 +459,7 @@
         </div>
       </div>
     </div>
-    <div class="system-bar"><span>Attendance · Meal Dashboard / 출석 · 식사 관리</span><span><b>Plant 1</b> · Monclova&nbsp;&nbsp;<span class="updated" id="updated">v7.15</span></span></div>
+    <div class="system-bar"><span>Attendance · Meal Dashboard / 출석 · 식사 관리</span><span><b>Plant 1</b> · Monclova&nbsp;&nbsp;<span class="updated" id="updated">v7.17</span></span></div>
   </header>
   <div class="toolbar">
     <div class="filters">
@@ -456,6 +470,7 @@
       <label class="toggle"><input type="checkbox" id="fAuto"> <span id="lAuto">자동(30s)</span></label>
       <button class="addbtn" id="bAdd" onclick="openAdd()">+ 직원</button>
       <button class="addbtn" id="bQuery" onclick="openQuery()">조회</button>
+      <button class="addbtn" id="bTress" onclick="openTress()">TRESS 붙여넣기</button>
       <button class="addbtn" id="bManage" onclick="openManage()">직원 관리</button>
     </div>
   </div>
@@ -609,6 +624,27 @@
   </div>
 </div>
 
+<div class="modal" id="tressModal">
+  <div class="box qbox trbox">
+    <div class="mname" id="trTitle" style="text-align:center">TRESS 근태 붙여넣기</div>
+    <div class="trhint" id="trHint"></div>
+    <div class="qgrid" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr))">
+      <span class="qfld"><label id="ltrDate">반영 날짜</label><input type="date" id="trDate"></span>
+      <span class="qfld"><label id="ltrFactory">장소</label><select id="trFactory"></select></span>
+    </div>
+    <textarea id="trText" class="trta" spellcheck="false" placeholder="TRESS 엑셀에서 행 전체(또는 B열부터) 복사 → 여기에 붙여넣기 (Ctrl+V)"></textarea>
+    <label class="trchk"><input type="checkbox" id="trReg"> <span id="ltrReg">미등록 사번은 직원으로 자동 등록 (이름·부서 사용)</span></label>
+    <div class="qsum" id="trSum"></div>
+    <div class="trdepts" id="trDepts"></div>
+    <div class="qwrap" style="max-height:36vh"><table class="qt" id="trTable"><thead></thead><tbody></tbody></table></div>
+    <div class="trprog" id="trProg"></div>
+    <div class="qbtns" style="margin-top:10px;margin-bottom:0">
+      <button class="qrun" id="trRun" onclick="submitTress()" disabled>출결현황에 반영</button>
+      <button class="qexp" id="trClose" onclick="closeTress()" style="background:#eef2f6;color:#475569">닫기</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal" id="queryModal">
   <div class="box qbox">
     <div class="mname" id="qTitle" style="text-align:center">기간 조회</div>
@@ -692,7 +728,16 @@ const I18N={
     colAction:"처리", processing:"처리중…", opFail:"처리 실패",
     btnCheckout:"퇴근 처리", confirmCheckout:n=>`${n} 님을 퇴근 처리할까요?\n(정규 퇴근시각으로 기록됩니다)`,
     earlyOutWarn:(n,inBy)=>`⚠️ 지금은 출근시간(${inBy}) 전후입니다.\n\n${n} 님을 정말 퇴근 타각 처리할까요?\n(정규 퇴근시각으로 기록됩니다)`,
-    mealAdd:"식사 수기 등록", mealAddBtn:"+ 식사 등록", mealOk:"등록", mealDup:"이미 식사 신청됨", idBad:"등록되지 않은 사번입니다", needId:"사번을 입력하세요" },
+    mealAdd:"식사 수기 등록", mealAddBtn:"+ 식사 등록", mealOk:"등록", mealDup:"이미 식사 신청됨", idBad:"등록되지 않은 사번입니다", needId:"사번을 입력하세요",
+    trBtn:"TRESS 붙여넣기", trTitle:"TRESS 근태 붙여넣기 → 출결현황 반영", trDate:"반영 날짜", trFactory:"장소",
+    trHint:"TRESS 「Asistencia Diaria」 엑셀에서 행을 통째로 복사해 붙여넣으세요 (B열=사번, D열=이름, G열=부서, I/J=1차 출·퇴근, K/L=2차 출·퇴근). 사번은 M0+8자리로 변환됩니다. 같은 날짜의 이전 TRESS 반영분은 교체되고 QR 타각 기록은 유지됩니다.",
+    trReg:"미등록 사번은 직원으로 자동 등록 (이름·부서 사용)",
+    trRun:"출결현황에 반영", trNone:"인식된 행이 없습니다 — B열 사번(8자리 숫자)이 포함되도록 붙여넣으세요",
+    trSum:(n,reg,unreg,noout,sel)=>`인식 ${n}명 · 등록 ${reg} · 미등록 ${unreg} · 퇴근 없음 ${noout} · 반영 대상 ${sel}명`,
+    trDept:"부서", trIn:"출근", trOut:"퇴근", trRegCol:"등록", trRegOk:"등록", trRegNo:"미등록",
+    trConfirm:(d,n)=>`${d} 출결현황에 ${n}명을 반영할까요?\n(같은 날짜의 이전 TRESS 반영분은 교체됩니다)`,
+    trProg:(a,b)=>`반영 중… ${a}/${b}`, trDone:(r)=>`완료 · 출근 ${r.ins_in} · 퇴근 ${r.ins_out} · 교체 ${r.deleted}${r.new_emp?` · 신규 직원 ${r.new_emp}`:""}${r.skipped?` · 건너뜀 ${r.skipped}`:""}`,
+    trFail:"반영 실패 — Supabase에 tress_import 함수가 있는지 확인" },
   es:{ title:"Panel de Asistencia y Comidas", date:"Fecha", plant:"Lugar", all:"Todas", refresh:"Actualizar", auto:"Auto(30s)",
     kTotal:"Total activos", kIn:"Entradas", kLate:"Tardes", kPresent:"Presentes", kOut:"Salidas", kAbsent:"Ausentes", kMeal:"Comidas",
     kNoout:"Sin salida", kEarly:"Salida anticipada", kpiHint:"💡 Toque una tarjeta para ver la lista detallada abajo",
@@ -726,7 +771,16 @@ const I18N={
     colAction:"Acción", processing:"Procesando…", opFail:"Error",
     btnCheckout:"Marcar salida", confirmCheckout:n=>`¿Marcar salida de ${n}?\n(Se registrará a la hora oficial de salida)`,
     earlyOutWarn:(n,inBy)=>`⚠️ Ahora es antes o cerca de la hora de entrada (${inBy}).\n\n¿Realmente desea marcar la SALIDA de ${n}?\n(Se registrará a la hora oficial de salida)`,
-    mealAdd:"Registro manual de comida", mealAddBtn:"+ Comida", mealOk:"Registrar", mealDup:"Comida ya registrada", idBad:"N° no registrado", needId:"Ingrese el N°" }
+    mealAdd:"Registro manual de comida", mealAddBtn:"+ Comida", mealOk:"Registrar", mealDup:"Comida ya registrada", idBad:"N° no registrado", needId:"Ingrese el N°",
+    trBtn:"Pegar TRESS", trTitle:"Pegar asistencia TRESS → Panel", trDate:"Fecha", trFactory:"Lugar",
+    trHint:"Copie las filas completas del Excel «Asistencia Diaria» de TRESS y péguelas aquí (col. B=N°, D=Nombre, G=Dpto, I/J=1ª Ent/Sal, K/L=2ª Ent/Sal). El N° se convierte a M0+8 dígitos. Los registros TRESS anteriores de la misma fecha se reemplazan; las checadas QR se conservan.",
+    trReg:"Registrar automáticamente N° no registrados como empleados (nombre y dpto)",
+    trRun:"Aplicar al panel", trNone:"No se reconoció ninguna fila — incluya la col. B (N° de 8 dígitos)",
+    trSum:(n,reg,unreg,noout,sel)=>`${n} reconocidos · ${reg} registrados · ${unreg} no registrados · ${noout} sin salida · ${sel} a aplicar`,
+    trDept:"Dpto", trIn:"Entrada", trOut:"Salida", trRegCol:"Reg.", trRegOk:"Sí", trRegNo:"No",
+    trConfirm:(d,n)=>`¿Aplicar ${n} personas al panel del ${d}?\n(Se reemplazan los registros TRESS anteriores de esa fecha)`,
+    trProg:(a,b)=>`Aplicando… ${a}/${b}`, trDone:(r)=>`Listo · Entradas ${r.ins_in} · Salidas ${r.ins_out} · Reemplazados ${r.deleted}${r.new_emp?` · Nuevos empleados ${r.new_emp}`:""}${r.skipped?` · Omitidos ${r.skipped}`:""}`,
+    trFail:"Error — verifique la función tress_import en Supabase" }
 };
 /* 쿠키 차단/개인정보 보호 모드에서 스토리지 접근이 SecurityError를 던져도 앱이 죽지 않도록 보호 */
 const safeStore={
@@ -779,6 +833,10 @@ function applyLang(){
   $("aCancel").textContent=bi("addCancel"); $("aOk").textContent=editingId?bi("save"):bi("addOk");
   $("bManage").textContent=t("manage");
   $("bQuery").textContent=t("qTitle"); $("qTitle").textContent=t("qTitle");
+  $("bTress").textContent=t("trBtn"); $("trTitle").textContent=t("trTitle"); $("trHint").textContent=t("trHint");
+  $("ltrDate").textContent=t("trDate"); $("ltrFactory").textContent=t("trFactory"); $("ltrReg").textContent=t("trReg");
+  $("trRun").textContent=t("trRun"); $("trClose").textContent=t("close");
+  if($("tressModal").classList.contains("open")) renderTress();
   $("lqItem").textContent=t("qItem"); $("lqFrom").textContent=t("qFrom"); $("lqTo").textContent=t("qTo");
   $("lqUnit").textContent=t("qUnit"); $("lqFactory").textContent=t("qFactory"); $("lqTeam").textContent=t("qTeamL");
   $("qRun").textContent=t("qRun"); $("qClose").textContent=t("close");
@@ -845,7 +903,7 @@ async function refresh(){
     const hiredBy=e=>!e.hire_date || String(e.hire_date).slice(0,10)<=date;
     state.employees=noTest(emp).filter(hiredBy); state.att=noTest(att); state.meal=noTest(meal);
     compute();
-    $("updated").textContent=t("updated")+new Date().toLocaleTimeString(lang==="ko"?"ko-KR":"es-MX")+" · v7.16";
+    $("updated").textContent=t("updated")+new Date().toLocaleTimeString(lang==="ko"?"ko-KR":"es-MX")+" · v7.17";
   }catch(e){ $("updated").textContent=t("queryErr"); console.error(e); }
 }
 
@@ -1136,6 +1194,110 @@ async function markLeft(empId, btn){
     if(!r.ok){ console.error(await r.text()); if(btn){ btn.disabled=false; btn.textContent=t("btnCheckout"); } alert(t("opFail")); return; }
     refresh();
   }catch(e){ if(btn){ btn.disabled=false; btn.textContent=t("btnCheckout"); } alert(t("opFail")); }
+}
+
+/* ---------- TRESS 근태 엑셀 붙여넣기 → 출결현황 반영 (v7.17) ---------- */
+let tressRows=[], tressDeptOn={};
+function openTress(){
+  $("trDate").value=$("fDate").value||todayDate();
+  $("trFactory").innerHTML=factoryOptions();
+  const curF=fFactory(); if(curF&&CONFIG.FACTORIES[curF]) $("trFactory").value=curF;
+  $("trText").value=""; tressRows=[]; tressDeptOn={}; $("trProg").textContent="";
+  renderTress();
+  $("tressModal").classList.add("open"); setTimeout(()=>$("trText").focus(),150);
+}
+function closeTress(){ $("tressModal").classList.remove("open"); }
+$("tressModal").addEventListener("click",e=>{ if(e.target.id==="tressModal") closeTress(); });
+$("trText").addEventListener("input",()=>{ parseTress(); });
+$("trText").addEventListener("paste",()=>{ setTimeout(parseTress,0); });
+
+/* 엑셀 셀 시각 → "HH:MM" (07:32 / 7:32 / 07:32:00 / 7:32 p. m. 모두 허용) */
+function tressTime(v){
+  const s=String(v==null?"":v).trim(); if(!s) return "";
+  const m=s.match(/(\d{1,2}):(\d{2})/); if(!m) return "";
+  let h=+m[1]; const mi=+m[2];
+  if(/p\.?\s*m/i.test(s)&&h<12) h+=12; if(/a\.?\s*m/i.test(s)&&h===12) h=0;
+  if(h>23||mi>59) return "";
+  return String(h).padStart(2,"0")+":"+String(mi).padStart(2,"0");
+}
+/* TRESS 사번(8자리) → 시스템 사번 (M0 + 8자리) */
+function tressId(raw){
+  const s=String(raw||"").trim().toUpperCase().replace(/\.0+$/,"");
+  if(/^M\d{9}$/.test(s)) return s;
+  if(/^\d{8}$/.test(s)) return "M0"+s;
+  if(/^\d{9}$/.test(s)) return "M"+s;
+  return "";
+}
+function parseTress(){
+  const txt=$("trText").value||"";
+  const lines=txt.split(/\r?\n/);
+  const emp={}; for(const e of state.employees){ emp[e.employee_id]=e; }
+  const out=[]; const seen=new Set();
+  for(const ln of lines){
+    if(!ln.trim()) continue;
+    const c=ln.split("\t");
+    // B열(사번) 위치 찾기: 행 전체 복사(A열 포함)면 index 1, B열부터 복사면 index 0
+    let b=-1;
+    for(let i=0;i<Math.min(c.length,3);i++){ if(/^\d{8}$/.test(String(c[i]).trim())){ b=i; break; } }
+    if(b<0) continue;
+    const id=tressId(c[b]); if(!id||seen.has(id)) continue;
+    const g=(i)=>String(c[b+i]==null?"":c[b+i]).trim();
+    const name=g(2), dept=g(5);                       // D열, G열
+    const in1=tressTime(g(7)), out1=tressTime(g(8)), in2=tressTime(g(9)), out2=tressTime(g(10)); // I,J,K,L
+    const tIn=in1||in2, tOut=out2||out1;
+    if(!tIn&&!tOut) continue;
+    seen.add(id);
+    const e=emp[id];
+    out.push({ employee_id:id, name:e?(e.name||id):name, pasteName:name, team:dept, in:tIn, out:tOut, reg:!!e });
+  }
+  tressRows=out;
+  // 부서 체크 상태 유지 (새 부서는 기본 선택)
+  const depts=new Set(out.map(r=>r.team||"")); const next={};
+  depts.forEach(d=>{ next[d]=(d in tressDeptOn)?tressDeptOn[d]:true; }); tressDeptOn=next;
+  renderTress();
+}
+function toggleTressDept(d){ tressDeptOn[d]=!tressDeptOn[d]; renderTress(); }
+function tressSelected(){ return tressRows.filter(r=>tressDeptOn[r.team||""]!==false); }
+function renderTress(){
+  const T=I18N[lang];
+  const depts=Object.keys(tressDeptOn).sort((a,b)=>a.localeCompare(b));
+  const cnt={}; tressRows.forEach(r=>{ const k=r.team||""; cnt[k]=(cnt[k]||0)+1; });
+  $("trDepts").innerHTML=depts.map(d=>`<label class="trdept ${tressDeptOn[d]?"on":""}" onclick="event.preventDefault();toggleTressDept(${JSON.stringify(d)})"><input type="checkbox" ${tressDeptOn[d]?"checked":""}>${tressDeptOn[d]?"✓ ":""}${escapeHtml(d||"—")} <span style="opacity:.6">${cnt[d]||0}</span></label>`).join("");
+  const sel=tressSelected();
+  if(!tressRows.length){
+    $("trSum").textContent=$("trText").value.trim()?T.trNone:"";
+    $("trTable").querySelector("thead").innerHTML=""; $("trTable").querySelector("tbody").innerHTML="";
+    $("trRun").disabled=true; return;
+  }
+  const reg=tressRows.filter(r=>r.reg).length, noout=tressRows.filter(r=>!r.out).length;
+  $("trSum").textContent=T.trSum(tressRows.length,reg,tressRows.length-reg,noout,sel.length);
+  $("trTable").querySelector("thead").innerHTML=`<tr><th>${T.colId}</th><th>${T.colName}</th><th>${T.trDept}</th><th>${T.trIn}</th><th>${T.trOut}</th><th>${T.trRegCol}</th></tr>`;
+  $("trTable").querySelector("tbody").innerHTML=sel.map(r=>`<tr><td>${escapeHtml(r.employee_id)}</td><td>${escapeHtml(r.name)}${(!r.reg||!r.pasteName||r.pasteName===r.name)?"":` <span style="color:#94a3b8;font-size:11px">(${escapeHtml(r.pasteName)})</span>`}</td><td>${escapeHtml(r.team||"—")}</td><td>${r.in||"—"}</td><td>${r.out||"—"}</td><td><span class="trtag ${r.reg?"ok":"no"}">${r.reg?T.trRegOk:T.trRegNo}</span></td></tr>`).join("");
+  $("trRun").disabled=sel.length===0;
+}
+async function submitTress(){
+  const T=I18N[lang];
+  const date=$("trDate").value; const factory=$("trFactory").value;
+  const rows=tressSelected(); if(!rows.length||!date) return;
+  if(!confirm(T.trConfirm(date,rows.length))) return;
+  const register=$("trReg").checked;
+  $("trRun").disabled=true; $("trClose").disabled=true;
+  const CH=200; const tot={deleted:0,ins_in:0,ins_out:0,new_emp:0,skipped:0};
+  try{
+    for(let i=0;i<rows.length;i+=CH){
+      const part=rows.slice(i,i+CH).map(r=>({employee_id:r.employee_id,name:r.pasteName||r.name,team:r.team,in:r.in,out:r.out,register}));
+      $("trProg").textContent=T.trProg(Math.min(i+CH,rows.length),rows.length);
+      const res=await fetch(REST("rpc/tress_import"),{method:"POST",headers:Object.assign({},HEADERS,{"Content-Type":"application/json"}),
+        body:JSON.stringify({p_date:date,p_factory:factory,p_rows:part})});
+      if(!res.ok){ console.error(await res.text()); throw new Error("rpc"); }
+      const j=await res.json(); for(const k in tot) tot[k]+=(+j[k]||0);
+    }
+    $("trProg").textContent=T.trDone(tot);
+    if(($("fDate").value||todayDate())!==date) $("fDate").value=date;
+    await refresh();
+    $("trText").value=""; tressRows=[]; tressDeptOn={}; renderTress();
+  }catch(e){ $("trProg").textContent=T.trFail; }
+  finally{ $("trRun").disabled=tressSelected().length===0; $("trClose").disabled=false; }
 }
 
 /* ---------- 식사 수기 등록 (사번→이름 자동) ---------- */
