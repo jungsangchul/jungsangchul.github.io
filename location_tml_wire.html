@@ -25,7 +25,9 @@
   --r:8px;
   --w:760px;
 }
-body.wide{--w:1180px}
+body.wide{--w:100%}
+body.wide main{padding-left:32px;padding-right:32px}
+@media (max-width:760px){body.wide main{padding-left:12px;padding-right:12px}}
 *{box-sizing:border-box}
 html,body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.45;-webkit-font-smoothing:antialiased}
 button,input,textarea,select{font:inherit;color:inherit}
