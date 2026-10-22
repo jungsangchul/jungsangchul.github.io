@@ -6,7 +6,7 @@
 <title>관리자 대시보드 · Panel</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Noto+Sans+KR:wght@400;500;600;700;800&family=Noto+Serif+KR:wght@700;900&display=swap" rel="stylesheet">
 <style>
   :root{
     --navy:#0c2444;--navy2:#163a66;--gold:#c9a14a;--gold2:#e3c878;
@@ -434,11 +434,15 @@
     .system-bar .updated{display:none}
   }
 
+  /* ═══ 공통 제목 서체: Noto Serif KR 900 (포털 공통 적용 예정) ═══ */
+  .brand-name,.rt-title,.gate #gT{font-family:'Noto Serif KR','Nanum Myeongjo','Apple Myungjo',serif!important;font-weight:900!important;letter-spacing:.04em!important;font-size:19px!important;line-height:1.15!important}
+  .rt-title{font-size:20px!important}
+  @media (max-width:820px){.brand-name{font-size:15px!important}}
   /* ═══ 출근율 분석 (Attendance Rate Analysis) ═══ */
   .filters .addbtn.rt-open{border-color:rgba(201,168,76,.5);color:var(--gold);background:rgba(201,168,76,.08);font-weight:700;display:inline-flex;align-items:center;gap:7px}
   .filters .addbtn.rt-open::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--gold);box-shadow:0 0 8px var(--gold);animation:pulse 2.4s ease-in-out infinite}
   .filters .addbtn.rt-open:hover{background:rgba(201,168,76,.16);border-color:var(--gold);color:#fff}
-  .rt-overlay{display:none;position:fixed;inset:0;z-index:60;overflow:auto;color:#f0f0f0;font-family:var(--body);
+  .rt-overlay{display:none;position:fixed;inset:0;z-index:60;overflow-y:auto;overflow-x:hidden;color:#f0f0f0;font-family:var(--body);
     background:radial-gradient(1100px 500px at 50% -200px,rgba(201,168,76,.10),transparent 70%),radial-gradient(800px 400px at 100% 100%,rgba(111,184,221,.06),transparent 70%),#0a0a0a;-webkit-overflow-scrolling:touch}
   .rt-overlay.open{display:block;animation:rtIn .25s ease-out}
   @keyframes rtIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
@@ -462,9 +466,10 @@
   .rt-btn.green{border-color:rgba(76,175,125,.45);color:#4caf7d}
   .rt-close{width:34px;height:34px;border-radius:50%;border:1px solid var(--line2);background:#141414;color:#ccc;font-size:15px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:.15s}
   .rt-close:hover{border-color:#e05c5c;color:#e05c5c;background:rgba(224,92,92,.08)}
-  .rt-wrap{max-width:1280px;margin:0 auto;padding:18px 24px 70px}
+  .rt-wrap{max-width:1320px;margin:0 auto;padding:18px 24px 70px;min-width:0}
   .rt-status{font-family:var(--mono);font-size:11px;letter-spacing:.08em;color:#777;margin:0 0 12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
   .rt-status b{color:var(--gold)}
+  .rt-fb{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;border:1px solid rgba(224,168,74,.4);color:#e0a84a;font-size:10.5px;letter-spacing:.04em}
   .rt-legend{display:inline-flex;align-items:center;gap:14px;margin-left:auto}
   .rt-legend span{display:inline-flex;align-items:center;gap:6px;color:#aaa}
   .rt-legend i{width:10px;height:10px;border-radius:3px;display:inline-block}
@@ -502,20 +507,21 @@
   .rt-dual .n small{font-size:11px;color:#888;font-weight:400;margin-left:3px}
   .rt-dual .l{font-size:11px;color:#8a8a8a;margin-top:3px}
 
-  .rt-card{background:var(--panel);border:1px solid var(--line2);border-radius:14px;padding:18px 20px;margin-bottom:14px}
+  .rt-card{background:var(--panel);border:1px solid var(--line2);border-radius:14px;padding:18px 20px;margin-bottom:14px;min-width:0;overflow:hidden}
   .rt-card .h{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
   .rt-card .h h3{margin:0;font-size:14.5px;font-weight:700;color:#fafafa;display:flex;align-items:center;gap:9px}
   .rt-card .h h3::before{content:'';width:3px;height:16px;border-radius:2px;background:var(--gold)}
   .rt-card .h .d{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;color:#777;text-transform:uppercase}
-  .rt-grid2{display:grid;grid-template-columns:1.1fr .9fr;gap:14px;margin-bottom:14px}
+  .rt-grid2{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:14px;margin-bottom:14px}
   .rt-grid2>.rt-card{margin-bottom:0}
-  .rt-chart{position:relative;height:300px}
+  .rt-chart{position:relative;height:300px;width:100%;min-width:0}
+  .rt-chart canvas{max-width:100%!important}
   .rt-chart.sm{height:250px}
-  .rt-tw{overflow:auto;border:1px solid var(--line);border-radius:10px;margin-top:12px}
-  .rt-t{width:100%;border-collapse:collapse;font-size:12.5px;white-space:nowrap}
-  .rt-t th{position:sticky;top:0;background:#111;color:#888;font-family:var(--mono);font-size:10px;letter-spacing:.1em;font-weight:400;padding:9px 10px;border-bottom:1px solid var(--line2);text-align:center}
+  .rt-tw{overflow-x:auto;overflow-y:hidden;border:1px solid var(--line);border-radius:10px;margin-top:12px;max-width:100%}
+  .rt-t{width:100%;border-collapse:collapse;font-size:12px;white-space:nowrap;table-layout:auto}
+  .rt-t th{background:#111;color:#888;font-family:var(--mono);font-size:9.5px;letter-spacing:.04em;font-weight:400;padding:7px 5px;border-bottom:1px solid var(--line2);text-align:center;white-space:normal;line-height:1.3;vertical-align:middle}
   .rt-t th.p1{color:#e2c46a;background:rgba(226,196,106,.06)}.rt-t th.p2{color:#6fb8dd;background:rgba(111,184,221,.06)}
-  .rt-t td{padding:8px 10px;border-bottom:1px solid var(--line);color:#d8d8d8;text-align:center;font-variant-numeric:tabular-nums}
+  .rt-t td{padding:7px 5px;border-bottom:1px solid var(--line);color:#d8d8d8;text-align:center;font-variant-numeric:tabular-nums}
   .rt-t td.n{font-family:var(--mono);font-weight:700;color:#fafafa}
   .rt-t td.m{color:#999}
   .rt-t td.p1{background:rgba(226,196,106,.04)}.rt-t td.p2{background:rgba(111,184,221,.04)}
@@ -563,6 +569,7 @@
   .rt-today{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:12.5px;color:#bbb}
   .rt-today b{font-family:var(--mono);color:#fafafa}
   @media (max-width:900px){
+    .rt-t{font-size:11px}.rt-t td{padding:6px 4px}
     .rt-grid2{grid-template-columns:1fr}
     .rt-top-in,.rt-wrap{padding-left:12px;padding-right:12px}
     .rt-form{grid-template-columns:repeat(2,1fr)}
@@ -2442,12 +2449,16 @@ const RATE_T="att_rate_log";
 const RATE_PLANT="1공장";
 const RATE_CHART_SRC="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js";
 const RATE_C={p1:"#e2c46a",p2:"#6fb8dd",mon:"#e05c5c",grid:"rgba(255,255,255,.06)",tick:"#8a8a8a"};
+/* ✅ 관리직 판정: 팀명이 아래 패턴에 맞으면 관리직, 나머지는 생산직 (자동 저장 시 관리직/생산직 분리 기록)
+   1공장: 자재무역팀·인사총무팀·재무원가팀·생관 / 2공장: RH & COMPRAS·MATERIALES & COMERCIO·CONTROL DE PRODUCCIÓN·FINANZAS */
+const RATE_ADMIN_RE=/자재|인사|재무|생관|\bRH\b|COMPRAS|MATERIALES|CONTROL DE PRODUCCI|FINANZAS/i;
+const RATE_SRC_ORDER={manual:3,excel:2,auto:1};
 const RATE_I18N={
   ko:{btn:"출근율 분석",title:"출근율 분석",all:"전체",mgr:"관리직",prod:"생산직",input:"＋ 데이터 입력",excel:"⤓ Excel",
     h1:"월별 출근율 추이 — 1공장 vs 2공장",h2:m=>`일별 비교 — ${m}`,h3:"요일별 결근율 — 전체기간",h4:"월요일 효과 — 평일(화~금) 대비",h5:"월별 월요일 vs 평일 결근율 추이",h6:"월별 · 요일별 결근율 (가중평균)",
     p1:"1공장",p2:"2공장",p1l:"1공장 · Monclova",p2l:"2공장 · Torreón",
     kAttMonth:"당월 출근율",kCum:"전체 누계 출근율",kMon:"월요일 효과 (결근율)",kLast:"최근 입력일",kDiff:"1공장 − 2공장 (당월)",
-    sDays:"근무일",sHold:"평균보유",sAbs:"결근",sAbsRate:"결근율",sAttRate:"출근율",sPres:"평균출근",sMon:"월요일",sWk:"평일(화~금)",sDiff:"차이",sRatio:"배율",sExcess:"월요일 평균 초과결근",sMonDays:"월요일 수",sPerDay:"명/일",sPp:"%p",sX:"배",
+    sDays:"근무일",sHold:"평균보유",sAbs:"결근",sAbsRate:"결근율",sAttRate:"출근율",sPres:"평균출근",sMon:"월요일",sWk:"평일(화~금)",sDiff:"차이",sRatio:"배율",sExcess:"월요일 평균 초과결근",sExcessS:"초과결근",sMonDays:"월요일 수",sPerDay:"명/일",sPp:"%p",sX:"배",
     tYm:"연월",tDate:"날짜",tWd:"요일",tHold:"보유",tPres:"출근",tAbs:"결근",tRate:"출근율",tAbsRate:"결근율",tCum1:"누계 출근율 1공장",tCum2:"누계 출근율 2공장",tDiff:"차이(1−2)",tSum:"합산 결근율",tTot:"전체 누계",tMonthTot:"월 합계/평균",
     wd:["일","월","화","수","목","금","토"],wdLong:["일요일","월요일","화요일","수요일","목요일","금요일","토요일"],
     n1:"결근율 = 결근 합계 ÷ 보유 합계(가중평균), 출근율 = 1 − 결근율. 누계는 첫 입력 달부터 해당 월까지. 1공장은 관리직+생산직 합산, 2공장은 「전체」로 입력된 값.",
@@ -2461,12 +2472,12 @@ const RATE_I18N={
     saved:n=>`저장 완료 (${n}행)`,needAll:"날짜·보유·출근을 입력하세요",badNum:"출근인원은 보유인원 이하여야 합니다",parseNone:"인식된 행이 없습니다 (날짜·공장·구분·보유·출근 열 확인)",parseBad:n=>`${n}행 형식 오류 — 무시됨`,delOk:"삭제됨",delAsk:"이 행을 삭제할까요?",
     src:{excel:"엑셀",manual:"수동",auto:"자동"},del:"삭제",
     pasteHint:"엑셀 「출근율DB」 시트에서 <b>날짜 · 공장 · 구분 · 보유인원 · 출근인원</b> 열 순서로 복사해 붙여넣기 (요일·연월 열이 섞여 있어도 자동 인식). 같은 날짜·공장·구분은 덮어씁니다.",
-    cAtt:"출근율",cAbs:"결근율",cMonL:"월요일",cWkL:"평일(화~금)",expName:"출근율분석"},
+    cAtt:"출근율",cAbs:"결근율",cMonL:"월요일",cWkL:"평일(화~금)",expName:"출근율분석",fbNote:s=>`관리직/생산직 미구분 데이터 → 전체 값으로 표시 (${s}일)`,noAdmin2:"2공장 관리직 데이터 없음 (미구분 입력분)",autoSplit:"관리직/생산직 자동 분리 저장"},
   es:{btn:"Análisis asistencia",title:"Análisis de asistencia",all:"Todos",mgr:"Admin.",prod:"Producción",input:"＋ Capturar datos",excel:"⤓ Excel",
     h1:"Tendencia mensual de asistencia — Planta 1 vs Planta 2",h2:m=>`Comparación diaria — ${m}`,h3:"Ausentismo por día de la semana — total",h4:"Efecto lunes — vs. mar–vie",h5:"Lunes vs. entre semana por mes",h6:"Ausentismo por mes y día de la semana (ponderado)",
     p1:"Planta 1",p2:"Planta 2",p1l:"Planta 1 · Monclova",p2l:"Planta 2 · Torreón",
     kAttMonth:"Asistencia del mes",kCum:"Asistencia acumulada",kMon:"Efecto lunes (ausentismo)",kLast:"Último día capturado",kDiff:"Planta 1 − Planta 2 (mes)",
-    sDays:"Días",sHold:"Plantilla prom.",sAbs:"Ausencias",sAbsRate:"Ausentismo",sAttRate:"Asistencia",sPres:"Asist. prom.",sMon:"Lunes",sWk:"Mar–Vie",sDiff:"Dif.",sRatio:"Razón",sExcess:"Ausencias extra promedio lunes",sMonDays:"Nº lunes",sPerDay:"pers./día",sPp:"pp",sX:"×",
+    sDays:"Días",sHold:"Plantilla prom.",sAbs:"Ausencias",sAbsRate:"Ausentismo",sAttRate:"Asistencia",sPres:"Asist. prom.",sMon:"Lunes",sWk:"Mar–Vie",sDiff:"Dif.",sRatio:"Razón",sExcess:"Ausencias extra promedio lunes",sExcessS:"Aus. extra",sMonDays:"Nº lunes",sPerDay:"pers./día",sPp:"pp",sX:"×",
     tYm:"Mes",tDate:"Fecha",tWd:"Día",tHold:"Plantilla",tPres:"Asist.",tAbs:"Aus.",tRate:"% Asist.",tAbsRate:"% Aus.",tCum1:"% Asist. acum. P1",tCum2:"% Asist. acum. P2",tDiff:"Dif.(1−2)",tSum:"% Aus. total",tTot:"Acumulado",tMonthTot:"Total/prom. mes",
     wd:["Do","Lu","Ma","Mi","Ju","Vi","Sa"],wdLong:["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"],
     n1:"Ausentismo = ausencias ÷ plantilla (ponderado); asistencia = 1 − ausentismo. Acumulado desde el primer mes capturado. Planta 1 = admin. + producción; Planta 2 = valor capturado como «Todos».",
@@ -2480,7 +2491,7 @@ const RATE_I18N={
     saved:n=>`Guardado (${n} filas)`,needAll:"Capture fecha, plantilla y asistencia",badNum:"La asistencia no puede superar la plantilla",parseNone:"No se reconocieron filas",parseBad:n=>`${n} filas con error — omitidas`,delOk:"Eliminado",delAsk:"¿Eliminar esta fila?",
     src:{excel:"Excel",manual:"Manual",auto:"Auto"},del:"Eliminar",
     pasteHint:"Copie desde la hoja «출근율DB» las columnas <b>fecha · planta · tipo · plantilla · asistencia</b> (se ignoran columnas extra). Misma fecha/planta/tipo se sobrescribe.",
-    cAtt:"Asistencia",cAbs:"Ausentismo",cMonL:"Lunes",cWkL:"Mar–Vie",expName:"Analisis_asistencia"}
+    cAtt:"Asistencia",cAbs:"Ausentismo",cMonL:"Lunes",cWkL:"Mar–Vie",expName:"Analisis_asistencia",fbNote:s=>`Datos sin separar admin./producción → se muestra el total (${s} días)`,noAdmin2:"Planta 2 sin datos de admin. (captura sin separar)",autoSplit:"Guardado automático separado admin./producción"}
 };
 const rt=k=>(RATE_I18N[lang]||RATE_I18N.ko)[k];
 let rateRows=[], rateKind="전체", rateMonth=null, rateCharts={}, rateLoaded=false, rateLoading=null, rateAutoLast="";
@@ -2499,19 +2510,24 @@ function rateEnsureChart(){
   rateEnsureChart._p=new Promise((res,rej)=>{ const s=document.createElement("script"); s.src=RATE_CHART_SRC; s.onload=res; s.onerror=()=>{rateEnsureChart._p=null;rej(new Error("chart.js"))}; document.head.appendChild(s); });
   return rateEnsureChart._p;
 }
-/* 날짜별 집계: kind=전체 → '전체' 행이 있으면 그 값, 없으면 관리직+생산직 합산 */
+/* 날짜별 집계
+   - 전체: 관리직/생산직 행이 있으면 합산, 없으면 '전체' 행
+   - 생산직: 생산직 행 / 없고 '전체'만 있으면 '전체' 값으로 대체(fb=true, 미구분 데이터)
+   - 관리직: 관리직 행만 (미구분 데이터는 표시 안 함) */
 function rateDayMap(plant){
+  const by={};
+  for(const r of rateRows){ if(r.plant!==plant) continue; (by[r.d]=by[r.d]||{})[r.kind]=r; }
   const m={};
-  for(const r of rateRows){
-    if(r.plant!==plant) continue;
-    if(rateKind!=="전체"){ if(r.kind===rateKind) m[r.d]={h:r.hold,p:r.present}; continue; }
-    const c=(m[r.d]=m[r.d]||{h:0,p:0,all:false});
-    if(r.kind==="전체"){ c.h=r.hold; c.p=r.present; c.all=true; }
-    else if(!c.all){ c.h+=r.hold; c.p+=r.present; }
-  }
-  for(const d in m){ if(!(m[d].h>0)) delete m[d]; }
+  for(const d in by){ const k=by[d]; let c=null;
+    if(rateKind==="전체"){
+      if(k["관리직"]||k["생산직"]) c={h:(k["관리직"]?k["관리직"].hold:0)+(k["생산직"]?k["생산직"].hold:0),p:(k["관리직"]?k["관리직"].present:0)+(k["생산직"]?k["생산직"].present:0)};
+      else if(k["전체"]) c={h:k["전체"].hold,p:k["전체"].present};
+    } else if(k[rateKind]) c={h:k[rateKind].hold,p:k[rateKind].present};
+    else if(rateKind==="생산직"&&k["전체"]) c={h:k["전체"].hold,p:k["전체"].present,fb:true};
+    if(c&&c.h>0) m[d]=c; }
   return m;
 }
+function rateFallbackDays(map){ let n=0; for(const d in map) if(map[d].fb) n++; return n; }
 function rateAgg(map, filter){
   let h=0,p=0,n=0; for(const d in map){ if(filter&&!filter(d)) continue; h+=map[d].h; p+=map[d].p; n++; }
   return {days:n,hold:h,pres:p,abs:h-p,rate:h?(h-p)/h:null,att:h?p/h:null,avgHold:n?h/n:null,avgPres:n?p/n:null};
@@ -2603,7 +2619,9 @@ function rateRender(){
   const m1=rateDayMap("1공장"), m2=rateDayMap("2공장");
   const allD=rateRows.map(r=>r.d).sort();
   $("rtRange").textContent=`${allD[0]} ~ ${allD[allD.length-1]}`;
-  $("rtStatus").innerHTML=T.status(rateRows.length,allD[0],allD[allD.length-1])+(rateKind!=="전체"?` · <b>${rateKind==="관리직"?T.mgr:T.prod}</b>`:"")+
+  const fb1=rateFallbackDays(m1), fb2=rateFallbackDays(m2);
+  const fbNote=(fb1||fb2)?`<span class="rt-fb">⚠ ${T.fbNote([fb1?`${T.p1} ${fb1}`:"",fb2?`${T.p2} ${fb2}`:""].filter(Boolean).join(" · "))}</span>`:(rateKind==="관리직"&&!Object.keys(m2).length?`<span class="rt-fb">⚠ ${T.noAdmin2}</span>`:"");
+  $("rtStatus").innerHTML=T.status(rateRows.length,allD[0],allD[allD.length-1])+(rateKind!=="전체"?` · <b>${rateKind==="관리직"?T.mgr:T.prod}</b>`:"")+fbNote+
     `<span class="rt-legend"><span><i class="rt-bg1"></i>${T.p1l}</span><span><i class="rt-bg2"></i>${T.p2l}</span><span><i style="background:${RATE_C.mon}"></i>${T.wdLong[1]}</span></span>`;
 
   /* ── 월별 통계 ── */
@@ -2720,7 +2738,7 @@ function rateRender(){
   const heatTable=(name,c,arr,tot)=>{
     const row=(label,w,cls="")=>`<tr class="${cls}"><td class="n">${label}</td>${[1,2,3,4,5,6].map(i=>heat(w.wd[i].rate)).join("")}${cellP(w.week.rate)}${diffCell(w.diff)}<td class="n">${w.ratio?w.ratio.toFixed(2)+(lang==="es"?"×":"배"):"–"}</td><td class="n">${rateFmt1(w.excess)}</td><td>${w.monDays||"–"}</td></tr>`;
     return `<div style="margin-bottom:14px"><div style="font-weight:700;color:${c};margin:4px 0 8px;font-size:13.5px;display:flex;align-items:center;gap:8px"><i style="width:8px;height:8px;border-radius:50%;background:${c};box-shadow:0 0 8px ${c};display:inline-block"></i>${name}</div>
-      <div class="rt-tw" style="margin:0"><table class="rt-t"><thead><tr><th>${T.tYm}</th>${[1,2,3,4,5,6].map(i=>`<th style="${i===1?"color:#ef9a9a":""}">${T.wdLong[i]}</th>`).join("")}<th>${T.sWk}</th><th>${T.sMon}−${T.sWk}</th><th>${T.sRatio}</th><th>${T.sExcess}<br>(${T.sPerDay})</th><th>${T.sMonDays}</th></tr></thead><tbody>`+
+      <div class="rt-tw" style="margin:0"><table class="rt-t"><thead><tr><th>${T.tYm}</th>${[1,2,3,4,5,6].map(i=>`<th style="${i===1?"color:#ef9a9a":""}">${T.wdLong[i]}</th>`).join("")}<th>${T.sWk}</th><th>${T.sMon}−${T.sWk}<br>(${T.sPp})</th><th>${T.sRatio}</th><th>${T.sExcessS}<br>(${T.sPerDay})</th><th>${T.sMonDays}</th></tr></thead><tbody>`+
       months.map((ym,i)=>arr[i].week.days||arr[i].mon.days?row(rateYmLabel(ym),arr[i]):"").join("")+row(T.tTot,tot,"tot")+`</tbody></table></div></div>`; };
   $("rtHeat").innerHTML=heatTable(T.p1l,RATE_C.p1,mw1,w1)+heatTable(T.p2l,RATE_C.p2,mw2,w2);
 }
@@ -2736,12 +2754,23 @@ function rateCloseInput(){ $("rtDrawer").classList.remove("open"); $("rtDim").cl
 function rateDashSnapshot(){
   const total=parseInt($("kTotal").textContent,10), pres=parseInt($("kIn").textContent,10);
   if(isNaN(total)||isNaN(pres)||total<=0) return null;
-  return {d:$("fDate").value||todayDate(),hold:total,present:pres};
+  const s={d:$("fDate").value||todayDate(),hold:total,present:pres,adm:{h:0,p:0},prod:{h:0,p:0}};
+  try{ // 팀명으로 관리직/생산직 분리 (view.att=출근, view.absent=미출근)
+    const isAdm=r=>RATE_ADMIN_RE.test(String(r.team||""));
+    for(const r of view.att){ const g=isAdm(r)?s.adm:s.prod; g.h++; g.p++; }
+    for(const r of view.absent){ const g=isAdm(r)?s.adm:s.prod; g.h++; }
+    s.split=(s.adm.h+s.prod.h)===total;
+  }catch(_){ s.split=false; }
+  return s;
+}
+function rateSnapshotRows(s,source){
+  if(s.split) return [{d:s.d,plant:RATE_PLANT,kind:"관리직",hold:s.adm.h,present:s.adm.p,source},{d:s.d,plant:RATE_PLANT,kind:"생산직",hold:s.prod.h,present:s.prod.p,source}].filter(r=>r.hold>0);
+  return [{d:s.d,plant:RATE_PLANT,kind:"전체",hold:s.hold,present:s.present,source}];
 }
 function rateRenderToday(){
   const T=RATE_I18N[lang]||RATE_I18N.ko; const s=rateDashSnapshot();
   const filtered=($("fFactory").value||$("fTeam").value);
-  $("rtToday").innerHTML=s&&!filtered?`<span>${T.todayRow(s.d,s.hold,s.present)}</span><button class="rt-btn gold" onclick="rateSaveToday()">${T.todayBtn}</button>`:`<span style="color:#888">${T.todayNone}</span>`;
+  $("rtToday").innerHTML=s&&!filtered?`<span>${T.todayRow(s.d,s.hold,s.present)}${s.split?`<br><span style="color:#888;font-size:11.5px">${T.mgr} ${s.adm.p}/${s.adm.h} · ${T.prod} ${s.prod.p}/${s.prod.h} — ${T.autoSplit}</span>`:""}</span><button class="rt-btn gold" onclick="rateSaveToday()">${T.todayBtn}</button>`:`<span style="color:#888">${T.todayNone}</span>`;
   $("rtMsg0").textContent=T.autoNote; $("rtMsg0").className="rt-msg";
 }
 async function rateUpsert(rows){
@@ -2752,7 +2781,7 @@ async function rateUpsert(rows){
 async function rateSaveToday(){
   const T=RATE_I18N[lang]||RATE_I18N.ko; const s=rateDashSnapshot(); if(!s) return;
   const m=$("rtMsg0");
-  try{ await rateUpsert([{d:s.d,plant:RATE_PLANT,kind:"전체",hold:s.hold,present:s.present,source:"manual"}]); m.textContent=T.saved(1); m.className="rt-msg ok"; await rateLoad(true); }
+  try{ const rows=rateSnapshotRows(s,"manual"); await rateUpsert(rows); if(s.split) await rateDeleteWhere(`d=eq.${s.d}&plant=eq.${encodeURIComponent(RATE_PLANT)}&kind=eq.${encodeURIComponent("전체")}&source=eq.auto`); m.textContent=T.saved(rows.length); m.className="rt-msg ok"; await rateLoad(true); }
   catch(e){ console.error(e); m.textContent=String(e.message||e).slice(0,160); m.className="rt-msg err"; }
 }
 async function rateAddRow(){
@@ -2799,6 +2828,7 @@ async function ratePasteSave(){
     m.textContent=T.saved(rows.length)+(bad.length?" · "+T.parseBad(bad.length):""); m.className="rt-msg ok"; $("rtPaste").value=""; await rateLoad(true); }
   catch(e){ console.error(e); m.textContent=String(e.message||e).slice(0,160); m.className="rt-msg err"; }
 }
+async function rateDeleteWhere(q){ const r=await fetch(REST(`${RATE_T}?${q}`),{method:"DELETE",headers:HEADERS}); if(!r.ok) throw new Error(await r.text()); }
 async function rateDelete(id){
   const T=RATE_I18N[lang]||RATE_I18N.ko; if(!confirm(T.delAsk)) return;
   try{ const r=await fetch(REST(`${RATE_T}?id=eq.${id}`),{method:"DELETE",headers:HEADERS}); if(!r.ok) throw new Error(await r.text()); await rateLoad(true); }
@@ -2816,11 +2846,14 @@ async function rateAutoSave(){
     if($("fFactory").value||$("fTeam").value) return;
     const s=rateDashSnapshot(); if(!s||s.present<=0) return;
     if(s.d>todayDate()) return;
-    const key=`${s.d}|${s.hold}|${s.present}`; if(key===rateAutoLast) return; rateAutoLast=key;
+    const key=`${s.d}|${s.hold}|${s.present}|${s.split?s.adm.h+"/"+s.adm.p:""}`; if(key===rateAutoLast) return; rateAutoLast=key;
     const ex=await getJson(REST(`${RATE_T}?d=eq.${s.d}&plant=eq.${encodeURIComponent(RATE_PLANT)}&select=id,kind,source,hold,present`));
     if(ex.some(r=>r.source!=="auto")) return;              // 수동/엑셀 값 우선
-    const cur=ex.find(r=>r.kind==="전체"); if(cur&&cur.hold===s.hold&&cur.present===s.present) return;
-    await rateUpsert([{d:s.d,plant:RATE_PLANT,kind:"전체",hold:s.hold,present:s.present,source:"auto"}]);
+    const rows=rateSnapshotRows(s,"auto");
+    const same=rows.every(r=>{ const c=ex.find(x=>x.kind===r.kind); return c&&c.hold===r.hold&&c.present===r.present; });
+    if(same&&ex.length===rows.length) return;
+    await rateUpsert(rows);
+    if(s.split&&ex.some(r=>r.kind==="전체")) await rateDeleteWhere(`d=eq.${s.d}&plant=eq.${encodeURIComponent(RATE_PLANT)}&kind=eq.${encodeURIComponent("전체")}&source=eq.auto`);
     if(rateLoaded){ rateLoaded=false; if($("rateModal").classList.contains("open")) rateLoad(true); }
   }catch(e){ console.warn("rateAutoSave",e); }
 }
