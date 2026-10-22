@@ -1058,10 +1058,10 @@ const I18N={
     earlyOutWarn:(n,inBy)=>`⚠️ 지금은 출근시간(${inBy}) 전후입니다.\n\n${n} 님을 정말 퇴근 타각 처리할까요?\n(정규 퇴근시각으로 기록됩니다)`,
     mealAdd:"식사 수기 등록", mealAddBtn:"+ 식사 등록", mealOk:"등록", mealDup:"이미 식사 신청됨", idBad:"등록되지 않은 사번입니다", needId:"사번을 입력하세요",
     trBtn:"TRESS 붙여넣기", trTitle:"TRESS 근태 붙여넣기 → 출결현황 반영", trDate:"반영 날짜", trFactory:"장소",
-    trHint:"TRESS 「Asistencia Diaria」 엑셀에서 행을 통째로 복사해 붙여넣으세요 (B열=사번, D열=이름, G열=부서, I/J=1차 출·퇴근, K/L=2차 출·퇴근). 사번은 숫자 그대로 사용됩니다(앞의 0 제거). 같은 날짜의 이전 TRESS 반영분은 교체되고 QR 타각 기록은 유지됩니다.",
+    trHint:"TRESS 「Asistencia Diaria」 엑셀에서 행을 통째로 복사해 붙여넣으세요. 열 위치는 자동 인식됩니다(사번=숫자 셀, 이름, 부서, 시각=HH:MM 셀 — 첫 시각=출근, 마지막 시각=퇴근). 「Falta」만 있는 행은 결근으로 건너뜁니다. 사번은 숫자 그대로 사용(앞의 0 제거). 같은 날짜의 이전 TRESS 반영분은 교체되고 QR 타각 기록은 유지됩니다.",
     trReg:"미등록 사번은 직원 마스터에 등록 (반영과 동시에)", trMapH:n=>`미등록 ${n}명 — TRESS 부서 → 시스템 팀 지정 (빈칸이면 부서명 그대로 저장)`, trMapPh:"팀 선택/입력",
     trRegDone:n=>`신규 직원 ${n}명 마스터 등록`, trRegFail:"직원 마스터 등록 실패 — Supabase 권한 확인",
-    trRun:"출결현황에 반영", trNone:"인식된 행이 없습니다 — B열 사번(숫자)이 포함되도록 붙여넣으세요",
+    trRun:"출결현황에 반영", trNone:"인식된 행이 없습니다 — 사번(숫자)·이름·출퇴근 시각이 포함되도록 행 전체를 붙여넣으세요",
     trSum:(n,reg,unreg,noout,sel)=>`인식 ${n}명 · 등록 ${reg} · 미등록 ${unreg} · 퇴근 없음 ${noout} · 반영 대상 ${sel}명`,
     trDept:"부서", trIn:"출근", trOut:"퇴근", trRegCol:"등록", trRegOk:"등록", trRegNo:"미등록",
     trConfirm:(d,n)=>`${d} 출결현황에 ${n}명을 반영할까요?\n(같은 날짜의 이전 TRESS 반영분은 교체됩니다)`,
@@ -1104,10 +1104,10 @@ const I18N={
     earlyOutWarn:(n,inBy)=>`⚠️ Ahora es antes o cerca de la hora de entrada (${inBy}).\n\n¿Realmente desea marcar la SALIDA de ${n}?\n(Se registrará a la hora oficial de salida)`,
     mealAdd:"Registro manual de comida", mealAddBtn:"+ Comida", mealOk:"Registrar", mealDup:"Comida ya registrada", idBad:"N° no registrado", needId:"Ingrese el N°",
     trBtn:"Pegar TRESS", trTitle:"Pegar asistencia TRESS → Panel", trDate:"Fecha", trFactory:"Lugar",
-    trHint:"Copie las filas completas del Excel «Asistencia Diaria» de TRESS y péguelas aquí (col. B=N°, D=Nombre, G=Dpto, I/J=1ª Ent/Sal, K/L=2ª Ent/Sal). El N° se usa tal cual (sin ceros a la izquierda). Los registros TRESS anteriores de la misma fecha se reemplazan; las checadas QR se conservan.",
+    trHint:"Copie las filas completas del Excel «Asistencia Diaria» de TRESS y péguelas aquí. Las columnas se detectan automáticamente (N°, nombre, dpto, horas HH:MM — primera=entrada, última=salida). Las filas con solo «Falta» se omiten. El N° se usa tal cual (sin ceros a la izquierda). Los registros TRESS anteriores de la misma fecha se reemplazan; las checadas QR se conservan.",
     trReg:"Registrar N° no registrados en el maestro de empleados (al aplicar)", trMapH:n=>`${n} no registrados — Dpto TRESS → Equipo del sistema (vacío = usar el nombre del dpto)`, trMapPh:"Elegir/escribir equipo",
     trRegDone:n=>`${n} empleados nuevos registrados`, trRegFail:"Error al registrar empleados — revise permisos",
-    trRun:"Aplicar al panel", trNone:"No se reconoció ninguna fila — incluya la col. B (N° numérico)",
+    trRun:"Aplicar al panel", trNone:"No se reconoció ninguna fila — pegue filas completas con N°, nombre y horas",
     trSum:(n,reg,unreg,noout,sel)=>`${n} reconocidos · ${reg} registrados · ${unreg} no registrados · ${noout} sin salida · ${sel} a aplicar`,
     trDept:"Dpto", trIn:"Entrada", trOut:"Salida", trRegCol:"Reg.", trRegOk:"Sí", trRegNo:"No",
     trConfirm:(d,n)=>`¿Aplicar ${n} personas al panel del ${d}?\n(Se reemplazan los registros TRESS anteriores de esa fecha)`,
@@ -1624,22 +1624,27 @@ function parseTress(){
   for(const ln of lines){
     if(!ln.trim()) continue;
     const c=ln.split("\t");
-    // B열(사번) 위치 찾기: 행 전체 복사(A열 포함)면 index 1, B열부터 복사면 index 0
-    // 2공장 사번은 자릿수가 일정하지 않으므로 ① 직원 마스터에 있는 값 우선 ② 없으면 열 개수로 판단(12열 이상=A열 포함)
-    // 2공장 사번은 자릿수가 일정하지 않으므로 열 구조로 판단: 사번+2(D열)=이름, 사번+7~10(I~L열)=시각
-    let b=-1, best=-1;
-    for(let i=0;i<Math.min(c.length,3);i++){
-      const v=String(c[i]==null?"":c[i]).trim().replace(/\.0+$/,""); if(!/^\d{1,9}$/.test(v)) continue;
-      const nm=String(c[i+2]==null?"":c[i+2]).trim(), tm=[7,8,9,10].some(k=>tressTime(c[i+k]));
-      let sc=0; if(/[A-Za-zÁ-ú]{2,}/.test(nm)) sc+=2; if(tm) sc+=2; if(/^0\d{4,}$/.test(v)||v.length>=6) sc+=1; if(i===1&&c.length>=12) sc+=1;
-      if(sc>best){ best=sc; b=i; }
+    // 2공장 TRESS 양식은 1공장(B/D/G/I~L 고정)과 달라 열 위치를 자동 인식:
+    //   사번 = 첫 숫자 셀(1~9자리) / 이름 = 그 뒤 첫 글자 셀(쉼표 포함 우선) / 부서 = 이름 뒤 글자 셀 / 시각 = HH:MM 셀 전부(첫=출근, 마지막=퇴근)
+    //   "Falta"(결근)만 있고 시각 없는 행, 합계·빈 행은 건너뜀
+    const cells=c.map(x=>String(x==null?"":x).trim());
+    let b=-1;
+    for(let i=0;i<Math.min(cells.length,4);i++){
+      const v=cells[i].replace(/\.0+$/,""); if(!/^\d{1,9}$/.test(v)) continue;
+      const hasName=cells.slice(i+1,i+5).some(x=>/[A-Za-zÁ-ú]{2,}/.test(x)); if(!hasName) continue;
+      if(b<0) b=i;
+      if(/^0\d{4,}$/.test(v)||v.length>=6){ b=i; break; }   // 0으로 채운 사번(00000002 등)이 있으면 그 셀을 사번으로
     }
     if(b<0) continue;
-    const id=tressId(c[b]); if(!id||seen.has(id)) continue;
-    const g=(i)=>String(c[b+i]==null?"":c[b+i]).trim();
-    const name=g(2), dept=g(5);                       // D열, G열
-    const in1=tressTime(g(7)), out1=tressTime(g(8)), in2=tressTime(g(9)), out2=tressTime(g(10)); // I,J,K,L
-    const tIn=in1||in2, tOut=out2||out1;
+    const id=tressId(cells[b]); if(!id||seen.has(id)) continue;
+    const isTxt=x=>/[A-Za-zÁ-ú]{2,}/.test(x)&&!tressTime(x)&&!/^\d+([.,]\d+)?$/.test(x);
+    let ni=-1; for(let i=b+1;i<cells.length;i++){ if(isTxt(cells[i])){ ni=i; break; } }
+    if(ni<0) continue;
+    const name=cells[ni];
+    let dept="";
+    for(let i=ni+1;i<cells.length;i++){ const x=cells[i]; if(!isTxt(x)) continue; if(/^falta$/i.test(x)) continue; if(guessTeam(x)||/[a-z]/.test(x)&&x.length>3){ dept=x; break; } }
+    const times=[]; for(let i=ni+1;i<cells.length;i++){ const tm=tressTime(cells[i]); if(tm) times.push(tm); }
+    const tIn=times[0]||"", tOut=times.length>=2?times[times.length-1]:"";
     if(!tIn&&!tOut) continue;
     seen.add(id);
     const e=emp[id];
