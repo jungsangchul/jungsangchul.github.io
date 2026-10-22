@@ -433,6 +433,141 @@
     .system-bar>span:last-child{white-space:nowrap;flex-shrink:0}
     .system-bar .updated{display:none}
   }
+
+  /* ═══ 출근율 분석 (Attendance Rate Analysis) ═══ */
+  .filters .addbtn.rt-open{border-color:rgba(201,168,76,.5);color:var(--gold);background:rgba(201,168,76,.08);font-weight:700;display:inline-flex;align-items:center;gap:7px}
+  .filters .addbtn.rt-open::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--gold);box-shadow:0 0 8px var(--gold);animation:pulse 2.4s ease-in-out infinite}
+  .filters .addbtn.rt-open:hover{background:rgba(201,168,76,.16);border-color:var(--gold);color:#fff}
+  .rt-overlay{display:none;position:fixed;inset:0;z-index:60;overflow:auto;color:#f0f0f0;font-family:var(--body);
+    background:radial-gradient(1100px 500px at 50% -200px,rgba(201,168,76,.10),transparent 70%),radial-gradient(800px 400px at 100% 100%,rgba(111,184,221,.06),transparent 70%),#0a0a0a;-webkit-overflow-scrolling:touch}
+  .rt-overlay.open{display:block;animation:rtIn .25s ease-out}
+  @keyframes rtIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .rt-top{position:sticky;top:0;z-index:5;background:linear-gradient(180deg,#141414,#0e0e0e);border-bottom:1px solid var(--line2);box-shadow:0 8px 24px rgba(0,0,0,.45)}
+  .rt-top::before{content:'';display:block;height:2px;background:linear-gradient(90deg,var(--gold) 0%,#d4651a 45%,#6fb8dd 100%)}
+  .rt-top-in{max-width:1280px;margin:0 auto;padding:12px 24px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+  .rt-title{font-family:var(--mono);font-size:16px;font-weight:700;letter-spacing:.08em;background:linear-gradient(90deg,#fafafa,#d9d0b4);-webkit-background-clip:text;background-clip:text;color:transparent;white-space:nowrap}
+  .rt-sub{font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:#8a8a8a;margin-top:5px;display:flex;align-items:center;gap:8px}
+  .rt-sub::before{content:'';width:14px;height:1px;background:var(--gold)}
+  .rt-ctrl{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .rt-seg{display:inline-flex;border:1px solid var(--line2);border-radius:999px;padding:3px;background:#0d0d0d;gap:2px}
+  .rt-seg button{border:none;background:transparent;color:#888;font-family:var(--body);font-size:12px;font-weight:600;padding:6px 13px;border-radius:999px;cursor:pointer;transition:.15s}
+  .rt-seg button:hover{color:#f0f0f0}
+  .rt-seg button.on{background:rgba(201,168,76,.14);color:var(--gold);box-shadow:inset 0 0 0 1px rgba(201,168,76,.35)}
+  .rt-sel{height:34px;padding:0 12px;border:1px solid var(--line2);border-radius:8px;background:#0d0d0d;color:#f0f0f0;font-family:var(--mono);font-size:12.5px;font-weight:700;outline:none}
+  .rt-sel:focus{border-color:var(--gold);box-shadow:0 0 0 4px rgba(201,168,76,.14)}
+  .rt-btn{height:34px;padding:0 14px;border-radius:999px;background:none;border:1px solid var(--line2);color:#c8c8c8;font-weight:600;font-size:12.5px;cursor:pointer;font-family:var(--body);transition:.15s}
+  .rt-btn:hover{border-color:#666;color:#fff;background:rgba(255,255,255,.03)}
+  .rt-btn.gold{background:linear-gradient(180deg,#d9b85c,#c9a84c);color:#0a0a0a;border:none;font-weight:700;box-shadow:0 4px 16px rgba(201,168,76,.28)}
+  .rt-btn.gold:hover{filter:brightness(1.07);color:#0a0a0a}
+  .rt-btn.green{border-color:rgba(76,175,125,.45);color:#4caf7d}
+  .rt-close{width:34px;height:34px;border-radius:50%;border:1px solid var(--line2);background:#141414;color:#ccc;font-size:15px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:.15s}
+  .rt-close:hover{border-color:#e05c5c;color:#e05c5c;background:rgba(224,92,92,.08)}
+  .rt-wrap{max-width:1280px;margin:0 auto;padding:18px 24px 70px}
+  .rt-status{font-family:var(--mono);font-size:11px;letter-spacing:.08em;color:#777;margin:0 0 12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .rt-status b{color:var(--gold)}
+  .rt-legend{display:inline-flex;align-items:center;gap:14px;margin-left:auto}
+  .rt-legend span{display:inline-flex;align-items:center;gap:6px;color:#aaa}
+  .rt-legend i{width:10px;height:10px;border-radius:3px;display:inline-block}
+  .rt-p1{color:#e2c46a}.rt-p2{color:#6fb8dd}
+  .rt-bg1{background:#e2c46a}.rt-bg2{background:#6fb8dd}
+
+  .rt-hero{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px;margin-bottom:14px}
+  @media (max-width:1180px){.rt-hero{grid-template-columns:repeat(3,minmax(0,1fr))}}
+  @media (max-width:560px){.rt-hero{grid-template-columns:1fr}}
+  .rt-tile{position:relative;overflow:hidden;background:var(--panel);border:1px solid var(--line2);border-radius:14px;padding:16px 18px 15px;transition:transform .18s,border-color .18s,box-shadow .18s}
+  .rt-tile:hover{transform:translateY(-2px);border-color:#444;box-shadow:0 14px 34px -18px rgba(0,0,0,.9)}
+  .rt-tile::after{content:'';position:absolute;right:-40px;top:-40px;width:140px;height:140px;border-radius:50%;background:radial-gradient(circle,var(--rt-glow,rgba(255,255,255,.06)),transparent 70%);pointer-events:none}
+  .rt-tile.p1{--rt-glow:rgba(226,196,106,.22);border-color:rgba(226,196,106,.28)}
+  .rt-tile.p2{--rt-glow:rgba(111,184,221,.22);border-color:rgba(111,184,221,.28)}
+  .rt-tile.mon{--rt-glow:rgba(224,92,92,.2);border-color:rgba(224,92,92,.28)}
+  .rt-tile .k{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#8a8a8a;display:flex;align-items:center;gap:8px;line-height:1.4}
+  .rt-tile.p1 .k,.rt-tile.p2 .k{padding-right:66px}
+  .rt-tile.mon{grid-column:span 2}
+  @media (max-width:560px){.rt-tile.mon{grid-column:auto}}
+  .rt-tile .s{word-break:keep-all}
+  .rt-tile .k i{width:8px;height:8px;border-radius:50%;display:inline-block}
+  .rt-tile .v{font-family:var(--mono);font-size:34px;font-weight:700;letter-spacing:-.03em;color:#fafafa;line-height:1;margin:12px 0 8px;display:flex;align-items:baseline;gap:6px;flex-wrap:wrap}
+  .rt-tile.p1 .v,.rt-tile.p2 .v{padding-right:62px}
+  .rt-tile .v small{font-size:14px;color:#777;font-weight:400;letter-spacing:0}
+  .rt-tile .v .up{color:#4caf7d}.rt-tile .v .dn{color:#e05c5c}
+  .rt-tile .s{font-size:12px;color:#aaa;line-height:1.55}
+  .rt-tile .s b{color:#e8e8e8;font-family:var(--mono);font-weight:700}
+  .rt-ring{position:absolute;right:16px;top:16px;width:58px;height:58px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;font-weight:700;color:#ddd;
+    background:conic-gradient(var(--rt-c,#e2c46a) calc(var(--rt-pct,0)*1%),rgba(255,255,255,.07) 0)}
+  .rt-ring::before{content:'';position:absolute;inset:6px;border-radius:50%;background:var(--panel)}
+  .rt-ring span{position:relative}
+  .rt-dual{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+  .rt-dual>div{border-left:2px solid var(--rt-c,#444);padding-left:9px}
+  .rt-dual .n{font-family:var(--mono);font-size:21px;font-weight:700;color:#fafafa;line-height:1.1;white-space:nowrap}
+  .rt-dual .n small{font-size:11px;color:#888;font-weight:400;margin-left:3px}
+  .rt-dual .l{font-size:11px;color:#8a8a8a;margin-top:3px}
+
+  .rt-card{background:var(--panel);border:1px solid var(--line2);border-radius:14px;padding:18px 20px;margin-bottom:14px}
+  .rt-card .h{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+  .rt-card .h h3{margin:0;font-size:14.5px;font-weight:700;color:#fafafa;display:flex;align-items:center;gap:9px}
+  .rt-card .h h3::before{content:'';width:3px;height:16px;border-radius:2px;background:var(--gold)}
+  .rt-card .h .d{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;color:#777;text-transform:uppercase}
+  .rt-grid2{display:grid;grid-template-columns:1.1fr .9fr;gap:14px;margin-bottom:14px}
+  .rt-grid2>.rt-card{margin-bottom:0}
+  .rt-chart{position:relative;height:300px}
+  .rt-chart.sm{height:250px}
+  .rt-tw{overflow:auto;border:1px solid var(--line);border-radius:10px;margin-top:12px}
+  .rt-t{width:100%;border-collapse:collapse;font-size:12.5px;white-space:nowrap}
+  .rt-t th{position:sticky;top:0;background:#111;color:#888;font-family:var(--mono);font-size:10px;letter-spacing:.1em;font-weight:400;padding:9px 10px;border-bottom:1px solid var(--line2);text-align:center}
+  .rt-t th.p1{color:#e2c46a;background:rgba(226,196,106,.06)}.rt-t th.p2{color:#6fb8dd;background:rgba(111,184,221,.06)}
+  .rt-t td{padding:8px 10px;border-bottom:1px solid var(--line);color:#d8d8d8;text-align:center;font-variant-numeric:tabular-nums}
+  .rt-t td.n{font-family:var(--mono);font-weight:700;color:#fafafa}
+  .rt-t td.m{color:#999}
+  .rt-t td.p1{background:rgba(226,196,106,.04)}.rt-t td.p2{background:rgba(111,184,221,.04)}
+  .rt-t tr:hover td{background:rgba(255,255,255,.035)}
+  .rt-t tr.mon td:first-child,.rt-t tr.mon td:nth-child(2){color:#ef9a9a;font-weight:700}
+  .rt-t tr.mon td{background:rgba(224,92,92,.05)}
+  .rt-t tr.tot td{background:#191919;font-weight:700;color:#fafafa;border-top:1px solid var(--line2)}
+  .rt-t td.pos{color:#ef9a9a;font-weight:700}.rt-t td.neg{color:#6fb8dd;font-weight:700}
+  .rt-t td.heat{color:#fafafa;font-family:var(--mono);font-weight:700}
+  .rt-pill{display:inline-block;padding:2px 9px;border-radius:999px;font-family:var(--mono);font-size:10.5px;font-weight:700;border:1px solid transparent}
+  .rt-pill.good{color:#4caf7d;border-color:rgba(76,175,125,.4);background:rgba(76,175,125,.06)}
+  .rt-pill.bad{color:#ef9a9a;border-color:rgba(224,92,92,.4);background:rgba(224,92,92,.06)}
+  .rt-pill.src{color:#999;border-color:var(--line2)}
+  .rt-bar{height:6px;border-radius:3px;background:rgba(255,255,255,.06);overflow:hidden;margin-top:8px}
+  .rt-bar i{display:block;height:100%;border-radius:3px;background:linear-gradient(90deg,#8d6f24,#e2c46a);transition:width .6s cubic-bezier(.2,.7,.2,1)}
+  .rt-bar.p2 i{background:linear-gradient(90deg,#2d5f7a,#6fb8dd)}
+  .rt-note{font-size:12px;color:#777;line-height:1.6;margin-top:10px}
+  .rt-note b{color:#aaa}
+  .rt-empty{padding:40px;text-align:center;color:#666;font-size:13px}
+  .rt-foot{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;color:#555;text-align:center;margin-top:20px}
+
+  /* 데이터 입력 드로어 */
+  .rt-drawer{position:fixed;top:0;right:0;bottom:0;width:min(560px,100%);z-index:70;background:#0f0f0f;border-left:1px solid var(--line2);box-shadow:-20px 0 50px rgba(0,0,0,.6);transform:translateX(100%);transition:transform .25s ease;overflow:auto;padding:18px 20px 40px}
+  .rt-drawer.open{transform:none}
+  .rt-dim{position:fixed;inset:0;z-index:65;background:rgba(0,0,0,.55);display:none}
+  .rt-dim.open{display:block}
+  .rt-drawer h4{margin:0 0 4px;font-size:15px;color:#fafafa;display:flex;align-items:center;justify-content:space-between}
+  .rt-drawer .sub{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:#777;margin-bottom:16px}
+  .rt-fs{border:1px solid var(--line2);border-radius:12px;padding:14px;margin-bottom:14px;background:#121212}
+  .rt-fs legend,.rt-fs .lg{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);padding:0 6px}
+  .rt-form{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;align-items:end}
+  .rt-form label{display:flex;flex-direction:column;gap:4px;font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;color:#777;text-transform:uppercase}
+  .rt-form input,.rt-form select,.rt-drawer textarea{height:36px;border:1px solid var(--line2);border-radius:8px;background:#0d0d0d;color:#f0f0f0;padding:0 10px;font-family:var(--body);font-size:13px;outline:none;width:100%}
+  .rt-form input:focus,.rt-form select:focus,.rt-drawer textarea:focus{border-color:var(--gold);box-shadow:0 0 0 4px rgba(201,168,76,.14)}
+  .rt-drawer textarea{height:120px;padding:10px;font-family:var(--mono);font-size:12px;resize:vertical;line-height:1.5}
+  .rt-msg{font-size:12.5px;margin-top:8px;min-height:18px;color:#aaa}
+  .rt-msg.err{color:#ef9a9a}.rt-msg.ok{color:#4caf7d}
+  .rt-list{max-height:360px;overflow:auto;border:1px solid var(--line);border-radius:10px}
+  .rt-list table{width:100%;border-collapse:collapse;font-size:12px;white-space:nowrap}
+  .rt-list th{position:sticky;top:0;background:#111;color:#777;font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;font-weight:400;padding:7px 8px;text-align:center}
+  .rt-list td{padding:6px 8px;border-top:1px solid var(--line);text-align:center;color:#d8d8d8}
+  .rt-list td.n{font-family:var(--mono);font-weight:700;color:#fafafa}
+  .rt-del{border:1px solid rgba(224,92,92,.4);background:transparent;color:#ef9a9a;border-radius:999px;padding:2px 9px;font-size:11px;cursor:pointer}
+  .rt-del:hover{background:rgba(224,92,92,.12)}
+  .rt-today{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:12.5px;color:#bbb}
+  .rt-today b{font-family:var(--mono);color:#fafafa}
+  @media (max-width:900px){
+    .rt-grid2{grid-template-columns:1fr}
+    .rt-top-in,.rt-wrap{padding-left:12px;padding-right:12px}
+    .rt-form{grid-template-columns:repeat(2,1fr)}
+    .rt-chart{height:240px}
+  }
 </style>
 </head>
 <body>
@@ -467,7 +602,7 @@
         </div>
       </div>
     </div>
-    <div class="system-bar"><span>Attendance · Meal Dashboard / 출석 · 식사 관리</span><span><b>Plant 1</b> · Monclova&nbsp;&nbsp;<span class="updated" id="updated">v7.22</span></span></div>
+    <div class="system-bar"><span>Attendance · Meal Dashboard / 출석 · 식사 관리</span><span><b>Plant 1</b> · Monclova&nbsp;&nbsp;<span class="updated" id="updated">v7.23</span></span></div>
   </header>
   <div class="toolbar">
     <div class="filters">
@@ -476,6 +611,7 @@
       <span class="fld"><label id="lTeam">팀</label><select id="fTeam"></select></span>
       <button class="rbtn" id="bRefresh" onclick="refresh()">새로고침</button>
       <label class="toggle"><input type="checkbox" id="fAuto"> <span id="lAuto">자동(30s)</span></label>
+      <button class="addbtn rt-open" id="bRate" onclick="openRate()">출근율 분석</button>
       <button class="addbtn" id="bAdd" onclick="openAdd()">+ 직원</button>
       <button class="addbtn" id="bQuery" onclick="openQuery()">조회</button>
       <button class="addbtn" id="bTress" onclick="openTress()">TRESS 붙여넣기</button>
@@ -673,6 +809,103 @@
     <div class="qsum" id="qSum"></div>
     <div class="qwrap"><table class="qt" id="qTable"><thead></thead><tbody></tbody></table></div>
     <button onclick="closeQuery()" id="qClose" style="margin-top:10px;width:100%">닫기</button>
+  </div>
+</div>
+
+
+<!-- ═══ 출근율 분석 오버레이 ═══ -->
+<div class="rt-overlay" id="rateModal" role="dialog" aria-modal="true">
+  <div class="rt-top">
+    <div class="rt-top-in">
+      <div>
+        <div class="rt-title" id="rtTitle">출근율 분석</div>
+        <div class="rt-sub">Attendance Rate · Plant 1 vs Plant 2 · <span id="rtRange">—</span></div>
+      </div>
+      <div class="rt-ctrl">
+        <div class="rt-seg" id="rtKind">
+          <button data-k="전체" class="on" onclick="rateSetKind('전체')">전체</button>
+          <button data-k="관리직" onclick="rateSetKind('관리직')">관리직</button>
+          <button data-k="생산직" onclick="rateSetKind('생산직')">생산직</button>
+        </div>
+        <select class="rt-sel" id="rtMonth" onchange="rateSetMonth(this.value)"></select>
+        <button class="rt-btn gold" id="rtInputBtn" onclick="rateOpenInput()">＋ 데이터 입력</button>
+        <button class="rt-btn green" id="rtExpBtn" onclick="rateExport()">⤓ Excel</button>
+        <button class="rt-btn" id="rtReloadBtn" onclick="rateLoad(true)">↻</button>
+        <button class="rt-close" onclick="closeRate()" title="닫기">✕</button>
+      </div>
+    </div>
+  </div>
+  <div class="rt-wrap">
+    <div class="rt-status" id="rtStatus"></div>
+    <div class="rt-hero" id="rtHero"></div>
+    <div class="rt-card">
+      <div class="h"><h3 id="rtH1">월별 출근율 추이 — 1공장 vs 2공장</h3><span class="d" id="rtD1">monthly · weighted</span></div>
+      <div class="rt-chart"><canvas id="rtChMonth"></canvas></div>
+      <div class="rt-tw"><table class="rt-t" id="rtTbMonth"></table></div>
+      <div class="rt-note" id="rtN1"></div>
+    </div>
+    <div class="rt-card">
+      <div class="h"><h3 id="rtH2">일별 비교 — 선택 월</h3><span class="d" id="rtD2">daily · selected month</span></div>
+      <div class="rt-chart"><canvas id="rtChDay"></canvas></div>
+      <div class="rt-tw"><table class="rt-t" id="rtTbDay"></table></div>
+    </div>
+    <div class="rt-grid2">
+      <div class="rt-card">
+        <div class="h"><h3 id="rtH3">요일별 결근율 — 전체기간</h3><span class="d" id="rtD3">by weekday</span></div>
+        <div class="rt-chart sm"><canvas id="rtChWd"></canvas></div>
+      </div>
+      <div class="rt-card">
+        <div class="h"><h3 id="rtH4">월요일 효과 — 평일(화~금) 대비</h3><span class="d" id="rtD4">monday vs tue–fri</span></div>
+        <div id="rtMonSum"></div>
+      </div>
+    </div>
+    <div class="rt-card">
+      <div class="h"><h3 id="rtH5">월별 월요일 vs 평일 결근율 추이</h3><span class="d" id="rtD5">monthly trend</span></div>
+      <div class="rt-chart sm"><canvas id="rtChMon"></canvas></div>
+    </div>
+    <div class="rt-card">
+      <div class="h"><h3 id="rtH6">월별 · 요일별 결근율 (가중평균)</h3><span class="d" id="rtD6">heat table</span></div>
+      <div id="rtHeat"></div>
+      <div class="rt-note" id="rtN6"></div>
+    </div>
+    <div class="rt-foot" id="rtFoot">YURA HARNESS MÉXICO · ATTENDANCE RATE ANALYSIS</div>
+  </div>
+  <div class="rt-dim" id="rtDim" onclick="rateCloseInput()"></div>
+  <div class="rt-drawer" id="rtDrawer">
+    <h4><span id="rtInTitle">출근율 데이터 입력</span><button class="rt-close" onclick="rateCloseInput()">✕</button></h4>
+    <div class="sub" id="rtInSub">att_rate_log · 1·2공장 누적</div>
+    <div class="rt-fs">
+      <div class="lg" id="rtInL0">오늘 대시보드 집계</div>
+      <div class="rt-today" id="rtToday"></div>
+      <div class="rt-msg" id="rtMsg0"></div>
+    </div>
+    <div class="rt-fs">
+      <div class="lg" id="rtInL1">직접 입력 (1행)</div>
+      <div class="rt-form">
+        <label><span id="rtLf0">날짜</span><input type="date" id="rtInDate"></label>
+        <label><span id="rtLf1">공장</span><select id="rtInPlant"><option value="1공장">1공장</option><option value="2공장">2공장</option></select></label>
+        <label><span id="rtLf2">구분</span><select id="rtInKind"><option value="전체">전체</option><option value="관리직">관리직</option><option value="생산직">생산직</option></select></label>
+        <label><span id="rtLf3">보유인원</span><input type="number" min="0" id="rtInHold" placeholder="755"></label>
+        <label><span id="rtLf4">출근인원</span><input type="number" min="0" id="rtInPres" placeholder="701"></label>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:10px;align-items:center">
+        <button class="rt-btn gold" id="rtAddBtn" onclick="rateAddRow()">저장</button>
+        <div class="rt-msg" id="rtMsg1" style="margin:0"></div>
+      </div>
+    </div>
+    <div class="rt-fs">
+      <div class="lg" id="rtInL2">엑셀 붙여넣기 (여러 행)</div>
+      <div class="rt-note" id="rtPasteHint" style="margin:0 0 8px">엑셀 「출근율DB」 시트에서 <b>날짜 · 공장 · 구분 · 보유인원 · 출근인원</b> 열 순서로 복사해 붙여넣기 (요일·연월 열이 섞여 있어도 자동 인식). 같은 날짜·공장·구분은 덮어씁니다.</div>
+      <textarea id="rtPaste" placeholder="2026-10-21	1공장	생산직	710	683&#10;2026-10-21	1공장	관리직	45	44&#10;2026-10-21	2공장	전체	660	612"></textarea>
+      <div style="display:flex;gap:8px;margin-top:10px;align-items:center">
+        <button class="rt-btn gold" id="rtPasteBtn" onclick="ratePasteSave()">붙여넣기 저장</button>
+        <div class="rt-msg" id="rtMsg2" style="margin:0"></div>
+      </div>
+    </div>
+    <div class="rt-fs">
+      <div class="lg" id="rtInL3">최근 입력 (60행)</div>
+      <div class="rt-list" id="rtRecent"></div>
+    </div>
   </div>
 </div>
 
@@ -971,7 +1204,7 @@ async function refresh(){
     const hiredBy=e=>!e.hire_date || String(e.hire_date).slice(0,10)<=date;
     state.employees=noTest(emp).filter(hiredBy); state.att=noTest(att); state.meal=noTest(meal);
     compute();
-    $("updated").textContent=t("updated")+new Date().toLocaleTimeString(lang==="ko"?"ko-KR":"es-MX")+" · v7.22";
+    $("updated").textContent=t("updated")+new Date().toLocaleTimeString(lang==="ko"?"ko-KR":"es-MX")+" · v7.23";
   }catch(e){ $("updated").textContent=t("queryErr"); console.error(e); }
 }
 
@@ -1040,6 +1273,7 @@ function compute(){
   setRate("rIn", view.att.length);
   setRate("rMeal", view.meal.length);
   render();
+  try{ rateAutoSave(); }catch(_){ }   // 출근율 누적 자동 저장
 }
 function populateTeamFilter(){
   if(!$("fTeam")) return;
@@ -1558,7 +1792,7 @@ async function runQuery(){
     const emp={}; for(const e of state.employees){ emp[e.employee_id]={name:e.name||e.employee_id,team:(e.team||"").trim(),factory:e.factory}; }
     const val={}; // employee_id → 값(정수)
     let timeStats=null; // 출근 시간 조회용 {days,avg,mn,mx,late}
-    /* ▼ v7.22 출근율(일별·팀별): 서버 집계 RPC att_rate_daily → 팀별 출근율/출근/재직 + 전체 */
+    /* ▼ v7.23 출근율(일별·팀별): 서버 집계 RPC att_rate_daily → 팀별 출근율/출근/재직 + 전체 */
     if(item==="rate"){
       const WD=t("wdShort");
       const dates=[]; { let d=new Date(from+"T00:00:00Z"); const end=new Date(to+"T00:00:00Z");
@@ -2200,6 +2434,411 @@ catch(e){
   console.error("startGate failed:", e);
   try{ var g=document.getElementById("gate"); if(g) g.style.display="flex"; }catch(_){}
 }
+
+/* ============================================================
+   출근율 분석 모듈 (att_rate_log) — 1·2공장 일/월/요일 비교
+   ============================================================ */
+const RATE_T="att_rate_log";
+const RATE_PLANT="1공장";
+const RATE_CHART_SRC="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js";
+const RATE_C={p1:"#e2c46a",p2:"#6fb8dd",mon:"#e05c5c",grid:"rgba(255,255,255,.06)",tick:"#8a8a8a"};
+const RATE_I18N={
+  ko:{btn:"출근율 분석",title:"출근율 분석",all:"전체",mgr:"관리직",prod:"생산직",input:"＋ 데이터 입력",excel:"⤓ Excel",
+    h1:"월별 출근율 추이 — 1공장 vs 2공장",h2:m=>`일별 비교 — ${m}`,h3:"요일별 결근율 — 전체기간",h4:"월요일 효과 — 평일(화~금) 대비",h5:"월별 월요일 vs 평일 결근율 추이",h6:"월별 · 요일별 결근율 (가중평균)",
+    p1:"1공장",p2:"2공장",p1l:"1공장 · Monclova",p2l:"2공장 · Torreón",
+    kAttMonth:"당월 출근율",kCum:"전체 누계 출근율",kMon:"월요일 효과 (결근율)",kLast:"최근 입력일",kDiff:"1공장 − 2공장 (당월)",
+    sDays:"근무일",sHold:"평균보유",sAbs:"결근",sAbsRate:"결근율",sAttRate:"출근율",sPres:"평균출근",sMon:"월요일",sWk:"평일(화~금)",sDiff:"차이",sRatio:"배율",sExcess:"월요일 평균 초과결근",sMonDays:"월요일 수",sPerDay:"명/일",sPp:"%p",sX:"배",
+    tYm:"연월",tDate:"날짜",tWd:"요일",tHold:"보유",tPres:"출근",tAbs:"결근",tRate:"출근율",tAbsRate:"결근율",tCum1:"누계 출근율 1공장",tCum2:"누계 출근율 2공장",tDiff:"차이(1−2)",tSum:"합산 결근율",tTot:"전체 누계",tMonthTot:"월 합계/평균",
+    wd:["일","월","화","수","목","금","토"],wdLong:["일요일","월요일","화요일","수요일","목요일","금요일","토요일"],
+    n1:"결근율 = 결근 합계 ÷ 보유 합계(가중평균), 출근율 = 1 − 결근율. 누계는 첫 입력 달부터 해당 월까지. 1공장은 관리직+생산직 합산, 2공장은 「전체」로 입력된 값.",
+    n6:"차이(%p) = 월요일 결근율 − 화~금 결근율 (양수=월요일이 더 높음). 배율 = 월요일 ÷ 평일. 월요일 평균 초과결근 = 차이 × 월요일 평균 보유인원 — 평일 수준이었다면 줄었을 1일 결근자 수.",
+    monNote:(p,d,x,e)=>`${p}: 월요일 결근율이 평일보다 <b>${d}</b> 높음 (×${x}) → 월요일마다 약 <b>${e}명</b> 추가 결근`,
+    status:(n,f,t)=>`데이터 <b>${n}</b>행 · ${f} ~ ${t}`,loading:"불러오는 중…",noData:"입력된 데이터가 없습니다. 「데이터 입력」으로 추가하세요.",err:"불러오기 실패 — Supabase 테이블(att_rate_log) 확인",
+    inTitle:"출근율 데이터 입력",inL0:"오늘 대시보드 집계",inL1:"직접 입력 (1행)",inL2:"엑셀 붙여넣기 (여러 행)",inL3:"최근 입력 (60행)",
+    f:["날짜","공장","구분","보유인원","출근인원"],save:"저장",pasteSave:"붙여넣기 저장",
+    todayRow:(d,h,p)=>`${d} · ${RATE_PLANT} · 전체 — 보유 <b>${h}</b> / 출근 <b>${p}</b> (${h?Math.round(p/h*1000)/10:0}%)`,todayBtn:"이 값으로 저장",todayNone:"대시보드 집계가 아직 없습니다 (새로고침 후 다시 시도)",
+    autoNote:"※ 대시보드를 새로고침할 때마다(공장·팀 필터 = 전체) 그날 집계가 자동 저장됩니다. 직접 입력·엑셀 값이 있는 날은 자동 저장이 덮어쓰지 않습니다.",
+    saved:n=>`저장 완료 (${n}행)`,needAll:"날짜·보유·출근을 입력하세요",badNum:"출근인원은 보유인원 이하여야 합니다",parseNone:"인식된 행이 없습니다 (날짜·공장·구분·보유·출근 열 확인)",parseBad:n=>`${n}행 형식 오류 — 무시됨`,delOk:"삭제됨",delAsk:"이 행을 삭제할까요?",
+    src:{excel:"엑셀",manual:"수동",auto:"자동"},del:"삭제",
+    pasteHint:"엑셀 「출근율DB」 시트에서 <b>날짜 · 공장 · 구분 · 보유인원 · 출근인원</b> 열 순서로 복사해 붙여넣기 (요일·연월 열이 섞여 있어도 자동 인식). 같은 날짜·공장·구분은 덮어씁니다.",
+    cAtt:"출근율",cAbs:"결근율",cMonL:"월요일",cWkL:"평일(화~금)",expName:"출근율분석"},
+  es:{btn:"Análisis asistencia",title:"Análisis de asistencia",all:"Todos",mgr:"Admin.",prod:"Producción",input:"＋ Capturar datos",excel:"⤓ Excel",
+    h1:"Tendencia mensual de asistencia — Planta 1 vs Planta 2",h2:m=>`Comparación diaria — ${m}`,h3:"Ausentismo por día de la semana — total",h4:"Efecto lunes — vs. mar–vie",h5:"Lunes vs. entre semana por mes",h6:"Ausentismo por mes y día de la semana (ponderado)",
+    p1:"Planta 1",p2:"Planta 2",p1l:"Planta 1 · Monclova",p2l:"Planta 2 · Torreón",
+    kAttMonth:"Asistencia del mes",kCum:"Asistencia acumulada",kMon:"Efecto lunes (ausentismo)",kLast:"Último día capturado",kDiff:"Planta 1 − Planta 2 (mes)",
+    sDays:"Días",sHold:"Plantilla prom.",sAbs:"Ausencias",sAbsRate:"Ausentismo",sAttRate:"Asistencia",sPres:"Asist. prom.",sMon:"Lunes",sWk:"Mar–Vie",sDiff:"Dif.",sRatio:"Razón",sExcess:"Ausencias extra promedio lunes",sMonDays:"Nº lunes",sPerDay:"pers./día",sPp:"pp",sX:"×",
+    tYm:"Mes",tDate:"Fecha",tWd:"Día",tHold:"Plantilla",tPres:"Asist.",tAbs:"Aus.",tRate:"% Asist.",tAbsRate:"% Aus.",tCum1:"% Asist. acum. P1",tCum2:"% Asist. acum. P2",tDiff:"Dif.(1−2)",tSum:"% Aus. total",tTot:"Acumulado",tMonthTot:"Total/prom. mes",
+    wd:["Do","Lu","Ma","Mi","Ju","Vi","Sa"],wdLong:["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"],
+    n1:"Ausentismo = ausencias ÷ plantilla (ponderado); asistencia = 1 − ausentismo. Acumulado desde el primer mes capturado. Planta 1 = admin. + producción; Planta 2 = valor capturado como «Todos».",
+    n6:"Dif.(pp) = ausentismo lunes − mar–vie (positivo = lunes peor). Razón = lunes ÷ entre semana. Ausencias extra = dif. × plantilla promedio de lunes.",
+    monNote:(p,d,x,e)=>`${p}: el lunes el ausentismo es <b>${d}</b> mayor que entre semana (×${x}) → unas <b>${e} personas</b> más faltan cada lunes`,
+    status:(n,f,t)=>`<b>${n}</b> registros · ${f} ~ ${t}`,loading:"Cargando…",noData:"Sin datos. Use «Capturar datos».",err:"Error al cargar — revise la tabla att_rate_log",
+    inTitle:"Captura de asistencia",inL0:"Resumen del tablero (hoy)",inL1:"Captura directa (1 fila)",inL2:"Pegar desde Excel (varias filas)",inL3:"Últimos registros (60)",
+    f:["Fecha","Planta","Tipo","Plantilla","Asistencia"],save:"Guardar",pasteSave:"Guardar pegado",
+    todayRow:(d,h,p)=>`${d} · ${RATE_PLANT} · Todos — plantilla <b>${h}</b> / asist. <b>${p}</b> (${h?Math.round(p/h*1000)/10:0}%)`,todayBtn:"Guardar este valor",todayNone:"Aún no hay resumen del tablero (actualice e intente de nuevo)",
+    autoNote:"※ Cada vez que se actualiza el tablero (filtro planta/equipo = todos) se guarda automáticamente el resumen del día. No sobrescribe días capturados a mano o desde Excel.",
+    saved:n=>`Guardado (${n} filas)`,needAll:"Capture fecha, plantilla y asistencia",badNum:"La asistencia no puede superar la plantilla",parseNone:"No se reconocieron filas",parseBad:n=>`${n} filas con error — omitidas`,delOk:"Eliminado",delAsk:"¿Eliminar esta fila?",
+    src:{excel:"Excel",manual:"Manual",auto:"Auto"},del:"Eliminar",
+    pasteHint:"Copie desde la hoja «출근율DB» las columnas <b>fecha · planta · tipo · plantilla · asistencia</b> (se ignoran columnas extra). Misma fecha/planta/tipo se sobrescribe.",
+    cAtt:"Asistencia",cAbs:"Ausentismo",cMonL:"Lunes",cWkL:"Mar–Vie",expName:"Analisis_asistencia"}
+};
+const rt=k=>(RATE_I18N[lang]||RATE_I18N.ko)[k];
+let rateRows=[], rateKind="전체", rateMonth=null, rateCharts={}, rateLoaded=false, rateLoading=null, rateAutoLast="";
+
+/* ---------- 유틸 ---------- */
+const rateFmtP=(v,d=1)=>(v==null||isNaN(v))?"–":(v*100).toFixed(d)+"%";
+const rateFmtPp=v=>(v==null||isNaN(v))?"–":((v>0?"+":"")+(v*100).toFixed(1)+"%p");
+const rateFmtN=v=>(v==null||isNaN(v))?"–":Math.round(v).toLocaleString();
+const rateFmt1=v=>(v==null||isNaN(v))?"–":(Math.round(v*10)/10).toLocaleString(undefined,{minimumFractionDigits:1,maximumFractionDigits:1});
+const rateYm=d=>d.slice(0,7);
+const rateWd=d=>new Date(d+"T00:00:00Z").getUTCDay(); // 0=일 … 6=토
+const rateYmLabel=ym=>{ const [y,m]=ym.split("-"); return lang==="es"?`${m}/${y}`:`${y}년 ${+m}월`; };
+function rateEnsureChart(){
+  if(window.Chart) return Promise.resolve();
+  if(rateEnsureChart._p) return rateEnsureChart._p;
+  rateEnsureChart._p=new Promise((res,rej)=>{ const s=document.createElement("script"); s.src=RATE_CHART_SRC; s.onload=res; s.onerror=()=>{rateEnsureChart._p=null;rej(new Error("chart.js"))}; document.head.appendChild(s); });
+  return rateEnsureChart._p;
+}
+/* 날짜별 집계: kind=전체 → '전체' 행이 있으면 그 값, 없으면 관리직+생산직 합산 */
+function rateDayMap(plant){
+  const m={};
+  for(const r of rateRows){
+    if(r.plant!==plant) continue;
+    if(rateKind!=="전체"){ if(r.kind===rateKind) m[r.d]={h:r.hold,p:r.present}; continue; }
+    const c=(m[r.d]=m[r.d]||{h:0,p:0,all:false});
+    if(r.kind==="전체"){ c.h=r.hold; c.p=r.present; c.all=true; }
+    else if(!c.all){ c.h+=r.hold; c.p+=r.present; }
+  }
+  for(const d in m){ if(!(m[d].h>0)) delete m[d]; }
+  return m;
+}
+function rateAgg(map, filter){
+  let h=0,p=0,n=0; for(const d in map){ if(filter&&!filter(d)) continue; h+=map[d].h; p+=map[d].p; n++; }
+  return {days:n,hold:h,pres:p,abs:h-p,rate:h?(h-p)/h:null,att:h?p/h:null,avgHold:n?h/n:null,avgPres:n?p/n:null};
+}
+function rateMonths(){ const s=new Set(rateRows.map(r=>rateYm(r.d))); return [...s].sort(); }
+/* 요일 분석 (ym=null → 전체기간) */
+function rateWeekday(map, ym){
+  const f=d=>!ym||rateYm(d)===ym;
+  const wd={}; for(let i=0;i<7;i++) wd[i]=rateAgg(map,d=>f(d)&&rateWd(d)===i);
+  const week=rateAgg(map,d=>f(d)&&rateWd(d)>=2&&rateWd(d)<=5);
+  const mon=wd[1];
+  const diff=(mon.rate!=null&&week.rate!=null)?mon.rate-week.rate:null;
+  const ratio=(mon.rate!=null&&week.rate)?mon.rate/week.rate:null;
+  const excess=(diff!=null&&mon.avgHold)?diff*mon.avgHold:null;
+  return {wd,week,mon,diff,ratio,excess,monDays:mon.days};
+}
+
+/* ---------- 열기/닫기 ---------- */
+async function openRate(){
+  $("rateModal").classList.add("open"); document.body.style.overflow="hidden";
+  rateApplyLang();
+  try{ await rateEnsureChart(); }catch(e){ console.warn(e); }
+  await rateLoad(false);
+}
+function closeRate(){ $("rateModal").classList.remove("open"); document.body.style.overflow=""; rateCloseInput(); }
+document.addEventListener("keydown",e=>{ if(e.key==="Escape"&&$("rateModal").classList.contains("open")){ if($("rtDrawer").classList.contains("open")) rateCloseInput(); else closeRate(); } });
+function rateSetKind(k){ rateKind=k; document.querySelectorAll("#rtKind button").forEach(b=>b.classList.toggle("on",b.dataset.k===k)); rateRender(); }
+function rateSetMonth(m){ rateMonth=m; rateRender(); }
+function rateApplyLang(){
+  const T=RATE_I18N[lang]||RATE_I18N.ko;
+  const B=$("bRate"); if(B) B.textContent=T.btn;
+  $("rtTitle").textContent=T.title;
+  const kb=$("rtKind").querySelectorAll("button"); kb[0].textContent=T.all; kb[1].textContent=T.mgr; kb[2].textContent=T.prod;
+  $("rtInputBtn").textContent=T.input; $("rtExpBtn").textContent=T.excel;
+  $("rtH1").textContent=T.h1; $("rtH3").textContent=T.h3; $("rtH4").textContent=T.h4; $("rtH5").textContent=T.h5; $("rtH6").textContent=T.h6;
+  $("rtN1").textContent=T.n1; $("rtN6").textContent=T.n6;
+  $("rtInTitle").textContent=T.inTitle; $("rtInL0").textContent=T.inL0; $("rtInL1").textContent=T.inL1; $("rtInL2").textContent=T.inL2; $("rtInL3").textContent=T.inL3;
+  T.f.forEach((s,i)=>{ $("rtLf"+i).textContent=s; });
+  $("rtAddBtn").textContent=T.save; $("rtPasteBtn").textContent=T.pasteSave; $("rtPasteHint").innerHTML=T.pasteHint;
+  const ks=$("rtInKind"); ks.options[0].textContent=T.all; ks.options[1].textContent=T.mgr; ks.options[2].textContent=T.prod;
+  const ps=$("rtInPlant"); ps.options[0].textContent=T.p1; ps.options[1].textContent=T.p2;
+}
+try{ const _setLang0=setLang; setLang=function(l){ _setLang0(l); try{ rateApplyLang(); if($("rateModal").classList.contains("open")) rateRender(); }catch(_){ } }; }catch(_){ }
+
+/* ---------- 데이터 ---------- */
+async function rateFetchAll(){
+  const out=[]; const PAGE=1000;
+  for(let off=0; off<50000; off+=PAGE){
+    const ch=await getJson(REST(`${RATE_T}?select=id,d,plant,kind,hold,present,source,updated_at&order=d.asc,plant.asc,kind.asc&limit=${PAGE}&offset=${off}`));
+    out.push(...ch); if(ch.length<PAGE) break;
+  }
+  return out.map(r=>({id:r.id,d:String(r.d).slice(0,10),plant:r.plant,kind:r.kind,hold:+r.hold||0,present:+r.present||0,source:r.source||"manual",updated_at:r.updated_at}));
+}
+async function rateLoad(force){
+  if(rateLoading) return rateLoading;
+  if(rateLoaded&&!force){ rateRender(); return; }
+  $("rtStatus").innerHTML=rt("loading");
+  rateLoading=(async()=>{
+    try{ rateRows=await rateFetchAll(); rateLoaded=true; }
+    catch(e){ console.error(e); $("rtStatus").innerHTML=`<span style="color:#ef9a9a">${rt("err")}</span>`; rateRows=[]; }
+    finally{ rateLoading=null; }
+    rateRender(); rateRenderRecent();
+  })();
+  return rateLoading;
+}
+
+/* ---------- 렌더 ---------- */
+function rateChart(id, cfg){
+  if(!window.Chart) return;
+  if(rateCharts[id]){ rateCharts[id].destroy(); delete rateCharts[id]; }
+  const ctx=$(id).getContext("2d");
+  Chart.defaults.color=RATE_C.tick; Chart.defaults.font.family="'Space Mono','Noto Sans KR',monospace"; Chart.defaults.font.size=11;
+  rateCharts[id]=new Chart(ctx,cfg);
+}
+/* 값 라벨 플러그인 (선/막대 위에 % 표시) */
+const rateLabelPlugin={id:"rtLabels",afterDatasetsDraw(ch,_a,opt){
+  if(!opt||!opt.on) return; const {ctx}=ch;
+  ch.data.datasets.forEach((ds,i)=>{ const meta=ch.getDatasetMeta(i); if(meta.hidden||ds.noLabel) return;
+    meta.data.forEach((el,j)=>{ const v=ds.data[j]; if(v==null||isNaN(v)) return;
+      ctx.save(); ctx.font="700 10px 'Space Mono',monospace"; ctx.fillStyle=ds.borderColor||ds.backgroundColor||"#ddd"; ctx.textAlign="center"; ctx.textBaseline="bottom";
+      const txt=(opt.fmt||(x=>x.toFixed(1)+"%"))(v); const y=el.y-(ds.type==="bar"||ch.config.type==="bar"?4:7); ctx.fillText(txt,el.x,y); ctx.restore(); }); });
+}};
+function rateRender(){
+  const T=RATE_I18N[lang]||RATE_I18N.ko;
+  const months=rateMonths();
+  if(!months.length){ $("rtHero").innerHTML=""; $("rtStatus").innerHTML=rt("noData"); ["rtTbMonth","rtTbDay"].forEach(i=>$(i).innerHTML=""); $("rtMonSum").innerHTML=""; $("rtHeat").innerHTML=`<div class="rt-empty">${rt("noData")}</div>`; $("rtMonth").innerHTML=""; return; }
+  if(!rateMonth||!months.includes(rateMonth)) rateMonth=months[months.length-1];
+  $("rtMonth").innerHTML=months.map(m=>`<option value="${m}"${m===rateMonth?" selected":""}>${rateYmLabel(m)}</option>`).join("");
+  const m1=rateDayMap("1공장"), m2=rateDayMap("2공장");
+  const allD=rateRows.map(r=>r.d).sort();
+  $("rtRange").textContent=`${allD[0]} ~ ${allD[allD.length-1]}`;
+  $("rtStatus").innerHTML=T.status(rateRows.length,allD[0],allD[allD.length-1])+(rateKind!=="전체"?` · <b>${rateKind==="관리직"?T.mgr:T.prod}</b>`:"")+
+    `<span class="rt-legend"><span><i class="rt-bg1"></i>${T.p1l}</span><span><i class="rt-bg2"></i>${T.p2l}</span><span><i style="background:${RATE_C.mon}"></i>${T.wdLong[1]}</span></span>`;
+
+  /* ── 월별 통계 ── */
+  const ms=months.map(ym=>{ const a1=rateAgg(m1,d=>rateYm(d)===ym), a2=rateAgg(m2,d=>rateYm(d)===ym);
+    const c1=rateAgg(m1,d=>rateYm(d)<=ym), c2=rateAgg(m2,d=>rateYm(d)<=ym);
+    const hh=a1.hold+a2.hold, pp=a1.pres+a2.pres;
+    return {ym,a1,a2,c1:a1.days?c1:null,c2:a2.days?c2:null,sum:hh?(hh-pp)/hh:null,diff:(a1.rate!=null&&a2.rate!=null)?a1.rate-a2.rate:null}; });
+  const cur=ms.find(x=>x.ym===rateMonth);
+  const tot1=rateAgg(m1), tot2=rateAgg(m2);
+  const w1=rateWeekday(m1,null), w2=rateWeekday(m2,null);
+  const last1=Object.keys(m1).sort().pop(), last2=Object.keys(m2).sort().pop();
+
+  /* ── HERO ── */
+  const ring=(pct,c)=>`<div class="rt-ring" style="--rt-pct:${pct==null?0:Math.max(0,Math.min(100,pct*100))};--rt-c:${c}"><span>${pct==null?"–":Math.round(pct*100)+"%"}</span></div>`;
+  const tile=(cls,k,c,v,sub,extra="")=>`<div class="rt-tile ${cls}"><div class="k"><i style="background:${c};box-shadow:0 0 8px ${c}"></i>${k}</div>${v}<div class="s">${sub}</div>${extra}</div>`;
+  const heroParts=[];
+  [["p1",T.p1,RATE_C.p1,cur.a1,cur.c1],["p2",T.p2,RATE_C.p2,cur.a2,cur.c2]].forEach(([cls,name,c,a,cu])=>{
+    heroParts.push(tile(cls,`${name} · ${T.kAttMonth}`,c,
+      `<div class="v">${rateFmtP(a.att)}<small>${T.sAbsRate} ${rateFmtP(a.rate)}</small></div>`,
+      `<span style="color:${c}">${rateYmLabel(rateMonth)}</span> · `+(a.days?`${T.sDays} <b>${a.days}</b> · ${T.sHold} <b>${rateFmtN(a.avgHold)}</b> · ${T.sAbs} <b>${rateFmtN(a.abs)}</b><br>${T.kCum} <b>${rateFmtP(cu&&cu.att)}</b>`:"—"),
+      ring(a.att,c)+`<div class="rt-bar ${cls}"><i style="width:${a.att?a.att*100:0}%"></i></div>`));
+  });
+  const dv=cur.diff; const dcls=dv==null?"":(dv>0?"dn":"up");
+  heroParts.push(tile("",T.kDiff,"#aaa",`<div class="v ${dcls}"><span class="${dcls}">${rateFmtPp(dv)}</span><small>${T.sAbsRate}</small></div>`,
+    `${T.tSum} <b>${rateFmtP(cur.sum)}</b> · ${T.kCum}: ${T.p1} <b>${rateFmtP(tot1.att)}</b> / ${T.p2} <b>${rateFmtP(tot2.att)}</b>`));
+  heroParts.push(`<div class="rt-tile mon"><div class="k"><i style="background:${RATE_C.mon};box-shadow:0 0 8px ${RATE_C.mon}"></i>${T.kMon}</div>
+    <div class="rt-dual">
+      <div style="--rt-c:${RATE_C.p1}"><div class="n">${rateFmtPp(w1.diff)}<small>×${w1.ratio?w1.ratio.toFixed(2):"–"}</small></div><div class="l">${T.p1} · ${T.sMon} ${rateFmtP(w1.mon.rate)} vs ${T.sWk} ${rateFmtP(w1.week.rate)}</div></div>
+      <div style="--rt-c:${RATE_C.p2}"><div class="n">${rateFmtPp(w2.diff)}<small>×${w2.ratio?w2.ratio.toFixed(2):"–"}</small></div><div class="l">${T.p2} · ${T.sMon} ${rateFmtP(w2.mon.rate)} vs ${T.sWk} ${rateFmtP(w2.week.rate)}</div></div>
+    </div><div class="s" style="margin-top:9px">${T.sExcess}: ${T.p1} <b>${rateFmt1(w1.excess)}</b> / ${T.p2} <b>${rateFmt1(w2.excess)}</b> ${T.sPerDay}</div></div>`);
+  const lastTile=(p,d,m,c)=>d?`<div style="--rt-c:${c}"><div class="n">${rateFmtP(m[d].p/m[d].h)}</div><div class="l">${p} · ${d.slice(5).replace("-","/")} (${T.wd[rateWd(d)]}) · ${m[d].p}/${m[d].h}</div></div>`:`<div style="--rt-c:${c}"><div class="n">–</div><div class="l">${p}</div></div>`;
+  heroParts.push(`<div class="rt-tile"><div class="k"><i style="background:#4caf7d;box-shadow:0 0 8px #4caf7d"></i>${T.kLast}</div><div class="rt-dual">${lastTile(T.p1,last1,m1,RATE_C.p1)}${lastTile(T.p2,last2,m2,RATE_C.p2)}</div></div>`);
+  $("rtHero").innerHTML=heroParts.join("");
+
+  /* ── 월별 차트 ── */
+  rateChart("rtChMonth",{type:"bar",data:{labels:ms.map(x=>rateYmLabel(x.ym)),datasets:[
+      {type:"line",label:`${T.p1} ${T.cAbs}`,data:ms.map(x=>x.a1.rate==null?null:+(x.a1.rate*100).toFixed(2)),borderColor:RATE_C.p1,backgroundColor:RATE_C.p1,yAxisID:"y2",tension:.3,pointRadius:5,pointHoverRadius:7,borderWidth:2.5,spanGaps:true,order:0},
+      {type:"line",label:`${T.p2} ${T.cAbs}`,data:ms.map(x=>x.a2.rate==null?null:+(x.a2.rate*100).toFixed(2)),borderColor:RATE_C.p2,backgroundColor:RATE_C.p2,yAxisID:"y2",tension:.3,pointRadius:5,pointHoverRadius:7,borderWidth:2.5,spanGaps:true,order:0},
+      {label:`${T.p1} ${T.cAtt}`,data:ms.map(x=>x.a1.att==null?null:+(x.a1.att*100).toFixed(2)),backgroundColor:"rgba(226,196,106,.22)",borderColor:"rgba(226,196,106,.6)",borderWidth:1,borderRadius:6,yAxisID:"y",order:1,noLabel:true},
+      {label:`${T.p2} ${T.cAtt}`,data:ms.map(x=>x.a2.att==null?null:+(x.a2.att*100).toFixed(2)),backgroundColor:"rgba(111,184,221,.22)",borderColor:"rgba(111,184,221,.6)",borderWidth:1,borderRadius:6,yAxisID:"y",order:1,noLabel:true}]},
+    options:{responsive:true,maintainAspectRatio:false,interaction:{mode:"index",intersect:false},
+      plugins:{legend:{position:"top",labels:{boxWidth:10,usePointStyle:true,padding:16}},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${c.parsed.y==null?"–":c.parsed.y.toFixed(1)+"%"}`}},rtLabels:{on:true}},
+      scales:{x:{grid:{display:false}},y:{position:"left",min:80,max:100,title:{display:true,text:T.cAtt+" (%)"},grid:{color:RATE_C.grid},ticks:{callback:v=>v+"%"}},
+        y2:{position:"right",min:0,suggestedMax:12,title:{display:true,text:T.cAbs+" (%)"},grid:{drawOnChartArea:false},ticks:{callback:v=>v+"%"}}}},
+    plugins:[rateLabelPlugin]});
+  /* 월별 표 */
+  const cellP=(v,cls="")=>`<td class="n ${cls}">${rateFmtP(v)}</td>`;
+  const sideCells=(a,cls)=>a.days?`<td class="${cls}">${a.days}</td><td class="${cls}">${rateFmtN(a.avgHold)}</td><td class="${cls}">${rateFmtN(a.avgPres)}</td><td class="${cls}">${rateFmtN(a.abs)}</td>${cellP(a.rate,cls)}${cellP(a.att,cls)}`:`<td class="${cls} m">–</td>`.repeat(6);
+  const diffCell=v=>`<td class="${v==null?"m":(v>0?"pos":"neg")}">${rateFmtPp(v)}</td>`;
+  $("rtTbMonth").innerHTML=`<thead><tr><th rowspan="2">${T.tYm}</th><th colspan="6" class="p1">${T.p1}</th><th colspan="6" class="p2">${T.p2}</th><th rowspan="2">${T.tSum}</th><th rowspan="2">${T.tDiff}</th><th rowspan="2">${T.tCum1}</th><th rowspan="2">${T.tCum2}</th></tr>
+    <tr>${[T.sDays,T.sHold,T.sPres,T.sAbs,T.sAbsRate,T.sAttRate].map(s=>`<th class="p1">${s}</th>`).join("")}${[T.sDays,T.sHold,T.sPres,T.sAbs,T.sAbsRate,T.sAttRate].map(s=>`<th class="p2">${s}</th>`).join("")}</tr></thead><tbody>`+
+    ms.map(x=>`<tr${x.ym===rateMonth?' style="outline:1px solid rgba(201,168,76,.35)"':""}><td class="n">${rateYmLabel(x.ym)}</td>${sideCells(x.a1,"p1")}${sideCells(x.a2,"p2")}${cellP(x.sum)}${diffCell(x.diff)}${cellP(x.c1&&x.c1.att)}${cellP(x.c2&&x.c2.att)}</tr>`).join("")+
+    `<tr class="tot"><td>${T.tTot}</td>${sideCells(tot1,"p1")}${sideCells(tot2,"p2")}${cellP((tot1.hold+tot2.hold)?(tot1.abs+tot2.abs)/(tot1.hold+tot2.hold):null)}${diffCell((tot1.rate!=null&&tot2.rate!=null)?tot1.rate-tot2.rate:null)}${cellP(tot1.att)}${cellP(tot2.att)}</tr></tbody>`;
+
+  /* ── 일별 (선택 월) ── */
+  $("rtH2").textContent=T.h2(rateYmLabel(rateMonth));
+  const [yy,mm]=rateMonth.split("-").map(Number); const nd=new Date(Date.UTC(yy,mm,0)).getUTCDate();
+  const days=[]; for(let i=1;i<=nd;i++) days.push(`${rateMonth}-${String(i).padStart(2,"0")}`);
+  const dd=days.map(d=>{ const a=m1[d], b=m2[d]; const w=rateWd(d);
+    const c1=rateAgg(m1,x=>rateYm(x)===rateMonth&&x<=d), c2=rateAgg(m2,x=>rateYm(x)===rateMonth&&x<=d);
+    return {d,w,a,b,r1:a?(a.h-a.p)/a.h:null,r2:b?(b.h-b.p)/b.h:null,c1:a?c1.rate:null,c2:b?c2.rate:null}; });
+  const shown=dd.filter(x=>x.a||x.b);
+  const monPts=(arr,c)=>arr.map(x=>x.w===1?RATE_C.mon:c);
+  rateChart("rtChDay",{type:"line",data:{labels:shown.map(x=>`${x.d.slice(8)} ${T.wd[x.w]}`),datasets:[
+      {label:`${T.p1} ${T.cAtt}`,data:shown.map(x=>x.a?+(x.a.p/x.a.h*100).toFixed(2):null),borderColor:RATE_C.p1,backgroundColor:RATE_C.p1,pointBackgroundColor:monPts(shown,RATE_C.p1),pointBorderColor:monPts(shown,RATE_C.p1),pointRadius:shown.map(x=>x.w===1?6:3.5),pointHoverRadius:7,tension:.25,borderWidth:2.5,spanGaps:true},
+      {label:`${T.p2} ${T.cAtt}`,data:shown.map(x=>x.b?+(x.b.p/x.b.h*100).toFixed(2):null),borderColor:RATE_C.p2,backgroundColor:RATE_C.p2,pointBackgroundColor:monPts(shown,RATE_C.p2),pointBorderColor:monPts(shown,RATE_C.p2),pointRadius:shown.map(x=>x.w===1?6:3.5),pointHoverRadius:7,tension:.25,borderWidth:2.5,spanGaps:true}]},
+    options:{responsive:true,maintainAspectRatio:false,interaction:{mode:"index",intersect:false},
+      plugins:{legend:{position:"top",labels:{boxWidth:10,usePointStyle:true,padding:16}},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${c.parsed.y==null?"–":c.parsed.y.toFixed(1)+"%"}`}},rtLabels:{on:shown.length<=23}},
+      scales:{x:{grid:{display:false},ticks:{color:ctx=>shown[ctx.index]&&shown[ctx.index].w===1?RATE_C.mon:RATE_C.tick,font:ctx=>({weight:shown[ctx.index]&&shown[ctx.index].w===1?"700":"400",size:10})}},
+        y:{min:80,max:100,grid:{color:RATE_C.grid},ticks:{callback:v=>v+"%"}}}},
+    plugins:[rateLabelPlugin]});
+  const dc=(x,p,k)=>x? `<td class="${k}">${rateFmtN(x.h)}</td><td class="${k}">${rateFmtN(x.p)}</td><td class="${k}">${rateFmtN(x.h-x.p)}</td>${cellP(x.p/x.h,k)}` : `<td class="${k} m">–</td>`.repeat(4);
+  const ca1=rateAgg(m1,d=>rateYm(d)===rateMonth), ca2=rateAgg(m2,d=>rateYm(d)===rateMonth);
+  $("rtTbDay").innerHTML=`<thead><tr><th rowspan="2">${T.tDate}</th><th rowspan="2">${T.tWd}</th><th colspan="4" class="p1">${T.p1}</th><th colspan="4" class="p2">${T.p2}</th><th rowspan="2">${T.tDiff}<br>(${T.sAbsRate})</th><th rowspan="2">${T.tCum1}</th><th rowspan="2">${T.tCum2}</th></tr>
+    <tr>${[T.tHold,T.tPres,T.tAbs,T.tRate].map(s=>`<th class="p1">${s}</th>`).join("")}${[T.tHold,T.tPres,T.tAbs,T.tRate].map(s=>`<th class="p2">${s}</th>`).join("")}</tr></thead><tbody>`+
+    shown.map(x=>`<tr class="${x.w===1?"mon":""}"><td class="n">${x.d.slice(5).replace("-","/")}</td><td>${T.wd[x.w]}</td>${dc(x.a,1,"p1")}${dc(x.b,2,"p2")}${diffCell((x.r1!=null&&x.r2!=null)?x.r1-x.r2:null)}${cellP(x.c1!=null?1-x.c1:null)}${cellP(x.c2!=null?1-x.c2:null)}</tr>`).join("")+
+    `<tr class="tot"><td colspan="2">${T.tMonthTot}</td>${ca1.days?`<td>${rateFmtN(ca1.avgHold)}</td><td>${rateFmtN(ca1.avgPres)}</td><td>${rateFmtN(ca1.abs)}</td>${cellP(ca1.att)}`:`<td class="m">–</td>`.repeat(4)}${ca2.days?`<td>${rateFmtN(ca2.avgHold)}</td><td>${rateFmtN(ca2.avgPres)}</td><td>${rateFmtN(ca2.abs)}</td>${cellP(ca2.att)}`:`<td class="m">–</td>`.repeat(4)}${diffCell((ca1.rate!=null&&ca2.rate!=null)?ca1.rate-ca2.rate:null)}${cellP(ca1.att)}${cellP(ca2.att)}</tr></tbody>`;
+
+  /* ── 요일별 막대 (전체기간) ── */
+  const wdIdx=[1,2,3,4,5,6].filter(i=>w1.wd[i].days||w2.wd[i].days);
+  rateChart("rtChWd",{type:"bar",data:{labels:wdIdx.map(i=>T.wdLong[i]),datasets:[
+      {label:T.p1,data:wdIdx.map(i=>w1.wd[i].rate==null?null:+(w1.wd[i].rate*100).toFixed(2)),backgroundColor:wdIdx.map(i=>i===1?"rgba(224,92,92,.75)":"rgba(226,196,106,.75)"),borderColor:wdIdx.map(i=>i===1?RATE_C.mon:RATE_C.p1),borderWidth:1.5,borderRadius:6},
+      {label:T.p2,data:wdIdx.map(i=>w2.wd[i].rate==null?null:+(w2.wd[i].rate*100).toFixed(2)),backgroundColor:wdIdx.map(i=>i===1?"rgba(224,92,92,.45)":"rgba(111,184,221,.75)"),borderColor:wdIdx.map(i=>i===1?RATE_C.mon:RATE_C.p2),borderWidth:1.5,borderRadius:6}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:"top",labels:{boxWidth:10,usePointStyle:true,generateLabels:ch=>ch.data.datasets.map((ds,i)=>({text:ds.label,fillStyle:i?RATE_C.p2:RATE_C.p1,strokeStyle:i?RATE_C.p2:RATE_C.p1,pointStyle:"circle",datasetIndex:i,hidden:!ch.isDatasetVisible(i)}))}},tooltip:{callbacks:{label:c=>` ${c.dataset.label} ${T.cAbs}: ${c.parsed.y==null?"–":c.parsed.y.toFixed(1)+"%"}`}},rtLabels:{on:true}},
+      scales:{x:{grid:{display:false}},y:{min:0,grid:{color:RATE_C.grid},ticks:{callback:v=>v+"%"},title:{display:true,text:T.cAbs+" (%)"}}}},
+    plugins:[rateLabelPlugin]});
+
+  /* ── 월요일 효과 요약 ── */
+  const monRow=(name,c,w)=>`<div style="border:1px solid var(--line2);border-left:3px solid ${c};border-radius:10px;padding:12px 14px;margin-bottom:10px;background:#111">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><b style="color:${c};font-size:13.5px">${name}</b><span class="rt-pill ${w.diff>0?"bad":"good"}">${rateFmtPp(w.diff)} · ×${w.ratio?w.ratio.toFixed(2):"–"}</span></div>
+    <div class="rt-dual" style="grid-template-columns:repeat(3,1fr)">
+      <div style="--rt-c:${RATE_C.mon}"><div class="n">${rateFmtP(w.mon.rate)}</div><div class="l">${T.sMon} ${T.sAbsRate} (${w.monDays}${lang==="es"?" d":"일"})</div></div>
+      <div style="--rt-c:#666"><div class="n">${rateFmtP(w.week.rate)}</div><div class="l">${T.sWk} ${T.sAbsRate}</div></div>
+      <div style="--rt-c:${c}"><div class="n">${rateFmt1(w.excess)}<small>${T.sPerDay}</small></div><div class="l">${T.sExcess}</div></div>
+    </div>
+    <div class="rt-note" style="margin-top:8px">${w.diff!=null?T.monNote(name,rateFmtPp(w.diff),w.ratio?w.ratio.toFixed(2):"–",rateFmt1(w.excess)):"–"}</div></div>`;
+  $("rtMonSum").innerHTML=monRow(T.p1,RATE_C.p1,w1)+monRow(T.p2,RATE_C.p2,w2);
+
+  /* ── 월별 월요일 vs 평일 라인 ── */
+  const mw1=months.map(ym=>rateWeekday(m1,ym)), mw2=months.map(ym=>rateWeekday(m2,ym));
+  const pct=v=>v==null?null:+(v*100).toFixed(2);
+  rateChart("rtChMon",{type:"line",data:{labels:months.map(rateYmLabel),datasets:[
+      {label:`${T.p1} ${T.cMonL}`,data:mw1.map(w=>pct(w.mon.rate)),borderColor:RATE_C.p1,backgroundColor:RATE_C.p1,pointRadius:5,borderWidth:2.5,tension:.3,spanGaps:true,pointStyle:"rectRot"},
+      {label:`${T.p1} ${T.cWkL}`,data:mw1.map(w=>pct(w.week.rate)),borderColor:RATE_C.p1,backgroundColor:RATE_C.p1,borderDash:[6,4],pointRadius:3,borderWidth:1.5,tension:.3,spanGaps:true,noLabel:true},
+      {label:`${T.p2} ${T.cMonL}`,data:mw2.map(w=>pct(w.mon.rate)),borderColor:RATE_C.p2,backgroundColor:RATE_C.p2,pointRadius:5,borderWidth:2.5,tension:.3,spanGaps:true,pointStyle:"rectRot"},
+      {label:`${T.p2} ${T.cWkL}`,data:mw2.map(w=>pct(w.week.rate)),borderColor:RATE_C.p2,backgroundColor:RATE_C.p2,borderDash:[6,4],pointRadius:3,borderWidth:1.5,tension:.3,spanGaps:true,noLabel:true}]},
+    options:{responsive:true,maintainAspectRatio:false,interaction:{mode:"index",intersect:false},plugins:{legend:{position:"top",labels:{boxWidth:10,usePointStyle:true,padding:14}},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${c.parsed.y==null?"–":c.parsed.y.toFixed(1)+"%"}`}},rtLabels:{on:true}},
+      scales:{x:{grid:{display:false}},y:{min:0,grid:{color:RATE_C.grid},ticks:{callback:v=>v+"%"},title:{display:true,text:T.cAbs+" (%)"}}}},
+    plugins:[rateLabelPlugin]});
+
+  /* ── 히트 테이블 ── */
+  const heatMax=Math.max(.001,...months.flatMap(ym=>[1,2,3,4,5,6].flatMap(i=>[mw1[months.indexOf(ym)].wd[i].rate||0,mw2[months.indexOf(ym)].wd[i].rate||0])));
+  const heat=v=>v==null?`<td class="m">–</td>`:`<td class="heat" style="background:rgba(224,92,92,${(0.08+0.72*Math.min(1,v/heatMax)).toFixed(2)})">${rateFmtP(v)}</td>`;
+  const heatTable=(name,c,arr,tot)=>{
+    const row=(label,w,cls="")=>`<tr class="${cls}"><td class="n">${label}</td>${[1,2,3,4,5,6].map(i=>heat(w.wd[i].rate)).join("")}${cellP(w.week.rate)}${diffCell(w.diff)}<td class="n">${w.ratio?w.ratio.toFixed(2)+(lang==="es"?"×":"배"):"–"}</td><td class="n">${rateFmt1(w.excess)}</td><td>${w.monDays||"–"}</td></tr>`;
+    return `<div style="margin-bottom:14px"><div style="font-weight:700;color:${c};margin:4px 0 8px;font-size:13.5px;display:flex;align-items:center;gap:8px"><i style="width:8px;height:8px;border-radius:50%;background:${c};box-shadow:0 0 8px ${c};display:inline-block"></i>${name}</div>
+      <div class="rt-tw" style="margin:0"><table class="rt-t"><thead><tr><th>${T.tYm}</th>${[1,2,3,4,5,6].map(i=>`<th style="${i===1?"color:#ef9a9a":""}">${T.wdLong[i]}</th>`).join("")}<th>${T.sWk}</th><th>${T.sMon}−${T.sWk}</th><th>${T.sRatio}</th><th>${T.sExcess}<br>(${T.sPerDay})</th><th>${T.sMonDays}</th></tr></thead><tbody>`+
+      months.map((ym,i)=>arr[i].week.days||arr[i].mon.days?row(rateYmLabel(ym),arr[i]):"").join("")+row(T.tTot,tot,"tot")+`</tbody></table></div></div>`; };
+  $("rtHeat").innerHTML=heatTable(T.p1l,RATE_C.p1,mw1,w1)+heatTable(T.p2l,RATE_C.p2,mw2,w2);
+}
+
+/* ---------- 입력 드로어 ---------- */
+function rateOpenInput(){
+  $("rtDrawer").classList.add("open"); $("rtDim").classList.add("open");
+  if(!$("rtInDate").value) $("rtInDate").value=$("fDate").value||todayDate();
+  $("rtInPlant").value=RATE_PLANT;
+  rateRenderToday(); rateRenderRecent();
+}
+function rateCloseInput(){ $("rtDrawer").classList.remove("open"); $("rtDim").classList.remove("open"); }
+function rateDashSnapshot(){
+  const total=parseInt($("kTotal").textContent,10), pres=parseInt($("kIn").textContent,10);
+  if(isNaN(total)||isNaN(pres)||total<=0) return null;
+  return {d:$("fDate").value||todayDate(),hold:total,present:pres};
+}
+function rateRenderToday(){
+  const T=RATE_I18N[lang]||RATE_I18N.ko; const s=rateDashSnapshot();
+  const filtered=($("fFactory").value||$("fTeam").value);
+  $("rtToday").innerHTML=s&&!filtered?`<span>${T.todayRow(s.d,s.hold,s.present)}</span><button class="rt-btn gold" onclick="rateSaveToday()">${T.todayBtn}</button>`:`<span style="color:#888">${T.todayNone}</span>`;
+  $("rtMsg0").textContent=T.autoNote; $("rtMsg0").className="rt-msg";
+}
+async function rateUpsert(rows){
+  const body=rows.map(r=>({d:r.d,plant:r.plant,kind:r.kind,hold:r.hold,present:r.present,source:r.source||"manual",updated_at:new Date().toISOString()}));
+  const res=await fetch(REST(`${RATE_T}?on_conflict=d,plant,kind`),{method:"POST",headers:Object.assign({},HEADERS,{"Content-Type":"application/json","Prefer":"resolution=merge-duplicates,return=minimal"}),body:JSON.stringify(body)});
+  if(!res.ok) throw new Error(await res.text());
+}
+async function rateSaveToday(){
+  const T=RATE_I18N[lang]||RATE_I18N.ko; const s=rateDashSnapshot(); if(!s) return;
+  const m=$("rtMsg0");
+  try{ await rateUpsert([{d:s.d,plant:RATE_PLANT,kind:"전체",hold:s.hold,present:s.present,source:"manual"}]); m.textContent=T.saved(1); m.className="rt-msg ok"; await rateLoad(true); }
+  catch(e){ console.error(e); m.textContent=String(e.message||e).slice(0,160); m.className="rt-msg err"; }
+}
+async function rateAddRow(){
+  const T=RATE_I18N[lang]||RATE_I18N.ko; const m=$("rtMsg1");
+  const d=$("rtInDate").value, plant=$("rtInPlant").value, kind=$("rtInKind").value, hold=parseInt($("rtInHold").value,10), present=parseInt($("rtInPres").value,10);
+  if(!d||isNaN(hold)||isNaN(present)){ m.textContent=T.needAll; m.className="rt-msg err"; return; }
+  if(present>hold){ m.textContent=T.badNum; m.className="rt-msg err"; return; }
+  try{ await rateUpsert([{d,plant,kind,hold,present,source:"manual"}]); m.textContent=T.saved(1); m.className="rt-msg ok"; $("rtInHold").value=""; $("rtInPres").value=""; await rateLoad(true); }
+  catch(e){ console.error(e); m.textContent=String(e.message||e).slice(0,160); m.className="rt-msg err"; }
+}
+/* 붙여넣기 파서: 탭/쉼표 구분, 날짜·공장·구분·숫자2개를 열 위치와 무관하게 인식 */
+function rateParsePaste(txt){
+  const out=[], bad=[];
+  const normDate=s=>{ s=String(s).trim(); let m=s.match(/^(\d{4})[-./](\d{1,2})[-./](\d{1,2})/); if(m) return `${m[1]}-${m[2].padStart(2,"0")}-${m[3].padStart(2,"0")}`;
+    m=s.match(/^(\d{1,2})[-./](\d{1,2})[-./](\d{4})/); if(m) return `${m[3]}-${m[2].padStart(2,"0")}-${m[1].padStart(2,"0")}`;
+    if(/^\d{5}$/.test(s)){ const dt=new Date(Date.UTC(1899,11,30)+parseInt(s,10)*86400000); return dt.toISOString().slice(0,10); } return null; };
+  for(const line of txt.split(/\r?\n/)){
+    if(!line.trim()) continue;
+    const cells=line.split(/\t|,|;/).map(c=>c.trim());
+    let d=null, plant=null, kind="전체"; const nums=[];
+    for(const c of cells){
+      if(!c) continue;
+      if(!d){ const nd=normDate(c); if(nd){ d=nd; continue; } }
+      if(/^(1공장|planta ?1|p1|1)$/i.test(c)){ plant="1공장"; continue; }
+      if(/^(2공장|planta ?2|p2|2)$/i.test(c)){ plant="2공장"; continue; }
+      if(/^(관리직|admin\.?|administrativo)$/i.test(c)){ kind="관리직"; continue; }
+      if(/^(생산직|producci[oó]n|prod\.?)$/i.test(c)){ kind="생산직"; continue; }
+      if(/^(전체|todos|total)$/i.test(c)){ kind="전체"; continue; }
+      if(/^[월화수목금토일]$/.test(c)||/^\d{4}-\d{2}$/.test(c)||/^\d{6}$/.test(c)) continue; // 요일·연월 열
+      if(/^-?[\d,]+(\.\d+)?%?$/.test(c)&&!/%$/.test(c)){ const n=parseInt(c.replace(/,/g,""),10); if(!isNaN(n)) nums.push(n); }
+    }
+    if(d&&plant&&nums.length>=2&&nums[0]>=0&&nums[1]>=0&&nums[1]<=nums[0]) out.push({d,plant,kind,hold:nums[0],present:nums[1],source:"excel"});
+    else bad.push(line);
+  }
+  return {out,bad};
+}
+async function ratePasteSave(){
+  const T=RATE_I18N[lang]||RATE_I18N.ko; const m=$("rtMsg2");
+  const {out,bad}=rateParsePaste($("rtPaste").value);
+  if(!out.length){ m.textContent=T.parseNone; m.className="rt-msg err"; return; }
+  // 같은 키 중복은 마지막 값
+  const uniq={}; out.forEach(r=>{ uniq[r.d+"|"+r.plant+"|"+r.kind]=r; }); const rows=Object.values(uniq);
+  try{ for(let i=0;i<rows.length;i+=200) await rateUpsert(rows.slice(i,i+200));
+    m.textContent=T.saved(rows.length)+(bad.length?" · "+T.parseBad(bad.length):""); m.className="rt-msg ok"; $("rtPaste").value=""; await rateLoad(true); }
+  catch(e){ console.error(e); m.textContent=String(e.message||e).slice(0,160); m.className="rt-msg err"; }
+}
+async function rateDelete(id){
+  const T=RATE_I18N[lang]||RATE_I18N.ko; if(!confirm(T.delAsk)) return;
+  try{ const r=await fetch(REST(`${RATE_T}?id=eq.${id}`),{method:"DELETE",headers:HEADERS}); if(!r.ok) throw new Error(await r.text()); await rateLoad(true); }
+  catch(e){ alert(String(e.message||e).slice(0,160)); }
+}
+function rateRenderRecent(){
+  const T=RATE_I18N[lang]||RATE_I18N.ko;
+  const rows=rateRows.slice().sort((a,b)=>(b.d+b.plant+b.kind).localeCompare(a.d+a.plant+a.kind)).slice(0,60);
+  $("rtRecent").innerHTML=`<table><thead><tr><th>${T.f[0]}</th><th>${T.f[1]}</th><th>${T.f[2]}</th><th>${T.f[3]}</th><th>${T.f[4]}</th><th>${T.tRate}</th><th>src</th><th></th></tr></thead><tbody>`+
+    (rows.length?rows.map(r=>`<tr><td>${r.d}</td><td style="color:${r.plant==="1공장"?RATE_C.p1:RATE_C.p2}">${r.plant==="1공장"?T.p1:T.p2}</td><td>${r.kind==="전체"?T.all:r.kind==="관리직"?T.mgr:T.prod}</td><td class="n">${r.hold}</td><td class="n">${r.present}</td><td class="n">${rateFmtP(r.present/r.hold)}</td><td><span class="rt-pill src">${T.src[r.source]||r.source}</span></td><td><button class="rt-del" onclick="rateDelete(${r.id})">${T.del}</button></td></tr>`).join(""):`<tr><td colspan="8" class="rt-empty">${T.noData}</td></tr>`)+`</tbody></table>`;
+}
+/* ---------- 자동 저장: 대시보드 새로고침 시 (공장·팀 필터 = 전체) ---------- */
+async function rateAutoSave(){
+  try{
+    if($("fFactory").value||$("fTeam").value) return;
+    const s=rateDashSnapshot(); if(!s||s.present<=0) return;
+    if(s.d>todayDate()) return;
+    const key=`${s.d}|${s.hold}|${s.present}`; if(key===rateAutoLast) return; rateAutoLast=key;
+    const ex=await getJson(REST(`${RATE_T}?d=eq.${s.d}&plant=eq.${encodeURIComponent(RATE_PLANT)}&select=id,kind,source,hold,present`));
+    if(ex.some(r=>r.source!=="auto")) return;              // 수동/엑셀 값 우선
+    const cur=ex.find(r=>r.kind==="전체"); if(cur&&cur.hold===s.hold&&cur.present===s.present) return;
+    await rateUpsert([{d:s.d,plant:RATE_PLANT,kind:"전체",hold:s.hold,present:s.present,source:"auto"}]);
+    if(rateLoaded){ rateLoaded=false; if($("rateModal").classList.contains("open")) rateLoad(true); }
+  }catch(e){ console.warn("rateAutoSave",e); }
+}
+/* ---------- Excel 내보내기 ---------- */
+function rateExport(){
+  const T=RATE_I18N[lang]||RATE_I18N.ko;
+  const aoa=[[T.f[0],T.tWd,T.f[1],T.f[2],T.f[3],T.f[4],T.tAbs,T.tAbsRate,T.tRate,"source"]];
+  rateRows.slice().sort((a,b)=>(a.d+a.plant+a.kind).localeCompare(b.d+b.plant+b.kind)).forEach(r=>aoa.push([r.d,T.wd[rateWd(r.d)],r.plant,r.kind,r.hold,r.present,r.hold-r.present,r.hold?+((r.hold-r.present)/r.hold).toFixed(4):"",r.hold?+(r.present/r.hold).toFixed(4):"",r.source]));
+  const name=`${T.expName}_${todayDate()}`;
+  if(typeof makeXlsx==="function"){
+    const u8=makeXlsx(name.slice(0,31),aoa); const blob=new Blob([u8],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
+    const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=name+".xlsx"; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+  } else {
+    const csv="﻿"+aoa.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(",")).join("\n");
+    const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8"})); a.download=name+".csv"; document.body.appendChild(a); a.click(); a.remove();
+  }
+}
+try{ rateApplyLang(); }catch(_){ }
 </script>
 </body>
 </html>
