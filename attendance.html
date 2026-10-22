@@ -1104,7 +1104,7 @@ svg text[font-size="11"]{font-size:12.5px!important}
     </div>
     <select class="fs" id="abs-code-filter" onchange="renderAbsReport()"><option value="" selected="selected">전체 코드</option><option value="1">1. 휴무/공휴</option><option value="2">2. 연차</option><option value="3">3. 연차2</option><option value="4">4. 반차</option><option value="5">5. 오전반차</option><option value="6">6. 오후반차</option><option value="7">7. 조퇴</option><option value="8">8. 결근</option><option value="9">9. 유계결근</option><option value="10">10. 무단결근</option><option value="11">11. 지각</option><option value="12">12. 재택근무</option><option value="13">13. 경조사</option><option value="14">14. 교육</option><option value="15">15. 외근</option><option value="16">16. 해외출장</option><option value="17">17. 국내출장</option><option value="18">18. 유급휴가</option><option value="19">19. 무급휴가</option><option value="20">20. 특별휴가</option><option value="21">21. 공가</option><option value="22">22. 병가</option><option value="23">23. 리프레쉬</option><option value="24">24. 예비군훈련</option><option value="25">25. 민방위훈련</option><option value="26">26. 특근</option></select>
     <div style="display:flex;gap:7px;margin-left:auto">
-      <button id="qra-add-btn" class="ba" style="background:#0d5a8a" onclick="openQrAbs()" data-ko="📥 QR 미출근 결근" data-es="📥 Ausencia por QR">📥 QR 미출근 결근</button>
+      <button id="qra-add-btn" class="ba" style="background:#0d5a8a" onclick="openQrAbs()" data-ko="📥 TRESS 미출근 결근" data-es="📥 Ausencia por TRESS">📥 TRESS 미출근 결근</button>
       <button id="abs-add-btn" class="ba" onclick="openAbsModal()" data-ko="+ 결근 등록" data-es="+ Registrar Ausencia">+ 결근 등록</button>
       <button class="bg" onclick="exportAbsXL()" data-ko="📥 Excel 다운" data-es="📥 Descargar Excel">📥 Excel 다운</button>
     </div>
@@ -2013,15 +2013,15 @@ svg text[font-size="11"]{font-size:12.5px!important}
 <div class="mo" id="qra-mo">
 <div class="mb" style="max-width:600px">
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-    <div class="mt" style="margin-bottom:0" data-ko="📥 QR 미출근 → 결근 등록" data-es="📥 Ausencia por QR">📥 QR 미출근 → 결근 등록</div>
+    <div class="mt" style="margin-bottom:0" data-ko="📥 TRESS 미출근 → 결근 등록" data-es="📥 Ausencia por TRESS">📥 TRESS 미출근 → 결근 등록</div>
     <button class="bcl" onclick="closeQrAbs()">✕</button>
   </div>
   <div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;margin-bottom:10px">
     <div><label class="fl" data-ko="날짜" data-es="Fecha">날짜</label><input type="date" class="fi" id="qra-date" style="width:150px"></div>
     <div><label class="fl" data-ko="구분" data-es="Tipo">구분</label>
       <select class="fs" id="qra-ptype" style="min-width:120px">
-        <option value="직접인원" selected>직접인원</option>
-        <option value="">전체 / Todos</option>
+        <option value="" selected>전체 / Todos</option>
+        <option value="직접인원">직접인원</option>
         <option value="간접인원">간접인원</option>
         <option value="공정관리">공정관리</option>
       </select>
@@ -2038,7 +2038,7 @@ svg text[font-size="11"]{font-size:12.5px!important}
     <button class="ba" style="flex:1;background:#8a2020" onclick="commitQrAbs()" id="qra-commit" disabled data-ko="선택 일괄 결근 등록" data-es="Registrar seleccionados">선택 일괄 결근 등록</button>
     <button class="ba" style="background:#2a4a6a" onclick="closeQrAbs()" data-ko="닫기" data-es="Cerrar">닫기</button>
   </div>
-  <div style="font-size:10.5px;color:#666666;margin-top:8px;line-height:1.5" data-ko="QR 출근 기록이 없는 직원을 불러옵니다. 연차·출장·교육 등 실제 사유가 있으면 코드를 바꾸거나 체크를 해제한 뒤 등록하세요. (기본 코드: 8 결근) · 이미 결근/연차 등록된 날은 자동 제외됩니다." data-es="Carga empleados sin registro de entrada QR. Ajuste el código o desmarque antes de registrar. (Predeterminado: 8 Ausente)">QR 출근 기록이 없는 직원을 불러옵니다. 연차·출장·교육 등 실제 사유가 있으면 코드를 바꾸거나 체크를 해제한 뒤 등록하세요. (기본 코드: 8 결근) · 이미 결근/연차 등록된 날은 자동 제외됩니다.</div>
+  <div style="font-size:12px;color:#8a8a8a;margin-top:8px;line-height:1.5" data-ko="TRESS 출근 기록이 없는 직원을 불러옵니다. 연차·출장·교육 등 실제 사유가 있으면 코드를 바꾸거나 체크를 해제한 뒤 등록하세요. (기본 코드: 8 결근) · 이미 결근/연차 등록된 날은 자동 제외됩니다." data-es="Carga empleados sin registro de entrada QR. Ajuste el código o desmarque antes de registrar. (Predeterminado: 8 Ausente)">TRESS 출근 기록이 없는 직원을 불러옵니다. 연차·출장·교육 등 실제 사유가 있으면 코드를 바꾸거나 체크를 해제한 뒤 등록하세요. (기본 코드: 8 결근) · 이미 결근/연차 등록된 날은 자동 제외됩니다.</div>
 </div>
 </div>
 
@@ -5517,7 +5517,7 @@ function saveAbs(){
 }
 
 /* ============================================================
-   QR 미출근 → 결근 자동등록 (검토 후 확정)
+   TRESS 미출근 → 결근 자동등록 (검토 후 확정)
    ============================================================ */
 var _qraCands = [];
 var QRA_TZ = -6; // 멕시코(몽클로바) UTC-6, QR 시스템과 동일
@@ -5548,7 +5548,7 @@ async function loadQrAbsCandidates(){
   if(!d){ st.textContent='날짜를 선택하세요.'; return; }
   if(isNonWorkingDay(d)&&!isExtraWorkDay(d)){ st.style.color='#d89050'; st.textContent='🏖️ '+d+' 은(는) 휴무일입니다. (주말/공휴일) — 결근 대상 아님'; return; }
   if(isExtraWorkDay(d)){ st.style.color='#c88030'; st.textContent='⚙️ '+d+' 은(는) 특근일입니다 — 불참자를 결근으로 등록하면 특근 참여율에 반영됩니다.'; }
-  st.style.color='#8a8a8a'; st.textContent='QR 출근 기록 불러오는 중…';
+  st.style.color='#8a8a8a'; st.textContent='TRESS 출근 기록 불러오는 중…';
   var present=new Set();
   try{
     var sb=getSB();
@@ -5603,7 +5603,7 @@ function commitQrAbs(){
     var code=sel?parseInt(sel.value,10):8; if(!code) code=8;
     var codeObj=getAbsCodes().find(function(c){return c.no===code;});
     DB.absences.push({ id:DB.meta.nextAbsId++, empId:id, date:d, days:1, code:code,
-      codeLabel:codeObj?codeObj.ko:'', note:'QR 미출근 자동등록' });
+      codeLabel:codeObj?codeObj.ko:'', note:'TRESS 미출근 자동등록' });
     n++;
   });
   // 저장 (saveAbs 와 동일 패턴)
