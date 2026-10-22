@@ -269,6 +269,10 @@
   .trtag{display:inline-block;border-radius:6px;padding:2px 7px;font-size:11px;font-weight:800}
   .trtag.ok{background:#e7f7ee;color:#15803d}
   .trtag.no{background:#fef3c7;color:#b45309}
+  .trtag.p1{background:#fdf1d6;color:#8a5a00}
+  .trtag.p2{background:#ece6fb;color:#5b21b6}
+  .trdept.trplant.on{background:#fff4d6;border-color:#c9a84c;color:#6b4e00}
+  .trsep{width:1px;background:#d8e0ea;margin:0 4px;align-self:stretch}
   .trchk{display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;color:#334155;margin:4px 0 8px;cursor:pointer}
   .trprog{font-size:12px;font-weight:800;color:#163a66;min-height:16px;margin-top:6px}
   .trmap{border:1px dashed #d8e0ea;border-radius:10px;padding:8px 10px;margin:4px 0 8px;background:#f8fafc}
@@ -538,6 +542,21 @@
   .rt-note{font-size:12px;color:#777;line-height:1.6;margin-top:10px}
   .rt-note b{color:#aaa}
   .rt-empty{padding:40px;text-align:center;color:#666;font-size:13px}
+  /* ── 퇴사율 분석 ── */
+  .addbtn.rt-open.tn-open{background:linear-gradient(180deg,#f0a07a,#e07a4a);border-color:rgba(224,122,74,.55);box-shadow:0 4px 16px rgba(224,122,74,.28)}
+  .tn-top::before{background:linear-gradient(90deg,#e07a4a 0%,var(--gold) 45%,#6fb8dd 100%)!important}
+  .rt-btn.gold{border-color:rgba(201,168,76,.55);color:#e2c46a}
+  .rt-btn.gold:hover{background:rgba(201,168,76,.12)}
+  .tn-input{border-color:rgba(224,122,74,.45);box-shadow:0 0 0 4px rgba(224,122,74,.08)}
+  .tn-ingrid{display:grid;grid-template-columns:140px 120px;gap:8px;margin-bottom:10px}
+  .tn-ingrid label{display:flex;flex-direction:column;gap:4px;font-family:var(--mono);font-size:12px;letter-spacing:.1em;color:#777;text-transform:uppercase}
+  .tn-ingrid input,.tn-ingrid select{height:34px;border:1px solid var(--line2);border-radius:8px;background:#0d0d0d;color:#f0f0f0;padding:0 10px;font-family:var(--body);font-size:12.5px;outline:none;width:100%}
+  .tn-ta{width:100%;min-height:150px;border:1px solid var(--line2);border-radius:10px;background:#0d0d0d;color:#e8e8e8;padding:10px 12px;font-family:var(--mono);font-size:12px;line-height:1.5;white-space:pre;overflow:auto;resize:vertical;outline:none;box-sizing:border-box}
+  .tn-ta:focus{border-color:#e07a4a;box-shadow:0 0 0 4px rgba(224,122,74,.14)}
+  .tn-ta.sm{min-height:64px}
+  .tn-hold{margin-top:10px}.tn-hold .t{font-family:var(--mono);font-size:12px;letter-spacing:.1em;color:#777;text-transform:uppercase;margin-bottom:4px}
+  .tn-inbtns{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:10px}
+  @media (max-width:560px){.tn-ingrid{grid-template-columns:1fr 1fr}}
   .rt-foot{font-family:var(--mono);font-size:12px;letter-spacing:.08em;color:#555;text-align:center;margin-top:20px;line-height:1.8}
   .rt-ev{color:#b39ddb}.rt-evh{color:#ff8a65}.rt-evc{color:#80cbc4}.rt-evb{color:#9e9e9e}
   .rt-t tr.ev td{background:rgba(179,157,219,.07)}
@@ -694,13 +713,14 @@
       </div>
       <div class="hdr-right">
         <button class="addbtn rt-open" id="bRate" onclick="openRate()">출근율 분석</button>
+        <button class="addbtn rt-open tn-open" id="bTurn" onclick="openTurn()">퇴사율 분석</button>
         <div class="langtog" id="langTog">
           <button id="langKo" onclick="setLang('ko')">한국어</button>
           <button id="langEs" onclick="setLang('es')">Español</button>
         </div>
       </div>
     </div>
-    <div class="system-bar"><span>Attendance · Meal Dashboard / 출석 · 식사 관리</span><span><b>Plant 2</b> · Torreón&nbsp;&nbsp;<span class="updated" id="updated">v7.24</span></span></div>
+    <div class="system-bar"><span>Attendance · Meal Dashboard / 출석 · 식사 관리</span><span><b>Plant 2</b> · Torreón&nbsp;&nbsp;<span class="updated" id="updated">v7.26</span></span></div>
   </header>
   <div class="toolbar">
     <div class="filters">
@@ -874,7 +894,7 @@
       <span class="qfld"><label id="ltrDate">반영 날짜</label><input type="date" id="trDate"></span>
       <span class="qfld"><label id="ltrFactory">장소</label><select id="trFactory"></select></span>
     </div>
-    <textarea id="trText" class="trta" spellcheck="false" placeholder="TRESS 엑셀에서 행 전체(또는 B열부터) 복사 → 여기에 붙여넣기 (Ctrl+V)"></textarea>
+    <textarea id="trText" class="trta" spellcheck="false" placeholder="TRESS 통합 엑셀(1·2공장)에서 B열부터 또는 행 전체 복사 → 여기에 붙여넣기 (Ctrl+V) · 공장 자동 판별"></textarea>
     <label class="trchk"><input type="checkbox" id="trReg" checked onchange="renderTress()"> <span id="ltrReg">미등록 사번은 직원 마스터에 등록</span></label>
     <div class="trmap" id="trMap" style="display:none"></div>
     <datalist id="trTeamList"></datalist>
@@ -912,6 +932,80 @@
 
 
 <!-- ═══ 출근율 분석 오버레이 ═══ -->
+<div class="rt-overlay" id="turnModal" role="dialog" aria-modal="true">
+  <div class="rt-top tn-top">
+    <div class="rt-top-in">
+      <div>
+        <div class="rt-title" id="tnTitle">퇴사율 분석</div>
+        <div class="rt-sub" id="tnSub">Turnover · Plant 1 vs Plant 2 · <span id="tnRange">—</span></div>
+      </div>
+      <div class="rt-ctrl">
+        <span class="rt-act"><select class="rt-sel" id="tnYear" onchange="turnSetYear(this.value)"></select><small id="tnCapYear">조회 연도</small></span>
+        <span class="rt-act"><select class="rt-sel" id="tnMonth" onchange="turnSetMonth(this.value)"></select><small id="tnCapMonth">조회 월</small></span>
+        <span class="rt-act"><select class="rt-sel" id="tnPlant" onchange="turnSetPlant(this.value)"><option value="1공장">1공장</option><option value="2공장">2공장</option></select><small id="tnCapPlant">상세 공장</small></span>
+        <span class="rt-act"><button class="rt-btn gold" id="tnInputBtn" onclick="turnToggleInput()">✎ 데이터 입력</button><small id="tnCapInput">엑셀 표 붙여넣기</small></span>
+        <span class="rt-act"><button class="rt-btn green" id="tnExpBtn" onclick="turnExport()">⤓ Excel 다운로드</button><small id="tnCapExp">4개 시트</small></span>
+        <span class="rt-act"><button class="rt-btn blue" id="tnReloadBtn" onclick="turnLoad(true)">↻ 새로고침</button><small id="tnCapReload">최신 데이터 다시 읽기</small></span>
+        <span class="rt-act"><button class="rt-btn red" id="tnCloseBtn" onclick="closeTurn()">✕ 닫기</button><small id="tnCapClose">대시보드로 돌아가기 (ESC)</small></span>
+      </div>
+    </div>
+  </div>
+  <div class="rt-wrap">
+    <div class="rt-card tn-input" id="tnInput" style="display:none">
+      <div class="h"><h3 id="tnInT">퇴사자 현황 표 붙여넣기 → 저장</h3><span class="d">paste · replace by plant · year</span></div>
+      <div class="tn-ingrid">
+        <label><span id="tnInL0">공장</span><select id="tnInPlant"><option value="1공장">1공장</option><option value="2공장">2공장</option></select></label>
+        <label><span id="tnInL1">연도</span><input type="number" id="tnInYear" min="2024" max="2040" step="1"></label>
+      </div>
+      <textarea id="tnInText" class="tn-ta" spellcheck="false"></textarea>
+      <div class="tn-hold"><div class="t" id="tnInHoldT">월별 재직인원 (선택)</div><textarea id="tnInHold" class="tn-ta sm" spellcheck="false"></textarea></div>
+      <div class="rt-msg" id="tnInSum"></div>
+      <div class="tn-inbtns">
+        <button class="rt-btn gold" id="tnInSave" onclick="turnSave()" disabled>저장 (공장·연도 단위 교체)</button>
+        <button class="rt-btn" id="tnInCancel" onclick="turnToggleInput(false)">닫기</button>
+        <span class="rt-msg" id="tnInMsg"></span>
+      </div>
+    </div>
+    <div class="rt-status" id="tnStatus"></div>
+    <div class="rt-hero" id="tnHero"></div>
+    <div class="rt-card">
+      <div class="h"><h3 id="tnH1">월별 퇴사자 · 퇴사율 추이 — 1공장 vs 2공장</h3><span class="d" id="tnD1">monthly · jan–dec</span></div>
+      <div class="rt-chart tall"><canvas id="tnChMonth"></canvas></div>
+      <div class="rt-tw"><table class="rt-t" id="tnTbMonth"></table></div>
+      <div class="rt-note" id="tnN1"></div>
+    </div>
+    <div class="rt-grid2">
+      <div class="rt-card">
+        <div class="h"><h3 id="tnH2">사유별 퇴사자 — 연간 누적</h3><span class="d" id="tnD2">by reason · ytd</span></div>
+        <div class="rt-chart tall"><canvas id="tnChReason"></canvas></div>
+      </div>
+      <div class="rt-card">
+        <div class="h"><h3 id="tnH3">월별 사유별 퇴사자</h3><span class="d" id="tnD3">stacked by reason</span></div>
+        <div class="rt-chart tall"><canvas id="tnChReasonMonth"></canvas></div>
+      </div>
+    </div>
+    <div class="rt-card">
+      <div class="h"><h3 id="tnH7">사유별 월 상세</h3><span class="d" id="tnD7">monthly by reason</span></div>
+      <div class="rt-tw"><table class="rt-t" id="tnTbReason"></table></div>
+    </div>
+    <div class="rt-grid2">
+      <div class="rt-card">
+        <div class="h"><h3 id="tnH4">근무개월별 퇴사자 — 연간 누적</h3><span class="d" id="tnD4">by tenure</span></div>
+        <div class="rt-chart"><canvas id="tnChTenure"></canvas></div>
+      </div>
+      <div class="rt-card">
+        <div class="h"><h3 id="tnH5">부서별 퇴사자 — 연간 누적</h3><span class="d" id="tnD5">by department</span></div>
+        <div class="rt-chart"><canvas id="tnChDept"></canvas></div>
+      </div>
+    </div>
+    <div class="rt-card">
+      <div class="h"><h3 id="tnH6">근무개월별 · 부서별 월 상세</h3><span class="d" id="tnD6">monthly detail</span></div>
+      <div class="rt-tw"><table class="rt-t" id="tnTbTenure"></table></div>
+      <div class="rt-tw"><table class="rt-t" id="tnTbDept"></table></div>
+    </div>
+    <div class="rt-howto"><div class="t" id="tnHowT">how it updates</div><span id="tnHow"></span></div>
+  </div>
+</div>
 <div class="rt-overlay" id="rateModal" role="dialog" aria-modal="true">
   <div class="rt-top">
     <div class="rt-top-in">
@@ -1058,15 +1152,15 @@ const I18N={
     earlyOutWarn:(n,inBy)=>`⚠️ 지금은 출근시간(${inBy}) 전후입니다.\n\n${n} 님을 정말 퇴근 타각 처리할까요?\n(정규 퇴근시각으로 기록됩니다)`,
     mealAdd:"식사 수기 등록", mealAddBtn:"+ 식사 등록", mealOk:"등록", mealDup:"이미 식사 신청됨", idBad:"등록되지 않은 사번입니다", needId:"사번을 입력하세요",
     trBtn:"TRESS 붙여넣기", trTitle:"TRESS 근태 붙여넣기 → 출결현황 반영", trDate:"반영 날짜", trFactory:"장소",
-    trHint:"TRESS 「Asistencia Diaria」 엑셀에서 행을 통째로 복사해 붙여넣으세요. 열 위치는 자동 인식됩니다(사번=숫자 셀, 이름, 부서, 시각=HH:MM 셀 — 첫 시각=출근, 마지막 시각=퇴근). 「Falta」만 있는 행은 결근으로 건너뜁니다. 사번은 숫자 그대로 사용(앞의 0 제거). 같은 날짜의 이전 TRESS 반영분은 교체되고 QR 타각 기록은 유지됩니다.",
+    trHint:"TRESS 「Asistencia Diaria」 엑셀(1·2공장 통합 파일)을 B열부터 또는 행 전체 복사해 붙여넣으세요. 행마다 공장을 자동 판별합니다 — 1공장: B열 8자리 사번(M0+8자리로 변환) · 2공장: C열 번호(숫자 그대로). D열=이름, G열=부서, I/J·K/L=출·퇴근. 한 번 반영으로 1·2공장 출결현황이 각각 업데이트됩니다. 같은 날짜의 이전 TRESS 반영분은 교체되고 QR 타각 기록은 유지됩니다.",
     trReg:"미등록 사번은 직원 마스터에 등록 (반영과 동시에)", trMapH:n=>`미등록 ${n}명 — TRESS 부서 → 시스템 팀 지정 (빈칸이면 부서명 그대로 저장)`, trMapPh:"팀 선택/입력",
     trRegDone:n=>`신규 직원 ${n}명 마스터 등록`, trRegFail:"직원 마스터 등록 실패 — Supabase 권한 확인",
-    trRun:"출결현황에 반영", trNone:"인식된 행이 없습니다 — 사번(숫자)·이름·출퇴근 시각이 포함되도록 행 전체를 붙여넣으세요",
+    trRun:"출결현황에 반영", trNone:"인식된 행이 없습니다 — B열 사번(1공장 8자리) 또는 C열 번호(2공장)가 포함되도록 B열부터 붙여넣으세요",
     trSum:(n,reg,unreg,noout,sel)=>`인식 ${n}명 · 등록 ${reg} · 미등록 ${unreg} · 퇴근 없음 ${noout} · 반영 대상 ${sel}명`,
-    trDept:"부서", trIn:"출근", trOut:"퇴근", trRegCol:"등록", trRegOk:"등록", trRegNo:"미등록",
-    trConfirm:(d,n)=>`${d} 출결현황에 ${n}명을 반영할까요?\n(같은 날짜의 이전 TRESS 반영분은 교체됩니다)`,
+    trDept:"부서", trIn:"출근", trOut:"퇴근", trRegCol:"등록", trRegOk:"등록", trRegNo:"미등록", trPlant:"공장",
+    trConfirm:(d,n,p)=>`${d} 출결현황에 ${n}명을 반영할까요?${p?`\n(${p})`:""}\n(같은 날짜의 이전 TRESS 반영분은 공장별로 교체됩니다)`,
     trProg:(a,b)=>`반영 중… ${a}/${b}`, trDone:(r)=>`완료 · 출근 ${r.ins_in} · 퇴근 ${r.ins_out} · 교체 ${r.deleted}${r.new_emp?` · 신규 직원 ${r.new_emp}`:""}${r.skipped?` · 건너뜀 ${r.skipped}`:""}`,
-    trFail:"반영 실패 — Supabase에 tress_import_2 함수가 있는지 확인" },
+    trFail:"반영 실패 — Supabase에 tress_import / tress_import_2 함수가 있는지 확인" },
   es:{ title:"Tablero de asistencia · Torreón", date:"Fecha", plant:"Lugar", all:"Todas", refresh:"Actualizar", auto:"Auto(30s)",
     kTotal:"Total activos", kIn:"Entradas", kLate:"Tardes", kPresent:"Presentes", kOut:"Salidas", kAbsent:"Ausentes", kMeal:"Comidas",
     kNoout:"Sin salida", kEarly:"Salida anticipada", kpiHint:"💡 Toque una tarjeta para ver la lista detallada abajo",
@@ -1104,15 +1198,15 @@ const I18N={
     earlyOutWarn:(n,inBy)=>`⚠️ Ahora es antes o cerca de la hora de entrada (${inBy}).\n\n¿Realmente desea marcar la SALIDA de ${n}?\n(Se registrará a la hora oficial de salida)`,
     mealAdd:"Registro manual de comida", mealAddBtn:"+ Comida", mealOk:"Registrar", mealDup:"Comida ya registrada", idBad:"N° no registrado", needId:"Ingrese el N°",
     trBtn:"Pegar TRESS", trTitle:"Pegar asistencia TRESS → Panel", trDate:"Fecha", trFactory:"Lugar",
-    trHint:"Copie las filas completas del Excel «Asistencia Diaria» de TRESS y péguelas aquí. Las columnas se detectan automáticamente (N°, nombre, dpto, horas HH:MM — primera=entrada, última=salida). Las filas con solo «Falta» se omiten. El N° se usa tal cual (sin ceros a la izquierda). Los registros TRESS anteriores de la misma fecha se reemplazan; las checadas QR se conservan.",
+    trHint:"Copie desde la col. B (o filas completas) del Excel «Asistencia Diaria» de TRESS (archivo combinado Planta 1 y 2) y péguelas aquí. La planta se detecta por fila — Planta 1: N° de 8 dígitos en col. B (se convierte a M0+8 dígitos) · Planta 2: número en col. C (tal cual). D=Nombre, G=Dpto, I/J·K/L=Ent/Sal. Una sola aplicación actualiza ambas plantas. Los registros TRESS anteriores de la misma fecha se reemplazan; las checadas QR se conservan.",
     trReg:"Registrar N° no registrados en el maestro de empleados (al aplicar)", trMapH:n=>`${n} no registrados — Dpto TRESS → Equipo del sistema (vacío = usar el nombre del dpto)`, trMapPh:"Elegir/escribir equipo",
     trRegDone:n=>`${n} empleados nuevos registrados`, trRegFail:"Error al registrar empleados — revise permisos",
-    trRun:"Aplicar al panel", trNone:"No se reconoció ninguna fila — pegue filas completas con N°, nombre y horas",
+    trRun:"Aplicar al panel", trNone:"No se reconoció ninguna fila — pegue desde la col. B con el N° (Planta 1: 8 dígitos en B · Planta 2: número en C)",
     trSum:(n,reg,unreg,noout,sel)=>`${n} reconocidos · ${reg} registrados · ${unreg} no registrados · ${noout} sin salida · ${sel} a aplicar`,
-    trDept:"Dpto", trIn:"Entrada", trOut:"Salida", trRegCol:"Reg.", trRegOk:"Sí", trRegNo:"No",
-    trConfirm:(d,n)=>`¿Aplicar ${n} personas al panel del ${d}?\n(Se reemplazan los registros TRESS anteriores de esa fecha)`,
+    trDept:"Dpto", trIn:"Entrada", trOut:"Salida", trRegCol:"Reg.", trRegOk:"Sí", trRegNo:"No", trPlant:"Planta",
+    trConfirm:(d,n,p)=>`¿Aplicar ${n} personas al panel del ${d}?${p?`\n(${p})`:""}\n(Se reemplazan los registros TRESS anteriores de esa fecha, por planta)`,
     trProg:(a,b)=>`Aplicando… ${a}/${b}`, trDone:(r)=>`Listo · Entradas ${r.ins_in} · Salidas ${r.ins_out} · Reemplazados ${r.deleted}${r.new_emp?` · Nuevos empleados ${r.new_emp}`:""}${r.skipped?` · Omitidos ${r.skipped}`:""}`,
-    trFail:"Error — verifique la función tress_import_2 en Supabase" }
+    trFail:"Error — verifique las funciones tress_import / tress_import_2 en Supabase" }
 };
 /* 쿠키 차단/개인정보 보호 모드에서 스토리지 접근이 SecurityError를 던져도 앱이 죽지 않도록 보호 */
 const safeStore={
@@ -1272,7 +1366,7 @@ async function refresh(){
     const hiredBy=e=>!e.hire_date || String(e.hire_date).slice(0,10)<=date;
     state.employees=noTest(emp).filter(hiredBy); state.att=noTest(att); state.meal=noTest(meal);
     compute();
-    $("updated").textContent=t("updated")+new Date().toLocaleTimeString(lang==="ko"?"ko-KR":"es-MX")+" · v7.24";
+    $("updated").textContent=t("updated")+new Date().toLocaleTimeString(lang==="ko"?"ko-KR":"es-MX")+" · v7.26";
   }catch(e){ $("updated").textContent=t("queryErr"); console.error(e); }
 }
 
@@ -1561,15 +1655,49 @@ async function markLeft(empId, btn){
   }catch(e){ if(btn){ btn.disabled=false; btn.textContent=t("btnCheckout"); } alert(t("opFail")); }
 }
 
-/* ---------- TRESS 근태 엑셀 붙여넣기 → 출결현황 반영 (v7.17) ---------- */
-let tressRows=[], tressDeptOn={};
+/* ---------- TRESS 근태 엑셀 붙여넣기 → 출결현황 반영 (v7.25: 1·2공장 통합 데이터 지원) ----------
+   TRESS 통합 엑셀(1·2공장이 한 파일)을 B열부터(또는 행 전체) 복사해 붙여넣으면 행마다 공장을 자동 판별:
+     · 1공장 = B열에 8자리 사번(26050013 …)  → M0+8자리 → att_employees / tress_import
+     · 2공장 = C열에 번호(6, 16, 123 …)       → 숫자 그대로 → att_employees_2 / tress_import_2
+   한 번의 반영으로 두 공장 데이터가 각각의 테이블에 같이 업데이트됨. 열 위치는 B열 기준 고정(D=이름, G=부서, I/J·K/L=출·퇴근) */
+const TRESS_THIS="2";
+const TRESS_PLANTS={
+  "1":{ label:{ko:"1공장",es:"Planta 1"}, emp:"att_employees", rpc:"tress_import", rate:"att_rate_daily", ratePlant:"1공장", factory:"1",
+        teamFmt:(m,k)=>`${m}(${k})`,
+        teams:{ "Calidad":"품질관리팀", "Control de Produccion":"생관", "Finanzas y contabilidad":"재무원가팀", "Mantenimiento":"가공보전팀",
+                "Materiales y comerio":"자재무역팀", "Produccion ensamble":"조립생산팀", "Produccion maquinado":"가공생산팀",
+                "Recursos humanos y Asuntos gen":"인사총무팀", "Tecnicas de produccion":"생산기술팀" },
+        id:raw=>{ const s=String(raw||"").trim().toUpperCase().replace(/\.0+$/,"");
+                  if(/^M\d{9}$/.test(s)) return s; if(/^\d{8}$/.test(s)) return "M0"+s; if(/^\d{9}$/.test(s)) return "M"+s; return ""; } },
+  "2":{ label:{ko:"2공장",es:"Planta 2"}, emp:"att_employees_2", rpc:"tress_import_2", rate:"att_rate_daily_2", ratePlant:"2공장", factory:"2",
+        teamFmt:(m,k)=>m,
+        teams:{ "Calidad":"Calidad", "Control de Produccion":"Control de Produccion", "Finanzas y contabilidad":"Finanzas y contabilidad",
+                "Mantenimiento":"Mantenimiento", "Materiales y comerio":"Materiales y comerio", "Produccion ensamble":"Produccion ensamble",
+                "Produccion maquinado":"Produccion maquinado", "Recursos humanos y Asuntos gen":"Recursos humanos y Asuntos gen",
+                "Tecnicas de produccion":"Tecnicas de produccion" },
+        id:raw=>{ const s=String(raw||"").trim().replace(/\.0+$/,""); if(!/^\d{1,9}$/.test(s)) return ""; return s.replace(/^0+/,"")||""; } }
+};
+const TRESS_OTHER=TRESS_THIS==="1"?"2":"1";
+let tressRows=[], tressDeptOn={}, tressPlantOn={"1":true,"2":true};
+let tressEmp={"1":{},"2":{}};     // plant → employee_id → 직원 (등록 여부 판별용)
+let tressEmpList={"1":[],"2":[]};
+function tressLoadEmp(){
+  tressEmp[TRESS_THIS]={}; tressEmpList[TRESS_THIS]=state.employees;
+  for(const e of state.employees){ tressEmp[TRESS_THIS][e.employee_id]=e; }
+  const cfg=TRESS_PLANTS[TRESS_OTHER];
+  return getJson(REST(`${cfg.emp}?select=employee_id,name,team,active&limit=10000`)).then(rows=>{
+    tressEmp[TRESS_OTHER]={}; tressEmpList[TRESS_OTHER]=rows||[];
+    for(const e of (rows||[])){ tressEmp[TRESS_OTHER][e.employee_id]=e; }
+  }).catch(e=>{ console.warn("tressLoadEmp",e); tressEmp[TRESS_OTHER]={}; tressEmpList[TRESS_OTHER]=[]; });
+}
 function openTress(){
   $("trDate").value=$("fDate").value||todayDate();
   $("trFactory").innerHTML=factoryOptions();
   const curF=fFactory(); if(curF&&CONFIG.FACTORIES[curF]) $("trFactory").value=curF;
-  $("trText").value=""; tressRows=[]; tressDeptOn={}; tressTeamMap={}; $("trProg").textContent="";
+  $("trText").value=""; tressRows=[]; tressDeptOn={}; tressTeamMap={}; tressPlantOn={"1":true,"2":true}; $("trProg").textContent="";
   renderTress();
   $("tressModal").classList.add("open"); setTimeout(()=>$("trText").focus(),150);
+  tressLoadEmp().then(()=>{ if($("trText").value.trim()) parseTress(); });
 }
 function closeTress(){ $("tressModal").classList.remove("open"); }
 $("tressModal").addEventListener("click",e=>{ if(e.target.id==="tressModal") closeTress(); });
@@ -1595,60 +1723,69 @@ function tressName(raw){
   const sur=s.slice(0,i).trim(), giv=s.slice(i+1).trim();
   return tc((giv+" "+sur).replace(/\s+/g," ").trim());
 }
-let tressTeamMap={};   // TRESS 부서 → 시스템 팀 (미등록 직원 등록용)
-function sysTeams(){ return [...new Set(state.employees.map(e=>(e.team||"").trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'ko')); }
-/* TRESS 부서 → 팀명: CONFIG.TRESS_TEAMS 고정 매핑(대소문자·악센트·공백 무시) → 없으면 기존 팀명에서 추천 */
-const normDept=x=>String(x||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9가-힣]/g,"");
-function guessTeam(dept){
+let tressTeamMap={};   // "plant|TRESS 부서" → 시스템 팀 (미등록 직원 등록용)
+const tmKey=(p,d)=>`${p}|${d||""}`;
+function sysTeams(plant){ const list=tressEmpList[plant||TRESS_THIS]||[]; return [...new Set(list.map(e=>(e.team||"").trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'ko')); }
+/* TRESS 부서 → 팀명: 공장별 고정 매핑(대소문자·악센트·공백 무시) → 없으면 해당 공장 기존 팀명에서 추천 */
+const normDept=x=>String(x||"").normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().replace(/[^a-z0-9가-힣]/g,"");
+function guessTeam(dept,plant){
   const d=normDept(dept); if(!d) return "";
-  const M=CONFIG.TRESS_TEAMS||{};
-  for(const k in M){ if(normDept(k)===d) return M[k]; }
-  for(const k in M){ const nk=normDept(k); if(nk&&(nk.includes(d)||d.includes(nk))) return M[k]; }
-  const teams=sysTeams();
+  const P=TRESS_PLANTS[plant||TRESS_THIS]; const M=P.teams||{};
+  for(const k in M){ if(normDept(k)===d) return P.teamFmt(M[k],k); }
+  for(const k in M){ const nk=normDept(k); if(nk&&(nk.includes(d)||d.includes(nk))) return P.teamFmt(M[k],k); }
+  const teams=sysTeams(plant);
   for(const tm of teams){ const x=tm.toLowerCase().replace(/[^a-z0-9áéíóúñü가-힣]/g,""); if(x.includes(d)) return tm; }
   return "";
 }
-function setTressTeam(dept,v){ tressTeamMap[dept]=v; }
-/* TRESS 사번 → 2공장 시스템 사번: 숫자 그대로(앞의 0 제거). 예) 00000123 / 123.0 → "123" */
-function tressId(raw){
-  const s=String(raw||"").trim().toUpperCase().replace(/\.0+$/,"");
-  if(!/^\d{1,9}$/.test(s)) return "";
-  const n=s.replace(/^0+/,"");
-  return n||"";
+function setTressTeam(key,v){ tressTeamMap[key]=v; }
+/* 사번 → 시스템 사번 (현재 공장 기준: 1공장 M0+8자리 / 2공장 숫자 그대로) */
+function tressId(raw){ return TRESS_PLANTS[TRESS_THIS].id(raw); }
+/* 행의 공장 판별: 앞 4칸에서 첫 숫자 셀 → 8자리 이상(B열 사번)=1공장, 1~5자리(C열 번호)=2공장. 반환 b = B열 인덱스 */
+function tressClassify(cells){
+  for(let i=0;i<Math.min(cells.length,4);i++){
+    const v=cells[i].replace(/\.0+$/,"").toUpperCase(); if(!v) continue;
+    if(/^M\d{9}$/.test(v)) return {plant:"1",b:i,raw:v};
+    if(/^\d+$/.test(v)){
+      if(/^0{3,}\d+$/.test(v)) return {plant:"2",b:i-1,raw:v};   // 0으로 채운 2공장 번호(00000123)
+      if(v.length>=8) return {plant:"1",b:i,raw:v};
+      if(v.length<=5) return {plant:"2",b:i-1,raw:v};
+      return null;
+    }
+    return null;   // 글자 셀이 먼저 나오면(부서 헤더 DCALD 등) 데이터 행 아님
+  }
+  return null;
 }
+const STATUS_WORD=/^(falta|permiso|vacaciones|incapacidad|descanso|festivo)$/i;
 function parseTress(){
   const txt=$("trText").value||"";
   const lines=txt.split(/\r?\n/);
-  const emp={}; for(const e of state.employees){ emp[e.employee_id]=e; }
   const out=[]; const seen=new Set();
+  const isTxt=x=>/[A-Za-zÁ-ú가-힣]{2,}/.test(x)&&!tressTime(x)&&!/^-?\d+([.,]\d+)?$/.test(x);
   for(const ln of lines){
     if(!ln.trim()) continue;
-    const c=ln.split("\t");
-    // 2공장 TRESS 양식은 1공장(B/D/G/I~L 고정)과 달라 열 위치를 자동 인식:
-    //   사번 = 첫 숫자 셀(1~9자리) / 이름 = 그 뒤 첫 글자 셀(쉼표 포함 우선) / 부서 = 이름 뒤 글자 셀 / 시각 = HH:MM 셀 전부(첫=출근, 마지막=퇴근)
-    //   "Falta"(결근)만 있고 시각 없는 행, 합계·빈 행은 건너뜀
-    const cells=c.map(x=>String(x==null?"":x).trim());
-    let b=-1;
-    for(let i=0;i<Math.min(cells.length,4);i++){
-      const v=cells[i].replace(/\.0+$/,""); if(!/^\d{1,9}$/.test(v)) continue;
-      const hasName=cells.slice(i+1,i+5).some(x=>/[A-Za-zÁ-ú]{2,}/.test(x)); if(!hasName) continue;
-      if(b<0) b=i;
-      if(/^0\d{4,}$/.test(v)||v.length>=6){ b=i; break; }   // 0으로 채운 사번(00000002 등)이 있으면 그 셀을 사번으로
-    }
-    if(b<0) continue;
-    const id=tressId(cells[b]); if(!id||seen.has(id)) continue;
-    const isTxt=x=>/[A-Za-zÁ-ú]{2,}/.test(x)&&!tressTime(x)&&!/^\d+([.,]\d+)?$/.test(x);
-    let ni=-1; for(let i=b+1;i<cells.length;i++){ if(isTxt(cells[i])){ ni=i; break; } }
-    if(ni<0) continue;
-    const name=cells[ni];
-    let dept="";
-    for(let i=ni+1;i<cells.length;i++){ const x=cells[i]; if(!isTxt(x)) continue; if(/^(falta|permiso|vacaciones|incapacidad|descanso)$/i.test(x)) continue; dept=x; break; }
-    const times=[]; for(let i=ni+1;i<cells.length;i++){ const tm=tressTime(cells[i]); if(tm) times.push(tm); }
-    const tIn=times[0]||"", tOut=times.length>=2?times[times.length-1]:"";
-    if(!tIn&&!tOut) continue;
-    seen.add(id);
-    const e=emp[id];
-    out.push({ employee_id:id, name:e?(e.name||id):tressName(name), pasteName:tressName(name), team:dept, in:tIn, out:tOut, reg:!!e });
+    const cells=ln.split("\t").map(x=>String(x==null?"":x).trim());
+    const cl=tressClassify(cells); if(!cl) continue;
+    const plant=cl.plant, P=TRESS_PLANTS[plant], b=cl.b;
+    const id=P.id(cl.raw); if(!id) continue;
+    const key=plant+"|"+id; if(seen.has(key)) continue;
+    const g=i=>(b+i>=0&&cells[b+i]!=null)?cells[b+i]:"";
+    const numIdx=plant==="1"?b:b+1;
+    /* 이름: D열(b+2) → 아니면 번호 뒤 첫 글자 셀 */
+    let name=g(2), ni=b+2;
+    if(!isTxt(name)){ name=""; for(let i=numIdx+1;i<cells.length;i++){ if(isTxt(cells[i])){ name=cells[i]; ni=i; break; } } }
+    if(!name) continue;   // 소계·헤더 행
+    /* 부서: G열(b+5) → 아니면 이름 뒤 글자 셀(상태어 제외) */
+    let dept=g(5);
+    if(!isTxt(dept)||STATUS_WORD.test(dept)){ dept=""; for(let i=ni+1;i<cells.length;i++){ const x=cells[i]; if(isTxt(x)&&!STATUS_WORD.test(x)){ dept=x; break; } } }
+    /* 시각: I/J/K/L(b+7~10) → 아니면 이름 뒤 HH:MM 셀 전부(첫=출근, 마지막=퇴근) */
+    const in1=tressTime(g(7)), out1=tressTime(g(8)), in2=tressTime(g(9)), out2=tressTime(g(10));
+    let tIn=in1||in2, tOut=out2||out1;
+    if(!tIn&&!tOut){ const times=[]; for(let i=ni+1;i<cells.length;i++){ const tm=tressTime(cells[i]); if(tm) times.push(tm); }
+      tIn=times[0]||""; tOut=times.length>=2?times[times.length-1]:""; }
+    if(!tIn&&!tOut) continue;   // Falta(결근)
+    seen.add(key);
+    const e=tressEmp[plant][id];
+    out.push({ plant, employee_id:id, name:e?(e.name||id):tressName(name), pasteName:tressName(name), team:dept, in:tIn, out:tOut, reg:!!e });
   }
   tressRows=out;
   // 부서 체크 상태 유지 (새 부서는 기본 선택)
@@ -1657,22 +1794,26 @@ function parseTress(){
   renderTress();
 }
 function toggleTressDept(d){ tressDeptOn[d]=!tressDeptOn[d]; renderTress(); }
-function tressSelected(){ return tressRows.filter(r=>tressDeptOn[r.team||""]!==false); }
+function toggleTressPlant(p){ tressPlantOn[p]=!tressPlantOn[p]; renderTress(); }
+function tressSelected(){ return tressRows.filter(r=>tressPlantOn[r.plant]!==false&&tressDeptOn[r.team||""]!==false); }
+function plantLbl(p){ const L=TRESS_PLANTS[p].label; return lang==="es"?L.es:L.ko; }
 function renderTress(){
   const T=I18N[lang];
   const depts=Object.keys(tressDeptOn).sort((a,b)=>a.localeCompare(b));
-  const cnt={}; tressRows.forEach(r=>{ const k=r.team||""; cnt[k]=(cnt[k]||0)+1; });
-  $("trDepts").innerHTML=depts.map(d=>`<label class="trdept ${tressDeptOn[d]?"on":""}" onclick="event.preventDefault();toggleTressDept(${JSON.stringify(d)})"><input type="checkbox" ${tressDeptOn[d]?"checked":""}>${tressDeptOn[d]?"✓ ":""}${escapeHtml(d||"—")} <span style="opacity:.6">${cnt[d]||0}</span></label>`).join("");
+  const cnt={}, pc={"1":0,"2":0}; tressRows.forEach(r=>{ const k=r.team||""; cnt[k]=(cnt[k]||0)+1; pc[r.plant]++; });
+  const plantChips=tressRows.length?["1","2"].filter(p=>pc[p]>0).map(p=>`<label class="trdept trplant ${tressPlantOn[p]?"on":""}" onclick="event.preventDefault();toggleTressPlant('${p}')"><input type="checkbox" ${tressPlantOn[p]?"checked":""}>${tressPlantOn[p]?"✓ ":""}<b>${escapeHtml(plantLbl(p))}</b> <span style="opacity:.6">${pc[p]}</span></label>`).join("")+`<span class="trsep"></span>`:"";
+  $("trDepts").innerHTML=plantChips+depts.map(d=>`<label class="trdept ${tressDeptOn[d]?"on":""}" onclick="event.preventDefault();toggleTressDept(${JSON.stringify(d)})"><input type="checkbox" ${tressDeptOn[d]?"checked":""}>${tressDeptOn[d]?"✓ ":""}${escapeHtml(d||"—")} <span style="opacity:.6">${cnt[d]||0}</span></label>`).join("");
   const sel=tressSelected();
-  /* 미등록 직원 → 부서별 팀 지정 UI */
+  /* 미등록 직원 → 공장·부서별 팀 지정 UI */
   const unreg=sel.filter(r=>!r.reg);
   if(unreg.length && $("trReg").checked){
-    const ud=[...new Set(unreg.map(r=>r.team||""))].sort();
-    ud.forEach(d=>{ if(!(d in tressTeamMap)) tressTeamMap[d]=guessTeam(d); });
-    $("trTeamList").innerHTML=sysTeams().map(tm=>`<option value="${escapeHtml(tm)}">`).join("");
-    $("trMap").innerHTML=`<div class="trmap-h">${T.trMapH(unreg.length)}</div>`+ud.map(d=>{
-      const n=unreg.filter(r=>(r.team||"")===d).length;
-      return `<div class="trmap-row"><span>${escapeHtml(d||"—")} <span style="opacity:.6">${n}</span></span><span style="text-align:center;color:#94a3b8">→</span><input list="trTeamList" value="${escapeHtml(tressTeamMap[d]||"")}" placeholder="${escapeHtml(T.trMapPh)}" oninput="setTressTeam(${JSON.stringify(d)},this.value)"></div>`;
+    const ud=[...new Set(unreg.map(r=>tmKey(r.plant,r.team)))].sort();
+    ud.forEach(k=>{ if(!(k in tressTeamMap)){ const [p,d]=k.split("|"); tressTeamMap[k]=guessTeam(d,p); } });
+    const allTeams=[...new Set([...sysTeams("1"),...sysTeams("2")])];
+    $("trTeamList").innerHTML=allTeams.map(tm=>`<option value="${escapeHtml(tm)}">`).join("");
+    $("trMap").innerHTML=`<div class="trmap-h">${T.trMapH(unreg.length)}</div>`+ud.map(k=>{
+      const [p,d]=k.split("|"); const n=unreg.filter(r=>tmKey(r.plant,r.team)===k).length;
+      return `<div class="trmap-row"><span><b style="color:#c9a84c">${escapeHtml(plantLbl(p))}</b> · ${escapeHtml(d||"—")} <span style="opacity:.6">${n}</span></span><span style="text-align:center;color:#94a3b8">→</span><input list="trTeamList" value="${escapeHtml(tressTeamMap[k]||"")}" placeholder="${escapeHtml(T.trMapPh)}" oninput="setTressTeam(${JSON.stringify(k)},this.value)"></div>`;
     }).join("");
     $("trMap").style.display="";
   } else { $("trMap").style.display="none"; $("trMap").innerHTML=""; }
@@ -1682,46 +1823,74 @@ function renderTress(){
     $("trRun").disabled=true; return;
   }
   const reg=tressRows.filter(r=>r.reg).length, noout=tressRows.filter(r=>!r.out).length;
-  $("trSum").textContent=T.trSum(tressRows.length,reg,tressRows.length-reg,noout,sel.length);
-  $("trTable").querySelector("thead").innerHTML=`<tr><th>${T.colId}</th><th>${T.colName}</th><th>${T.trDept}</th><th>${T.trIn}</th><th>${T.trOut}</th><th>${T.trRegCol}</th></tr>`;
-  $("trTable").querySelector("tbody").innerHTML=sel.map(r=>`<tr><td>${escapeHtml(r.employee_id)}</td><td>${escapeHtml(r.name)}${(!r.reg||!r.pasteName||r.pasteName===r.name)?"":` <span style="color:#94a3b8;font-size:11px">(${escapeHtml(r.pasteName)})</span>`}</td><td>${escapeHtml(r.team||"—")}</td><td>${r.in||"—"}</td><td>${r.out||"—"}</td><td><span class="trtag ${r.reg?"ok":"no"}">${r.reg?T.trRegOk:T.trRegNo}</span></td></tr>`).join("");
+  const selP={"1":0,"2":0}; sel.forEach(r=>selP[r.plant]++);
+  $("trSum").textContent=T.trSum(tressRows.length,reg,tressRows.length-reg,noout,sel.length)+` (${plantLbl("1")} ${selP["1"]} · ${plantLbl("2")} ${selP["2"]})`;
+  $("trTable").querySelector("thead").innerHTML=`<tr><th>${T.trPlant}</th><th>${T.colId}</th><th>${T.colName}</th><th>${T.trDept}</th><th>${T.trIn}</th><th>${T.trOut}</th><th>${T.trRegCol}</th></tr>`;
+  $("trTable").querySelector("tbody").innerHTML=sel.map(r=>`<tr><td><span class="trtag ${r.plant==="1"?"p1":"p2"}">${escapeHtml(plantLbl(r.plant))}</span></td><td>${escapeHtml(r.employee_id)}</td><td>${escapeHtml(r.name)}${(!r.reg||!r.pasteName||r.pasteName===r.name)?"":` <span style="color:#94a3b8;font-size:11px">(${escapeHtml(r.pasteName)})</span>`}</td><td>${escapeHtml(r.team||"—")}</td><td>${r.in||"—"}</td><td>${r.out||"—"}</td><td><span class="trtag ${r.reg?"ok":"no"}">${r.reg?T.trRegOk:T.trRegNo}</span></td></tr>`).join("");
   $("trRun").disabled=sel.length===0;
+}
+/* 다른 공장 출근율 자동 저장(att_rate_log): 해당 공장 RPC 집계 → 전체 재직/출근 upsert (수동·엑셀 입력값이 있으면 건너뜀) */
+async function tressRateSave(plant,date){
+  try{
+    const P=TRESS_PLANTS[plant];
+    const res=await fetch(REST("rpc/"+P.rate),{method:"POST",headers:Object.assign({},HEADERS,{"Content-Type":"application/json"}),
+      body:JSON.stringify({p_from:date,p_to:date,p_factory:null})});
+    if(!res.ok) return;
+    const data=await res.json(); let hold=0,present=0;
+    for(const r of data){ if(String(r.d).slice(0,10)!==date) continue; hold+=+r.headcount||0; present+=+r.attended||0; }
+    if(hold<=0||present<=0) return;
+    const ex=await getJson(REST(`${RATE_T}?d=eq.${date}&plant=eq.${encodeURIComponent(P.ratePlant)}&select=id,kind,source,hold,present`));
+    if(ex.some(r=>r.source!=="auto")) return;
+    const cur=ex.find(r=>r.kind==="전체"); if(cur&&cur.hold===hold&&cur.present===present) return;
+    await rateUpsert([{d:date,plant:P.ratePlant,kind:"전체",hold,present,source:"auto"}]);
+  }catch(e){ console.warn("tressRateSave",e); }
 }
 async function submitTress(){
   const T=I18N[lang];
-  const date=$("trDate").value; const factory=$("trFactory").value;
+  const date=$("trDate").value;
   const rows=tressSelected(); if(!rows.length||!date) return;
-  if(!confirm(T.trConfirm(date,rows.length))) return;
+  const byPlant={}; rows.forEach(r=>{ (byPlant[r.plant]=byPlant[r.plant]||[]).push(r); });
+  const plants=["1","2"].filter(p=>byPlant[p]&&byPlant[p].length);
+  const parts=plants.map(p=>`${plantLbl(p)} ${byPlant[p].length}`).join(" · ");
+  if(!confirm(T.trConfirm(date,rows.length,parts))) return;
   const register=$("trReg").checked;
   $("trRun").disabled=true; $("trClose").disabled=true;
-  const CH=200; const tot={deleted:0,ins_in:0,ins_out:0,new_emp:0,skipped:0};
+  const CH=200; const done={};
   try{
-    /* 1) 미등록 사번 → 직원 마스터 등록 (부서→팀 매핑 적용, 이미 있으면 무시) */
-    if(register){
-      const unreg=rows.filter(r=>!r.reg);
-      const have=new Set();
-      for(let i=0;i<unreg.length;i+=CH){
-        const part=unreg.slice(i,i+CH);
-        const body=part.map(r=>({ employee_id:r.employee_id, name:r.pasteName||r.employee_id, name_ko:"", team:(tressTeamMap[r.team||""]||"").trim()||(r.team||""), factory, active:true }));
-        $("trProg").textContent=T.trProg(Math.min(i+CH,unreg.length),unreg.length)+" · "+T.trRegCol;
-        const res=await fetch(REST(`${CONFIG.T_EMPLOYEES}?on_conflict=employee_id`),{method:"POST",
-          headers:Object.assign({},HEADERS,{"Content-Type":"application/json","Prefer":"resolution=ignore-duplicates,return=minimal"}),body:JSON.stringify(body)});
-        if(!res.ok){ console.error(await res.text()); $("trProg").textContent=T.trRegFail; throw new Error("reg"); }
-        part.forEach(r=>have.add(r.employee_id));
+    for(const plant of plants){
+      const P=TRESS_PLANTS[plant]; const prow=byPlant[plant];
+      const factory=plant===TRESS_THIS?($("trFactory").value||P.factory):P.factory;
+      const tot={deleted:0,ins_in:0,ins_out:0,new_emp:0,skipped:0}; done[plant]=tot;
+      const lbl=plantLbl(plant)+" · ";
+      /* 1) 미등록 사번 → 해당 공장 직원 마스터 등록 (부서→팀 매핑 적용, 이미 있으면 무시) */
+      if(register){
+        const unreg=prow.filter(r=>!r.reg);
+        const have=new Set();
+        for(let i=0;i<unreg.length;i+=CH){
+          const part=unreg.slice(i,i+CH);
+          const body=part.map(r=>({ employee_id:r.employee_id, name:r.pasteName||r.employee_id, name_ko:"", team:(tressTeamMap[tmKey(r.plant,r.team)]||"").trim()||(r.team||""), factory, active:true }));
+          $("trProg").textContent=lbl+T.trProg(Math.min(i+CH,unreg.length),unreg.length)+" · "+T.trRegCol;
+          const res=await fetch(REST(`${P.emp}?on_conflict=employee_id`),{method:"POST",
+            headers:Object.assign({},HEADERS,{"Content-Type":"application/json","Prefer":"resolution=ignore-duplicates,return=minimal"}),body:JSON.stringify(body)});
+          if(!res.ok){ console.error(await res.text()); $("trProg").textContent=lbl+T.trRegFail; throw new Error("reg"); }
+          part.forEach(r=>have.add(r.employee_id));
+        }
+        tot.new_emp+=have.size;
+        prow.forEach(r=>{ if(have.has(r.employee_id)){ r.reg=true; r.name=r.pasteName||r.name; } });
       }
-      tot.new_emp+=have.size;
-      rows.forEach(r=>{ if(have.has(r.employee_id)){ r.reg=true; r.name=r.pasteName||r.name; } });
+      /* 2) 출결 반영 (공장별 RPC) */
+      for(let i=0;i<prow.length;i+=CH){
+        const part=prow.slice(i,i+CH).map(r=>({employee_id:r.employee_id,name:r.pasteName||r.name,team:r.team,in:r.in,out:r.out,register:false}));
+        $("trProg").textContent=lbl+T.trProg(Math.min(i+CH,prow.length),prow.length);
+        const res=await fetch(REST("rpc/"+P.rpc),{method:"POST",headers:Object.assign({},HEADERS,{"Content-Type":"application/json"}),
+          body:JSON.stringify({p_date:date,p_factory:factory,p_rows:part})});
+        if(!res.ok){ console.error(await res.text()); throw new Error("rpc:"+plant); }
+        const j=await res.json(); for(const k in tot) tot[k]+=(+j[k]||0);
+      }
+      /* 3) 다른 공장이면 그 공장 출근율도 자동 저장 (현재 공장은 refresh 시 자동 저장) */
+      if(plant!==TRESS_THIS) await tressRateSave(plant,date);
     }
-    /* 2) 출결 반영 */
-    for(let i=0;i<rows.length;i+=CH){
-      const part=rows.slice(i,i+CH).map(r=>({employee_id:r.employee_id,name:r.pasteName||r.name,team:r.team,in:r.in,out:r.out,register:false}));
-      $("trProg").textContent=T.trProg(Math.min(i+CH,rows.length),rows.length);
-      const res=await fetch(REST("rpc/tress_import_2"),{method:"POST",headers:Object.assign({},HEADERS,{"Content-Type":"application/json"}),
-        body:JSON.stringify({p_date:date,p_factory:factory,p_rows:part})});
-      if(!res.ok){ console.error(await res.text()); throw new Error("rpc"); }
-      const j=await res.json(); for(const k in tot) tot[k]+=(+j[k]||0);
-    }
-    $("trProg").textContent=T.trDone(tot);
+    $("trProg").innerHTML=plants.map(p=>`<div><b>${escapeHtml(plantLbl(p))}</b> · ${escapeHtml(T.trDone(done[p]))}</div>`).join("");
     if(($("fDate").value||todayDate())!==date) $("fDate").value=date;
     await refresh();
     $("trText").value=""; tressRows=[]; tressDeptOn={}; renderTress();
@@ -3112,6 +3281,388 @@ async function rateExport(){
   finally{ btn.disabled=false; btn.textContent=txt; }
 }
 try{ rateApplyLang(); }catch(_){ }
+
+/* ============================================================
+   퇴사율 분석 모듈 (att_turnover) — 1·2공장 월별 퇴사자(사유별·근무개월별·부서별) + 퇴사율
+   입력: 엑셀 「퇴사자 현황」 시트(1.사유별 / 2.근무개월별 / 3.부서별 표) 복사 → 붙여넣기 → 공장·연도 단위로 교체 저장
+   퇴사율 = 월 퇴사자 ÷ 월 재직인원 (재직인원: 입력 패널의 월별 재직인원 → 없으면 att_rate_log 그 달 평균 재직)
+   ============================================================ */
+const TURN_T="att_turnover";
+const TURN_PAL=["#e2c46a","#6fb8dd","#e05c5c","#4caf7d","#b39ddb","#ff8a65","#80cbc4","#f48fb1","#a1887f","#90a4ae","#fff176","#9fa8da","#c5e1a5","#ffab91","#ce93d8"];
+const TURN_I18N={
+  ko:{btn:"퇴사율 분석",title:"퇴사율 분석",sub:"Turnover · Plant 1 vs Plant 2",capYear:"조회 연도",capMonth:"조회 월",capPlant:"상세 공장",capInput:"엑셀 표 붙여넣기",capExp:"4개 시트 · 서식 포함",capReload:"최신 데이터 다시 읽기",capClose:"대시보드로 돌아가기 (ESC)",
+    input:"✎ 데이터 입력",exp:"⤓ Excel 다운로드",expBusy:"만드는 중…",reload:"↻ 새로고침",close:"✕ 닫기",expName:"퇴사율분석",
+    loading:"불러오는 중…",noData:"아직 데이터가 없습니다. 「데이터 입력」에서 퇴사자 현황 표를 붙여넣어 저장하세요.",err:"불러오기 실패 — Supabase 테이블(att_turnover) 확인",
+    status:(y,p1,p2)=>`<b>${y}</b>년 · 1공장 ${p1}개월 · 2공장 ${p2}개월 입력됨`,
+    p1:"1공장",p2:"2공장",mo:["1월","2월","3월","4월","5월","6월","7월","8월","9월","10월","11월","12월"],
+    kYear:"연간 퇴사",kMonth:"퇴사",sRate:"퇴사율",sAvgRate:"월평균 퇴사율",sHold:"재직",sPrev:"전월 대비",sNoHold:"재직인원 없음 → 퇴사율 미산출",
+    kTopReason:"최다 퇴사 사유 · 연간",kEarly:"조기 퇴사 · 3개월 미만",sOf:"전체 퇴사 중",sEarlyNote:"1개월 + 3개월미만",
+    h1:"월별 퇴사자 · 퇴사율 추이 — 1공장 vs 2공장",d1:"monthly · jan–dec",h2:"사유별 퇴사자 — 연간 누적",d2:"by reason · ytd",h3:"월별 사유별 퇴사자",d3:"stacked by reason",
+    h4:"근무개월별 퇴사자 — 연간 누적",d4:"by tenure",h5:"부서별 퇴사자 — 연간 누적",d5:"by department",h6:"근무개월별 · 부서별 월 상세",d6:"monthly detail",h7:"사유별 월 상세",
+    cMonth:"월",cLeave:"퇴사",cHold:"재직",cRate:"퇴사율",cTotal:"합계",cSum:"1+2공장",cReason:"사유",cTenure:"근무개월",cDept:"부서",
+    n1:"퇴사율 = 월 퇴사자 ÷ 월 재직인원. 재직인원은 입력 패널의 월별 재직인원을 우선 사용하고, 없으면 출근율 기록(att_rate_log)의 그 달 평균 재직인원을 사용합니다.",
+    tenureEarly:["1개월","3개월미만"],
+    inT:"퇴사자 현황 표 붙여넣기 → 저장",inPlant:"공장",inYear:"연도",inHoldT:"월별 재직인원 (선택)",inHoldPh:"예)\n7월\t650\n8월\t672\n(월 재직인원 — 퇴사율 계산용. 비우면 출근율 기록의 재직인원 사용)",
+    inPh:"엑셀 「퇴사자 현황」 시트에서 표 전체(1. 사유별 / 2. 근무개월별 / 3. 부서별)를 복사해 여기에 붙여넣기 (Ctrl+V)\n— 「구분」 행과 「N월」 행만 읽고 합계는 다시 계산합니다. 「1공장/2공장」 문구가 있으면 공장을 자동 선택합니다.",
+    inNone:"인식된 표가 없습니다 — 「구분」 헤더 행과 「1월~12월」 행이 포함되도록 붙여넣으세요",
+    inSum:s=>`인식: ${s.map(x=>`${x.name} ${x.keys}개 항목 · ${x.months}개월 · 합계 ${x.total}명`).join("  /  ")}`,
+    inHoldSum:n=>`재직인원 ${n}개월`,inSave:"저장 (공장·연도 단위 교체)",inCancel:"닫기",
+    inConfirm:(p,y,s)=>`${p} ${y}년 퇴사자 현황을 저장할까요?\n${s}\n(같은 공장·연도의 기존 입력은 교체됩니다)`,inDone:n=>`저장 완료 · ${n}건`,inFail:"저장 실패 — Supabase 테이블(att_turnover)·권한 확인",
+    secName:{reason:"사유별",tenure:"근무개월별",dept:"부서별"},
+    xTitle:"YURA HARNESS MÉXICO · 퇴사율 분석",xSheets:["월별요약","사유별","근무개월별","부서별"],xHoldSrc:"재직인원 출처",xHoldIn:"입력",xHoldAtt:"출근율 기록",
+    howT:"how it updates",how:"「데이터 입력」에서 엑셀 퇴사자 현황 표를 붙여넣어 저장하면 같은 공장·연도 데이터가 교체됩니다. 1공장·2공장 대시보드 어느 쪽에서 입력해도 같은 테이블(att_turnover)에 저장되어 함께 비교됩니다."},
+  es:{btn:"Rotación",title:"Análisis de rotación",sub:"Turnover · Planta 1 vs Planta 2",capYear:"Año",capMonth:"Mes",capPlant:"Planta (detalle)",capInput:"Pegar tabla de Excel",capExp:"4 hojas · con formato",capReload:"Releer datos",capClose:"Volver al tablero (ESC)",
+    input:"✎ Ingresar datos",exp:"⤓ Descargar Excel",expBusy:"Generando…",reload:"↻ Actualizar",close:"✕ Cerrar",expName:"Rotacion",
+    loading:"Cargando…",noData:"Sin datos. Pegue la tabla de bajas en «Ingresar datos» y guarde.",err:"Error al cargar — revise la tabla att_turnover",
+    status:(y,p1,p2)=>`<b>${y}</b> · Planta 1: ${p1} meses · Planta 2: ${p2} meses`,
+    p1:"Planta 1",p2:"Planta 2",mo:["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"],
+    kYear:"Bajas del año",kMonth:"Bajas",sRate:"rotación",sAvgRate:"rotación mensual prom.",sHold:"plantilla",sPrev:"vs mes anterior",sNoHold:"sin plantilla → rotación no calculada",
+    kTopReason:"Motivo principal · año",kEarly:"Bajas tempranas · < 3 meses",sOf:"de todas las bajas",sEarlyNote:"1 mes + < 3 meses",
+    h1:"Bajas y rotación mensual — Planta 1 vs Planta 2",d1:"mensual · ene–dic",h2:"Bajas por motivo — acumulado",d2:"por motivo · ytd",h3:"Bajas mensuales por motivo",d3:"apilado por motivo",
+    h4:"Bajas por antigüedad — acumulado",d4:"por antigüedad",h5:"Bajas por departamento — acumulado",d5:"por departamento",h6:"Detalle mensual · antigüedad y departamento",d6:"detalle mensual",h7:"Detalle mensual por motivo",
+    cMonth:"Mes",cLeave:"Bajas",cHold:"Plantilla",cRate:"Rotación",cTotal:"Total",cSum:"P1+P2",cReason:"Motivo",cTenure:"Antigüedad",cDept:"Depto",
+    n1:"Rotación = bajas del mes ÷ plantilla del mes. La plantilla se toma del panel de ingreso; si no hay, del promedio mensual del registro de asistencia (att_rate_log).",
+    tenureEarly:["1개월","3개월미만"],
+    inT:"Pegar tabla de bajas → guardar",inPlant:"Planta",inYear:"Año",inHoldT:"Plantilla mensual (opcional)",inHoldPh:"ej.)\n7월\t650\n8월\t672\n(plantilla mensual para la rotación; vacío = usar registro de asistencia)",
+    inPh:"Copie las tablas (1. motivo / 2. antigüedad / 3. departamento) de la hoja «퇴사자 현황» de Excel y péguelas aquí (Ctrl+V)\n— se leen las filas «구분» y «N월»; los totales se recalculan. Si el texto contiene «1공장/2공장» se selecciona la planta.",
+    inNone:"No se reconoció ninguna tabla — incluya la fila «구분» y las filas «1월~12월»",
+    inSum:s=>`Reconocido: ${s.map(x=>`${x.name} ${x.keys} ítems · ${x.months} meses · total ${x.total}`).join("  /  ")}`,
+    inHoldSum:n=>`plantilla ${n} meses`,inSave:"Guardar (reemplaza planta·año)",inCancel:"Cerrar",
+    inConfirm:(p,y,s)=>`¿Guardar bajas de ${p} ${y}?\n${s}\n(Se reemplazan los datos existentes de esa planta y año)`,inDone:n=>`Guardado · ${n} registros`,inFail:"Error al guardar — revise la tabla att_turnover y permisos",
+    secName:{reason:"Motivo",tenure:"Antigüedad",dept:"Departamento"},
+    xTitle:"YURA HARNESS MÉXICO · Análisis de rotación",xSheets:["Resumen mensual","Por motivo","Por antigüedad","Por depto"],xHoldSrc:"Fuente plantilla",xHoldIn:"ingreso",xHoldAtt:"asistencia",
+    howT:"cómo se actualiza",how:"Al pegar y guardar la tabla de bajas en «Ingresar datos» se reemplazan los datos de esa planta y año. Desde cualquiera de los dos tableros se guarda en la misma tabla (att_turnover) para comparar ambas plantas."}
+};
+/* 항목명 번역(es 표시용) — 데이터 키는 한국어 그대로 저장 */
+const TURN_KEY_ES={"가족사유":"Motivo familiar","개인사업":"Negocio propio","개인사유":"Motivo personal","개인건강":"Salud","계약종료":"Fin de contrato","근무환경":"Ambiente laboral","무단결근/근무이탈":"Abandono / faltas","자진퇴사":"Renuncia voluntaria","급여불만":"Salario","작업강도":"Carga de trabajo","진학":"Estudios","타사 이직":"Cambio de empresa","기타":"Otros",
+  "1개월":"1 mes","3개월미만":"< 3 meses","6개월미만":"< 6 meses","1년 미만":"< 1 año","2년 미만":"< 2 años","3년 미만":"< 3 años","3년 이상":"≥ 3 años",
+  "가공 생산":"Prod. maquinado","가공보전":"Mantenimiento","생산기술":"Ing. producción","인사총무":"RH y AG","자재무역":"Materiales","조립 생산":"Prod. ensamble","품질관리":"Calidad","생관":"Control prod.","재무원가":"Finanzas"};
+const tt=k=>(TURN_I18N[lang]||TURN_I18N.ko)[k];
+const turnKey=k=>lang==="es"?(TURN_KEY_ES[k]||k):k;
+let turnRows=[], turnYear=null, turnMonth=null, turnPlant=RATE_PLANT, turnCharts={}, turnLoaded=false, turnLoading=null, turnParsed=null;
+const TURN_PLANTS=["1공장","2공장"];
+const turnPL=p=>p==="1공장"?tt("p1"):tt("p2");
+const turnPC=p=>p==="1공장"?RATE_C.p1:RATE_C.p2;
+
+/* ---------- 모달 열기/닫기 ---------- */
+async function openTurn(){
+  $("turnModal").classList.add("open"); document.body.style.overflow="hidden";
+  turnApplyLang();
+  try{ await rateLoadScript(RATE_CHART_SRC,()=>!!window.Chart); }catch(e){ console.warn(e); }
+  await turnLoad(true);
+}
+function closeTurn(){ $("turnModal").classList.remove("open"); document.body.style.overflow=""; }
+document.addEventListener("keydown",e=>{ if(e.key==="Escape"&&$("turnModal").classList.contains("open")) closeTurn(); });
+function turnApplyLang(){
+  const T=TURN_I18N[lang]||TURN_I18N.ko;
+  const B=$("bTurn"); if(B) B.textContent=T.btn;
+  $("tnTitle").textContent=T.title; $("tnSub").firstChild.textContent=T.sub+" · ";
+  $("tnInputBtn").textContent=T.input; $("tnExpBtn").textContent=T.exp; $("tnReloadBtn").textContent=T.reload; $("tnCloseBtn").textContent=T.close;
+  $("tnCapYear").textContent=T.capYear; $("tnCapMonth").textContent=T.capMonth; $("tnCapPlant").textContent=T.capPlant; $("tnCapInput").textContent=T.capInput; $("tnCapExp").textContent=T.capExp; $("tnCapReload").textContent=T.capReload; $("tnCapClose").textContent=T.capClose;
+  [1,2,3,4,5,6].forEach(i=>{ $("tnH"+i).textContent=T["h"+i]; $("tnD"+i).textContent=T["d"+i]; });
+  $("tnN1").textContent=T.n1; $("tnHowT").textContent=T.howT; $("tnHow").textContent=T.how;
+  $("tnInT").textContent=T.inT; $("tnInL0").textContent=T.inPlant; $("tnInL1").textContent=T.inYear; $("tnInHoldT").textContent=T.inHoldT;
+  $("tnInText").placeholder=T.inPh; $("tnInHold").placeholder=T.inHoldPh; $("tnInSave").textContent=T.inSave; $("tnInCancel").textContent=T.inCancel;
+  const po=$("tnInPlant").options; po[0].textContent=T.p1; po[1].textContent=T.p2;
+  const pp=$("tnPlant").options; pp[0].textContent=T.p1; pp[1].textContent=T.p2;
+}
+try{ const _setLang1=setLang; setLang=function(l){ _setLang1(l); try{ turnApplyLang(); if($("turnModal").classList.contains("open")) turnRender(); }catch(_){ } }; }catch(_){ }
+
+/* ---------- 데이터 ---------- */
+async function turnFetchAll(){
+  const out=[]; const PAGE=1000;
+  for(let off=0; off<50000; off+=PAGE){
+    const ch=await getJson(REST(`${TURN_T}?select=id,plant,year,month,cat,key,cnt,ord&order=year.asc,plant.asc,cat.asc,ord.asc,month.asc&limit=${PAGE}&offset=${off}`));
+    out.push(...ch); if(ch.length<PAGE) break;
+  }
+  return out.map(r=>({plant:r.plant,year:+r.year,month:+r.month,cat:r.cat,key:r.key,cnt:+r.cnt||0,ord:+r.ord||0}));
+}
+async function turnLoad(force){
+  if(turnLoading) return turnLoading;
+  if(turnLoaded&&!force){ turnRender(); return; }
+  $("tnStatus").innerHTML=tt("loading");
+  const btn=$("tnReloadBtn"); btn.disabled=true;
+  turnLoading=(async()=>{
+    try{ const [rows]=await Promise.all([turnFetchAll(), rateLoaded?Promise.resolve():rateFetchAll().then(r=>{ rateRows=r; rateLoaded=true; }).catch(()=>{})]); turnRows=rows; turnLoaded=true; }
+    catch(e){ console.error(e); $("tnStatus").innerHTML=`<span style="color:#ef9a9a">${tt("err")}</span>`; turnRows=[]; }
+    finally{ turnLoading=null; btn.disabled=false; }
+    turnRender();
+  })();
+  return turnLoading;
+}
+function turnYears(){ const s=new Set(turnRows.map(r=>r.year)); return [...s].sort(); }
+/* 공장·연도·분류 → {keys:[…순서], m:{month:{key:cnt}}, tot:[12], months:[입력된 월]} */
+function turnMatrix(plant,year,cat){
+  const rows=turnRows.filter(r=>r.plant===plant&&r.year===year&&r.cat===cat);
+  const ko={}; rows.forEach(r=>{ if(!(r.key in ko)||r.ord<ko[r.key]) ko[r.key]=r.ord; });
+  const keys=Object.keys(ko).sort((a,b)=>ko[a]-ko[b]||a.localeCompare(b));
+  const m={}; const tot=Array(12).fill(0); const months=new Set();
+  rows.forEach(r=>{ (m[r.month]=m[r.month]||{})[r.key]=(m[r.month][r.key]||0)+r.cnt; tot[r.month-1]+=r.cnt; months.add(r.month); });
+  const keyTot={}; keys.forEach(k=>{ keyTot[k]=0; for(const mo in m) keyTot[k]+=m[mo][k]||0; });
+  return {keys,m,tot,keyTot,months:[...months].sort((a,b)=>a-b),sum:tot.reduce((a,b)=>a+b,0)};
+}
+/* 월 퇴사자(공장): 사유별 → 근무개월별 → 부서별 순으로 있는 것 */
+function turnMonthly(plant,year){
+  for(const cat of ["reason","tenure","dept"]){ const M=turnMatrix(plant,year,cat); if(M.months.length) return M; }
+  return turnMatrix(plant,year,"reason");
+}
+/* 월 재직인원: 입력(cat=hold) → att_rate_log 그 달 평균 hold */
+function turnHold(plant,year,month){
+  const r=turnRows.find(x=>x.plant===plant&&x.year===year&&x.month===month&&x.cat==="hold"); if(r&&r.cnt>0) return {v:r.cnt,src:"in"};
+  const ym=`${year}-${String(month).padStart(2,"0")}`; let s=0,n=0;
+  for(const x of rateRows){ if(x.plant===plant&&x.kind==="전체"&&rateYm(x.d)===ym&&x.hold>0){ s+=x.hold; n++; } }
+  return n?{v:Math.round(s/n),src:"att"}:null;
+}
+function turnMonthsEntered(plant,year){ const s=new Set(turnRows.filter(r=>r.plant===plant&&r.year===year&&r.cat!=="hold").map(r=>r.month)); return [...s].sort((a,b)=>a-b); }
+
+/* ---------- 차트 ---------- */
+function turnChart(id,cfg){
+  if(!window.Chart) return;
+  if(turnCharts[id]){ turnCharts[id].destroy(); delete turnCharts[id]; }
+  Chart.defaults.color=RATE_C.tick; Chart.defaults.font.family="'Space Mono','Noto Sans KR',monospace"; Chart.defaults.font.size=11;
+  turnCharts[id]=new Chart($(id).getContext("2d"),cfg);
+}
+const turnGrid={color:RATE_C.grid};
+const turnTip={backgroundColor:"#161616",borderColor:"#333",borderWidth:1,titleColor:"#fafafa",bodyColor:"#ddd",padding:10};
+
+/* ---------- 렌더 ---------- */
+function turnRender(){
+  const T=TURN_I18N[lang]||TURN_I18N.ko;
+  const years=turnYears();
+  if(!years.length){ $("tnHero").innerHTML=""; $("tnStatus").innerHTML=tt("noData"); ["tnTbMonth","tnTbReason","tnTbTenure","tnTbDept"].forEach(i=>$(i).innerHTML=""); $("tnYear").innerHTML=""; $("tnMonth").innerHTML=""; Object.keys(turnCharts).forEach(k=>{ turnCharts[k].destroy(); delete turnCharts[k]; }); return; }
+  if(!turnYear||!years.includes(turnYear)) turnYear=years[years.length-1];
+  $("tnYear").innerHTML=years.map(y=>`<option value="${y}"${y===turnYear?" selected":""}>${y}</option>`).join("");
+  const Y=turnYear;
+  const ent1=turnMonthsEntered("1공장",Y), ent2=turnMonthsEntered("2공장",Y);
+  const entAll=[...new Set([...ent1,...ent2])].sort((a,b)=>a-b);
+  if(!turnMonth||!entAll.includes(turnMonth)) turnMonth=entAll[entAll.length-1]||1;
+  $("tnMonth").innerHTML=entAll.map(m=>`<option value="${m}"${m===turnMonth?" selected":""}>${T.mo[m-1]}</option>`).join("");
+  $("tnPlant").value=turnPlant;
+  $("tnRange").textContent=`${Y}`;
+  $("tnStatus").innerHTML=T.status(Y,ent1.length,ent2.length)+`<span class="rt-legend"><span><i class="rt-bg1"></i>${T.p1}</span><span><i class="rt-bg2"></i>${T.p2}</span></span>`;
+
+  const MM={}, RT={}, HD={};
+  TURN_PLANTS.forEach(p=>{ MM[p]=turnMonthly(p,Y); HD[p]=Array.from({length:12},(_,i)=>turnHold(p,Y,i+1)); RT[p]=MM[p].tot.map((c,i)=>HD[p][i]?c/HD[p][i].v:null); });
+  const pct=v=>v==null?null:+(v*100).toFixed(2);
+
+  /* ── HERO ── */
+  const tile=(cls,k,c,v,sub,extra="")=>`<div class="rt-tile ${cls}"><div class="k"><i style="background:${c};box-shadow:0 0 8px ${c}"></i>${k}</div>${v}<div class="s">${sub}</div>${extra}</div>`;
+  const hero=[];
+  TURN_PLANTS.forEach(p=>{
+    const M=MM[p], c=turnPC(p), cls=p==="1공장"?"p1":"p2";
+    const rates=RT[p].filter((v,i)=>v!=null&&M.months.includes(i+1)); const avg=rates.length?rates.reduce((a,b)=>a+b,0)/rates.length:null;
+    hero.push(tile(cls,`${turnPL(p)} · ${T.kYear}`,c,`<div class="v">${rateFmtN(M.sum)}<small>${T.sAvgRate} ${rateFmtP(avg)}</small></div>`,
+      `<span style="color:${c}">${Y}</span> · ${M.months.length}${lang==="es"?" meses":"개월"} · ${T.cTotal} <b>${rateFmtN(M.sum)}</b>`,
+      `<div class="rt-ring" style="--rt-pct:${avg==null?0:Math.min(100,avg*100*10)};--rt-c:${c}"><span>${avg==null?"–":(avg*100).toFixed(1)+"%"}</span></div>`));
+  });
+  TURN_PLANTS.forEach(p=>{
+    const M=MM[p], c=turnPC(p), cls=p==="1공장"?"p1":"p2"; const i=turnMonth-1;
+    const cnt=M.tot[i], h=HD[p][i], r=RT[p][i], prev=i>0?M.tot[i-1]:null; const d=prev==null?null:cnt-prev;
+    hero.push(tile(cls,`${turnPL(p)} · ${T.mo[i]} ${T.kMonth}`,c,`<div class="v">${rateFmtN(cnt)}<small>${T.sRate} ${rateFmtP(r)}</small></div>`,
+      `<span style="color:${c}">${T.mo[i]}</span> · ${h?`${T.sHold} <b>${rateFmtN(h.v)}</b>`:`<span style="color:#ef9a9a">${T.sNoHold}</span>`}${d==null?"":` · ${T.sPrev} <b class="${d>0?"dn":"up"}" style="color:${d>0?"#e05c5c":"#4caf7d"}">${d>0?"+":""}${d}</b>`}`,
+      `<div class="rt-ring" style="--rt-pct:${r==null?0:Math.min(100,r*100*10)};--rt-c:${c}"><span>${r==null?"–":(r*100).toFixed(1)+"%"}</span></div>`));
+  });
+  { const R1=turnMatrix("1공장",Y,"reason"), R2=turnMatrix("2공장",Y,"reason"); const agg={}; [R1,R2].forEach(R=>R.keys.forEach(k=>agg[k]=(agg[k]||0)+R.keyTot[k]));
+    const top=Object.keys(agg).sort((a,b)=>agg[b]-agg[a]).slice(0,3); const all=Object.values(agg).reduce((a,b)=>a+b,0);
+    hero.push(tile("",T.kTopReason,"#ff8a65",`<div class="v" style="font-size:22px">${top[0]?turnKey(top[0]):"–"}<small>${top[0]?rateFmtN(agg[top[0]])+" · "+rateFmtP(all?agg[top[0]]/all:null):""}</small></div>`,
+      top.slice(1).map(k=>`${turnKey(k)} <b>${agg[k]}</b>`).join(" · ")||"—")); }
+  { let early=0, all=0; TURN_PLANTS.forEach(p=>{ const Tn=turnMatrix(p,Y,"tenure"); Tn.keys.forEach(k=>{ all+=Tn.keyTot[k]; if(T.tenureEarly.includes(k)) early+=Tn.keyTot[k]; }); });
+    hero.push(tile("",T.kEarly,"#b39ddb",`<div class="v">${rateFmtP(all?early/all:null)}<small>${rateFmtN(early)} / ${rateFmtN(all)}</small></div>`,`${T.sOf} · ${T.sEarlyNote}`,
+      `<div class="rt-bar" style="margin-top:8px"><i style="width:${all?early/all*100:0}%;background:linear-gradient(90deg,#5e4a8a,#b39ddb)"></i></div>`)); }
+  $("tnHero").innerHTML=hero.join("");
+
+  /* ── 1. 월별 퇴사자·퇴사율 ── */
+  turnChart("tnChMonth",{type:"bar",data:{labels:T.mo,datasets:[
+    {type:"bar",label:`${T.p1} ${T.cLeave}`,data:MM["1공장"].tot.map((v,i)=>MM["1공장"].months.includes(i+1)?v:null),backgroundColor:"rgba(226,196,106,.55)",borderColor:RATE_C.p1,borderWidth:1,borderRadius:4,yAxisID:"y",order:2},
+    {type:"bar",label:`${T.p2} ${T.cLeave}`,data:MM["2공장"].tot.map((v,i)=>MM["2공장"].months.includes(i+1)?v:null),backgroundColor:"rgba(111,184,221,.55)",borderColor:RATE_C.p2,borderWidth:1,borderRadius:4,yAxisID:"y",order:2},
+    {type:"line",label:`${T.p1} ${T.cRate}`,data:RT["1공장"].map(pct),borderColor:RATE_C.p1,backgroundColor:RATE_C.p1,tension:.3,pointRadius:4,yAxisID:"y2",spanGaps:true,order:1},
+    {type:"line",label:`${T.p2} ${T.cRate}`,data:RT["2공장"].map(pct),borderColor:RATE_C.p2,backgroundColor:RATE_C.p2,tension:.3,pointRadius:4,yAxisID:"y2",spanGaps:true,order:1}]},
+    options:{responsive:true,maintainAspectRatio:false,interaction:{mode:"index",intersect:false},plugins:{legend:{position:"top"},tooltip:Object.assign({},turnTip,{callbacks:{label:c=>c.dataset.yAxisID==="y2"?`${c.dataset.label}: ${c.raw==null?"–":c.raw.toFixed(1)+"%"}`:`${c.dataset.label}: ${c.raw==null?"–":c.raw}`}})},
+      scales:{y:{beginAtZero:true,grid:turnGrid,title:{display:true,text:T.cLeave}},y2:{position:"right",beginAtZero:true,grid:{drawOnChartArea:false},ticks:{callback:v=>v+"%"},title:{display:true,text:T.cRate}},x:{grid:{display:false}}}}});
+  { const th=`<tr><th rowspan="2">${T.cMonth}</th><th colspan="3" class="p1">${T.p1}</th><th colspan="3" class="p2">${T.p2}</th><th rowspan="2">${T.cSum}</th></tr><tr><th class="p1">${T.cLeave}</th><th class="p1">${T.cHold}</th><th class="p1">${T.cRate}</th><th class="p2">${T.cLeave}</th><th class="p2">${T.cHold}</th><th class="p2">${T.cRate}</th></tr>`;
+    let s1=0,s2=0; const body=T.mo.map((ml,i)=>{ const a=MM["1공장"].months.includes(i+1), b=MM["2공장"].months.includes(i+1); if(!a&&!b) return "";
+      const c1=MM["1공장"].tot[i], c2=MM["2공장"].tot[i]; s1+=c1; s2+=c2; const h1=HD["1공장"][i], h2=HD["2공장"][i];
+      return `<tr><td class="m">${ml}</td><td class="n p1">${a?c1:"–"}</td><td class="p1">${h1?rateFmtN(h1.v)+(h1.src==="att"?"*":""):"–"}</td><td class="n p1">${rateFmtP(RT["1공장"][i])}</td><td class="n p2">${b?c2:"–"}</td><td class="p2">${h2?rateFmtN(h2.v)+(h2.src==="att"?"*":""):"–"}</td><td class="n p2">${rateFmtP(RT["2공장"][i])}</td><td class="n">${(a?c1:0)+(b?c2:0)}</td></tr>`; }).join("");
+    const avgR=p=>{ const r=RT[p].filter((v,i)=>v!=null&&MM[p].months.includes(i+1)); return r.length?r.reduce((a,b)=>a+b,0)/r.length:null; };
+    $("tnTbMonth").innerHTML=th+body+`<tr class="tot"><td>${T.cTotal}</td><td class="n">${s1}</td><td></td><td class="n">${rateFmtP(avgR("1공장"))}</td><td class="n">${s2}</td><td></td><td class="n">${rateFmtP(avgR("2공장"))}</td><td class="n">${s1+s2}</td></tr>`; }
+
+  /* ── 2. 사유별 누적 (1 vs 2) + 표(상세 공장) ── */
+  const catChart=(id,cat,tbId,colLabel)=>{
+    const A=turnMatrix("1공장",Y,cat), B=turnMatrix("2공장",Y,cat);
+    const keys=[...A.keys]; B.keys.forEach(k=>{ if(!keys.includes(k)) keys.push(k); });
+    const used=keys.filter(k=>(A.keyTot[k]||0)+(B.keyTot[k]||0)>0);
+    turnChart(id,{type:"bar",data:{labels:used.map(turnKey),datasets:[
+      {label:T.p1,data:used.map(k=>A.keyTot[k]||0),backgroundColor:"rgba(226,196,106,.7)",borderColor:RATE_C.p1,borderWidth:1,borderRadius:4},
+      {label:T.p2,data:used.map(k=>B.keyTot[k]||0),backgroundColor:"rgba(111,184,221,.7)",borderColor:RATE_C.p2,borderWidth:1,borderRadius:4}]},
+      options:{indexAxis:"y",responsive:true,maintainAspectRatio:false,plugins:{legend:{position:"top"},tooltip:turnTip},scales:{x:{beginAtZero:true,grid:turnGrid,ticks:{precision:0}},y:{grid:{display:false}}}}});
+    /* 표: 상세 공장 월×항목 */
+    const D=turnMatrix(turnPlant,Y,cat); const pc=turnPlant==="1공장"?"p1":"p2";
+    if(!D.months.length){ $(tbId).innerHTML=`<tr><td class="m" style="padding:16px">${turnPL(turnPlant)} · ${tt("noData")}</td></tr>`; return; }
+    const th=`<tr><th>${T.cMonth}</th>${D.keys.map(k=>`<th class="${pc}">${turnKey(k)}</th>`).join("")}<th>${T.cTotal}</th></tr>`;
+    const body=D.months.map(mo=>`<tr><td class="m">${T.mo[mo-1]}</td>${D.keys.map(k=>{ const v=(D.m[mo]||{})[k]||0; return `<td class="${v?"n":""}">${v||"–"}</td>`; }).join("")}<td class="n">${D.tot[mo-1]}</td></tr>`).join("");
+    $(tbId).innerHTML=th+body+`<tr class="tot"><td>${T.cTotal}</td>${D.keys.map(k=>`<td class="n">${D.keyTot[k]||"–"}</td>`).join("")}<td class="n">${D.sum}</td></tr>`;
+  };
+  catChart("tnChReason","reason","tnTbReason",T.cReason);
+  catChart("tnChTenure","tenure","tnTbTenure",T.cTenure);
+  catChart("tnChDept","dept","tnTbDept",T.cDept);
+
+  /* ── 3. 월별 사유별 스택 (상세 공장) ── */
+  { const D=turnMatrix(turnPlant,Y,"reason"); const used=D.keys.filter(k=>D.keyTot[k]>0);
+    turnChart("tnChReasonMonth",{type:"bar",data:{labels:T.mo,datasets:used.map((k,i)=>({label:turnKey(k),data:T.mo.map((_,mi)=>D.months.includes(mi+1)?((D.m[mi+1]||{})[k]||0):null),backgroundColor:TURN_PAL[i%TURN_PAL.length]+"cc",borderColor:TURN_PAL[i%TURN_PAL.length],borderWidth:1,stack:"s"}))},
+      options:{responsive:true,maintainAspectRatio:false,interaction:{mode:"index",intersect:false},plugins:{legend:{position:"bottom",labels:{boxWidth:10}},tooltip:Object.assign({},turnTip,{filter:i=>i.raw>0})},scales:{x:{stacked:true,grid:{display:false}},y:{stacked:true,beginAtZero:true,grid:turnGrid,ticks:{precision:0}}}}});
+    $("tnH3").textContent=`${T.h3} — ${turnPL(turnPlant)}`; }
+  $("tnH6").textContent=`${T.h6} — ${turnPL(turnPlant)}`; $("tnH7").textContent=`${T.h7} — ${turnPL(turnPlant)}`;
+}
+function turnSetYear(y){ turnYear=+y; turnMonth=null; turnRender(); }
+function turnSetMonth(m){ turnMonth=+m; turnRender(); }
+function turnSetPlant(p){ turnPlant=p; turnRender(); }
+
+/* ---------- 데이터 입력 (엑셀 표 붙여넣기) ---------- */
+function turnToggleInput(show){
+  const el=$("tnInput"); const open=show==null?el.style.display==="none":show;
+  el.style.display=open?"":"none";
+  if(open){ const po=$("tnInPlant"); if(!po.value) po.value=RATE_PLANT; const y=$("tnInYear"); if(!y.value) y.value=String(turnYear||new Date().getFullYear()); $("tnInMsg").textContent=""; setTimeout(()=>$("tnInText").focus(),100); el.scrollIntoView({behavior:"smooth",block:"start"}); }
+}
+const turnNum=v=>{ const s=String(v==null?"":v).replace(/[,\s]/g,""); if(!s||s==="-"||s==="–"||s==="—") return 0; const n=parseInt(s,10); return isNaN(n)?0:n; };
+const turnMon=v=>{ const m=String(v||"").trim().match(/^(\d{1,2})\s*(월|mes)?$/i)||String(v||"").trim().match(/^\d{4}[-./](\d{1,2})$/); if(!m) return 0; const n=+m[1]; return n>=1&&n<=12?n:0; };
+/* 붙여넣기 텍스트 → {plant, secs:{reason:{keys,m:{month:{key:cnt}}},…}} */
+function turnParse(txt){
+  const lines=(txt||"").split(/\r?\n/).map(l=>l.split("\t").map(c=>String(c==null?"":c).trim()));
+  const out={plant:"",secs:{}}; let cat="", hdr=null, gi=-1, autoIdx=0;
+  const pm=(txt||"").match(/([12])\s*공장/); if(pm) out.plant=pm[1]+"공장";
+  const ORDER=["reason","tenure","dept"];
+  for(const c of lines){
+    const line=c.join(" ");
+    if(/사유별/.test(line)&&!c.includes("구분")){ cat="reason"; hdr=null; continue; }
+    if(/근무개월별|근무\s*개월/.test(line)&&!c.includes("구분")){ cat="tenure"; hdr=null; continue; }
+    if(/부서별/.test(line)&&!c.includes("구분")){ cat="dept"; hdr=null; continue; }
+    const g=c.indexOf("구분");
+    if(g>=0){
+      gi=g; const keys=[]; for(let i=g+1;i<c.length;i++){ const k=c[i].replace(/\s+/g," ").trim(); if(!k) continue; if(/^(합계|계|total)$/i.test(k)) break; keys.push(k); }
+      if(!keys.length){ hdr=null; continue; }
+      if(!cat){ // 마커 없이 헤더만 있으면 내용으로 추정
+        if(keys.some(k=>/개월|년/.test(k))) cat="tenure"; else if(keys.some(k=>/사유|계약|이직|결근/.test(k))) cat="reason"; else cat=ORDER[autoIdx]||"dept"; }
+      hdr={keys,start:g+1}; out.secs[cat]={keys,m:{}}; autoIdx=ORDER.indexOf(cat)+1; continue;
+    }
+    if(!hdr) continue;
+    const fi=c.findIndex(x=>x!==""); if(fi<0) continue;
+    const mo=turnMon(c[fi]); if(!mo){ if(/^(합계|계|total)$/i.test(c[fi])) { hdr=null; cat=""; } continue; }
+    const row={}; hdr.keys.forEach((k,i)=>{ row[k]=turnNum(c[hdr.start+i]); });
+    out.secs[cat].m[mo]=row;
+  }
+  return out;
+}
+function turnParseHold(txt){
+  const out={}; (txt||"").split(/\r?\n/).forEach(l=>{ const c=l.split(/\t|\s{2,}|,|\s+/).map(x=>x.trim()).filter(Boolean); if(c.length<2) return; const mo=turnMon(c[0]); const n=turnNum(c[1]); if(mo&&n>0) out[mo]=n; });
+  return out;
+}
+function turnInputChanged(){
+  const T=TURN_I18N[lang]||TURN_I18N.ko;
+  const txt=$("tnInText").value; const P=turnParse(txt); const H=turnParseHold($("tnInHold").value);
+  if(P.plant) $("tnInPlant").value=P.plant;
+  const ym=txt.match(/(20\d{2})\s*년/); if(ym) $("tnInYear").value=ym[1];
+  turnParsed={P,H};
+  const secs=Object.keys(P.secs).filter(k=>Object.keys(P.secs[k].m).length);
+  const sum=secs.map(k=>{ const S=P.secs[k]; let total=0; for(const mo in S.m) for(const key in S.m[mo]) total+=S.m[mo][key]; return {name:T.secName[k],keys:S.keys.length,months:Object.keys(S.m).length,total}; });
+  const hn=Object.keys(H).length;
+  const ok=secs.length>0||hn>0;
+  $("tnInSum").textContent=!txt.trim()&&!hn?"":(ok?(sum.length?T.inSum(sum):"")+(hn?(sum.length?"  /  ":"")+T.inHoldSum(hn):""):T.inNone);
+  $("tnInSave").disabled=!ok;
+}
+async function turnSave(){
+  const T=TURN_I18N[lang]||TURN_I18N.ko;
+  if(!turnParsed) return;
+  const plant=$("tnInPlant").value, year=+$("tnInYear").value; if(!plant||!year) return;
+  const {P,H}=turnParsed;
+  const secs=Object.keys(P.secs).filter(k=>Object.keys(P.secs[k].m).length);
+  const body=[];
+  secs.forEach(cat=>{ const S=P.secs[cat]; for(const mo in S.m){ S.keys.forEach((k,i)=>{ const v=S.m[mo][k]; if(v>0) body.push({plant,year,month:+mo,cat,key:k,cnt:v,ord:i}); }); } });
+  for(const mo in H) body.push({plant,year,month:+mo,cat:"hold",key:"전체",cnt:H[mo],ord:0});
+  const sumTxt=secs.map(k=>{ const S=P.secs[k]; let t=0; for(const mo in S.m) for(const key in S.m[mo]) t+=S.m[mo][key]; return `${T.secName[k]} ${t}`; }).join(" · ")+(Object.keys(H).length?` · ${T.inHoldSum(Object.keys(H).length)}`:"");
+  if(!confirm(T.inConfirm(turnPL(plant),year,sumTxt))) return;
+  $("tnInSave").disabled=true; $("tnInMsg").className="rt-msg"; $("tnInMsg").textContent=T.loading;
+  try{
+    const cats=[...secs, ...(Object.keys(H).length?["hold"]:[])];
+    for(const cat of cats){
+      const r=await fetch(REST(`${TURN_T}?plant=eq.${encodeURIComponent(plant)}&year=eq.${year}&cat=eq.${cat}`),{method:"DELETE",headers:JSON_HEADERS});
+      if(!r.ok) throw new Error(await r.text());
+    }
+    for(let i=0;i<body.length;i+=500){
+      const r=await fetch(REST(`${TURN_T}?on_conflict=plant,year,month,cat,key`),{method:"POST",headers:Object.assign({},HEADERS,{"Content-Type":"application/json","Prefer":"resolution=merge-duplicates,return=minimal"}),body:JSON.stringify(body.slice(i,i+500))});
+      if(!r.ok) throw new Error(await r.text());
+    }
+    $("tnInMsg").className="rt-msg ok"; $("tnInMsg").textContent=T.inDone(body.length);
+    $("tnInText").value=""; $("tnInHold").value=""; turnParsed=null; $("tnInSum").textContent="";
+    turnYear=year; turnPlant=plant; turnMonth=null;
+    await turnLoad(true);
+  }catch(e){ console.error(e); $("tnInMsg").className="rt-msg err"; $("tnInMsg").textContent=T.inFail+" · "+String(e.message||e).slice(0,120); $("tnInSave").disabled=false; }
+}
+
+/* ---------- Excel 내보내기 (ExcelJS · 4시트 · 서식) ---------- */
+async function turnExport(){
+  const T=TURN_I18N[lang]||TURN_I18N.ko; if(!turnYear) return;
+  const btn=$("tnExpBtn"); const txt=btn.textContent; btn.disabled=true; btn.textContent=T.expBusy;
+  try{
+    await rateLoadScript(RATE_XLSX_SRC,()=>!!window.ExcelJS);
+    const Y=turnYear;
+    const wb=new ExcelJS.Workbook(); wb.creator="YURA HARNESS MÉXICO"; wb.created=new Date();
+    const C={navy:"FF1F3864",gold:"FF9C7A1F",p1:"FFFFF2CC",p2:"FFDDEBF7",tot:"FFE7E6E6",line:"FFBFBFBF",red:"FFC00000"};
+    const F=(bold,color,size)=>({name:"Malgun Gothic",size:size||10,bold:!!bold,color:{argb:color||"FF000000"}});
+    const fill=c=>({type:"pattern",pattern:"solid",fgColor:{argb:c}});
+    const border={top:{style:"thin",color:{argb:C.line}},bottom:{style:"thin",color:{argb:C.line}},left:{style:"thin",color:{argb:C.line}},right:{style:"thin",color:{argb:C.line}}};
+    const center={horizontal:"center",vertical:"middle",wrapText:true};
+    const title=(ws,text,cols)=>{ ws.pageSetup={orientation:"landscape",fitToPage:true,fitToWidth:1,fitToHeight:0,paperSize:9}; ws.mergeCells(1,1,1,cols); const c=ws.getCell(1,1); c.value=text; c.font=F(true,C.navy,14); ws.getRow(1).height=26;
+      ws.mergeCells(2,1,2,cols); const s=ws.getCell(2,1); s.value=`${T.xTitle} · ${Y} · ${todayDate()}`; s.font=F(false,"FF808080",9); ws.getRow(2).height=16; };
+    const hdr=(ws,r,vals,fillc)=>{ vals.forEach((v,i)=>{ const c=ws.getCell(r,i+1); c.value=v; c.font=F(true,"FFFFFFFF",9.5); c.fill=fill(fillc||C.navy); c.alignment=center; c.border=border; }); ws.getRow(r).height=22; };
+    const put=(ws,r,c,v,fmt,opt={})=>{ const cell=ws.getCell(r,c); cell.value=(v==null||(typeof v==="number"&&isNaN(v)))?"–":v; if(fmt) cell.numFmt=fmt; cell.border=border; cell.alignment=center; cell.font=F(opt.bold,opt.color); if(opt.fill) cell.fill=fill(opt.fill); return cell; };
+    const widths=(ws,arr)=>arr.forEach((w,i)=>ws.getColumn(i+1).width=w);
+    const sect=(ws,r,text,cols,fillc)=>{ ws.mergeCells(r,1,r,cols); const c=ws.getCell(r,1); c.value=text; c.font=F(true,C.navy,11); c.fill=fill(fillc); ws.getRow(r).height=20; };
+
+    /* 1. 월별요약 */
+    { const ws=wb.addWorksheet(T.xSheets[0]); title(ws,`${T.h1} (${Y})`,8);
+      ws.mergeCells(4,2,4,4); ws.getCell(4,2).value=T.p1; ws.getCell(4,2).font=F(true,"FF000000",10); ws.getCell(4,2).fill=fill(C.p1); ws.getCell(4,2).alignment=center; ws.getCell(4,2).border=border;
+      ws.mergeCells(4,5,4,7); ws.getCell(4,5).value=T.p2; ws.getCell(4,5).font=F(true,"FF000000",10); ws.getCell(4,5).fill=fill(C.p2); ws.getCell(4,5).alignment=center; ws.getCell(4,5).border=border;
+      put(ws,4,1,T.cMonth,null,{bold:true,fill:C.tot}); put(ws,4,8,T.cSum,null,{bold:true,fill:C.tot});
+      hdr(ws,5,[T.cMonth,T.cLeave,T.cHold,T.cRate,T.cLeave,T.cHold,T.cRate,T.cSum]);
+      const MM={}; TURN_PLANTS.forEach(p=>MM[p]=turnMonthly(p,Y));
+      let r=6, s1=0,s2=0, r1=[],r2=[];
+      for(let i=0;i<12;i++){ const a=MM["1공장"].months.includes(i+1), b=MM["2공장"].months.includes(i+1); if(!a&&!b) continue;
+        const h1=turnHold("1공장",Y,i+1), h2=turnHold("2공장",Y,i+1); const c1=a?MM["1공장"].tot[i]:0, c2=b?MM["2공장"].tot[i]:0; s1+=c1; s2+=c2;
+        const q1=h1?c1/h1.v:null, q2=h2?c2/h2.v:null; if(a&&q1!=null) r1.push(q1); if(b&&q2!=null) r2.push(q2);
+        put(ws,r,1,T.mo[i],null,{bold:true}); put(ws,r,2,a?c1:null,"#,##0",{fill:C.p1}); put(ws,r,3,h1?h1.v:null,"#,##0",{fill:C.p1}); put(ws,r,4,q1,"0.0%",{fill:C.p1,bold:true});
+        put(ws,r,5,b?c2:null,"#,##0",{fill:C.p2}); put(ws,r,6,h2?h2.v:null,"#,##0",{fill:C.p2}); put(ws,r,7,q2,"0.0%",{fill:C.p2,bold:true}); put(ws,r,8,c1+c2,"#,##0",{bold:true}); r++; }
+      const avg=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:null;
+      put(ws,r,1,T.cTotal,null,{bold:true,fill:C.tot}); put(ws,r,2,s1,"#,##0",{bold:true,fill:C.tot}); put(ws,r,3,null,null,{fill:C.tot}); put(ws,r,4,avg(r1),"0.0%",{bold:true,fill:C.tot,color:C.red});
+      put(ws,r,5,s2,"#,##0",{bold:true,fill:C.tot}); put(ws,r,6,null,null,{fill:C.tot}); put(ws,r,7,avg(r2),"0.0%",{bold:true,fill:C.tot,color:C.red}); put(ws,r,8,s1+s2,"#,##0",{bold:true,fill:C.tot});
+      ws.getCell(r+2,1).value=T.n1; ws.getCell(r+2,1).font=F(false,"FF808080",9); widths(ws,[10,10,10,10,10,10,10,10]); ws.views=[{state:"frozen",ySplit:5}]; }
+    /* 2~4. 사유별 / 근무개월별 / 부서별 — 공장별 블록 */
+    [["reason",1],["tenure",2],["dept",3]].forEach(([cat,si])=>{
+      const ws=wb.addWorksheet(T.xSheets[si]); const A=turnMatrix("1공장",Y,cat), B=turnMatrix("2공장",Y,cat);
+      const keys=[...A.keys]; B.keys.forEach(k=>{ if(!keys.includes(k)) keys.push(k); }); const cols=keys.length+2;
+      title(ws,`${T.secName[cat]} (${Y})`,Math.max(cols,4)); let r=4;
+      [["1공장",A,C.p1],["2공장",B,C.p2]].forEach(([p,M,fc])=>{
+        sect(ws,r,turnPL(p),cols,fc); r++;
+        hdr(ws,r,[T.cMonth,...keys.map(turnKey),T.cTotal]); r++;
+        if(!M.months.length){ put(ws,r,1,"–"); r+=2; return; }
+        M.months.forEach(mo=>{ put(ws,r,1,T.mo[mo-1],null,{bold:true}); keys.forEach((k,i)=>put(ws,r,i+2,(M.m[mo]||{})[k]||0,"#,##0;;\"-\"",{fill:fc})); put(ws,r,cols,M.tot[mo-1],"#,##0",{bold:true}); r++; });
+        put(ws,r,1,T.cTotal,null,{bold:true,fill:C.tot}); keys.forEach((k,i)=>put(ws,r,i+2,M.keyTot[k]||0,"#,##0;;\"-\"",{bold:true,fill:C.tot})); put(ws,r,cols,M.sum,"#,##0",{bold:true,fill:C.tot,color:C.red}); r+=2;
+      });
+      /* 1+2공장 합계 블록 */
+      sect(ws,r,T.cSum,cols,C.tot); r++; hdr(ws,r,[T.cMonth,...keys.map(turnKey),T.cTotal]); r++;
+      const months=[...new Set([...A.months,...B.months])].sort((a,b)=>a-b);
+      months.forEach(mo=>{ put(ws,r,1,T.mo[mo-1],null,{bold:true}); let t=0; keys.forEach((k,i)=>{ const v=((A.m[mo]||{})[k]||0)+((B.m[mo]||{})[k]||0); t+=v; put(ws,r,i+2,v,"#,##0;;\"-\""); }); put(ws,r,cols,t,"#,##0",{bold:true}); r++; });
+      put(ws,r,1,T.cTotal,null,{bold:true,fill:C.tot}); keys.forEach((k,i)=>put(ws,r,i+2,(A.keyTot[k]||0)+(B.keyTot[k]||0),"#,##0;;\"-\"",{bold:true,fill:C.tot})); put(ws,r,cols,A.sum+B.sum,"#,##0",{bold:true,fill:C.tot,color:C.red});
+      widths(ws,[9,...keys.map(()=>11),9]);
+    });
+    const buf=await wb.xlsx.writeBuffer();
+    const blob=new Blob([buf],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
+    const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=`${T.expName}_${Y}_${todayDate()}.xlsx`; document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },1500);
+  }catch(e){ console.error(e); alert("Excel: "+String(e.message||e).slice(0,160)); }
+  finally{ btn.disabled=false; btn.textContent=txt; }
+}
+$("tnInText").addEventListener("input",turnInputChanged); $("tnInText").addEventListener("paste",()=>setTimeout(turnInputChanged,0));
+$("tnInHold").addEventListener("input",turnInputChanged); $("tnInHold").addEventListener("paste",()=>setTimeout(turnInputChanged,0));
+try{ turnApplyLang(); }catch(_){ }
 </script>
 </body>
 </html>
