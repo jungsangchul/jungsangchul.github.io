@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>관리자 대시보드 (2공장) · Panel</title>
+<title>출근율 현황 · Plant 2</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Noto+Sans+KR:wght@400;500;600;700;800&family=IBM+Plex+Sans+KR:wght@500;700&display=swap" rel="stylesheet">
@@ -405,9 +405,10 @@
   .rt-title{font-size:21px!important}
   @media (max-width:820px){.brand-name{font-size:15px!important}}
   /* ═══ 출근율 분석 (Attendance Rate Analysis) ═══ */
-  .filters .addbtn.rt-open{border-color:rgba(201,168,76,.5);color:var(--gold);background:rgba(201,168,76,.08);font-weight:700;display:inline-flex;align-items:center;gap:7px}
-  .filters .addbtn.rt-open::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--gold);box-shadow:0 0 8px var(--gold);animation:pulse 2.4s ease-in-out infinite}
-  .filters .addbtn.rt-open:hover{background:rgba(201,168,76,.16);border-color:var(--gold);color:#fff}
+  .addbtn.rt-open{height:36px;padding:0 16px;border-radius:999px;border:1px solid rgba(201,168,76,.55);color:#0a0a0a;background:linear-gradient(180deg,#d9b85c,#c9a84c);font-weight:700;font-size:12.5px;display:inline-flex;align-items:center;gap:7px;cursor:pointer;box-shadow:0 4px 16px rgba(201,168,76,.28);margin-right:6px;font-family:var(--body)}
+  .addbtn.rt-open::before{content:'';width:7px;height:7px;border-radius:50%;background:#0a0a0a;box-shadow:0 0 6px rgba(0,0,0,.4);animation:pulse 2.4s ease-in-out infinite}
+  .addbtn.rt-open:hover{filter:brightness(1.07);color:#0a0a0a}
+  @media (max-width:820px){.addbtn.rt-open{height:32px;padding:0 11px;font-size:11.5px}}
   .rt-overlay{display:none;position:fixed;inset:0;z-index:60;overflow-y:auto;overflow-x:hidden;color:#f0f0f0;font-family:var(--body);
     background:radial-gradient(1100px 500px at 50% -200px,rgba(201,168,76,.10),transparent 70%),radial-gradient(800px 400px at 100% 100%,rgba(111,184,221,.06),transparent 70%),#0a0a0a;-webkit-overflow-scrolling:touch}
   .rt-overlay.open{display:block;animation:rtIn .25s ease-out}
@@ -558,11 +559,12 @@
     <div class="bar">
       <div class="brand">
         <div class="brand-text">
-          <div class="brand-name" id="hTitle">출석 · 식사 관리 대시보드</div>
+          <div class="brand-name" id="hTitle">출근율 현황 · Torreón</div>
           <div class="brand-sub">Yura Harness México · Plant 2 · Torreón</div>
         </div>
       </div>
       <div class="hdr-right">
+        <button class="addbtn rt-open" id="bRate" onclick="openRate()">출근율 분석</button>
         <div class="langtog" id="langTog">
           <button id="langKo" onclick="setLang('ko')">한국어</button>
           <button id="langEs" onclick="setLang('es')">Español</button>
@@ -578,7 +580,7 @@
       <span class="fld"><label id="lTeam">팀</label><select id="fTeam"></select></span>
       <button class="rbtn" id="bRefresh" onclick="refresh()">새로고침</button>
       <label class="toggle"><input type="checkbox" id="fAuto"> <span id="lAuto">자동(30s)</span></label>
-      <button class="addbtn rt-open" id="bRate" onclick="openRate()">출근율 분석</button>
+      
       <button class="addbtn" id="bAdd" onclick="openAdd()">+ 직원</button>
       <button class="addbtn" id="bQuery" onclick="openQuery()">조회</button>
       <button class="addbtn" id="bManage" onclick="openManage()">직원 관리</button>
@@ -820,7 +822,7 @@ const CONFIG = {
 
 /* ---------- 다국어 ---------- */
 const I18N={
-  ko:{ title:"출석 · 식사 관리 대시보드 (2공장)", date:"날짜", plant:"장소", all:"전체", refresh:"새로고침", auto:"자동(30s)",
+  ko:{ title:"출근율 현황 · Torreón", date:"날짜", plant:"장소", all:"전체", refresh:"새로고침", auto:"자동(30s)",
     kTotal:"재직 총원", kIn:"출근", kLate:"지각", kPresent:"현재 재실", kOut:"퇴근 완료", kAbsent:"미출근", kMeal:"식사 신청",
     tabAtt:"출석 현황", tabAbsent:"미출근", tabMeal:"식사 신청", tabNoout:"퇴근 미타각", tabEarly:"조퇴",
     barPlant:"장소별 인원", barTeam:"팀별 인원", excel:"Excel 내보내기", empty:"데이터 없음",
@@ -842,7 +844,7 @@ const I18N={
     colAction:"처리", btnCheckin:"출석 처리", confirmCheckin:n=>`${n} 님을 출석 처리할까요?`, processing:"처리중…", opFail:"처리 실패",
     btnCheckout:"퇴근 처리", confirmCheckout:n=>`${n} 님을 퇴근 처리할까요?\n(정규 퇴근시각으로 기록됩니다)`,
     mealAdd:"식사 수기 등록", mealAddBtn:"+ 식사 등록", mealOk:"등록", mealDup:"이미 식사 신청됨", idBad:"등록되지 않은 사번입니다", needId:"사번을 입력하세요" },
-  es:{ title:"Panel de Asistencia y Comidas (Planta 2)", date:"Fecha", plant:"Lugar", all:"Todas", refresh:"Actualizar", auto:"Auto(30s)",
+  es:{ title:"Tablero de asistencia · Torreón", date:"Fecha", plant:"Lugar", all:"Todas", refresh:"Actualizar", auto:"Auto(30s)",
     kTotal:"Total activos", kIn:"Entradas", kLate:"Tardes", kPresent:"Presentes", kOut:"Salidas", kAbsent:"Ausentes", kMeal:"Comidas",
     tabAtt:"Asistencia", tabAbsent:"Ausentes", tabMeal:"Comidas", tabNoout:"Sin salida", tabEarly:"Salida anticipada",
     barPlant:"Por lugar", barTeam:"Por equipo", excel:"Exportar Excel", empty:"Sin datos",
