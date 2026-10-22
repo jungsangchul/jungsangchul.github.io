@@ -998,16 +998,16 @@ const CONFIG = {
      퇴근은 다음날 새벽 — 다음날 outUntil(12:00) 이전의 'out' 타각을 전날 야간 퇴근으로 인정 */
   NIGHT: { from:"18:00", inBy:"18:00", outBy:"03:00", outUntil:"12:00" },   /* 2공장 야간: 18:00 출근 → 03:00 퇴근(주간 9h 기준) */
   /* ✅ TRESS 부서(Dpto) → 2공장 직원 마스터 팀명 (미등록 직원 자동 등록 시 사용). 기존 직원의 팀명은 바뀌지 않음 */
-  TRESS_TEAMS: {
-    "Calidad":"CALIDAD",
-    "Control de Produccion":"CONTROL DE PRODUCCIÓN",
-    "Finanzas y contabilidad":"FINANZAS",
-    "Mantenimiento":"MTTO MECANICO",
-    "Materiales y comerio":"MATERIALES & COMERCIO",
-    "Produccion ensamble":"ENSAMBLE",
-    "Produccion maquinado":"ELABORACIÓN",
-    "Recursos humanos y Asuntos gen":"RH & COMPRAS",
-    "Tecnicas de produccion":"TECNIAS"
+  TRESS_TEAMS: {   /* 2026-10-22 직원 마스터 팀명을 TRESS 부서명으로 통일 → 그대로 매핑 */
+    "Calidad":"Calidad",
+    "Control de Produccion":"Control de Produccion",
+    "Finanzas y contabilidad":"Finanzas y contabilidad",
+    "Mantenimiento":"Mantenimiento",
+    "Materiales y comerio":"Materiales y comerio",
+    "Produccion ensamble":"Produccion ensamble",
+    "Produccion maquinado":"Produccion maquinado",
+    "Recursos humanos y Asuntos gen":"Recursos humanos y Asuntos gen",
+    "Tecnicas de produccion":"Tecnicas de produccion"
   },
   /* ✅ 근무시간 계산용 고정 공제 (분): 휴게 20 + 점심 30 */
   WORKTIME: { breakMin:20, lunchMin:30 },
@@ -2237,8 +2237,8 @@ function downloadEmpTemplate(){
   const codes=Object.keys(CONFIG.FACTORIES).map(k=>`${k}=${CONFIG.FACTORIES[k].ko}`).join(", ");
   const header=["사번 / N°","이름 / Nombre (ES)","한글 약칭 / KO","팀 / Equipo","장소 / Planta ("+codes+")","입사일 / F.Ingreso (YYYY-MM-DD)","상태 / Estado (재직·퇴사)","퇴사일 / F.Baja (YYYY-MM-DD)"];
   const fk=Object.keys(CONFIG.FACTORIES)[0];
-  const ex1=["901","Juan Perez Lopez","후안","ENSAMBLE",fk,"2026-01-15","재직",""];
-  const ex2=["902","Maria Gomez Ruiz","마리아","CALIDAD",fk,"2026-02-01","퇴사","2026-06-30"];
+  const ex1=["901","Juan Perez Lopez","후안","Produccion ensamble",fk,"2026-01-15","재직",""];
+  const ex2=["902","Maria Gomez Ruiz","마리아","Calidad",fk,"2026-02-01","퇴사","2026-06-30"];
   const u8=makeXlsx("직원양식",[header,ex1,ex2]);
   const blob=new Blob([u8],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
   const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="직원_업로드_양식.xlsx";
