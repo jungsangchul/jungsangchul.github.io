@@ -513,6 +513,7 @@
   .rt-chart{position:relative;height:300px;width:100%;min-width:0}
   .rt-chart canvas{max-width:100%!important}
   .rt-chart.sm{height:250px}
+  .rt-chart.tall{height:380px}
   .rt-tw{overflow-x:auto;overflow-y:hidden;border:1px solid var(--line);border-radius:10px;margin-top:12px;max-width:100%}
   .rt-t{width:100%;border-collapse:collapse;font-size:12px;white-space:nowrap;table-layout:auto}
   .rt-t th{background:#111;color:#888;font-family:var(--mono);font-size:9.5px;letter-spacing:.04em;font-weight:400;padding:7px 5px;border-bottom:1px solid var(--line2);text-align:center;white-space:normal;line-height:1.3;vertical-align:middle}
@@ -833,7 +834,7 @@
     </div>
     <div class="rt-card">
       <div class="h"><h3 id="rtH5">월별 월요일 vs 평일 결근율 추이</h3><span class="d" id="rtD5">monthly trend · jan–dec</span></div>
-      <div class="rt-chart sm"><canvas id="rtChMon"></canvas></div>
+      <div class="rt-chart tall"><canvas id="rtChMon"></canvas></div>
     </div>
     <div class="rt-card">
       <div class="h"><h3 id="rtH6">월별 · 요일별 결근율 (가중평균)</h3><span class="d" id="rtD6">heat table</span></div>
@@ -2376,6 +2377,7 @@ catch(e){
    ============================================================ */
 const RATE_T="att_rate_log";
 const RATE_PLANT="1공장";
+const RATE_AUTOSAVE=true;   // 2공장: TRESS 반영 기능이 아직 없어 QR 타각 기준 숫자가 실제 출근율보다 낮음 → 자동 저장 끔
 const RATE_CHART_SRC="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js";
 const RATE_XLSX_SRC="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js";
 const RATE_C={p1:"#e2c46a",p2:"#6fb8dd",mon:"#e05c5c",grid:"rgba(255,255,255,.06)",tick:"#8a8a8a"};
@@ -2392,7 +2394,7 @@ const RATE_I18N={
     n6:"차이(%p) = 월요일 결근율 − 화~금 결근율 (양수=월요일이 더 높음). 배율 = 월요일 ÷ 평일. 월요일 평균 초과결근 = 차이 × 월요일 평균 보유인원 — 평일 수준이었다면 줄었을 1일 결근자 수.",
     monNote:(p,d,x,e)=>`${p}: 월요일 결근율이 평일보다 <b>${d}</b> 높음 (×${x}) → 월요일마다 약 <b>${e}명</b> 추가 결근`,
     status:(n,f,t)=>`데이터 <b>${n}</b>일 · ${f} ~ ${t}`,loading:"불러오는 중…",noData:"아직 데이터가 없습니다. 대시보드에서 TRESS 붙여넣기 후 새로고침하면 그날 출근율이 자동 저장됩니다.",err:"불러오기 실패 — Supabase 테이블(att_rate_log) 확인",
-    how:`<b>자동 업데이트</b>: 대시보드에서 TRESS 붙여넣기 → <b>새로고침</b>(장소·팀 = 전체)하면 그 날짜의 재직 총원·출근 인원이 자동 저장됩니다(같은 날은 최신값으로 갱신). 1공장·2공장 대시보드 각각 동작. 날짜를 바꿔 새로고침하면 지난 날짜도 저장됩니다. 이 화면은 열 때마다 최신 데이터를 읽습니다.`,howT:"업데이트 방법",
+    how:`<b>자동 업데이트</b>: 대시보드에서 TRESS 붙여넣기 → <b>새로고침</b>(장소·팀 = 전체)하면 그 날짜의 재직 총원·출근 인원이 자동 저장됩니다(같은 날은 최신값으로 갱신). 1공장·2공장 대시보드 각각 동작. 날짜를 바꿔 새로고침하면 지난 날짜도 저장됩니다. 이 화면은 열 때마다 최신 데이터를 읽습니다.`,howT:"업데이트 방법",howOff:`<b>2공장 자동 저장은 꺼져 있습니다.</b> 2공장 대시보드에는 아직 TRESS 붙여넣기 기능이 없어 QR 타각 기준 숫자(실제보다 낮음)가 저장되는 것을 막았습니다. 2공장 출근율은 1공장과 같은 TRESS 반영 기능을 추가한 뒤 자동 누적됩니다. 1공장 데이터는 1공장 대시보드에서 TRESS 붙여넣기 → 새로고침 시 자동 저장됩니다.`,
     cAtt:"출근율",cAbs:"결근율",cMonL:"월요일",cWkL:"평일(화~금)",expName:"출근율분석",
     xs:["월별현황","일별비교","요일별분석","월요일효과","원본데이터"],xTitle:"YURA HARNESS MÉXICO · 출근율 분석",xSrc:"출처",xSrcV:{excel:"엑셀",manual:"수동",auto:"대시보드 자동"},xPlant:"공장",xKind:"구분"},
   es:{btn:"Análisis asistencia",title:"Análisis de asistencia",
@@ -2407,7 +2409,7 @@ const RATE_I18N={
     n6:"Dif.(pp) = ausentismo lunes − mar–vie (positivo = lunes peor). Razón = lunes ÷ entre semana. Ausencias extra = dif. × plantilla promedio de lunes.",
     monNote:(p,d,x,e)=>`${p}: el lunes el ausentismo es <b>${d}</b> mayor que entre semana (×${x}) → unas <b>${e} personas</b> más faltan cada lunes`,
     status:(n,f,t)=>`<b>${n}</b> días · ${f} ~ ${t}`,loading:"Cargando…",noData:"Sin datos. Pegue TRESS en el tablero y actualice: el día se guarda automáticamente.",err:"Error al cargar — revise la tabla att_rate_log",
-    how:`<b>Actualización automática</b>: en el tablero pegue TRESS → <b>Actualizar</b> (planta/equipo = todos) y se guarda la plantilla/asistencia de ese día (se sobrescribe con el último valor). Funciona en los tableros de Planta 1 y Planta 2. Cambie la fecha y actualice para guardar días anteriores. Esta pantalla lee los datos más recientes al abrirse.`,howT:"Cómo se actualiza",
+    how:`<b>Actualización automática</b>: en el tablero pegue TRESS → <b>Actualizar</b> (planta/equipo = todos) y se guarda la plantilla/asistencia de ese día (se sobrescribe con el último valor). Funciona en los tableros de Planta 1 y Planta 2. Cambie la fecha y actualice para guardar días anteriores. Esta pantalla lee los datos más recientes al abrirse.`,howT:"Cómo se actualiza",howOff:`<b>El guardado automático de Planta 2 está desactivado.</b> El tablero de Planta 2 aún no tiene la función de pegar TRESS, por lo que los números basados en QR (más bajos que la asistencia real) no se guardan. Se activará al agregar la función TRESS. Los datos de Planta 1 se guardan automáticamente desde su tablero (pegar TRESS → Actualizar).`,
     cAtt:"Asistencia",cAbs:"Ausentismo",cMonL:"Lunes",cWkL:"Mar–Vie",expName:"Analisis_asistencia",
     xs:["Mensual","Diario","Dia_semana","Efecto_lunes","Datos"],xTitle:"YURA HARNESS MÉXICO · Análisis de asistencia",xSrc:"Origen",xSrcV:{excel:"Excel",manual:"Manual",auto:"Tablero auto"},xPlant:"Planta",xKind:"Tipo"}
 };
@@ -2473,7 +2475,7 @@ function rateApplyLang(){
   $("rtExpBtn").textContent=T.exp; $("rtReloadBtn").textContent=T.reload; $("rtCloseBtn").textContent=T.close;
   $("rtCapMonth").textContent=T.capMonth; $("rtCapExp").textContent=T.capExp; $("rtCapReload").textContent=T.capReload; $("rtCapClose").textContent=T.capClose;
   $("rtH1").textContent=T.h1; $("rtH3").textContent=T.h3; $("rtH4").textContent=T.h4; $("rtH6").textContent=T.h6;
-  $("rtN1").textContent=T.n1; $("rtN6").textContent=T.n6; $("rtHow").innerHTML=T.how; $("rtHowT").textContent=T.howT;
+  $("rtN1").textContent=T.n1; $("rtN6").textContent=T.n6; $("rtHow").innerHTML=RATE_AUTOSAVE?T.how:T.howOff; $("rtHowT").textContent=T.howT;
 }
 try{ const _setLang0=setLang; setLang=function(l){ _setLang0(l); try{ rateApplyLang(); if($("rateModal").classList.contains("open")) rateRender(); }catch(_){ } }; }catch(_){ }
 
@@ -2510,14 +2512,19 @@ function rateChart(id, cfg){
 }
 /* 값 라벨 플러그인: 흰 글씨 + 어두운 알약 배경 + 시리즈색 테두리 → 어떤 배경에서도 읽힘 */
 const rateLabelPlugin={id:"rtLabels",afterDatasetsDraw(ch,_a,opt){
-  if(!opt||!opt.on) return; const {ctx}=ch;
+  if(!opt||!opt.on) return; const {ctx}=ch; const placed=[]; const top=ch.chartArea.top, bottom=ch.chartArea.bottom;
+  const hit=(r)=>placed.some(p=>!(r.x+r.w<p.x||p.x+p.w<r.x||r.y+r.h<p.y||p.y+p.h<r.y));
   ch.data.datasets.forEach((ds,i)=>{ const meta=ch.getDatasetMeta(i); if(meta.hidden||ds.noLabel) return;
     const col=(typeof ds.borderColor==="string"?ds.borderColor:null)||(typeof ds.backgroundColor==="string"?ds.backgroundColor:null)||"#ddd";
     meta.data.forEach((el,j)=>{ const v=ds.data[j]; if(v==null||isNaN(v)) return;
       const txt=(opt.fmt||(x=>x.toFixed(1)+"%"))(v);
       ctx.save(); ctx.font="700 10px 'Space Mono',monospace";
-      const w=ctx.measureText(txt).width+10, h=15; const x=el.x-w/2, y=el.y-(ds.yOff==null?9:ds.yOff)-h;
-      ctx.fillStyle="rgba(8,8,8,.82)"; ctx.strokeStyle=(ds.labelColor||(Array.isArray(ds.borderColor)?ds.borderColor[j]:col)); ctx.lineWidth=1;
+      const w=ctx.measureText(txt).width+10, h=15; const x=el.x-w/2; const off=(ds.yOff==null?9:ds.yOff); let y=el.y-off-h;
+      /* 겹침 회피: 위쪽 라벨은 위로, 아래쪽 라벨은 아래로 밀어냄 */
+      const dir=off>=0?-1:1; let r={x:x-2,y:y-1,w:w+4,h:h+2}; let n=0;
+      while(hit(r)&&n<8){ y+=dir*(h+3); r.y=y-1; n++; if(y<top-h||y>bottom) break; }
+      placed.push(r);
+      ctx.fillStyle="rgba(8,8,8,.86)"; ctx.strokeStyle=(ds.labelColor||(Array.isArray(ds.borderColor)?ds.borderColor[j]:col)); ctx.lineWidth=1;
       ctx.beginPath(); if(ctx.roundRect) ctx.roundRect(x,y,w,h,7); else ctx.rect(x,y,w,h); ctx.fill(); ctx.stroke();
       ctx.fillStyle="#fff"; ctx.textAlign="center"; ctx.textBaseline="middle"; ctx.fillText(txt,el.x,y+h/2+.5); ctx.restore(); }); });
 }};
@@ -2610,7 +2617,7 @@ function rateRender(){
     options:{responsive:true,maintainAspectRatio:false,interaction:{mode:"index",intersect:false},
       plugins:{legend:rateLegend,tooltip:rateTip,rtLabels:{on:shown.length<=23}},
       scales:{x:{grid:{display:false},ticks:{color:ctx=>shown[ctx.index]&&shown[ctx.index].w===1?RATE_C.mon:RATE_C.tick,font:ctx=>({weight:shown[ctx.index]&&shown[ctx.index].w===1?"700":"400",size:10})}},
-        y:{min:80,max:100,grid:{color:RATE_C.grid},ticks:{callback:v=>v+"%"}}}},
+        y:{suggestedMin:80,max:100,grid:{color:RATE_C.grid},ticks:{callback:v=>v+"%"}}}},
     plugins:[rateLabelPlugin]});
   const dc=(x,k)=>x? `<td class="${k}">${rateFmtN(x.h)}</td><td class="${k}">${rateFmtN(x.p)}</td><td class="${k}">${rateFmtN(x.h-x.p)}</td>${cellP(x.p/x.h,k)}` : `<td class="${k} m">–</td>`.repeat(4);
   const ca1=rateAgg(m1,d=>rateYm(d)===rateMonth), ca2=rateAgg(m2,d=>rateYm(d)===rateMonth);
@@ -2648,8 +2655,8 @@ function rateRender(){
       {label:`${T.p1} ${T.cWkL}`,data:yw1.map(w=>w?pct(w.week.rate):null),borderColor:RATE_C.p1,backgroundColor:RATE_C.p1,borderDash:[6,4],pointRadius:3,borderWidth:1.5,tension:.3,spanGaps:true,yOff:-24},
       {label:`${T.p2} ${T.cMonL}`,data:yw2.map(w=>w?pct(w.mon.rate):null),borderColor:RATE_C.p2,backgroundColor:RATE_C.p2,pointRadius:5,borderWidth:2.5,tension:.3,spanGaps:true,pointStyle:"rectRot"},
       {label:`${T.p2} ${T.cWkL}`,data:yw2.map(w=>w?pct(w.week.rate):null),borderColor:RATE_C.p2,backgroundColor:RATE_C.p2,borderDash:[6,4],pointRadius:3,borderWidth:1.5,tension:.3,spanGaps:true,yOff:-24}]},
-    options:{responsive:true,maintainAspectRatio:false,interaction:{mode:"index",intersect:false},plugins:{legend:rateLegend,tooltip:rateTip,rtLabels:{on:true}},
-      scales:{x:{grid:{display:false}},y:{min:0,suggestedMax:12,grid:{color:RATE_C.grid},ticks:{callback:v=>v+"%"},title:{display:true,text:T.cAbs+" (%)"}}}},
+    options:{responsive:true,maintainAspectRatio:false,interaction:{mode:"index",intersect:false},layout:{padding:{top:14}},plugins:{legend:rateLegend,tooltip:rateTip,rtLabels:{on:true}},
+      scales:{x:{grid:{display:false}},y:{min:0,suggestedMax:14,grid:{color:RATE_C.grid},ticks:{callback:v=>v+"%"},title:{display:true,text:T.cAbs+" (%)"}}}},
     plugins:[rateLabelPlugin]});
 
   /* ── 히트 테이블 ── */
@@ -2677,6 +2684,7 @@ async function rateUpsert(rows){
 }
 async function rateAutoSave(){
   try{
+    if(!RATE_AUTOSAVE) return;
     if($("fFactory").value||$("fTeam").value) return;
     const s=rateDashSnapshot(); if(!s||s.present<=0) return;
     if(s.d>todayDate()) return;
