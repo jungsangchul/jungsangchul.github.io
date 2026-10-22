@@ -478,7 +478,7 @@
 
 <!-- ═══════════ 카테고리 탭 ═══════════ -->
 <div class="cat-tabs" id="cat-tabs">
-  <button class="cat-tab" data-cat="checkin" onclick="switchTab('checkin')"><svg class="tab-ico" viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V2.5h6V4"/><path d="M9 13l2 2 4-4"/></svg>출결/식사신청</button>
+  <button class="cat-tab" data-cat="checkin" onclick="switchTab('checkin')"><svg class="tab-ico" viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V2.5h6V4"/><path d="M9 13l2 2 4-4"/></svg>출근율 현황</button>
   <button class="cat-tab" data-cat="attend"  onclick="switchTab('attend')"><svg class="tab-ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>근태관리</button>
   <button class="cat-tab" data-cat="qual"    onclick="switchTab('qual')"><svg class="tab-ico" viewBox="0 0 24 24"><circle cx="12" cy="9" r="5.5"/><path d="M8.5 13.5L7 21l5-2.5L17 21l-1.5-7.5"/></svg>자격인증관리</button>
   <button class="cat-tab" data-cat="consum" style="display:none"  onclick="switchTab('consum')"><svg class="tab-ico" viewBox="0 0 24 24"><path d="M3.5 8L12 3.5 20.5 8v8L12 20.5 3.5 16z"/><path d="M3.5 8L12 12.5 20.5 8"/><path d="M12 12.5V20.5"/></svg>소모품관리</button>
@@ -501,7 +501,7 @@
   </div>
 </div>
 
-<!-- ═══ 탭 1: 출결/식사신청 ═══ -->
+<!-- ═══ 탭 1: 출근율 현황 ═══ -->
 <div class="row-grid tab-panel" data-cat="checkin">
   <div class="mobile-plant-hdr hdr-p1"><span class="mp-dot mp-dot1"></span>PLANT 1 · 몽클로바</div>
   <div class="mobile-plant-hdr hdr-p2"><span class="mp-dot mp-dot2"></span>PLANT 2 · 라하트</div>
@@ -511,9 +511,9 @@
       <span class="card-icon">🕐</span>
       <div class="card-module-no">Module 06</div>
       <div class="card-title-row">
-        <div class="card-title">출결타각·식사신청</div>
+        <div class="card-title">출근율·식사신청</div>
       </div>
-      <div class="card-title-en">Check-in &amp; Meal Request</div>
+      <div class="card-title-en">Attendance Rate &amp; Meal Request</div>
       <div class="card-desc">QR 출결 타각, 식사 신청, 관리자 대시보드 통합 운영</div>
       <span class="badge badge-hr">근태·식수 관리</span>
       <span class="card-arrow">›</span>
@@ -525,9 +525,9 @@
       <span class="card-icon">🕐</span>
       <div class="card-module-no">Module 06</div>
       <div class="card-title-row">
-        <div class="card-title">출결타각·식사신청</div>
+        <div class="card-title">출근율·식사신청</div>
       </div>
-      <div class="card-title-en">Check-in &amp; Meal Request</div>
+      <div class="card-title-en">Attendance Rate &amp; Meal Request</div>
       <div class="card-desc">QR 출결 타각, 식사 신청, 관리자 대시보드 통합 운영</div>
       <span class="badge badge-hr">근태·식수 관리</span>
       <span class="card-arrow">›</span>
@@ -1178,7 +1178,7 @@ const I18N_ES = {
   '메뉴를 선택하세요 / Seleccione un módulo':'Seleccione un módulo',
   '접속:':'Usuario:',
   // 탭
-  '출결/식사신청':'Asistencia/Comidas',
+  '출근율 현황':'Tasa de asistencia',
   '근태관리':'Control de asistencia',
   '자격인증관리':'Certificaciones',
   '소모품관리':'Consumibles',
@@ -1200,7 +1200,7 @@ const I18N_ES = {
   '가공 보전':'Mantenimiento Corte',
   '가공보전팀':'Mantenimiento Corte',
   // 카드
-  '출결타각·식사신청':'Registro de asistencia · Comidas',
+  '출근율·식사신청':'Tasa de asistencia · Comidas',
   'QR 출결 타각, 식사 신청, 관리자 대시보드 통합 운영':'Registro de asistencia con QR, solicitud de comidas y panel de supervisor integrados',
   '근태·식수 관리':'Asistencia · Comidas',
   '인사 허가서':'Permisos RH',
