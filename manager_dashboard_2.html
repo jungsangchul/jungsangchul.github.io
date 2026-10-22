@@ -1642,7 +1642,7 @@ function parseTress(){
     if(ni<0) continue;
     const name=cells[ni];
     let dept="";
-    for(let i=ni+1;i<cells.length;i++){ const x=cells[i]; if(!isTxt(x)) continue; if(/^falta$/i.test(x)) continue; if(guessTeam(x)||/[a-z]/.test(x)&&x.length>3){ dept=x; break; } }
+    for(let i=ni+1;i<cells.length;i++){ const x=cells[i]; if(!isTxt(x)) continue; if(/^(falta|permiso|vacaciones|incapacidad|descanso)$/i.test(x)) continue; dept=x; break; }
     const times=[]; for(let i=ni+1;i<cells.length;i++){ const tm=tressTime(cells[i]); if(tm) times.push(tm); }
     const tIn=times[0]||"", tOut=times.length>=2?times[times.length-1]:"";
     if(!tIn&&!tOut) continue;
