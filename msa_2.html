@@ -226,6 +226,28 @@ hr{border-top-color:#2a2a2a}
 .modalhd{background:#0f0f0f;border-bottom-color:#2a2a2a}.modalhd h3{color:#fafafa}
 .modalbody h4{color:#c9a84c;font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;font-weight:400}
 .glos{background:#141414;border-color:#2a2a2a;color:#b0b0b0;border-radius:10px}.glos b{color:#e2c46a}.glos .interp{color:#e0e0e0;border-top-color:#2a2a2a}
+/* ═══ 측정자 진단 · 재평가 ═══ */
+.p-gold{color:#e2c46a;border-color:rgba(201,168,76,.6);background:rgba(201,168,76,.10)}
+.p-bad{color:#0a0a0a;background:#e05c5c;border-color:#e05c5c}
+.p-care{color:#0a0a0a;background:#e0a84a;border-color:#e0a84a}
+.diag{margin-top:12px;border:1px solid #2a2a2a;border-radius:10px;overflow:hidden;background:#0f0f0f}
+.diag .dhd{padding:10px 14px;font-weight:700;color:#fafafa;border-bottom:1px solid #2a2a2a;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.diag .dhd.bad{background:rgba(224,92,92,.12);border-bottom-color:rgba(224,92,92,.4)}
+.diag .dhd.care{background:rgba(224,168,74,.10);border-bottom-color:rgba(224,168,74,.4)}
+.diag .dhd.ok{background:rgba(76,175,125,.10);border-bottom-color:rgba(76,175,125,.4)}
+.diag .dhd .who{font-size:15px;color:#fff}
+.diag .dhd .who.bad{color:#ff9a9a}.diag .dhd .who.care{color:#ffcc70}
+.diag .dbody{padding:10px 14px}
+.diag tr.rbad td{background:rgba(224,92,92,.10)}.diag tr.rcare td{background:rgba(224,168,74,.07)}
+.diag td.opnm{text-align:left;font-weight:700;color:#fafafa}
+.diag .pill{white-space:nowrap}
+.diag .why{font-size:12px;color:#b0b0b0;text-align:left;line-height:1.5}
+.diag .why b{color:#ffb3b3}
+.retest-bar{display:none;margin-bottom:14px;padding:12px 16px;border:1px solid #c9a84c;border-radius:12px;background:rgba(201,168,76,.10);color:#f0f0f0;line-height:1.6}
+.retest-bar.on{display:block}
+.retest-bar b{color:#e2c46a}
+.retest-bar .rt-title{font-size:14px;font-weight:700;color:#fafafa;margin-bottom:4px}
+.retest-bar .row{margin-top:8px}
 @media(max-width:520px){header .bar{padding:10px 12px}.system-bar{padding:7px 12px}.tabwrap{padding:8px 12px}header h1{font-size:12px}.wrap{padding:14px 12px 60px}.langbtn{height:32px;padding:0 11px}}
 
 /* ═══ 한글 캡션 가독성: 본문 폰트 사용 ═══ */
@@ -415,6 +437,7 @@ hr{border-top-color:#2a2a2a}
 
   <!-- ══════════ 계수형 ══════════ -->
   <section class="panel on" id="p-att">
+    <div class="retest-bar" id="aRetest"></div>
     <div class="card">
       <h2>평가 조건 <small>Condiciones — Gage R&amp;R por Atributos</small></h2>
       <div class="grid g4">
@@ -469,6 +492,7 @@ hr{border-top-color:#2a2a2a}
 
   <!-- ══════════ 계량형 ══════════ -->
   <section class="panel" id="p-var">
+    <div class="retest-bar" id="vRetest"></div>
     <div class="card">
       <h2>공통 조건 <small>Condiciones comunes</small></h2>
       <div class="grid g4">
@@ -913,7 +937,14 @@ function calcAtt(){
     '<div><b>'+fil.length+'</b><span>평가 인원</span></div>'+
     '<div><b>'+(fil.length?(avgE*100).toFixed(1):'—')+'%</b><span>평균 효율 E</span></div>'+
     '<div><b>'+fil.filter(r=>r.pass).length+'</b><span>합격 Aprobado</span></div>'+
-    '<div><b>'+fil.filter(r=>!r.pass).length+'</b><span>불합격 Rechazado</span></div></div><hr>';
+    '<div><b>'+fil.filter(r=>!r.pass).length+'</b><span>불합격 Rechazado</span></div></div>';
+  const failed=fil.filter(r=>!r.pass);
+  h+='<div class="diag"><div class="dhd '+(failed.length?'bad':(fil.length?'ok':'care'))+'">'+
+    (failed.length?'<span>판정 불합격 작업자</span><span class="who bad">'+failed.map(r=>'⚠ '+esc(shortName(r.op.name))+
+        ' <small style="font-weight:400;color:#ffb3b3">('+(r.E!==null&&r.E<cE?'E '+r.E.toFixed(2)+' ':'')+
+        (r.Pfa>cFa?'FALSE '+r.fa+'건 ':'')+(r.Pms>cMs?'MISS '+r.ms+'건':'')+')</small>').join(' &nbsp; ')+'</span>'
+      :fil.length?'<span>불합격 작업자 없음 — 전원 합격</span>':'<span>판정이 입력되지 않았습니다</span>')+
+    '</div></div><hr>';
   h+='<div class="scroll"><table><thead><tr><th>NO</th><th>작업자<br><small>Operador</small></th>'+
     '<th>OK<br>시료</th><th>NG<br>시료</th><th>일치수<br><small>Aciertos</small></th>'+
     '<th>FALSE<br>(OK→NG)</th><th>MISS<br>(NG→OK)</th><th>E</th><th>PFA</th><th>PMISS</th>'+
@@ -940,7 +971,9 @@ async function saveAtt(){
         title:$('aTitle').value||null, process_name:$('aProc').value||null,
         eval_date:$('aDate').value||today(), period:periodOf('aYear','aQtr'),
         sample_count:nSamp(), trial_count:nTri(),
-        refs:REFS, crit_e:num($('cE').value), crit_pfa:num($('cFa').value), crit_pmiss:num($('cMs').value)
+        refs:REFS, crit_e:num($('cE').value), crit_pfa:num($('cFa').value), crit_pmiss:num($('cMs').value),
+        retest_of:(RETEST&&RETEST.kind==='att')?RETEST.of:null, retest_no:(RETEST&&RETEST.kind==='att')?RETEST.no:0,
+        fault_ops:(window._attRows||[]).filter(r=>r.tot>0&&!r.pass).map(r=>shortName(r.op.name))
       }])});
     const sid=s[0].id, recs=[];
     SEL.forEach(op=>{ for(let tr=1;tr<=nTri();tr++){
@@ -949,7 +982,8 @@ async function saveAtt(){
         employee_name:op.name, trial:tr, answers:a, updated_at:new Date().toISOString()});
     }});
     if(recs.length) await sb('msa_evaluations',{method:'POST',body:JSON.stringify(recs)});
-    toast('계수형 저장 완료 · '+recs.length+'건');
+    toast((RETEST&&RETEST.kind==='att'?retestLabel(RETEST.no)+' 저장 완료 · ':'계수형 저장 완료 · ')+recs.length+'건');
+    if(RETEST&&RETEST.kind==='att'){ RETEST=null; renderRetestBar(); }
   }catch(e){ toast('저장 실패: '+e.message); }
 }
 function exportAttXlsx(){
@@ -1190,6 +1224,7 @@ function calcVar(){
   h+=line('<b>Total Gage R&R</b>',V.GRR)+line('&nbsp;&nbsp;&nbsp;Repeatability (EV)',V.EV)+
      line('&nbsp;&nbsp;&nbsp;Reproducibility (AV)',V.AV)+line('Part to Part (PV)',V.PV)+
      line('<b>Total Variation (TV)</b>',V.TV)+'</tbody></table></div>';
+  h+=opDiagHtml(V);
   h+=varGlossary(V);
 
   h+='<div class="scroll" style="margin-top:10px"><table><thead><tr>'+
@@ -1451,6 +1486,194 @@ function chInteract(V,id){
   for(let i=0;i<V.p;i+=step) x.fillText(String(i+1),X(i),h-pad.b+10);
 }
 
+/* ══════════════════════════════════════════
+   측정자별 진단 — 누가 측정을 잘못했는지
+   · 반복성(EV) 불량: 본인 R̄이 다른 측정자 평균의 1.5배 이상, 또는 개별 R 이 UCL_R 초과
+   · 편의(AV) 불량 : 본인 평균이 다른 측정자 평균과 3σ(EV/√(p·t)) 이상 벌어짐 (3명 조에서 최대 이탈자)
+   · 등급이 우수면 문제 측정자 없음. 우수가 아닌데 기준에 걸리는 사람이 없으면 가장 나쁜 사람을 「주의」로 표시
+   ══════════════════════════════════════════ */
+function diagOps(V){
+  const o=V.o, p=V.p, t=V.t, excellent=(V.grade==='우수');
+  const se3=3*V.EV/Math.sqrt(p*t);
+  const avShare=V.GRR>0?(V.AV*V.AV)/(V.GRR*V.GRR):0;
+  const rows=V.ops.map((op,i)=>{
+    const othR=V.Rbars.filter((_,j)=>j!==i), othRm=othR.reduce((a,b)=>a+b,0)/othR.length;
+    const othX=V.Xbars.filter((_,j)=>j!==i), othXm=othX.reduce((a,b)=>a+b,0)/othX.length;
+    const rOver=(V.rangesByOp[i]||[]).filter(r=>r>V.UCLR).length;
+    const rRatio=othRm>0?V.Rbars[i]/othRm:(V.Rbars[i]>0?9:1);
+    const dev=V.Xbars[i]-othXm;
+    return {i, op, Rbar:V.Rbars[i], rRatio, rOver, Xbar:V.Xbars[i], dev, othXm, ev:false, av:false, care:false};
+  });
+  if(!excellent){
+    /* 반복성 */
+    const maxR=rows.reduce((a,b)=>b.Rbar>a.Rbar?b:a, rows[0]);
+    rows.forEach(r=>{ if(r.rOver>0) r.ev=true; });
+    if(maxR.rRatio>=1.5 && maxR.Rbar>0) maxR.ev=true;
+    /* 편의(재현성) */
+    if(avShare>=0.25){
+      if(o>=3){
+        const maxD=rows.reduce((a,b)=>Math.abs(b.dev)>Math.abs(a.dev)?b:a, rows[0]);
+        if(Math.abs(maxD.dev)>se3) maxD.av=true;
+      }else if(o===2 && Math.abs(rows[0].dev)>se3){ rows.forEach(r=>r.av=true); }
+    }
+    /* 아무도 안 걸리면(부족일 때만) — 가장 나쁜 사람을 주의 */
+    if(V.grade==='부족' && !rows.some(r=>r.ev||r.av)){
+      const evDom=V.EV>=V.AV;
+      const worst=evDom?rows.reduce((a,b)=>b.Rbar>a.Rbar?b:a,rows[0])
+                       :rows.reduce((a,b)=>Math.abs(b.dev)>Math.abs(a.dev)?b:a,rows[0]);
+      if((evDom&&worst.rRatio>1.15)||(!evDom&&o>=3&&Math.abs(worst.dev)>se3*0.6)) worst.care=true;
+    }
+  }
+  rows.forEach(r=>{ r.flag=r.ev||r.av; r.state=r.flag?'bad':r.care?'care':'ok'; });
+  const bad=rows.filter(r=>r.flag), care=rows.filter(r=>r.care);
+  let overall, cls;
+  if(excellent){ overall='문제 측정자 없음 — 전원 정상 (등급 우수)'; cls='ok'; }
+  else if(bad.length){ overall='측정 문제 측정자'; cls='bad'; }
+  else if(care.length){ overall='기준에는 안 걸리지만 가장 영향이 큰 측정자'; cls='care'; }
+  else if(V.grade==='부족'){ overall='특정 측정자 문제가 아님 — 측정자 전원이 비슷하게 흔들림 (계측기·측정 방법 전체 점검)'; cls='care'; }
+  else { overall='문제 측정자 없음 — 전원 정상 (등급 양호)'; cls='ok'; }
+  return {rows, bad, care, overall, cls, se3, avShare, excellent, twoOp:o===2};
+}
+function diagReason(r,D){
+  const w=[];
+  if(r.ev) w.push('<b>반복성 불량</b> — R̄ '+r.Rbar.toFixed(4)+' (다른 측정자의 '+r.rRatio.toFixed(1)+'배'+
+    (r.rOver?', R 관리상한 초과 '+r.rOver:'')+') → 같은 시료를 잴 때마다 값이 흔들림');
+  if(r.av) w.push('<b>편의(재현성) 불량</b> — X̄ '+r.Xbar.toFixed(4)+', 다른 측정자보다 '+
+    (r.dev>0?'+':'')+r.dev.toFixed(4)+' '+(r.dev>0?'높게':'낮게')+' 측정'+
+    (D.twoOp?' (2명 조는 누가 치우쳤는지 판별 불가 — 둘 다 재측정)':'')+' → 측정 방법·기준점이 다름');
+  if(!r.ev&&!r.av&&r.care) w.push('<b>주의</b> — 불량 기준에는 못 미치지만 조 안에서 산포 기여가 가장 큼');
+  if(!w.length) w.push('정상');
+  return w.join('<br>');
+}
+function opDiagHtml(V){
+  const D=diagOps(V);
+  const names=(D.bad.length?D.bad:D.care).map(r=>esc(shortName(r.op.name)));
+  let h='<div class="diag"><div class="dhd '+D.cls+'">'+
+    '<span>'+D.overall+'</span>'+
+    (names.length?'<span class="who '+D.cls+'">'+names.map(n=>'⚠ '+n).join(' &nbsp; ')+'</span>':'')+
+    '</div><div class="dbody"><div class="scroll"><table><thead><tr>'+
+    '<th>측정자</th><th>R̄<br><small>반복성</small></th><th>타 측정자 대비</th><th>R&gt;UCL</th>'+
+    '<th>평균 X̄</th><th>타 측정자와 차이</th><th>진단</th><th>원인</th></tr></thead><tbody>';
+  D.rows.forEach(r=>{
+    const pill=r.flag?'<span class="pill p-bad">측정 불량</span>':r.care?'<span class="pill p-care">주의</span>':'<span class="pill p-ok">정상</span>';
+    h+='<tr class="r'+r.state+'"><td class="opnm">'+esc(r.op.name)+'</td>'+
+      '<td>'+r.Rbar.toFixed(4)+'</td><td>'+r.rRatio.toFixed(2)+'배</td><td>'+r.rOver+'</td>'+
+      '<td>'+r.Xbar.toFixed(4)+'</td><td>'+(r.dev>0?'+':'')+r.dev.toFixed(4)+'</td>'+
+      '<td>'+pill+'</td><td class="why">'+diagReason(r,D)+'</td></tr>';
+  });
+  h+='</tbody></table></div><p class="note" style="margin:8px 0 0">반복성 불량 = R̄이 다른 측정자 평균의 1.5배 이상 또는 개별 R이 UCL<sub>R</sub>('+
+     V.UCLR.toFixed(4)+') 초과 · 편의 불량 = 평균 차이가 3σ(EV/√(시료×횟수) = '+D.se3.toFixed(4)+') 초과 · '+
+     '등급 우수면 전원 정상으로 봅니다.</p></div>';
+  return h;
+}
+
+/* ══════════════════════════════════════════
+   재평가 (Reevaluación)
+   ══════════════════════════════════════════ */
+let RETEST=null;   /* {kind:'var'|'att', of:원평가id, no:차수, group_name, label, faults:[이름]} */
+function retestLabel(no){ return '재평가 '+no+'차'; }
+function renderRetestBar(){
+  ['vRetest','aRetest'].forEach(id=>{ $(id).classList.remove('on'); $(id).innerHTML=''; });
+  if(!RETEST) return;
+  const el=$(RETEST.kind==='var'?'vRetest':'aRetest');
+  el.innerHTML='<div class="rt-title">🔁 '+retestLabel(RETEST.no)+' · 원평가: '+esc(RETEST.label)+'</div>'+
+    (RETEST.faults.length
+      ? '재측정 대상: <b>'+RETEST.faults.map(esc).join(', ')+'</b>'+
+        (RETEST.kind==='var'?' — 해당 측정자의 측정값은 비워 두었고, 나머지 측정자 값은 원평가 그대로입니다. 비운 칸에 새 측정값을 넣고 저장하세요.'
+                            :' — 불합격자만 선택되어 있습니다. 판정을 새로 입력하고 저장하세요.')
+      : '원평가 조건을 그대로 불러왔습니다. 측정값을 새로 입력하고 저장하세요.')+
+    '<div class="row">'+
+    (RETEST.kind==='var'?'<button class="btn-line btn-sm" onclick="retestClearAll()">전체 측정값 지우기</button>':'')+
+    '<button class="btn-line btn-sm" onclick="cancelRetest()">재평가 취소</button></div>';
+  el.classList.add('on');
+}
+function cancelRetest(){ RETEST=null; renderRetestBar(); toast('재평가 모드를 해제했습니다'); }
+function retestClearAll(){ VD={}; renderVarInput(); }
+function goTab(t){ document.querySelector('.tabs button[data-t="'+t+'"]').click(); window.scrollTo({top:0,behavior:'smooth'}); }
+function setPeriodSel(yId,qId,period){
+  const m=String(period||'').match(/^(\d{4})-(\w+)$/); if(!m) return;
+  const y=$(yId), q=$(qId);
+  if([...y.options].some(o=>o.value===m[1])) y.value=m[1];
+  if([...q.options].some(o=>o.value===m[2])) q.value=m[2];
+}
+function empFromRecord(id,name,team){
+  const e=ALL_EMP.find(x=>x.employee_id===id);
+  return e ? {employee_id:e.employee_id, name:empLabel(e), team:e.team}
+           : {employee_id:id||name, name:name, team:team||null};
+}
+/* 계량형 재평가 시작 */
+async function startVarRetest(id){
+  try{
+    const rs=await sb('msa_var_sessions?id=eq.'+encodeURIComponent(id)+'&select=*,msa_var_measures(*)');
+    if(!rs||!rs.length) return toast('기록을 찾을 수 없습니다');
+    const r=rs[0], ms=(r.msa_var_measures||[]).slice().sort((a,b)=>(a.op_index-b.op_index)||(a.trial-b.trial));
+    const MV=rebuildFromMeasures(r,ms);
+    const D=MV?diagOps(Object.assign({grade:r.grade},MV)):null;
+    const faultIds=D?D.bad.map(x=>x.op.employee_id):[];
+    const faultNames=D?D.bad.map(x=>shortName(x.op.name)):[];
+    /* 조건 불러오기 */
+    goTab('var');
+    $('vTitle').value=r.title||''; $('vDate').value=today();
+    setPeriodSel('vYear','vQtr',r.period);
+    $('vParts').value=r.n_parts||10; $('vTrials').value=r.n_trials||3;
+    /* 측정자 */
+    const byOp={};
+    ms.forEach(m=>{ const k=m.op_index||1; byOp[k]=byOp[k]||{id:m.employee_id,name:m.employee_name,tr:{}}; byOp[k].tr[m.trial]=m.vals||[]; });
+    const keys=Object.keys(byOp).map(Number).sort((a,b)=>a-b);
+    SEL=keys.map(k=>empFromRecord(byOp[k].id,byOp[k].name,r.team));
+    VD={};
+    keys.forEach((k,oi)=>{
+      const op=SEL[oi]; VD[op.employee_id]={};
+      const isFault=faultIds.indexOf(byOp[k].id)>=0;
+      for(let tr=1;tr<=(r.n_trials||3);tr++)
+        VD[op.employee_id][tr]=isFault?[]:(byOp[k].tr[tr]||[]).map(v=>v==null?'':String(v));
+    });
+    GINFO={}; curG=1;
+    const d=gi(1);
+    d.gage=r.gage_no||''; d.usl=r.usl!=null?+r.usl:''; d.lsl=r.lsl!=null?+r.lsl:''; d.tol=r.tolerance!=null?+r.tolerance:'';
+    d.action='Reevaluación post-capacitación (교육 후 재평가)';
+    if(r.team && [...$('fTeam').options].some(o=>o.value===r.team)) $('fTeam').value=r.team;
+    RETEST={kind:'var', of:r.retest_of||r.id, no:(r.retest_no||0)+1, group_name:r.group_name,
+      label:periodLabel(r.period)+' · '+r.eval_date+' · '+(r.group_name||''), faults:faultNames};
+    closeModal();
+    renderEmp(); renderAttInput(); renderGTabs(); renderVarInput(); admRender(); renderRetestBar();
+    toast(retestLabel(RETEST.no)+' 준비 완료'+(faultNames.length?' · 재측정: '+faultNames.join(', '):''));
+  }catch(e){ toast('재평가 준비 실패: '+e.message); }
+}
+/* 계수형 재평가 시작 — 불합격자만 선택 */
+async function startAttRetest(id){
+  try{
+    const rs=await sb('msa_sessions?id=eq.'+encodeURIComponent(id)+'&select=*,msa_evaluations(*)');
+    if(!rs||!rs.length) return toast('기록을 찾을 수 없습니다');
+    const r=rs[0], refs=r.refs||[];
+    const okN=refs.filter(v=>v==='OK').length, ngN=refs.filter(v=>v==='NG').length;
+    const cE=+r.crit_e, cFa=+r.crit_pfa, cMs=+r.crit_pmiss;
+    const byOp={};
+    (r.msa_evaluations||[]).forEach(e=>{ const k=e.employee_id||e.employee_name;
+      byOp[k]=byOp[k]||{id:e.employee_id,name:e.employee_name,hit:0,tot:0,fa:0,ms:0};
+      (e.answers||[]).forEach((v,i)=>{ if(!v) return; byOp[k].tot++;
+        if(v===refs[i]) byOp[k].hit++; else if(refs[i]==='OK') byOp[k].fa++; else byOp[k].ms++; });
+    });
+    const all=Object.values(byOp);
+    const failed=all.filter(o=>{ const E=o.tot?o.hit/o.tot:null, Pfa=okN?o.fa/okN:0, Pms=ngN?o.ms/ngN:0;
+      return !(E!==null && E>=cE && Pfa<=cFa && Pms<=cMs); });
+    const target=failed.length?failed:all;
+    goTab('att');
+    $('aTitle').value=r.title||''; $('aProc').value=r.process_name||''; $('aDate').value=today();
+    setPeriodSel('aYear','aQtr',r.period);
+    $('aSamples').value=r.sample_count||refs.length; $('aTrials').value=r.trial_count||3;
+    $('cE').value=cE; $('cFa').value=cFa; $('cMs').value=cMs;
+    REFS=refs.slice(); renderRefs();
+    SEL=target.map(o=>empFromRecord(o.id,o.name,r.team)); ANS={}; VD={};
+    if(r.team && [...$('fTeam').options].some(o=>o.value===r.team)) $('fTeam').value=r.team;
+    RETEST={kind:'att', of:r.retest_of||r.id, no:(r.retest_no||0)+1, group_name:null,
+      label:periodLabel(r.period)+' · '+r.eval_date+' · '+(r.title||''), faults:failed.map(o=>shortName(o.name))};
+    closeModal();
+    renderEmp(); renderAttInput(); renderGTabs(); renderVarInput(); renderRetestBar();
+    toast(retestLabel(RETEST.no)+' 준비 완료'+(failed.length?' · 재평가: '+RETEST.faults.join(', '):''));
+  }catch(e){ toast('재평가 준비 실패: '+e.message); }
+}
+
 /* 변동 성분 용어 설명 + 자동 해석 */
 function varGlossary(V){
   let h='<div class="glos"><b>변동 성분이란?</b> 측정값의 산포를 원인별로 쪼갠 표준편차이며, '+
@@ -1710,7 +1933,9 @@ async function saveVar(){
       const s=await sb('msa_var_sessions',{method:'POST',headers:{'Prefer':'return=representation'},
         body:JSON.stringify([{
           factory:$('fFactory').value, team:$('fTeam').value||(V.ops[0]&&V.ops[0].team)||null,
-          title:$('vTitle').value||null, group_name:V.g+'grupo',
+          title:$('vTitle').value||null, group_name:(RETEST&&RETEST.kind==='var'&&RETEST.group_name)?RETEST.group_name:(V.g+'grupo'),
+          retest_of:(RETEST&&RETEST.kind==='var')?RETEST.of:null, retest_no:(RETEST&&RETEST.kind==='var')?RETEST.no:0,
+          fault_ops:(function(){ const D=diagOps(V); return D.bad.map(x=>shortName(x.op.name)); })(),
           gage_no:d.gage||null, eval_date:$('vDate').value||today(),
           period:periodOf('vYear','vQtr'),
           usl:num(d.usl), lsl:num(d.lsl), tolerance:V.TOL,
@@ -1729,7 +1954,8 @@ async function saveVar(){
       await sb('msa_var_measures',{method:'POST',body:JSON.stringify(recs)});
       ok++;
     }
-    toast('계량형 저장 완료 · '+ok+'개 조');
+    toast((RETEST&&RETEST.kind==='var'?retestLabel(RETEST.no)+' 저장 완료 · ':'계량형 저장 완료 · ')+ok+'개 조');
+    if(RETEST&&RETEST.kind==='var'){ RETEST=null; renderRetestBar(); }
   }catch(e){ toast('저장 실패('+ok+'개 저장됨): '+e.message); }
 }
 function exportVarXlsx(){
@@ -1802,17 +2028,22 @@ async function loadHist(){
       '&eval_date=gte.'+f+'&eval_date=lte.'+t+'&order=eval_date.desc,group_name.asc&limit=300')||[];
     if(!HV.length) $('histVar').innerHTML='<div class="empty">데이터가 없습니다</div>';
     else{
-      let h='<table><thead><tr><th>평가주기</th><th>평가일</th><th>평가명</th><th>조</th>'+
+      const retested=new Set(HV.map(r=>r.retest_of).filter(Boolean));
+      let h='<table><thead><tr><th>평가주기</th><th>평가일</th><th>평가명</th><th>구분</th><th>조</th>'+
         '<th>측정자<br><small>Medido por</small></th>'+
         '<th>계측기</th><th>시료/측정자/횟수</th><th>%Contrib</th><th>%Tol</th><th>ndc</th>'+
         '<th>등급</th><th>판정</th><th>삭제</th></tr></thead><tbody>';
       HV.forEach(r=>{
         const c=r.grade==='우수'?'p-ok':r.grade==='양호'?'p-wa':'p-ng';
+        const rt = r.retest_no>0 ? '<span class="pill p-gold">'+retestLabel(r.retest_no)+'</span>'
+                 : retested.has(r.id) ? '<span class="pill p-mut">재평가됨</span>' : '<span class="pill p-mut">정기</span>';
         h+='<tr class="clickrow" data-vid="'+esc(r.id)+'">'+
           '<td>'+esc(periodLabel(r.period))+'</td>'+
           '<td>'+esc(r.eval_date)+'</td><td style="text-align:left">'+esc(r.title)+'</td>'+
+          '<td>'+rt+'</td>'+
           '<td>'+esc(r.group_name)+'</td>'+
-          '<td style="text-align:left">'+esc(measurerNames(r).join(', '))+'</td>'+
+          '<td style="text-align:left">'+esc(measurerNames(r).join(', '))+
+            ((r.fault_ops||[]).length?'<br><span class="pill p-ng" style="font-size:11px">⚠ '+esc(r.fault_ops.join(', '))+'</span>':'')+'</td>'+
           '<td>'+esc(r.gage_no)+'</td>'+
           '<td>'+r.n_parts+' / '+r.n_ops+' / '+r.n_trials+'</td>'+
           '<td>'+(r.pct_contrib!=null?(+r.pct_contrib).toFixed(2)+'%':'')+'</td>'+
@@ -1838,16 +2069,21 @@ async function loadHist(){
       '&eval_date=gte.'+f+'&eval_date=lte.'+t+'&order=eval_date.desc&limit=300')||[];
     HA=s;
     if(!s.length){ $('histAtt').innerHTML='<div class="empty">데이터가 없습니다</div>'; return; }
-    let h='<table><thead><tr><th>평가주기</th><th>평가일</th><th>평가명</th><th>공정</th><th>팀</th>'+
+    const retestedA=new Set(s.map(r=>r.retest_of).filter(Boolean));
+    let h='<table><thead><tr><th>평가주기</th><th>평가일</th><th>평가명</th><th>구분</th><th>공정</th><th>팀</th>'+
       '<th>평가자<br><small>Operadores</small></th><th>시료/반복</th><th>평가인원</th>'+
       '<th>기준 E</th><th>삭제</th></tr></thead><tbody>';
     s.forEach(r=>{
       const nm=[...new Set((r.msa_evaluations||[]).map(e=>shortName(e.employee_name)).filter(Boolean))];
+      const rt = r.retest_no>0 ? '<span class="pill p-gold">'+retestLabel(r.retest_no)+'</span>'
+               : retestedA.has(r.id) ? '<span class="pill p-mut">재평가됨</span>' : '<span class="pill p-mut">정기</span>';
       h+='<tr class="clickrow" data-aid="'+esc(r.id)+'">'+
         '<td>'+esc(periodLabel(r.period))+'</td>'+
         '<td>'+esc(r.eval_date)+'</td><td style="text-align:left">'+esc(r.title)+'</td>'+
+        '<td>'+rt+'</td>'+
         '<td>'+esc(r.process_name)+'</td><td style="text-align:left">'+esc(r.team)+'</td>'+
-        '<td style="text-align:left">'+esc(nm.join(', '))+'</td>'+
+        '<td style="text-align:left">'+esc(nm.join(', '))+
+          ((r.fault_ops||[]).length?'<br><span class="pill p-ng" style="font-size:11px">⚠ '+esc(r.fault_ops.join(', '))+'</span>':'')+'</td>'+
         '<td>'+r.sample_count+' / '+r.trial_count+'</td><td>'+nm.length+'명</td>'+
         '<td>'+r.crit_e+'</td>'+
         '<td><button class="delbtn" data-del="'+esc(r.id)+'" data-lab="'+
@@ -1882,12 +2118,12 @@ function rebuildFromMeasures(r, ms){
   const byOp={};
   ms.forEach(m=>{
     const k=m.op_index||1;
-    byOp[k]=byOp[k]||{name:m.employee_name, tr:{}};
+    byOp[k]=byOp[k]||{name:m.employee_name, employee_id:m.employee_id, tr:{}};
     byOp[k].tr[m.trial]=(m.vals||[]).map(Number);
   });
   const keys=Object.keys(byOp).map(Number).sort((a,b)=>a-b);
   if(keys.length<2) return null;
-  const ops=keys.map(k=>({name:byOp[k].name}));
+  const ops=keys.map(k=>({name:byOp[k].name, employee_id:byOp[k].employee_id}));
   const M=[];
   for(const k of keys){
     const rows=[];
@@ -1931,10 +2167,25 @@ async function openVarDetail(id){
     const spec = (r.usl!=null&&r.lsl!=null) ? (+r.lsl)+' ~ '+(+r.usl) : '—';
     const gcls = r.grade==='우수'?'p-ok':r.grade==='양호'?'p-wa':'p-ng';
 
+    /* 재평가 관계 */
+    let kids=[]; try{ kids=await sb('msa_var_sessions?retest_of=eq.'+encodeURIComponent(r.retest_of||r.id)+
+      '&select=id,eval_date,retest_no,grade,result&order=retest_no.asc')||[]; }catch(_){ }
+    kids=kids.filter(k=>k.id!==r.id);
+    let parent=null;
+    if(r.retest_of){ try{ const pr=await sb('msa_var_sessions?id=eq.'+encodeURIComponent(r.retest_of)+'&select=id,eval_date,period,group_name,grade'); parent=pr&&pr[0]; }catch(_){ } }
+    const lnk=(sid,txt)=>'<a href="javascript:void(0)" style="color:#e2c46a;text-decoration:underline" onclick="openVarDetail(\''+esc(sid)+'\')">'+txt+'</a>';
+    let rtInfo = r.retest_no>0
+      ? '<span class="pill p-gold">'+retestLabel(r.retest_no)+'</span> '+
+        (parent?'원평가: '+lnk(parent.id, esc(parent.eval_date)+' · '+esc(parent.group_name||'')+' ('+esc(parent.grade||'')+')'):'')
+      : '<span class="pill p-mut">정기 평가</span>';
+    if(kids.length) rtInfo+='<br>재평가 이력: '+kids.map(k=>lnk(k.id, retestLabel(k.retest_no)+' '+esc(k.eval_date)+' → '+esc(k.grade||'')+' / '+esc(k.result||''))).join(' &nbsp;·&nbsp; ');
+
     let h='<div style="margin-bottom:12px"><span class="pill" style="background:var(--navy);'+
-      'color:#fff;font-size:12px;padding:4px 12px">계량형 Gage R&amp;R · Variable (Método Xbar-R)</span></div>';
+      'color:#fff;font-size:12px;padding:4px 12px">계량형 Gage R&amp;R · Variable (Método Xbar-R)</span>'+
+      (r.retest_no>0?' <span class="pill p-gold" style="font-size:12px;padding:4px 12px">'+retestLabel(r.retest_no)+'</span>':'')+'</div>';
     h+='<h4>평가 정보</h4>'+kv([
       ['구분', '<span class="pill p-mut">계량형 / Variable</span>'],
+      ['평가 구분', rtInfo],
       ['평가주기', esc(periodLabel(r.period))], ['평가일', esc(r.eval_date)], ['평가명', esc(r.title)], ['조 (Grupo)', esc(r.group_name)],
       ['계측기 NO', esc(r.gage_no)], ['규격 (LSL~USL)', spec],
       ['규격공차', r.tolerance!=null?+r.tolerance:'미입력'],
@@ -1955,6 +2206,10 @@ async function openVarDetail(id){
       '<td>'+(r.ndc==null?'—':r.ndc)+'</td>'+
       '<td><span class="pill '+gcls+'">'+esc(r.grade)+'</span></td>'+
       '<td>'+esc(r.result)+'</td></tr></tbody></table></div>';
+
+    const MV=rebuildFromMeasures(r,ms);
+    let D=null;
+    if(MV){ D=diagOps(Object.assign({grade:r.grade},MV)); h+='<h4>측정자별 진단 — 누가 측정을 잘못했나</h4>'+opDiagHtml(Object.assign({grade:r.grade},MV)); }
     h+=varGlossary({EV:+r.ev, AV:+r.av, GRR:+r.grr, PV:+r.pv, TV:+r.tv,
       ndc:r.ndc, TOL:(r.tolerance!=null?+r.tolerance:0)});
 
@@ -1973,13 +2228,17 @@ async function openVarDetail(id){
     });
     h+='</tbody></table></div>';
 
-    const MV=rebuildFromMeasures(r,ms);
     if(MV){
       h+='<h4>그래프</h4><div class="chartgrid">'+
          [1,2,3,4,5,6].map(i=>'<div class="chartbox"><canvas id="mv'+i+'" height="200"></canvas></div>').join('')+
          '</div>';
     }
-    h+='<div class="row" style="margin-top:16px"><button class="btn-danger" onclick="delRecord(\'var\',\''+
+    const faultTxt = D && D.bad.length ? D.bad.map(x=>shortName(x.op.name)).join(', ') : '';
+    h+='<div class="row" style="margin-top:16px;align-items:center;gap:10px">'+
+       '<button class="btn-gold" onclick="startVarRetest(\''+esc(r.id)+'\')">🔁 재평가 ('+retestLabel((r.retest_no||0)+1)+')</button>'+
+       '<span class="note" style="margin:0">'+(faultTxt?'<b style="color:#ff9a9a">'+esc(faultTxt)+'</b>의 측정값만 비우고 나머지는 그대로 불러옵니다.':'원평가 조건·측정자를 그대로 불러옵니다.')+'</span>'+
+       '<span style="flex:1"></span>'+
+       '<button class="btn-danger" onclick="delRecord(\'var\',\''+
        esc(r.id)+'\',\''+esc(periodLabel(r.period)+' · '+(r.group_name||''))+'\')">이 기록 삭제</button></div>';
     $('modalBody').innerHTML=h;
     if(MV) setTimeout(()=>drawSet(MV,'mv'),30);
@@ -1998,10 +2257,24 @@ async function openAttDetail(id){
     const okN=refs.filter(v=>v==='OK').length, ngN=refs.filter(v=>v==='NG').length;
     const cE=+r.crit_e, cFa=+r.crit_pfa, cMs=+r.crit_pmiss;
 
+    let kids=[]; try{ kids=await sb('msa_sessions?retest_of=eq.'+encodeURIComponent(r.retest_of||r.id)+
+      '&select=id,eval_date,retest_no,fault_ops&order=retest_no.asc')||[]; }catch(_){ }
+    kids=kids.filter(k=>k.id!==r.id);
+    let parent=null;
+    if(r.retest_of){ try{ const pr=await sb('msa_sessions?id=eq.'+encodeURIComponent(r.retest_of)+'&select=id,eval_date,title'); parent=pr&&pr[0]; }catch(_){ } }
+    const lnk=(sid,txt)=>'<a href="javascript:void(0)" style="color:#e2c46a;text-decoration:underline" onclick="openAttDetail(\''+esc(sid)+'\')">'+txt+'</a>';
+    let rtInfo = r.retest_no>0
+      ? '<span class="pill p-gold">'+retestLabel(r.retest_no)+'</span> '+(parent?'원평가: '+lnk(parent.id, esc(parent.eval_date)+' · '+esc(parent.title||'')):'')
+      : '<span class="pill p-mut">정기 평가</span>';
+    if(kids.length) rtInfo+='<br>재평가 이력: '+kids.map(k=>lnk(k.id, retestLabel(k.retest_no)+' '+esc(k.eval_date)+
+      ((k.fault_ops||[]).length?' (불합격 '+esc(k.fault_ops.join(', '))+')':' (전원 합격)'))).join(' &nbsp;·&nbsp; ');
+
     let h='<div style="margin-bottom:12px"><span class="pill" style="background:var(--ok);'+
-      'color:#fff;font-size:12px;padding:4px 12px">계수형 Gage R&amp;R · Atributos (OK/NG 판정)</span></div>';
+      'color:#fff;font-size:12px;padding:4px 12px">계수형 Gage R&amp;R · Atributos (OK/NG 판정)</span>'+
+      (r.retest_no>0?' <span class="pill p-gold" style="font-size:12px;padding:4px 12px">'+retestLabel(r.retest_no)+'</span>':'')+'</div>';
     h+='<h4>평가 정보</h4>'+kv([
       ['구분', '<span class="pill p-mut">계수형 / Atributos</span>'],
+      ['평가 구분', rtInfo],
       ['평가주기', esc(periodLabel(r.period))], ['평가일', esc(r.eval_date)], ['평가명', esc(r.title)], ['공정', esc(r.process_name)],
       ['팀', esc(r.team)], ['시료 / 반복', r.sample_count+' / '+r.trial_count],
       ['OK / NG 시료', okN+' / '+ngN],
@@ -2037,6 +2310,12 @@ async function openAttDetail(id){
         '</td></tr>';
     });
     h+='</tbody></table></div>';
+    const failedA=ops.filter(o=>o._stat&&!o._stat.pass);
+    h+='<div class="diag"><div class="dhd '+(failedA.length?'bad':'ok')+'">'+
+      (failedA.length?'<span>판정 불합격 작업자</span><span class="who bad">'+failedA.map(o=>'⚠ '+esc(shortName(o.name))+
+          ' <small style="font-weight:400;color:#ffb3b3">('+(o._stat.E!==null&&o._stat.E<cE?'E '+o._stat.E.toFixed(2)+' ':'')+
+          (o._stat.Pfa>cFa?'FALSE '+o._stat.fa+'건 ':'')+(o._stat.Pms>cMs?'MISS '+o._stat.ms+'건':'')+')</small>').join(' &nbsp; ')+'</span>'
+        :'<span>불합격 작업자 없음 — 전원 합격</span>')+'</div></div>';
 
     /* 참값 + 판정 그리드 */
     h+='<h4>판정 내역 (금색 테두리 = 참값과 불일치)</h4><div class="scroll">';
@@ -2057,7 +2336,11 @@ async function openAttDetail(id){
       });
     });
     h+='</div><p class="note">PFA·PMISS 는 시료수 기준(현행 엑셀 방식)으로 재계산한 값입니다.</p>';
-    h+='<div class="row" style="margin-top:16px"><button class="btn-danger" onclick="delRecord(\'att\',\''+
+    h+='<div class="row" style="margin-top:16px;align-items:center;gap:10px">'+
+       '<button class="btn-gold" onclick="startAttRetest(\''+esc(r.id)+'\')">🔁 재평가 ('+retestLabel((r.retest_no||0)+1)+')</button>'+
+       '<span class="note" style="margin:0">'+(failedA.length?'불합격자 <b style="color:#ff9a9a">'+esc(failedA.map(o=>shortName(o.name)).join(', '))+'</b>만 선택해서 같은 조건으로 재평가합니다.':'전원을 같은 조건으로 다시 평가합니다.')+'</span>'+
+       '<span style="flex:1"></span>'+
+       '<button class="btn-danger" onclick="delRecord(\'att\',\''+
        esc(r.id)+'\',\''+esc(periodLabel(r.period)+' · '+(r.title||r.eval_date))+'\')">이 기록 삭제</button></div>';
     $('modalBody').innerHTML=h;
   }catch(e){ $('modalBody').innerHTML='<div class="empty">'+esc(e.message)+'</div>'; }
@@ -2068,9 +2351,10 @@ function exportHistXlsx(){
   const sheets=[];
   if(HV.length){
     const a=[['계량형 Gage R&R 이력 · Variable'],[],
-      ['평가주기','평가일','평가명','조','측정자','계측기','시료수','측정자수','측정횟수',
+      ['평가주기','평가일','평가명','구분','문제측정자','조','측정자','계측기','시료수','측정자수','측정횟수',
        'EV','AV','GRR','PV','TV','%Contribution','%Tolerance','ndc','등급','판정','조치계획']];
-    HV.forEach(r=>a.push([periodLabel(r.period),r.eval_date,r.title,r.group_name,measurerNames(r).join(' / '),
+    HV.forEach(r=>a.push([periodLabel(r.period),r.eval_date,r.title,r.retest_no>0?retestLabel(r.retest_no):'정기',
+      (r.fault_ops||[]).join(', '),r.group_name,measurerNames(r).join(' / '),
       r.gage_no,r.n_parts,r.n_ops,r.n_trials,r.ev,r.av,r.grr,r.pv,r.tv,
       r.pct_contrib,r.pct_tol,r.ndc,r.grade,r.result,r.action_plan]));
     sheets.push({name:'계량형이력',aoa:a,
@@ -2078,10 +2362,11 @@ function exportHistXlsx(){
   }
   if(HA.length){
     const a=[['계수형 Gage R&R 이력 · Atributos'],[],
-      ['평가주기','평가일','평가명','공정','팀','평가자','시료수','반복수','평가인원','기준E','기준PFA','기준PMISS']];
+      ['평가주기','평가일','평가명','구분','불합격자','공정','팀','평가자','시료수','반복수','평가인원','기준E','기준PFA','기준PMISS']];
     HA.forEach(r=>{
       const nm=[...new Set((r.msa_evaluations||[]).map(e=>shortName(e.employee_name)).filter(Boolean))];
-      a.push([periodLabel(r.period),r.eval_date,r.title,r.process_name,r.team,nm.join(' / '),
+      a.push([periodLabel(r.period),r.eval_date,r.title,r.retest_no>0?retestLabel(r.retest_no):'정기',(r.fault_ops||[]).join(', '),
+        r.process_name,r.team,nm.join(' / '),
         r.sample_count,r.trial_count,nm.length,r.crit_e,r.crit_pfa,r.crit_pmiss]);
     });
     sheets.push({name:'계수형이력',aoa:a,
@@ -2105,7 +2390,9 @@ const EXACT={
 '시료':'Muestra','회차':'Ensayo','측정자':'Operador','작업자':'Operador','사번':'No. emp.',
 '그래프':'Gráficas','관리자':'Administrador','일치수':'Aciertos','비고':'Nota',
 '약어':'Sigla','의미':'Significado','구분':'Tipo','등급':'Grado','공정':'Proceso',
-'팀':'Equipo','평가일':'Fecha','평가명':'Evaluación','계측기':'Medidor','순번':'No.'
+'팀':'Equipo','평가일':'Fecha','평가명':'Evaluación','계측기':'Medidor','순번':'No.',
+'정상':'Normal','주의':'Atención','정기':'Regular','재평가됨':'Reevaluado','측정 불량':'Medición deficiente',
+'원인':'Causa','진단':'Diagnóstico','재평가 취소':'Cancelar reevaluación','전체 측정값 지우기':'Borrar todas las mediciones'
 };
 
 /* 부분 문자열 치환 (긴 문구 우선) */
@@ -2306,6 +2593,39 @@ const SUB={
 '선택 조건에 해당하는 기록':'Registros que cumplen la condición',
 '삭제했습니다':'Registro borrado','일괄 삭제했습니다':'Borrado en lote realizado',
 '삭제 실패':'Error al borrar','조회 실패':'Error de consulta',
+/* 진단 · 재평가 */
+'측정자별 진단 — 누가 측정을 잘못했나':'Diagnóstico por operador — quién midió mal',
+'문제 측정자 없음 — 전원 정상 (등급 우수)':'Sin operador problemático — todos normales (grado Excelente)',
+'문제 측정자 없음 — 전원 정상 (등급 양호)':'Sin operador problemático — todos normales (grado Bueno)',
+'측정 문제 측정자':'Operador con problema de medición',
+'기준에는 안 걸리지만 가장 영향이 큰 측정자':'No supera el criterio, pero es el operador de mayor impacto',
+'특정 측정자 문제가 아님 — 측정자 전원이 비슷하게 흔들림 (계측기·측정 방법 전체 점검)':
+ 'No es un operador específico — todos varían por igual (revisar medidor y método en general)',
+'반복성 불량':'Repetibilidad deficiente','편의(재현성) 불량':'Sesgo (reproducibilidad) deficiente',
+'다른 측정자의':'vs. otros operadores:','R 관리상한 초과':'R sobre UCL',
+'같은 시료를 잴 때마다 값이 흔들림':'el valor varía cada vez que mide la misma pieza',
+'다른 측정자보다':'respecto a los demás','높게 측정':'medido más alto','낮게 측정':'medido más bajo',
+'2명 조는 누가 치우쳤는지 판별 불가 — 둘 다 재측정':'con 2 operadores no se sabe quién está sesgado — remedir ambos',
+'측정 방법·기준점이 다름':'método o punto de referencia distinto',
+'불량 기준에는 못 미치지만 조 안에서 산포 기여가 가장 큼':'no alcanza el criterio, pero aporta la mayor dispersión del grupo',
+'타 측정자 대비':'vs. otros','타 측정자와 차이':'Dif. vs. otros','반복성':'Repetibilidad','평균 X̄':'Media X̄',
+'반복성 불량 = R̄이 다른 측정자 평균의 1.5배 이상 또는 개별 R이 UCL':'Repetibilidad deficiente = R̄ ≥ 1.5× el promedio de los demás o R individual sobre UCL',
+'초과 · 편의 불량 = 평균 차이가 3σ(EV/√(시료×횟수) = ':' · Sesgo = diferencia de media mayor a 3σ (EV/√(muestras×ensayos) = ',
+') 초과 · ':') · ','등급 우수면 전원 정상으로 봅니다.':'Con grado Excelente todos se consideran normales.',
+'판정 불합격 작업자':'Operadores rechazados','불합격 작업자 없음 — 전원 합격':'Sin rechazados — todos aprobados',
+'판정이 입력되지 않았습니다':'Sin decisiones capturadas',
+'재평가':'Reevaluación','원평가':'Evaluación original','재평가 이력':'Historial de reevaluación','평가 구분':'Tipo de evaluación',
+'정기 평가':'Evaluación regular','재측정 대상':'Por remedir','문제측정자':'Operador con problema','불합격자':'Rechazados',
+'의 측정값만 비우고 나머지는 그대로 불러옵니다.':': solo se vacían sus mediciones; el resto se carga igual.',
+'원평가 조건·측정자를 그대로 불러옵니다.':'Se cargan las condiciones y operadores originales.',
+'만 선택해서 같은 조건으로 재평가합니다.':' se seleccionan para reevaluar con las mismas condiciones.',
+'전원을 같은 조건으로 다시 평가합니다.':'Se reevalúa a todos con las mismas condiciones.',
+'해당 측정자의 측정값은 비워 두었고, 나머지 측정자 값은 원평가 그대로입니다. 비운 칸에 새 측정값을 넣고 저장하세요.':
+ 'Sus mediciones están vacías; las de los demás son las originales. Capture los valores nuevos y guarde.',
+'불합격자만 선택되어 있습니다. 판정을 새로 입력하고 저장하세요.':'Solo están seleccionados los rechazados. Capture las decisiones y guarde.',
+'원평가 조건을 그대로 불러왔습니다. 측정값을 새로 입력하고 저장하세요.':'Se cargaron las condiciones originales. Capture las mediciones y guarde.',
+'재평가 모드를 해제했습니다':'Modo reevaluación cancelado','준비 완료':'listo','재측정':'Remedir',
+'재평가 준비 실패':'Error al preparar la reevaluación','전원 합격':'todos aprobados',
 /* 차트 */
 '변동성분':'Componentes de variación','측정값(시료)':'Mediciones por muestra',
 'R관리도(측정자기준)':'Carta R (por operador)','XBAR관리도':'Carta X̄',
@@ -2365,7 +2685,7 @@ function toggleLang(){
   SNAP.forEach(a=>{ if(a[0].isConnected) a[0].nodeValue=a[1]; });
   SNAP_PH.forEach(a=>a[0].setAttribute('placeholder',a[1]));
   /* 동적 영역 재렌더 (항상 한국어로 생성됨) */
-  renderEmp(); renderAttInput(); renderGTabs(); renderVarInput();
+  renderEmp(); renderAttInput(); renderGTabs(); renderVarInput(); renderRetestBar();
   if(adminOK) admRender();
   if(LANG==='es') trNode(document.body);
   drawAll();
