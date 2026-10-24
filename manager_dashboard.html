@@ -3273,7 +3273,7 @@ async function rateTeamRender(){
   const hc=v=>v==null?`<td class="m">–</td>`:`<td class="heat" style="background:rgba(224,92,92,${(0.08+0.72*Math.min(1,v/hmax)).toFixed(2)})">${rateFmtP(v)}</td>`;
   const heat=`<div class="rt-team-sub">${T.heatH}</div><div class="rt-tw"><table class="rt-t"><thead><tr><th style="text-align:left">${T.team}</th>${[1,2,3,4,5,6].map(i=>`<th style="${i===1?"color:#ef9a9a":""}">${R.wdLong[i]}</th>`).join("")}</tr></thead><tbody>${list.map(x=>`<tr><td class="n" style="text-align:left;white-space:normal">${escapeHtml(x.team)}</td>${[1,2,3,4,5,6].map(i=>hc(abr(wdA[x.team][i]))).join("")}</tr>`).join("")}</tbody></table></div>`;
   box.innerHTML=ctrl+tiles+`<div class="rt-chart" id="rtTeamChWrap" style="height:${Math.max(220,list.length*34+60)}px"><canvas id="rtChTeam"></canvas></div>`+table+heat+
-    `<div class="rt-team-sub">${T.trendH}</div><div class="rt-chart"><canvas id="rtChTeamDay"></canvas></div><div class="rt-note">${T.note}</div>`;
+    `<div class="rt-note">${T.note}</div>`;
   /* 막대 그래프: 팀별 출근율 + 공장 평균선 */
   const avgP=totRow.att!=null?+(totRow.att*100).toFixed(2):null;
   const avgLine={id:"rtAvgLine",afterDatasetsDraw(ch){ if(avgP==null) return; const x=ch.scales.x.getPixelForValue(avgP); const {top,bottom}=ch.chartArea; const c=ch.ctx; c.save(); c.strokeStyle=pc; c.setLineDash([5,4]); c.lineWidth=1.5; c.beginPath(); c.moveTo(x,top); c.lineTo(x,bottom); c.stroke(); c.setLineDash([]); c.fillStyle=pc; c.font="700 10px 'Space Mono',monospace"; c.textAlign="center"; c.fillText(`${T.avg} ${avgP.toFixed(1)}%`,x,top-4); c.restore(); }};
@@ -3284,17 +3284,7 @@ async function rateTeamRender(){
     options:{indexAxis:"y",responsive:true,maintainAspectRatio:false,layout:{padding:{top:16,right:56}},plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${T.cAtt}: ${c.parsed.x==null?"–":c.parsed.x.toFixed(1)+"%"}`}},rtLabels:{on:true}},
       scales:{x:{min:Math.max(0,Math.floor(minAtt*100/5)*5-5),max:100,grid:{color:RATE_C.grid},ticks:{callback:v=>v+"%"}},y:{grid:{display:false},ticks:{color:"#d0d0d0",font:{weight:"700"}}}}},
     plugins:[rateLabelPlugin,avgLine]});
-  /* 일자 추이 (선택 월 / 전체: 일별) — 인원 상위 6팀 + 공장 평균 */
-  const top=list.slice().sort((a,b)=>b.hold-a.hold).slice(0,6).map(x=>x.team);
-  const pal=["#81c784","#ffb74d","#ba68c8","#4dd0e1","#f06292","#aed581"];
-  const dd={}; rows.forEach(r=>{ if(!daySet.has(r.d)||!inCur(r.d)) return; (dd[r.d]=dd[r.d]||{})[r.team]=r; });
-  const dayTot=d=>{ let h=0,p=0; for(const t in dd[d]){ h+=dd[d][t].h; p+=dd[d][t].p; } return h?+(p/h*100).toFixed(2):null; };
-  rateChart("rtChTeamDay",{type:"line",data:{labels:curDays.map(d=>`${d.slice(5)} ${R.wd[rateWd(d)]}`),datasets:[
-      {label:T.avg,data:curDays.map(dayTot),borderColor:pc,backgroundColor:pc,borderWidth:3,pointRadius:3,tension:.25,borderDash:[6,4]},
-      ...top.map((t,i)=>({label:t,data:curDays.map(d=>{ const x=dd[d]&&dd[d][t]; return x&&x.h?+(x.p/x.h*100).toFixed(2):null; }),borderColor:pal[i],backgroundColor:pal[i],borderWidth:1.8,pointRadius:2,tension:.25,spanGaps:true}))]},
-    options:{responsive:true,maintainAspectRatio:false,interaction:{mode:"index",intersect:false},plugins:{legend:rateLegend,tooltip:rateTip,rtLabels:{on:false}},
-      scales:{x:{grid:{display:false},ticks:{maxRotation:0,autoSkip:true}},y:{suggestedMin:80,max:100,grid:{color:RATE_C.grid},ticks:{callback:v=>v+"%"}}}},
-    plugins:[rateLabelPlugin]});
+  if(rateCharts.rtChTeamDay){ rateCharts.rtChTeamDay.destroy(); delete rateCharts.rtChTeamDay; }
   rtTeamLast={plant:rtTeamPlant,period:rtTeamPeriod,month:rateMonth,list,totRow,days:curDays,wdA};
 }
 /* Excel 시트 추가 (rateExport에서 호출) */
