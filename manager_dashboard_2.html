@@ -2812,7 +2812,7 @@ function rateBridge(evm,d,plant){
 function rateEvLabel(e){ const n=lang==="es"?(e.es||e.ko):(e.ko||e.es); return e.plant?`${n} [${e.plant==="1공장"?(lang==="es"?"P1":"1공장"):(lang==="es"?"P2":"2공장")}]`:n; }
 function rateDayEvents(evm,d,plant){ return (evm[d]||[]).filter(e=>!e.plant||!plant||e.plant===plant); }
 async function rateEvLoad(){
-  try{ const rows=await getJson(REST(`${RATE_EV_T}?select=id,d,name,name_es,kind,plant,note&order=d.asc&limit=2000`)); rateCustomEv=rows.map(r=>({id:r.id,d:String(r.d).slice(0,10),name:r.name,name_es:r.name_es,kind:r.kind||"custom",plant:r.plant||"",note:r.note})); rateEvTable=true; }
+  try{ const rows=await getJson(REST(`${RATE_EV_T}?select=id,d,name,name_es,kind,plant,note&order=d.asc&limit=2000`)); rateCustomEv=rows.map(r=>({id:r.id,d:String(r.d).slice(0,10),name:r.name,name_es:r.name_es,kind:r.kind||"custom",plant:r.plant||"",note:r.note})); { const _td=todayDate(); rateCustomEv=rateCustomEv.filter(e=>!(e.kind==="payday"&&e.d>_td)); } rateEvTable=true; }
   catch(e){ rateCustomEv=[]; rateEvTable=false; console.warn("att_rate_events",e); }
 }
 async function rateEvAdd(){
