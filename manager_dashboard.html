@@ -456,6 +456,20 @@
   @keyframes rtIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
   .rt-top{position:sticky;top:0;z-index:5;background:linear-gradient(180deg,#141414,#0e0e0e);border-bottom:1px solid var(--line2);box-shadow:0 8px 24px rgba(0,0,0,.45)}
   .rt-top::before{content:'';display:block;height:2px;background:linear-gradient(90deg,var(--gold) 0%,#d4651a 45%,#6fb8dd 100%)}
+  .tn-fwrap{max-width:1320px;margin:0 auto;padding:0 24px 12px;display:flex;justify-content:flex-end}
+  .tn-fbar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;background:#111;border:1px solid var(--line2);border-radius:14px;padding:10px 14px}
+  .tn-f{display:flex;align-items:center;gap:8px}
+  .tn-f>label{font-size:13px;font-weight:800;color:#c9a84c;white-space:nowrap}
+  .tn-f .rt-sel{height:44px;font-size:16px;padding:0 14px;min-width:110px;border-color:#4a4a4a;cursor:pointer}
+  .tn-f .rt-sel:focus{border-color:var(--gold)}
+  .tn-psw{display:flex;gap:6px}
+  .tn-pbtn{height:44px;min-width:96px;padding:0 18px;border-radius:10px;border:1.5px solid #3a3a3a;background:#0d0d0d;color:#9a9a9a;font-size:15px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:.15s}
+  .tn-pbtn i{width:10px;height:10px;border-radius:50%;display:inline-block;background:currentColor;opacity:.6}
+  .tn-pbtn:hover{border-color:#666;color:#ddd}
+  .tn-pbtn.on.p1{background:rgba(226,196,106,.18);border-color:#e2c46a;color:#f3dc92;box-shadow:0 0 0 3px rgba(226,196,106,.12)}
+  .tn-pbtn.on.p2{background:rgba(111,184,221,.18);border-color:#6fb8dd;color:#a9dcf3;box-shadow:0 0 0 3px rgba(111,184,221,.12)}
+  .tn-pbtn.on i{opacity:1;box-shadow:0 0 8px currentColor}
+  @media (max-width:640px){ .tn-fwrap{padding:0 16px 10px} .tn-fbar{width:100%;justify-content:space-between} }
   .rt-top-in{max-width:1320px;margin:0 auto;padding:12px 24px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
   .rt-title{background:linear-gradient(90deg,#fafafa 0%,#e2c46a 100%);-webkit-background-clip:text;background-clip:text;color:transparent;white-space:nowrap}
   .rt-sub{font-family:var(--mono);font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:#8a8a8a;margin-top:5px;display:flex;align-items:center;gap:8px}
@@ -974,15 +988,20 @@
         <div class="rt-sub" id="tnSub">Turnover · Plant 1 vs Plant 2 · <span id="tnRange">—</span></div>
       </div>
       <div class="rt-ctrl">
-        <span class="rt-act"><select class="rt-sel" id="tnYear" onchange="turnSetYear(this.value)"></select><small id="tnCapYear">조회 연도</small></span>
-        <span class="rt-act"><select class="rt-sel" id="tnMonth" onchange="turnSetMonth(this.value)"></select><small id="tnCapMonth">조회 월</small></span>
-        <span class="rt-act"><select class="rt-sel" id="tnPlant" onchange="turnSetPlant(this.value)"><option value="1공장">1공장</option><option value="2공장">2공장</option></select><small id="tnCapPlant">상세 공장</small></span>
         <span class="rt-act"><button class="rt-btn gold" id="tnInputBtn" onclick="turnToggleInput()">✎ 데이터 입력</button><small id="tnCapInput">엑셀 표 붙여넣기</small></span>
         <span class="rt-act"><button class="rt-btn green" id="tnExpBtn" onclick="turnExport()">⤓ Excel 다운로드</button><small id="tnCapExp">4개 시트</small></span>
         <span class="rt-act"><button class="rt-btn blue" id="tnReloadBtn" onclick="turnLoad(true)">↻ 새로고침</button><small id="tnCapReload">최신 데이터 다시 읽기</small></span>
         <span class="rt-act"><button class="rt-btn red" id="tnCloseBtn" onclick="closeTurn()">✕ 닫기</button><small id="tnCapClose">대시보드로 돌아가기 (ESC)</small></span>
       </div>
     </div>
+    <div class="tn-fwrap"><div class="tn-fbar">
+      <span class="tn-f"><label for="tnYear" id="tnCapYear">조회 연도</label><select class="rt-sel" id="tnYear" onchange="turnSetYear(this.value)"></select></span>
+      <span class="tn-f"><label for="tnMonth" id="tnCapMonth">조회 월</label><select class="rt-sel" id="tnMonth" onchange="turnSetMonth(this.value)"></select></span>
+      <span class="tn-f"><label id="tnCapPlant">상세 공장</label>
+        <select id="tnPlant" onchange="turnSetPlant(this.value)" style="display:none"><option value="1공장">1공장</option><option value="2공장">2공장</option></select>
+        <span class="tn-psw"><button class="tn-pbtn p1" id="tnPb1" onclick="turnSetPlant('1공장')"><i></i><span id="tnPb1t">1공장</span></button><button class="tn-pbtn p2" id="tnPb2" onclick="turnSetPlant('2공장')"><i></i><span id="tnPb2t">2공장</span></button></span>
+      </span>
+    </div></div>
   </div>
   <div class="rt-wrap">
     <div class="rt-card tn-input" id="tnInput" style="display:none">
@@ -3557,7 +3576,7 @@ function turnApplyLang(){
   $("tnInT").textContent=T.inT; $("tnInL0").textContent=T.inPlant; $("tnInL1").textContent=T.inYear; $("tnInHoldT").textContent=T.inHoldT;
   $("tnInText").placeholder=T.inPh; $("tnInHold").placeholder=T.inHoldPh; $("tnInSave").textContent=T.inSave; $("tnInCancel").textContent=T.inCancel;
   const po=$("tnInPlant").options; po[0].textContent=T.p1; po[1].textContent=T.p2;
-  const pp=$("tnPlant").options; pp[0].textContent=T.p1; pp[1].textContent=T.p2;
+  const pp=$("tnPlant").options; pp[0].textContent=T.p1; pp[1].textContent=T.p2; $("tnPb1t").textContent=T.p1; $("tnPb2t").textContent=T.p2;
 }
 try{ const _setLang1=setLang; setLang=function(l){ _setLang1(l); try{ turnApplyLang(); if($("turnModal").classList.contains("open")) turnRender(); }catch(_){ } }; }catch(_){ }
 
@@ -3653,7 +3672,7 @@ function turnRender(){
   const entAll=[...new Set([...ent1,...ent2])].sort((a,b)=>a-b);
   if(!turnMonth||!entAll.includes(turnMonth)) turnMonth=entAll[entAll.length-1]||1;
   $("tnMonth").innerHTML=entAll.map(m=>`<option value="${m}"${m===turnMonth?" selected":""}>${T.mo[m-1]}</option>`).join("");
-  $("tnPlant").value=turnPlant;
+  $("tnPlant").value=turnPlant; $("tnPb1").classList.toggle("on",turnPlant==="1공장"); $("tnPb2").classList.toggle("on",turnPlant==="2공장");
   $("tnRange").textContent=`${Y}`;
   $("tnStatus").innerHTML=T.status(Y,ent1.length,ent2.length)+`<span class="rt-legend"><span><i class="rt-bg1"></i>${T.p1}</span><span><i class="rt-bg2"></i>${T.p2}</span></span>`;
 
