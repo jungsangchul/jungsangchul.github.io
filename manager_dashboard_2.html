@@ -519,6 +519,17 @@
   .rt-grid2{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:14px;margin-bottom:14px}
   .rt-grid2>.rt-card{margin-bottom:0}
   .rt-chart{position:relative;height:300px;width:100%;min-width:0}
+  details.rt-more{margin-top:10px}
+  details.rt-more>summary{list-style:none;display:inline-flex;align-items:center;gap:8px;height:34px;padding:0 14px;border:1px solid var(--line2);border-radius:999px;background:#0d0d0d;color:#d6c27a;font-weight:700;font-size:12.5px;cursor:pointer;user-select:none}
+  details.rt-more>summary::-webkit-details-marker{display:none}
+  details.rt-more>summary:hover{border-color:var(--gold);background:rgba(201,168,76,.1)}
+  details.rt-more>summary .ar{display:inline-block;transition:transform .2s}
+  details.rt-more[open]>summary .ar{transform:rotate(180deg)}
+  details.rt-more>summary .c{display:none}
+  details.rt-more[open]>summary .c{display:inline}
+  details.rt-more[open]>summary .o{display:none}
+  details.rt-more>.rt-tw{margin-top:10px}
+
   .rt-team-ctrl{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;margin-bottom:12px}
   .rt-team-grp{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
   .rt-team-grp>small{font-family:var(--mono);font-size:12px;color:#888;margin-right:2px}
@@ -1056,13 +1067,13 @@
     <div class="rt-card">
       <div class="h"><h3 id="rtH1">월별 출근율 추이 — 1공장 vs 2공장</h3><span class="d" id="rtD1">monthly · jan–dec</span></div>
       <div class="rt-chart"><canvas id="rtChMonth"></canvas></div>
-      <div class="rt-tw"><table class="rt-t" id="rtTbMonth"></table></div>
+      <details class="rt-more"><summary><span class="ar">▾</span><span class="o rt-more-o">세부데이터 펼치기</span><span class="c rt-more-c">세부데이터 접기</span></summary><div class="rt-tw"><table class="rt-t" id="rtTbMonth"></table></div></details>
       <div class="rt-note" id="rtN1"></div>
     </div>
     <div class="rt-card">
       <div class="h"><h3 id="rtH2">일별 비교 — 선택 월</h3><span class="d" id="rtD2">daily · selected month</span></div>
       <div class="rt-chart"><canvas id="rtChDay"></canvas></div>
-      <div class="rt-tw"><table class="rt-t" id="rtTbDay"></table></div>
+      <details class="rt-more"><summary><span class="ar">▾</span><span class="o rt-more-o">세부데이터 펼치기</span><span class="c rt-more-c">세부데이터 접기</span></summary><div class="rt-tw"><table class="rt-t" id="rtTbDay"></table></div></details>
     </div>
     <div class="rt-card">
       <div class="h"><h3 id="rtTeamH">팀별 출근율 — 현황 분석</h3><span class="d">by team</span></div>
@@ -1072,7 +1083,7 @@
       <div class="h"><h3 id="rtH7">특별일 · 연휴 전후 결근율 — 공휴일 · 기념일 영향</h3><span class="d" id="rtD7">holidays · special days</span></div>
       <div class="rt-sum3" id="rtEvSum"></div>
       <div class="rt-chart sm"><canvas id="rtChEv"></canvas></div>
-      <div class="rt-tw"><table class="rt-t" id="rtTbEv"></table></div>
+      <details class="rt-more"><summary><span class="ar">▾</span><span class="o rt-more-o">세부데이터 펼치기</span><span class="c rt-more-c">세부데이터 접기</span></summary><div class="rt-tw"><table class="rt-t" id="rtTbEv"></table></div></details>
       <div class="rt-note" id="rtN7"></div>
       <div class="rt-evform">
         <label><span id="rtEvL0">날짜</span><input type="date" id="rtEvDate"></label>
@@ -2917,6 +2928,7 @@ function rateApplyLang(){
   $("rtExpBtn").textContent=T.exp; $("rtReloadBtn").textContent=T.reload; $("rtCloseBtn").textContent=T.close;
   $("rtCapMonth").textContent=T.capMonth; $("rtCapExp").textContent=T.capExp; $("rtCapReload").textContent=T.capReload; $("rtCapClose").textContent=T.capClose;
   $("rtH1").textContent=T.h1; $("rtH7").textContent=T.h7; $("rtN7").textContent=T.n7; T.evL.forEach((v,i)=>$("rtEvL"+i).textContent=v); $("rtEvAdd").textContent=T.evAdd; const ko=$("rtEvKind").options; ko[0].textContent=T.evKind.observance; ko[1].textContent=T.evKind.holiday; ko[2].textContent=T.evKind.company; ko[3].textContent=T.evKind.payday; ko[4].textContent=T.evKind.other; const po=$("rtEvPlant").options; po[0].textContent=T.p1+"·"+T.p2; po[1].textContent=T.p1; po[2].textContent=T.p2; $("rtH3").textContent=T.h3; $("rtH4").textContent=T.h4; $("rtH6").textContent=T.h6;
+  document.querySelectorAll(".rt-more-o").forEach(e=>e.textContent=lang==="es"?"Ver detalle":"세부데이터 펼치기"); document.querySelectorAll(".rt-more-c").forEach(e=>e.textContent=lang==="es"?"Ocultar detalle":"세부데이터 접기");
   $("rtN1").textContent=T.n1; $("rtN6").textContent=T.n6; $("rtHow").innerHTML=RATE_AUTOSAVE?T.how:T.howOff; $("rtHowT").textContent=T.howT;
 }
 try{ const _setLang0=setLang; setLang=function(l){ _setLang0(l); try{ rateApplyLang(); if($("rateModal").classList.contains("open")) rateRender(); }catch(_){ } }; }catch(_){ }
@@ -3186,6 +3198,8 @@ const RT_TEAM_I18N={
       note:"Días laborables = días guardados en el registro de asistencia (sin domingos ni descansos). Plantilla = empleados activos ese día según el maestro; asistentes = con registro de entrada (o salida por la tarde). Departamento según el maestro actual.",
       cAtt:"Asistencia",avg:"Promedio planta",sheet:"Por_departamento",best:"Mejor",worst:"Peor",gap:"Brecha"}
 };
+let rtTeamOpen=false;
+function rtMoreSum(){ const es=lang==="es"; return `<summary><span class="ar">▾</span><span class="o">${es?"Ver detalle":"세부데이터 펼치기"}</span><span class="c">${es?"Ocultar detalle":"세부데이터 접기"}</span></summary>`; }
 let rtTeamPlant=(typeof TRESS_THIS!=="undefined"?TRESS_THIS:"1"), rtTeamPeriod="month", rtTeamSort="rate", rtTeamCache={}, rtTeamLast=null, rtTeamSeq=0;
 const rtTT=()=>RT_TEAM_I18N[lang]||RT_TEAM_I18N.ko;
 function rtTeamSet(k,v){ if(k==="plant") rtTeamPlant=v; else if(k==="period") rtTeamPeriod=v; else if(k==="sort") rtTeamSort=v; rateTeamRender(); }
@@ -3268,7 +3282,8 @@ async function rateTeamRender(){
   const hmax=Math.max(.001,...hv);
   const hc=v=>v==null?`<td class="m">–</td>`:`<td class="heat" style="background:rgba(224,92,92,${(0.08+0.72*Math.min(1,v/hmax)).toFixed(2)})">${rateFmtP(v)}</td>`;
   const heat=`<div class="rt-team-sub">${T.heatH}</div><div class="rt-tw"><table class="rt-t"><thead><tr><th style="text-align:left">${T.team}</th>${[1,2,3,4,5,6].map(i=>`<th style="${i===1?"color:#ef9a9a":""}">${R.wdLong[i]}</th>`).join("")}</tr></thead><tbody>${list.map(x=>`<tr><td class="n" style="text-align:left;white-space:normal">${escapeHtml(x.team)}</td>${[1,2,3,4,5,6].map(i=>hc(abr(wdA[x.team][i]))).join("")}</tr>`).join("")}</tbody></table></div>`;
-  box.innerHTML=ctrl+tiles+`<div class="rt-chart" id="rtTeamChWrap" style="height:${Math.max(220,list.length*34+60)}px"><canvas id="rtChTeam"></canvas></div>`+table+heat+
+  const more=h=>`<details class="rt-more"${rtTeamOpen?" open":""} ontoggle="rtTeamOpen=this.open">${rtMoreSum()}${h}</details>`;
+  box.innerHTML=ctrl+tiles+`<div class="rt-chart" id="rtTeamChWrap" style="height:${Math.max(220,list.length*34+60)}px"><canvas id="rtChTeam"></canvas></div>`+more(table)+heat+
     `<div class="rt-note">${T.note}</div>`;
   /* 막대 그래프: 팀별 출근율 + 공장 평균선 */
   const avgP=totRow.att!=null?+(totRow.att*100).toFixed(2):null;
