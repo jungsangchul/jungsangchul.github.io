@@ -456,14 +456,15 @@
   @keyframes rtIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
   .rt-top{position:sticky;top:0;z-index:5;background:linear-gradient(180deg,#141414,#0e0e0e);border-bottom:1px solid var(--line2);box-shadow:0 8px 24px rgba(0,0,0,.45)}
   .rt-top::before{content:'';display:block;height:2px;background:linear-gradient(90deg,var(--gold) 0%,#d4651a 45%,#6fb8dd 100%)}
-  .tn-fwrap{max-width:1320px;margin:0 auto;padding:0 24px 12px;display:flex;justify-content:flex-end}
-  .tn-fbar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;background:#111;border:1px solid var(--line2);border-radius:14px;padding:10px 14px}
-  .tn-f{display:flex;align-items:center;gap:8px}
+  .tn-fwrap{max-width:1320px;margin:0 auto;padding:0 24px 12px;display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap}
+  .tn-ctrl{margin-left:auto}
+  .tn-fbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:#111;border:1px solid var(--line2);border-radius:14px;padding:8px 12px}
+  .tn-f{display:flex;align-items:center;gap:6px}
   .tn-f>label{font-size:13px;font-weight:800;color:#c9a84c;white-space:nowrap}
-  .tn-f .rt-sel{height:44px;font-size:16px;padding:0 14px;min-width:110px;border-color:#4a4a4a;cursor:pointer}
+  .tn-f .rt-sel{height:44px;font-size:16px;padding:0 10px;min-width:96px;border-color:#4a4a4a;cursor:pointer}
   .tn-f .rt-sel:focus{border-color:var(--gold)}
   .tn-psw{display:flex;gap:6px}
-  .tn-pbtn{height:44px;min-width:96px;padding:0 18px;border-radius:10px;border:1.5px solid #3a3a3a;background:#0d0d0d;color:#9a9a9a;font-size:15px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:.15s}
+  .tn-pbtn{height:44px;min-width:86px;padding:0 14px;border-radius:10px;border:1.5px solid #3a3a3a;background:#0d0d0d;color:#9a9a9a;font-size:15px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:.15s}
   .tn-pbtn i{width:10px;height:10px;border-radius:50%;display:inline-block;background:currentColor;opacity:.6}
   .tn-pbtn:hover{border-color:#666;color:#ddd}
   .tn-pbtn.on.p1{background:rgba(226,196,106,.18);border-color:#e2c46a;color:#f3dc92;box-shadow:0 0 0 3px rgba(226,196,106,.12)}
@@ -987,12 +988,6 @@
         <div class="rt-title" id="tnTitle">퇴사율 분석</div>
         <div class="rt-sub" id="tnSub">Turnover · Plant 1 vs Plant 2 · <span id="tnRange">—</span></div>
       </div>
-      <div class="rt-ctrl">
-        <span class="rt-act"><button class="rt-btn gold" id="tnInputBtn" onclick="turnToggleInput()">✎ 데이터 입력</button><small id="tnCapInput">엑셀 표 붙여넣기</small></span>
-        <span class="rt-act"><button class="rt-btn green" id="tnExpBtn" onclick="turnExport()">⤓ Excel 다운로드</button><small id="tnCapExp">4개 시트</small></span>
-        <span class="rt-act"><button class="rt-btn blue" id="tnReloadBtn" onclick="turnLoad(true)">↻ 새로고침</button><small id="tnCapReload">최신 데이터 다시 읽기</small></span>
-        <span class="rt-act"><button class="rt-btn red" id="tnCloseBtn" onclick="closeTurn()">✕ 닫기</button><small id="tnCapClose">대시보드로 돌아가기 (ESC)</small></span>
-      </div>
     </div>
     <div class="tn-fwrap"><div class="tn-fbar">
       <span class="tn-f"><label for="tnYear" id="tnCapYear">조회 연도</label><select class="rt-sel" id="tnYear" onchange="turnSetYear(this.value)"></select></span>
@@ -1001,7 +996,14 @@
         <select id="tnPlant" onchange="turnSetPlant(this.value)" style="display:none"><option value="1공장">1공장</option><option value="2공장">2공장</option></select>
         <span class="tn-psw"><button class="tn-pbtn p1" id="tnPb1" onclick="turnSetPlant('1공장')"><i></i><span id="tnPb1t">1공장</span></button><button class="tn-pbtn p2" id="tnPb2" onclick="turnSetPlant('2공장')"><i></i><span id="tnPb2t">2공장</span></button></span>
       </span>
-    </div></div>
+    </div>
+      <div class="rt-ctrl tn-ctrl">
+        <span class="rt-act"><button class="rt-btn gold" id="tnInputBtn" onclick="turnToggleInput()">✎ 데이터 입력</button><small id="tnCapInput">엑셀 표 붙여넣기</small></span>
+        <span class="rt-act"><button class="rt-btn green" id="tnExpBtn" onclick="turnExport()">⤓ Excel 다운로드</button><small id="tnCapExp">4개 시트</small></span>
+        <span class="rt-act"><button class="rt-btn blue" id="tnReloadBtn" onclick="turnLoad(true)">↻ 새로고침</button><small id="tnCapReload">최신 데이터 다시 읽기</small></span>
+        <span class="rt-act"><button class="rt-btn red" id="tnCloseBtn" onclick="closeTurn()">✕ 닫기</button><small id="tnCapClose">대시보드로 돌아가기 (ESC)</small></span>
+      </div>
+    </div>
   </div>
   <div class="rt-wrap">
     <div class="rt-card tn-input" id="tnInput" style="display:none">
