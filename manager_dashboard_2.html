@@ -519,6 +519,19 @@
   .rt-grid2{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:14px;margin-bottom:14px}
   .rt-grid2>.rt-card{margin-bottom:0}
   .rt-chart{position:relative;height:300px;width:100%;min-width:0}
+  .rt-team-ctrl{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;margin-bottom:12px}
+  .rt-team-grp{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+  .rt-team-grp>small{font-family:var(--mono);font-size:12px;color:#888;margin-right:2px}
+  .rt-team-pill{height:32px;padding:0 13px;border:1px solid var(--line2);border-radius:999px;background:#0d0d0d;color:#bdbdbd;font-weight:700;font-size:12.5px;cursor:pointer}
+  .rt-team-pill.on{background:rgba(201,168,76,.16);border-color:var(--gold);color:#f3dc92}
+  .rt-team-pill.on.p2{background:rgba(111,184,221,.14);border-color:#6fb8dd;color:#a9dcf3}
+  .rt-team-tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:12px}
+  .rt-team-tile{border:1px solid var(--line2);border-left:3px solid var(--c);border-radius:10px;padding:10px 12px;background:#111;min-width:0}
+  .rt-team-tile .k{font-family:var(--mono);font-size:12px;color:#888}
+  .rt-team-tile .v{font-size:22px;font-weight:800;color:var(--c);margin:2px 0}
+  .rt-team-tile .s{font-size:12px;color:#bbb;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .rt-team-sub{font-weight:700;color:#e0e0e0;font-size:13px;margin:16px 0 8px}
+
   .rt-chart canvas{max-width:100%!important}
   .rt-chart.sm{height:250px}
   .rt-chart.tall{height:380px}
@@ -1050,6 +1063,10 @@
       <div class="h"><h3 id="rtH2">일별 비교 — 선택 월</h3><span class="d" id="rtD2">daily · selected month</span></div>
       <div class="rt-chart"><canvas id="rtChDay"></canvas></div>
       <div class="rt-tw"><table class="rt-t" id="rtTbDay"></table></div>
+    </div>
+    <div class="rt-card">
+      <div class="h"><h3 id="rtTeamH">팀별 출근율 — 현황 분석</h3><span class="d">by team</span></div>
+      <div id="rtTeamBox"></div>
     </div>
     <div class="rt-card">
       <div class="h"><h3 id="rtH7">특별일 · 연휴 전후 결근율 — 공휴일 · 기념일 영향</h3><span class="d" id="rtD7">holidays · special days</span></div>
@@ -2711,7 +2728,7 @@ const RATE_C={p1:"#e2c46a",p2:"#6fb8dd",mon:"#e05c5c",grid:"rgba(255,255,255,.06
 const RATE_I18N={
   ko:{btn:"출근율 분석",title:"출근율 분석",
     h1:"월별 출근율 추이 — 1공장 vs 2공장",h2:m=>`일별 비교 — ${m}`,h3:"요일별 결근율 — 전체기간",h4:"월요일 효과 — 평일(화~금) 대비",h5:y=>`${y}년 월별 월요일 vs 평일 결근율 추이`,h6:"월별 · 요일별 결근율 (가중평균)",
-    capMonth:"조회 월",capExp:"6개 시트 · 서식 포함",capReload:"최신 데이터 다시 읽기",capClose:"대시보드로 돌아가기 (ESC)",exp:"⤓ Excel 다운로드",expBusy:"만드는 중…",reload:"↻ 새로고침",close:"✕ 닫기",
+    capMonth:"조회 월",capExp:"7개 시트 · 서식 포함",capReload:"최신 데이터 다시 읽기",capClose:"대시보드로 돌아가기 (ESC)",exp:"⤓ Excel 다운로드",expBusy:"만드는 중…",reload:"↻ 새로고침",close:"✕ 닫기",
     p1:"1공장",p2:"2공장",p1l:"1공장 · Monclova",p2l:"2공장 · Torreón",
     kAttMonth:"당월 출근율",kCum:"전체 누계 출근율",kMon:"월요일 효과 (결근율)",kLast:"최근 입력일",kDiff:"1공장 − 2공장 (당월)",
     sDays:"근무일",sHold:"평균보유",sAbs:"결근",sAbsRate:"결근율",sAttRate:"출근율",sPres:"평균출근",sMon:"월요일",sWk:"평일(화~금)",sDiff:"차이",sRatio:"배율",sExcess:"월요일 평균 초과결근",sExcessS:"초과결근",sMonDays:"월요일 수",sPerDay:"명/일",sPp:"%p",
@@ -2731,7 +2748,7 @@ const RATE_I18N={
     xs:["월별현황","일별비교","요일별분석","월요일효과","특별일분석","원본데이터"],xTitle:"YURA HARNESS MÉXICO · 출근율 분석",xSrc:"출처",xSrcV:{excel:"엑셀",manual:"수동",auto:"대시보드 자동"},xPlant:"공장",xKind:"구분"},
   es:{btn:"Análisis asistencia",title:"Análisis de asistencia",
     h1:"Tendencia mensual de asistencia — Planta 1 vs Planta 2",h2:m=>`Comparación diaria — ${m}`,h3:"Ausentismo por día de la semana — total",h4:"Efecto lunes — vs. mar–vie",h5:y=>`${y}: lunes vs. entre semana por mes`,h6:"Ausentismo por mes y día de la semana (ponderado)",
-    capMonth:"Mes",capExp:"6 hojas · con formato",capReload:"Releer datos",capClose:"Volver al tablero (ESC)",exp:"⤓ Descargar Excel",expBusy:"Generando…",reload:"↻ Actualizar",close:"✕ Cerrar",
+    capMonth:"Mes",capExp:"7 hojas · con formato",capReload:"Releer datos",capClose:"Volver al tablero (ESC)",exp:"⤓ Descargar Excel",expBusy:"Generando…",reload:"↻ Actualizar",close:"✕ Cerrar",
     p1:"Planta 1",p2:"Planta 2",p1l:"Planta 1 · Monclova",p2l:"Planta 2 · Torreón",
     kAttMonth:"Asistencia del mes",kCum:"Asistencia acumulada",kMon:"Efecto lunes (ausentismo)",kLast:"Último día capturado",kDiff:"Planta 1 − Planta 2 (mes)",
     sDays:"Días",sHold:"Plantilla prom.",sAbs:"Ausencias",sAbsRate:"Ausentismo",sAttRate:"Asistencia",sPres:"Asist. prom.",sMon:"Lunes",sWk:"Mar–Vie",sDiff:"Dif.",sRatio:"Razón",sExcess:"Ausencias extra promedio lunes",sExcessS:"Aus. extra",sMonDays:"Nº lunes",sPerDay:"pers./día",sPp:"pp",
@@ -2919,7 +2936,7 @@ async function rateLoad(force){
   $("rtStatus").innerHTML=rt("loading");
   const btn=$("rtReloadBtn"); btn.disabled=true;
   rateLoading=(async()=>{
-    try{ [rateRows]=await Promise.all([rateFetchAll(),rateEvLoad()]); rateLoaded=true; }
+    try{ if(force) rtTeamCache={}; [rateRows]=await Promise.all([rateFetchAll(),rateEvLoad()]); rateLoaded=true; }
     catch(e){ console.error(e); $("rtStatus").innerHTML=`<span style="color:#ef9a9a">${rt("err")}</span>`; rateRows=[]; }
     finally{ rateLoading=null; btn.disabled=false; }
     rateRender();
@@ -3152,6 +3169,147 @@ function rateRender(){
       months.map((ym,i)=>arr[i].week.days||arr[i].mon.days?row(rateYmLabel(ym),arr[i]):"").join("")+row(T.tTot,tot,"tot")+`</tbody></table></div></div>`; };
   $("rtHeat").innerHTML=heatTable(T.p1l,RATE_C.p1,mw1,w1)+heatTable(T.p2l,RATE_C.p2,mw2,w2);
   rateLast={months,ms,tot1,tot2,w1,w2,mw1,mw2,shown,ca1,ca2,m1,m2,evRows,evName,classify};
+  rateTeamRender();
+}
+
+
+/* ---------- 팀별 출근율 (att_rate_daily RPC · 팀×일 집계) ---------- */
+const RT_TEAM_I18N={
+  ko:{h:"팀별 출근율 — 현황 분석",d:"by team",plant:"공장",period:"기간",pMonth:"선택 월",pAll:"전체기간",sort:"정렬",sRate:"출근율 낮은 순",sHead:"인원 많은 순",sName:"팀명 순",
+      team:"팀",days:"근무일",hold:"평균 재직",pres:"평균 출근",abs:"결근 연인원",att:"출근율",absR:"결근율",mon:"월요일 결근율",wk:"평일(화~금) 결근율",prev:"전월 대비",tot:"공장 전체",
+      heatH:"팀 × 요일 결근율",trendH:"팀별 일자 출근율",loading:"팀별 데이터 집계 중…",err:"팀별 데이터를 불러오지 못했습니다",none:"해당 기간 데이터 없음",
+      note:"근무일 = 출근율 로그에 저장된 날(일요일·휴무 제외). 재직 = 그날 기준 입사일 ≤ 날짜 < 퇴사일인 직원 마스터 인원, 출근 = 출근 타각(또는 오후 퇴근 타각)이 있는 인원. 팀은 현재 직원 마스터의 팀 기준.",
+      cAtt:"출근율",avg:"공장 평균",sheet:"팀별출근율",best:"최고",worst:"최저",gap:"팀간 격차"},
+  es:{h:"Asistencia por departamento",d:"by team",plant:"Planta",period:"Periodo",pMonth:"Mes seleccionado",pAll:"Todo el periodo",sort:"Orden",sRate:"Menor asistencia",sHead:"Más personal",sName:"Nombre",
+      team:"Departamento",days:"Días lab.",hold:"Plantilla prom.",pres:"Asistentes prom.",abs:"Faltas (pers-día)",att:"Asistencia",absR:"Ausentismo",mon:"Ausentismo lunes",wk:"Ausentismo mar–vie",prev:"vs mes ant.",tot:"Total planta",
+      heatH:"Ausentismo por departamento × día",trendH:"Asistencia diaria por departamento",loading:"Calculando por departamento…",err:"No se pudieron cargar los datos por departamento",none:"Sin datos en el periodo",
+      note:"Días laborables = días guardados en el registro de asistencia (sin domingos ni descansos). Plantilla = empleados activos ese día según el maestro; asistentes = con registro de entrada (o salida por la tarde). Departamento según el maestro actual.",
+      cAtt:"Asistencia",avg:"Promedio planta",sheet:"Por_departamento",best:"Mejor",worst:"Peor",gap:"Brecha"}
+};
+let rtTeamPlant=(typeof TRESS_THIS!=="undefined"?TRESS_THIS:"1"), rtTeamPeriod="month", rtTeamSort="rate", rtTeamCache={}, rtTeamLast=null, rtTeamSeq=0;
+const rtTT=()=>RT_TEAM_I18N[lang]||RT_TEAM_I18N.ko;
+function rtTeamSet(k,v){ if(k==="plant") rtTeamPlant=v; else if(k==="period") rtTeamPeriod=v; else if(k==="sort") rtTeamSort=v; rateTeamRender(); }
+function rtYmAdd(ym,n){ const [y,m]=ym.split("-").map(Number); const d=new Date(Date.UTC(y,m-1+n,1)); return d.toISOString().slice(0,7); }
+function rtYmEnd(ym){ const [y,m]=ym.split("-").map(Number); return new Date(Date.UTC(y,m,0)).toISOString().slice(0,10); }
+async function rtTeamFetch(plant,from,to){
+  const key=`${plant}|${from}|${to}`; if(rtTeamCache[key]) return rtTeamCache[key];
+  const P=TRESS_PLANTS[plant];
+  const res=await fetch(REST("rpc/"+P.rate),{method:"POST",headers:Object.assign({},HEADERS,{"Content-Type":"application/json"}),body:JSON.stringify({p_from:from,p_to:to,p_factory:null})});
+  if(!res.ok) throw new Error(await res.text());
+  const rows=(await res.json()).map(r=>({d:String(r.d).slice(0,10),team:r.team||"(팀 미지정)",h:+r.headcount||0,p:+r.attended||0}));
+  rtTeamCache[key]=rows; return rows;
+}
+function rtTeamAgg(rows,daySet,filter){
+  const by={};
+  for(const r of rows){ if(!daySet.has(r.d)) continue; if(filter&&!filter(r.d)) continue;
+    const t=by[r.team]=by[r.team]||{h:0,p:0,days:new Set()}; t.h+=r.h; t.p+=r.p; t.days.add(r.d); }
+  return by;
+}
+async function rateTeamRender(){
+  const box=$("rtTeamBox"); if(!box) return;
+  const T=rtTT(), R=RATE_I18N[lang]||RATE_I18N.ko;
+  $("rtTeamH").textContent=T.h;
+  const months=rateMonths(); if(!months.length||!rateMonth){ box.innerHTML=`<div class="rt-empty">${T.none}</div>`; return; }
+  const plantKey=TRESS_PLANTS[rtTeamPlant].ratePlant;
+  const pm=rateDayMap(plantKey);
+  const today=todayDate();
+  let from,to;
+  if(rtTeamPeriod==="month"){ from=rtYmAdd(rateMonth,-1)+"-01"; to=rtYmEnd(rateMonth); }
+  else { from=months[0]+"-01"; to=rtYmEnd(months[months.length-1]); }
+  if(to>today) to=today;
+  const ctrl=`<div class="rt-team-ctrl">
+    <span class="rt-team-grp"><small>${T.plant}</small>${["1","2"].map(p=>`<button class="rt-team-pill ${rtTeamPlant===p?"on p"+p:""}" onclick="rtTeamSet('plant','${p}')">${plantLbl(p)}</button>`).join("")}</span>
+    <span class="rt-team-grp"><small>${T.period}</small><button class="rt-team-pill ${rtTeamPeriod==="month"?"on":""}" onclick="rtTeamSet('period','month')">${T.pMonth} · ${rateYmLabel(rateMonth)}</button><button class="rt-team-pill ${rtTeamPeriod==="all"?"on":""}" onclick="rtTeamSet('period','all')">${T.pAll}</button></span>
+    <span class="rt-team-grp"><small>${T.sort}</small><select class="rt-sel" style="height:32px" onchange="rtTeamSet('sort',this.value)">${[["rate",T.sRate],["head",T.sHead],["name",T.sName]].map(([v,l])=>`<option value="${v}"${rtTeamSort===v?" selected":""}>${l}</option>`).join("")}</select></span></div>`;
+  const seq=++rtTeamSeq;
+  box.innerHTML=ctrl+`<div class="rt-empty">${T.loading}</div>`;
+  let rows;
+  try{ rows=await rtTeamFetch(rtTeamPlant,from,to); }catch(e){ console.error(e); if(seq===rtTeamSeq) box.innerHTML=ctrl+`<div class="rt-empty" style="color:#ef9a9a">${T.err}</div>`; return; }
+  if(seq!==rtTeamSeq) return;
+  /* 근무일: 출근율 로그에 저장된 날 + 그날 출근자 있음 (로그가 없으면 출근자 있는 날) */
+  const tot={}; rows.forEach(r=>{ tot[r.d]=(tot[r.d]||0)+r.p; });
+  const hasLog=Object.keys(pm).length>0;
+  const daySet=new Set(Object.keys(tot).filter(d=>tot[d]>0&&(!hasLog||pm[d])));
+  const inCur=d=>rtTeamPeriod==="all"||rateYm(d)===rateMonth;
+  const prevYm=rtYmAdd(rateMonth,-1);
+  const cur=rtTeamAgg(rows,daySet,inCur);
+  const prv=rtTeamPeriod==="month"?rtTeamAgg(rows,daySet,d=>rateYm(d)===prevYm):{};
+  const mon=rtTeamAgg(rows,daySet,d=>inCur(d)&&rateWd(d)===1);
+  const wk=rtTeamAgg(rows,daySet,d=>inCur(d)&&rateWd(d)>=2&&rateWd(d)<=5);
+  const curDays=[...daySet].filter(inCur).sort();
+  if(!curDays.length){ box.innerHTML=ctrl+`<div class="rt-empty">${T.none}</div>`; rtTeamLast=null; return; }
+  const ar=a=>a&&a.h?a.p/a.h:null, abr=a=>a&&a.h?(a.h-a.p)/a.h:null;
+  let list=Object.keys(cur).filter(t=>cur[t].h>0).map(t=>{ const c=cur[t], n=c.days.size;
+    return {team:t,days:n,hold:c.h/n,pres:c.p/n,abs:c.h-c.p,att:ar(c),absR:abr(c),mon:abr(mon[t]),wk:abr(wk[t]),prev:(prv[t]&&prv[t].h&&ar(c)!=null)?ar(c)-ar(prv[t]):null}; });
+  if(rtTeamSort==="rate") list.sort((a,b)=>(a.att??2)-(b.att??2));
+  else if(rtTeamSort==="head") list.sort((a,b)=>b.hold-a.hold);
+  else list.sort((a,b)=>a.team.localeCompare(b.team,"ko"));
+  const sum=Object.values(cur).reduce((s,c)=>({h:s.h+c.h,p:s.p+c.p}),{h:0,p:0});
+  const sumPrev=Object.values(prv).reduce((s,c)=>({h:s.h+c.h,p:s.p+c.p}),{h:0,p:0});
+  const sumMon=Object.values(mon).reduce((s,c)=>({h:s.h+c.h,p:s.p+c.p}),{h:0,p:0});
+  const sumWk=Object.values(wk).reduce((s,c)=>({h:s.h+c.h,p:s.p+c.p}),{h:0,p:0});
+  const totRow={team:T.tot,days:curDays.length,hold:sum.h/curDays.length,pres:sum.p/curDays.length,abs:sum.h-sum.p,att:ar(sum),absR:abr(sum),mon:abr(sumMon),wk:abr(sumWk),prev:(sumPrev.h&&ar(sum)!=null)?ar(sum)-ar(sumPrev):null};
+  const pc=rtTeamPlant==="1"?RATE_C.p1:RATE_C.p2;
+  /* 요약 타일 */
+  const valid=list.filter(x=>x.att!=null&&x.hold>=3);
+  const best=valid.slice().sort((a,b)=>b.att-a.att)[0], worst=valid.slice().sort((a,b)=>a.att-b.att)[0];
+  const tile=(k,v,s,c)=>`<div class="rt-team-tile" style="--c:${c}"><div class="k">${k}</div><div class="v">${v}</div><div class="s">${escapeHtml(s)}</div></div>`;
+  const tiles=`<div class="rt-team-tiles">${tile(T.avg,rateFmtP(totRow.att),`${plantLbl(rtTeamPlant)} · ${curDays.length}${lang==="es"?" días":"일"}`,pc)}${best?tile(T.best,rateFmtP(best.att),best.team,"#81c784"):""}${worst?tile(T.worst,rateFmtP(worst.att),worst.team,"#e05c5c"):""}${best&&worst?tile(T.gap,rateFmtPp(best.att-worst.att),`${T.best} − ${T.worst}`,"#b39ddb"):""}</div>`;
+  /* 표 */
+  const pC=v=>v==null?`<td class="m">–</td>`:`<td>${rateFmtP(v)}</td>`;
+  const attC=v=>{ if(v==null) return `<td class="m">–</td>`; const bad=totRow.att!=null&&v<totRow.att; return `<td><b style="color:${bad?"#ef9a9a":"#a5d6a7"}">${rateFmtP(v)}</b></td>`; };
+  const dC=v=>v==null?`<td class="m">–</td>`:`<td style="color:${v>=0?"#a5d6a7":"#ef9a9a"};font-weight:700">${rateFmtPp(v)}</td>`;
+  const tr=(x,cls="")=>`<tr class="${cls}"><td class="n" style="text-align:left;white-space:normal">${escapeHtml(x.team)}</td><td>${x.days}</td><td>${rateFmt1(x.hold)}</td><td>${rateFmt1(x.pres)}</td><td>${(x.abs||0).toLocaleString()}</td>${attC(x.att)}${pC(x.absR)}${pC(x.mon)}${pC(x.wk)}${rtTeamPeriod==="month"?dC(x.prev):""}</tr>`;
+  const table=`<div class="rt-tw"><table class="rt-t"><thead><tr><th style="text-align:left">${T.team}</th><th>${T.days}</th><th>${T.hold}</th><th>${T.pres}</th><th>${T.abs}</th><th>${T.att}</th><th>${T.absR}</th><th style="color:#ef9a9a">${T.mon}</th><th>${T.wk}</th>${rtTeamPeriod==="month"?`<th>${T.prev}<br>(${R.sPp})</th>`:""}</tr></thead><tbody>${list.map(x=>tr(x)).join("")}${tr(totRow,"tot")}</tbody></table></div>`;
+  /* 팀 × 요일 결근율 히트 */
+  const wdA={}; for(const t of Object.keys(cur)){ wdA[t]={}; for(let i=1;i<=6;i++) wdA[t][i]={h:0,p:0}; }
+  for(const r of rows){ if(!daySet.has(r.d)||!inCur(r.d)||!wdA[r.team]) continue; const w=rateWd(r.d); if(w<1||w>6) continue; wdA[r.team][w].h+=r.h; wdA[r.team][w].p+=r.p; }
+  const hv=[]; list.forEach(x=>{ for(let i=1;i<=6;i++){ const v=abr(wdA[x.team][i]); if(v!=null) hv.push(v); } });
+  const hmax=Math.max(.001,...hv);
+  const hc=v=>v==null?`<td class="m">–</td>`:`<td class="heat" style="background:rgba(224,92,92,${(0.08+0.72*Math.min(1,v/hmax)).toFixed(2)})">${rateFmtP(v)}</td>`;
+  const heat=`<div class="rt-team-sub">${T.heatH}</div><div class="rt-tw"><table class="rt-t"><thead><tr><th style="text-align:left">${T.team}</th>${[1,2,3,4,5,6].map(i=>`<th style="${i===1?"color:#ef9a9a":""}">${R.wdLong[i]}</th>`).join("")}</tr></thead><tbody>${list.map(x=>`<tr><td class="n" style="text-align:left;white-space:normal">${escapeHtml(x.team)}</td>${[1,2,3,4,5,6].map(i=>hc(abr(wdA[x.team][i]))).join("")}</tr>`).join("")}</tbody></table></div>`;
+  box.innerHTML=ctrl+tiles+`<div class="rt-chart" id="rtTeamChWrap" style="height:${Math.max(220,list.length*34+60)}px"><canvas id="rtChTeam"></canvas></div>`+table+heat+
+    `<div class="rt-team-sub">${T.trendH}</div><div class="rt-chart"><canvas id="rtChTeamDay"></canvas></div><div class="rt-note">${T.note}</div>`;
+  /* 막대 그래프: 팀별 출근율 + 공장 평균선 */
+  const avgP=totRow.att!=null?+(totRow.att*100).toFixed(2):null;
+  const avgLine={id:"rtAvgLine",afterDatasetsDraw(ch){ if(avgP==null) return; const x=ch.scales.x.getPixelForValue(avgP); const {top,bottom}=ch.chartArea; const c=ch.ctx; c.save(); c.strokeStyle=pc; c.setLineDash([5,4]); c.lineWidth=1.5; c.beginPath(); c.moveTo(x,top); c.lineTo(x,bottom); c.stroke(); c.setLineDash([]); c.fillStyle=pc; c.font="700 10px 'Space Mono',monospace"; c.textAlign="center"; c.fillText(`${T.avg} ${avgP.toFixed(1)}%`,x,top-4); c.restore(); }};
+  const minAtt=Math.min(...list.map(x=>x.att==null?1:x.att));
+  rateChart("rtChTeam",{type:"bar",data:{labels:list.map(x=>x.team),datasets:[{label:T.cAtt,data:list.map(x=>x.att==null?null:+(x.att*100).toFixed(2)),
+      backgroundColor:list.map(x=>x.att!=null&&totRow.att!=null&&x.att<totRow.att?"rgba(224,92,92,.55)":"rgba(129,199,132,.5)"),
+      borderColor:list.map(x=>x.att!=null&&totRow.att!=null&&x.att<totRow.att?"#e05c5c":"#81c784"),borderWidth:1.5,borderRadius:5,labelColor:pc}]},
+    options:{indexAxis:"y",responsive:true,maintainAspectRatio:false,layout:{padding:{top:16,right:56}},plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${T.cAtt}: ${c.parsed.x==null?"–":c.parsed.x.toFixed(1)+"%"}`}},rtLabels:{on:true}},
+      scales:{x:{min:Math.max(0,Math.floor(minAtt*100/5)*5-5),max:100,grid:{color:RATE_C.grid},ticks:{callback:v=>v+"%"}},y:{grid:{display:false},ticks:{color:"#d0d0d0",font:{weight:"700"}}}}},
+    plugins:[rateLabelPlugin,avgLine]});
+  /* 일자 추이 (선택 월 / 전체: 일별) — 인원 상위 6팀 + 공장 평균 */
+  const top=list.slice().sort((a,b)=>b.hold-a.hold).slice(0,6).map(x=>x.team);
+  const pal=["#81c784","#ffb74d","#ba68c8","#4dd0e1","#f06292","#aed581"];
+  const dd={}; rows.forEach(r=>{ if(!daySet.has(r.d)||!inCur(r.d)) return; (dd[r.d]=dd[r.d]||{})[r.team]=r; });
+  const dayTot=d=>{ let h=0,p=0; for(const t in dd[d]){ h+=dd[d][t].h; p+=dd[d][t].p; } return h?+(p/h*100).toFixed(2):null; };
+  rateChart("rtChTeamDay",{type:"line",data:{labels:curDays.map(d=>`${d.slice(5)} ${R.wd[rateWd(d)]}`),datasets:[
+      {label:T.avg,data:curDays.map(dayTot),borderColor:pc,backgroundColor:pc,borderWidth:3,pointRadius:3,tension:.25,borderDash:[6,4]},
+      ...top.map((t,i)=>({label:t,data:curDays.map(d=>{ const x=dd[d]&&dd[d][t]; return x&&x.h?+(x.p/x.h*100).toFixed(2):null; }),borderColor:pal[i],backgroundColor:pal[i],borderWidth:1.8,pointRadius:2,tension:.25,spanGaps:true}))]},
+    options:{responsive:true,maintainAspectRatio:false,interaction:{mode:"index",intersect:false},plugins:{legend:rateLegend,tooltip:rateTip,rtLabels:{on:false}},
+      scales:{x:{grid:{display:false},ticks:{maxRotation:0,autoSkip:true}},y:{suggestedMin:80,max:100,grid:{color:RATE_C.grid},ticks:{callback:v=>v+"%"}}}},
+    plugins:[rateLabelPlugin]});
+  rtTeamLast={plant:rtTeamPlant,period:rtTeamPeriod,month:rateMonth,list,totRow,days:curDays,wdA};
+}
+/* Excel 시트 추가 (rateExport에서 호출) */
+function rtTeamSheet(wb,put,hdr,title,widths,C,F,PCT,PP){
+  const L=rtTeamLast; if(!L) return; const T=rtTT(), R=RATE_I18N[lang]||RATE_I18N.ko;
+  const ws=wb.addWorksheet(T.sheet,{views:[{state:"frozen",ySplit:4}]});
+  const isM=L.period==="month"; const cols=isM?10:9;
+  title(ws,`${T.h} · ${plantLbl(L.plant)} · ${isM?rateYmLabel(L.month):T.pAll}`,cols+6);
+  hdr(ws,4,[T.team,T.days,T.hold,T.pres,T.abs,T.att,T.absR,T.mon,T.wk,...(isM?[T.prev]:[]),...[1,2,3,4,5,6].map(i=>R.wdLong[i])]);
+  let r=5; const pf=L.plant==="1"?C.p1:C.p2;
+  const row=(x,tot)=>{ const f=tot?C.tot:null; put(ws,r,1,x.team,null,{bold:true,fill:f||pf}).alignment={horizontal:"left",vertical:"middle",wrapText:true};
+    put(ws,r,2,x.days,"0",{fill:f}); put(ws,r,3,x.hold,"#,##0.0",{fill:f}); put(ws,r,4,x.pres,"#,##0.0",{fill:f}); put(ws,r,5,x.abs,"#,##0",{fill:f});
+    put(ws,r,6,x.att,PCT,{bold:true,fill:f,color:(!tot&&x.att!=null&&L.totRow.att!=null&&x.att<L.totRow.att)?C.red:C.bluef}); put(ws,r,7,x.absR,PCT,{fill:f}); put(ws,r,8,x.mon,PCT,{fill:f}); put(ws,r,9,x.wk,PCT,{fill:f});
+    let c=10; if(isM){ put(ws,r,c,x.prev,PP,{bold:true,fill:f,color:x.prev==null?"FF808080":(x.prev>=0?C.bluef:C.red)}); c++; }
+    for(let i=1;i<=6;i++){ const a=!tot&&L.wdA[x.team]?L.wdA[x.team][i]:null; put(ws,r,c+i-1,a&&a.h?(a.h-a.p)/a.h:null,PCT,{fill:f||(i===1?C.mon:null)}); }
+    r++; };
+  L.list.forEach(x=>row(x,false)); row(L.totRow,true);
+  ws.getCell(r+1,1).value="※ "+T.note; ws.getCell(r+1,1).font=F(false,"FF808080",9);
+  widths(ws,[30,8,10,10,11,10,10,12,13,...(isM?[11]:[]),9,9,9,9,9,9]);
 }
 
 /* ---------- 자동 저장: 대시보드 새로고침 시 (장소·팀 필터 = 전체) ---------- */
@@ -3289,6 +3447,7 @@ async function rateExport(){
         put(ws,r,5,x.hold,N,{fill:f}); put(ws,r,6,x.present,N,{fill:f}); put(ws,r,7,x.hold-x.present,N,{fill:f}); put(ws,r,8,x.hold?(x.hold-x.present)/x.hold:null,PCT,{fill:f}); put(ws,r,9,x.hold?x.present/x.hold:null,PCT,{fill:f,bold:true}); put(ws,r,10,T.xSrcV[x.source]||x.source,null,{fill:f,color:"FF808080"}); r++; }
       ws.autoFilter={from:{row:4,column:1},to:{row:Math.max(5,r-1),column:10}};
       widths(ws,[12,6,9,8,9,9,8,9,9,12]); }
+    try{ rtTeamSheet(wb,put,hdr,title,widths,C,F,PCT,PP); }catch(e){ console.warn("team sheet",e); }
 
     const buf=await wb.xlsx.writeBuffer();
     const blob=new Blob([buf],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
