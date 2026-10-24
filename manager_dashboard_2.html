@@ -259,6 +259,9 @@
   .mqio-hint{font-size:11px;color:#94a3b8;margin:-4px 0 8px;line-height:1.4}
   /* TRESS 붙여넣기 */
   .trbox{max-width:860px!important;text-align:left!important}
+  .qbox,.trbox{max-height:calc(100vh - 40px);max-height:calc(100dvh - 40px);overflow-y:auto;overscroll-behavior:contain}
+  .trbox .qwrap{max-height:30vh!important}
+  .trbox .qbtns{position:sticky;bottom:-16px;margin:10px -16px -16px!important;padding:10px 16px 14px;background:inherit;border-top:1px solid rgba(148,163,184,.25);z-index:2}
   .trta{width:100%;min-height:120px;max-height:220px;border:1px solid #d8e0ea;border-radius:10px;padding:10px 12px;font-size:12px;font-family:ui-monospace,Menlo,Consolas,monospace;color:#0c2444;background:#f8fafc;outline:none;resize:vertical;white-space:pre;overflow:auto;margin:8px 0}
   .trta:focus{border-color:#163a66;background:#fff}
   .trhint{font-size:11.5px;color:#64748b;line-height:1.5;margin-bottom:4px}
