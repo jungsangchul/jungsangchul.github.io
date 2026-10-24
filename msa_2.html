@@ -275,6 +275,39 @@ hr{border-top-color:#2a2a2a}
 .emprow.on .c-nm small{color:#e2c46a}
 .emprow .c-ord{width:28px;height:28px;font-size:12px;border:1px solid transparent}
 .emprow.on .c-ord{box-shadow:0 0 0 3px rgba(201,168,76,.18)}
+
+/* ═══ 좌우 분할 화면: 왼쪽 평가자 선정(고정) · 오른쪽 평가 진행 ═══ */
+.wrap.split{max-width:1680px;display:grid;grid-template-columns:minmax(320px,400px) minmax(0,1fr);gap:20px;align-items:start}
+.wrap.split>.side{position:sticky;top:calc(var(--topH,170px) + 14px);min-width:0}
+.wrap.split>.mainc{min-width:0}
+.side>.card{margin-bottom:0}
+.side .grid.g3{grid-template-columns:1fr 1fr}
+.side .grid.g3>div:last-child{grid-column:1/-1}
+.side .emplist{max-height:calc(100vh - var(--topH,170px) - 360px);min-height:260px}
+.side .note{font-size:12px;line-height:1.55}
+.side .emprow .c-nm{white-space:normal;line-height:1.3}
+.side .emprow .c-nm small{display:block;margin:2px 0 0;font-family:var(--mono)}
+.wrap.split.noside{grid-template-columns:minmax(0,1fr)}
+.wrap.split.noside>.side{display:none}
+.side .selgrp{margin-top:8px;display:flex;flex-wrap:wrap;gap:6px}
+.side .selgrp span{font-size:12px;padding:3px 9px;border-radius:999px;border:1px solid rgba(201,168,76,.45);color:#e2c46a;background:rgba(201,168,76,.08)}
+.side .selgrp span.short{border-color:rgba(224,92,92,.5);color:#ef9a9a;background:rgba(224,92,92,.08)}
+@media(max-width:1100px){
+  .wrap.split{grid-template-columns:minmax(0,1fr)}
+  .wrap.split>.side{position:static}
+  .side .emplist{max-height:340px;min-height:0}
+}
+/* ═══ 평가명 선택 칩 ═══ */
+.tchips{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.tchip{display:inline-flex;align-items:center;gap:6px;height:38px;padding:0 16px;border-radius:999px;border:1px solid #2a2a2a;background:#0d0d0d;color:#b0b0b0;font-size:14px;font-weight:600;cursor:pointer;transition:.15s;white-space:nowrap}
+.tchip:hover{border-color:#555;color:#fff}
+.tchip.on{background:rgba(201,168,76,.16);border-color:#c9a84c;color:#f3d77a;box-shadow:0 0 0 3px rgba(201,168,76,.12)}
+.tchip.on::before{content:'✓';font-weight:800}
+.tchip .x{margin-left:2px;width:18px;height:18px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:12px;color:#888;border:1px solid #333}
+.tchip .x:hover{color:#ef9a9a;border-color:#e05c5c}
+.tchip.add{border-style:dashed;color:#c9a84c;border-color:rgba(201,168,76,.5);background:transparent}
+.tadd{display:inline-flex;gap:6px;align-items:center}
+.tadd input{height:38px;min-width:260px}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
@@ -398,9 +431,10 @@ hr{border-top-color:#2a2a2a}
   </div>
 </div>
 
-<div class="wrap">
+<div class="wrap split" id="mainWrap">
 
-  <!-- ══ 인원 선택 ══ -->
+  <!-- ══ 인원 선택 (왼쪽 고정) ══ -->
+  <aside class="side" id="sidePanel">
   <div class="card">
     <h2>평가자 선정 <small>Selección de personal</small></h2>
     <div class="grid g3">
@@ -432,8 +466,13 @@ hr{border-top-color:#2a2a2a}
       </div>
       <p class="note">이름을 누르면 선택·해제됩니다. 계량형은 <b>선택 순서대로 3명씩 1개 조</b>가 자동 편성되며,
         오른쪽 「조」 칸에 배정 결과가 표시됩니다. 계수형은 선택된 인원 전체가 평가 대상입니다.</p>
+      <div class="selgrp" id="selGrp"></div>
     </div>
   </div>
+  </aside>
+
+  <!-- ══ 평가 진행 (오른쪽) ══ -->
+  <div class="mainc">
 
   <!-- ══════════ 계수형 ══════════ -->
   <section class="panel on" id="p-att">
@@ -441,7 +480,8 @@ hr{border-top-color:#2a2a2a}
     <div class="card">
       <h2>평가 조건 <small>Condiciones — Gage R&amp;R por Atributos</small></h2>
       <div class="grid g4">
-        <div><label>평가명</label><input id="aTitle" placeholder="압착부 외관 판정"></div>
+        <div style="grid-column:1/-1"><label>평가명 (클릭해서 선택)</label>
+          <div class="tchips" id="aTitleChips"></div><input type="hidden" id="aTitle"></div>
         <div><label>공정 (Proceso)</label><input id="aProc" placeholder="자동절단압착"></div>
         <div><label>평가일</label><input type="date" id="aDate"></div>
         <div><label>평가주기 (Periodo)</label>
@@ -496,7 +536,8 @@ hr{border-top-color:#2a2a2a}
     <div class="card">
       <h2>공통 조건 <small>Condiciones comunes</small></h2>
       <div class="grid g4">
-        <div><label>평가명</label><input id="vTitle" placeholder="압착고 측정 R&R"></div>
+        <div style="grid-column:1/-1"><label>평가명 (클릭해서 선택)</label>
+          <div class="tchips" id="vTitleChips"></div><input type="hidden" id="vTitle"></div>
         <div><label>평가일</label><input type="date" id="vDate"></div>
         <div><label>평가주기 (Periodo)</label>
           <div style="display:flex;gap:6px">
@@ -697,6 +738,7 @@ hr{border-top-color:#2a2a2a}
     </div>
   </section>
 
+  </div><!-- /mainc -->
 </div>
 
 <div class="modal" id="modal">
@@ -767,6 +809,7 @@ document.querySelectorAll('nav.tabs button').forEach(b=>{
     document.querySelectorAll('nav.tabs button').forEach(x=>x.classList.remove('on'));
     document.querySelectorAll('.panel').forEach(x=>x.classList.remove('on'));
     b.classList.add('on'); $('p-'+b.dataset.t).classList.add('on');
+    $('mainWrap').classList.toggle('noside', b.dataset.t==='hist');
     if(b.dataset.t==='var'){ renderGTabs(); renderVarInput(); }
     if(b.dataset.t==='admin') admRender();
   };
@@ -837,6 +880,8 @@ function updCnt(){
   $('selCnt').textContent=SEL.length+'명';
   const gs=autoGroups();
   $('grpCnt').textContent = gs.length ? gs.length+'개 조 자동편성' : '';
+  if($('selGrp')) $('selGrp').innerHTML = gs.map((m,i)=>'<span'+(m.length<2?' class="short"':'')+'>'+(i+1)+'조 · '+
+    esc(m.map(x=>shortName(x.name)).join(', '))+'</span>').join('');
 }
 function selAll(on){ if(!on){ SEL=[]; VD={}; }
   renderEmp(); renderAttInput(); renderGTabs(); renderVarInput(); }
@@ -1627,7 +1672,7 @@ async function startVarRetest(id){
     const faultNames=D?D.bad.map(x=>opTag(x.op)):[];
     /* 조건 불러오기 */
     goTab('var');
-    $('vTitle').value=r.title||''; $('vDate').value=today();
+    setTitle('v', r.title||''); $('vDate').value=today();
     setPeriodSel('vYear','vQtr',r.period);
     $('vParts').value=r.n_parts||10; $('vTrials').value=r.n_trials||3;
     /* 측정자 */
@@ -1673,7 +1718,7 @@ async function startAttRetest(id){
       return !(E!==null && E>=cE && Pfa<=cFa && Pms<=cMs); });
     const target=failed.length?failed:all;
     goTab('att');
-    $('aTitle').value=r.title||''; $('aProc').value=r.process_name||''; $('aDate').value=today();
+    setTitle('a', r.title||''); $('aProc').value=r.process_name||''; $('aDate').value=today();
     setPeriodSel('aYear','aQtr',r.period);
     $('aSamples').value=r.sample_count||refs.length; $('aTrials').value=r.trial_count||3;
     $('cE').value=cE; $('cFa').value=cFa; $('cMs').value=cMs;
@@ -2634,6 +2679,13 @@ const SUB={
 '선택 조건에 해당하는 기록':'Registros que cumplen la condición',
 '삭제했습니다':'Registro borrado','일괄 삭제했습니다':'Borrado en lote realizado',
 '삭제 실패':'Error al borrar','조회 실패':'Error de consulta',
+/* 평가명 칩 */
+'평가명 (클릭해서 선택)':'Evaluación (toque para elegir)','＋ 직접 입력':'＋ Escribir otra',
+'새 평가명 입력':'Nuevo nombre de evaluación','추가':'Agregar','취소':'Cancelar',
+'평가명을 입력하세요':'Capture el nombre','평가명을 추가했습니다':'Evaluación agregada',
+'목록에서 삭제':'Quitar de la lista','특별평가':'Evaluación especial',
+'자격인증 실기 · 압착고측정능력 평가':'Certificación práctica · Capacidad de medición de altura de engarce',
+'자격인증 실기 · 불량판별능력 평가':'Certificación práctica · Capacidad de detección de defectos',
 /* 진단 · 재평가 */
 '측정자별 진단 — 누가 측정을 잘못했나':'Diagnóstico por operador — quién midió mal',
 '문제 측정자 없음 — 전원 정상 (등급 우수)':'Sin operador problemático — todos normales (grado Excelente)',
@@ -2727,6 +2779,7 @@ function toggleLang(){
   SNAP_PH.forEach(a=>a[0].setAttribute('placeholder',a[1]));
   /* 동적 영역 재렌더 (항상 한국어로 생성됨) */
   renderEmp(); renderAttInput(); renderGTabs(); renderVarInput(); renderRetestBar();
+  renderTitleChips('v'); renderTitleChips('a');
   if(adminOK) admRender();
   if(LANG==='es') trNode(document.body);
   drawAll();
@@ -2819,6 +2872,69 @@ async function admPurge(){
   }catch(e){ toast('삭제 실패: '+e.message); }
 }
 
+/* ══════════════════════════════════════════
+   평가명 선택 칩 — 기본 2종 + 저장된 평가명 + 직접 추가
+   ══════════════════════════════════════════ */
+const TITLE_DEF={
+  v:['자격인증 실기 · 압착고측정능력 평가','특별평가'],
+  a:['자격인증 실기 · 불량판별능력 평가','특별평가']
+};
+const TITLE_DB={v:[],a:[]};
+function titleLocal(k){ try{ return JSON.parse(localStorage.getItem('msa_titles_'+k)||'[]'); }catch(_){ return []; } }
+function titleLocalSave(k,arr){ try{ localStorage.setItem('msa_titles_'+k,JSON.stringify(arr)); }catch(_){ } }
+function titleList(k){
+  const out=[];
+  TITLE_DEF[k].concat(TITLE_DB[k],titleLocal(k)).forEach(t=>{ t=String(t||'').trim(); if(t && out.indexOf(t)<0) out.push(t); });
+  const cur=$(k+'Title').value; if(cur && out.indexOf(cur)<0) out.push(cur);
+  return out;
+}
+function setTitle(k,v){ $(k+'Title').value=(v||'').trim(); renderTitleChips(k); }
+function renderTitleChips(k){
+  const box=$(k+'TitleChips'); if(!box) return;
+  const cur=$(k+'Title').value, loc=titleLocal(k);
+  let h='';
+  titleList(k).forEach(t=>{
+    const removable = TITLE_DEF[k].indexOf(t)<0 && TITLE_DB[k].indexOf(t)<0 && loc.indexOf(t)>=0;
+    h+='<span class="tchip'+(t===cur?' on':'')+'" data-t="'+esc(t)+'">'+esc(t)+
+       (removable?'<span class="x" data-x="'+esc(t)+'" title="목록에서 삭제">✕</span>':'')+'</span>';
+  });
+  h+='<span class="tchip add" data-add="1">＋ 직접 입력</span>';
+  box.innerHTML=h;
+  box.querySelectorAll('.tchip[data-t]').forEach(c=>c.onclick=e=>{
+    if(e.target.dataset.x!==undefined){
+      e.stopPropagation();
+      titleLocalSave(k, titleLocal(k).filter(x=>x!==e.target.dataset.x));
+      if($(k+'Title').value===e.target.dataset.x) $(k+'Title').value=TITLE_DEF[k][0];
+      renderTitleChips(k); return;
+    }
+    setTitle(k,c.dataset.t);
+  });
+  box.querySelector('[data-add]').onclick=()=>{
+    box.querySelector('[data-add]').outerHTML='<span class="tadd"><input id="'+k+'TitleNew" placeholder="새 평가명 입력">'+
+      '<button class="btn btn-sm" id="'+k+'TitleOk">추가</button><button class="btn-line btn-sm" id="'+k+'TitleNo">취소</button></span>';
+    const inp=$(k+'TitleNew'); inp.focus();
+    const ok=()=>{ const v=inp.value.trim(); if(!v) return toast('평가명을 입력하세요');
+      const l=titleLocal(k); if(l.indexOf(v)<0){ l.push(v); titleLocalSave(k,l); }
+      setTitle(k,v); toast('평가명을 추가했습니다'); };
+    $(k+'TitleOk').onclick=ok;
+    $(k+'TitleNo').onclick=()=>renderTitleChips(k);
+    inp.onkeydown=e=>{ if(e.key==='Enter') ok(); if(e.key==='Escape') renderTitleChips(k); };
+    if(LANG==='es') trNode(box);
+  };
+}
+async function loadTitles(){
+  try{
+    const v=await sb('msa_var_sessions?select=title&title=not.is.null&order=created_at.desc&limit=2000')||[];
+    const a=await sb('msa_sessions?select=title&title=not.is.null&order=created_at.desc&limit=2000')||[];
+    TITLE_DB.v=[...new Set(v.map(x=>x.title).filter(Boolean))];
+    TITLE_DB.a=[...new Set(a.map(x=>x.title).filter(Boolean))];
+  }catch(_){ }
+  renderTitleChips('v'); renderTitleChips('a');
+}
+/* 상단 고정바 높이 → 왼쪽 패널 sticky 위치 */
+function syncTopH(){ const t=document.querySelector('.topbar'); if(t) document.documentElement.style.setProperty('--topH',t.offsetHeight+'px'); }
+window.addEventListener('resize',syncTopH);
+
 /* ══════════ 초기화 ══════════ */
 (function init(){
   fillPeriod('aYear','aQtr',false); fillPeriod('vYear','vQtr',false);
@@ -2827,6 +2943,8 @@ async function admPurge(){
   $('aDate').value=today(); $('vDate').value=today();
   const d=new Date(); d.setMonth(d.getMonth()-3);
   $('hFrom').value=d.toISOString().slice(0,10); $('hTo').value=today();
+  $('vTitle').value=TITLE_DEF.v[0]; $('aTitle').value=TITLE_DEF.a[0];
+  renderTitleChips('v'); renderTitleChips('a'); loadTitles(); syncTopH();
   initRefs(); renderGTabs(); loadEmployees();
   let rt; window.addEventListener('resize',()=>{ clearTimeout(rt); rt=setTimeout(drawAll,150); });
 })();
