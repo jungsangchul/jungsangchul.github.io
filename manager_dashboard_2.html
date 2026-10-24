@@ -3206,6 +3206,8 @@ const RT_TEAM_I18N={
       cAtt:"Asistencia",avg:"Promedio planta",sheet:"Por_departamento",best:"Mejor",worst:"Peor",gap:"Brecha"}
 };
 let rtTeamOpen=false;
+/* 2공장 팀명(TRESS 부서명) → 1공장 한글팀명 매핑으로 「한글팀(부서명)」 표시 (화면 표시만, DB 변경 없음) */
+function rtTeamLabel(t,plant){ if(plant!=="2"||!t||/[가-힣]/.test(t)) return t; const M=TRESS_PLANTS["1"].teams||{}; const n=normDept(t); for(const k in M){ if(normDept(k)===n) return `${M[k]}(${t})`; } return t; }
 function rtMoreSum(){ const es=lang==="es"; return `<summary><span class="ar">▾</span><span class="o">${es?"Ver detalle":"세부데이터 펼치기"}</span><span class="c">${es?"Ocultar detalle":"세부데이터 접기"}</span></summary>`; }
 let rtTeamPlant=(typeof TRESS_THIS!=="undefined"?TRESS_THIS:"1"), rtTeamPeriod="month", rtTeamSort="rate", rtTeamCache={}, rtTeamLast=null, rtTeamSeq=0;
 const rtTT=()=>RT_TEAM_I18N[lang]||RT_TEAM_I18N.ko;
@@ -3261,26 +3263,26 @@ async function rateTeamRender(){
   if(!curDays.length){ box.innerHTML=ctrl+`<div class="rt-empty">${T.none}</div>`; rtTeamLast=null; return; }
   const ar=a=>a&&a.h?a.p/a.h:null, abr=a=>a&&a.h?(a.h-a.p)/a.h:null;
   let list=Object.keys(cur).filter(t=>cur[t].h>0).map(t=>{ const c=cur[t], n=c.days.size;
-    return {team:t,days:n,hold:c.h/n,pres:c.p/n,abs:c.h-c.p,att:ar(c),absR:abr(c),mon:abr(mon[t]),wk:abr(wk[t]),prev:(prv[t]&&prv[t].h&&ar(c)!=null)?ar(c)-ar(prv[t]):null}; });
+    return {team:t,label:rtTeamLabel(t,rtTeamPlant),days:n,hold:c.h/n,pres:c.p/n,abs:c.h-c.p,att:ar(c),absR:abr(c),mon:abr(mon[t]),wk:abr(wk[t]),prev:(prv[t]&&prv[t].h&&ar(c)!=null)?ar(c)-ar(prv[t]):null}; });
   if(rtTeamSort==="rate") list.sort((a,b)=>(a.att??2)-(b.att??2));
   else if(rtTeamSort==="head") list.sort((a,b)=>b.hold-a.hold);
-  else list.sort((a,b)=>a.team.localeCompare(b.team,"ko"));
+  else list.sort((a,b)=>a.label.localeCompare(b.label,"ko"));
   const sum=Object.values(cur).reduce((s,c)=>({h:s.h+c.h,p:s.p+c.p}),{h:0,p:0});
   const sumPrev=Object.values(prv).reduce((s,c)=>({h:s.h+c.h,p:s.p+c.p}),{h:0,p:0});
   const sumMon=Object.values(mon).reduce((s,c)=>({h:s.h+c.h,p:s.p+c.p}),{h:0,p:0});
   const sumWk=Object.values(wk).reduce((s,c)=>({h:s.h+c.h,p:s.p+c.p}),{h:0,p:0});
-  const totRow={team:T.tot,days:curDays.length,hold:sum.h/curDays.length,pres:sum.p/curDays.length,abs:sum.h-sum.p,att:ar(sum),absR:abr(sum),mon:abr(sumMon),wk:abr(sumWk),prev:(sumPrev.h&&ar(sum)!=null)?ar(sum)-ar(sumPrev):null};
+  const totRow={team:T.tot,label:T.tot,days:curDays.length,hold:sum.h/curDays.length,pres:sum.p/curDays.length,abs:sum.h-sum.p,att:ar(sum),absR:abr(sum),mon:abr(sumMon),wk:abr(sumWk),prev:(sumPrev.h&&ar(sum)!=null)?ar(sum)-ar(sumPrev):null};
   const pc=rtTeamPlant==="1"?RATE_C.p1:RATE_C.p2;
   /* 요약 타일 */
   const valid=list.filter(x=>x.att!=null&&x.hold>=3);
   const best=valid.slice().sort((a,b)=>b.att-a.att)[0], worst=valid.slice().sort((a,b)=>a.att-b.att)[0];
   const tile=(k,v,s,c)=>`<div class="rt-team-tile" style="--c:${c}"><div class="k">${k}</div><div class="v">${v}</div><div class="s">${escapeHtml(s)}</div></div>`;
-  const tiles=`<div class="rt-team-tiles">${tile(T.avg,rateFmtP(totRow.att),`${plantLbl(rtTeamPlant)} · ${curDays.length}${lang==="es"?" días":"일"}`,pc)}${best?tile(T.best,rateFmtP(best.att),best.team,"#81c784"):""}${worst?tile(T.worst,rateFmtP(worst.att),worst.team,"#e05c5c"):""}${best&&worst?tile(T.gap,rateFmtPp(best.att-worst.att),`${T.best} − ${T.worst}`,"#b39ddb"):""}</div>`;
+  const tiles=`<div class="rt-team-tiles">${tile(T.avg,rateFmtP(totRow.att),`${plantLbl(rtTeamPlant)} · ${curDays.length}${lang==="es"?" días":"일"}`,pc)}${best?tile(T.best,rateFmtP(best.att),best.label,"#81c784"):""}${worst?tile(T.worst,rateFmtP(worst.att),worst.label,"#e05c5c"):""}${best&&worst?tile(T.gap,rateFmtPp(best.att-worst.att),`${T.best} − ${T.worst}`,"#b39ddb"):""}</div>`;
   /* 표 */
   const pC=v=>v==null?`<td class="m">–</td>`:`<td>${rateFmtP(v)}</td>`;
   const attC=v=>{ if(v==null) return `<td class="m">–</td>`; const bad=totRow.att!=null&&v<totRow.att; return `<td><b style="color:${bad?"#ef9a9a":"#a5d6a7"}">${rateFmtP(v)}</b></td>`; };
   const dC=v=>v==null?`<td class="m">–</td>`:`<td style="color:${v>=0?"#a5d6a7":"#ef9a9a"};font-weight:700">${rateFmtPp(v)}</td>`;
-  const tr=(x,cls="")=>`<tr class="${cls}"><td class="n" style="text-align:left;white-space:normal">${escapeHtml(x.team)}</td><td>${x.days}</td><td>${rateFmt1(x.hold)}</td><td>${rateFmt1(x.pres)}</td><td>${(x.abs||0).toLocaleString()}</td>${attC(x.att)}${pC(x.absR)}${pC(x.mon)}${pC(x.wk)}${rtTeamPeriod==="month"?dC(x.prev):""}</tr>`;
+  const tr=(x,cls="")=>`<tr class="${cls}"><td class="n" style="text-align:left;white-space:normal">${escapeHtml(x.label)}</td><td>${x.days}</td><td>${rateFmt1(x.hold)}</td><td>${rateFmt1(x.pres)}</td><td>${(x.abs||0).toLocaleString()}</td>${attC(x.att)}${pC(x.absR)}${pC(x.mon)}${pC(x.wk)}${rtTeamPeriod==="month"?dC(x.prev):""}</tr>`;
   const table=`<div class="rt-tw"><table class="rt-t"><thead><tr><th style="text-align:left">${T.team}</th><th>${T.days}</th><th>${T.hold}</th><th>${T.pres}</th><th>${T.abs}</th><th>${T.att}</th><th>${T.absR}</th><th style="color:#ef9a9a">${T.mon}</th><th>${T.wk}</th>${rtTeamPeriod==="month"?`<th>${T.prev}<br>(${R.sPp})</th>`:""}</tr></thead><tbody>${list.map(x=>tr(x)).join("")}${tr(totRow,"tot")}</tbody></table></div>`;
   /* 팀 × 요일 결근율 히트 */
   const wdA={}; for(const t of Object.keys(cur)){ wdA[t]={}; for(let i=1;i<=6;i++) wdA[t][i]={h:0,p:0}; }
@@ -3288,7 +3290,7 @@ async function rateTeamRender(){
   const hv=[]; list.forEach(x=>{ for(let i=1;i<=6;i++){ const v=abr(wdA[x.team][i]); if(v!=null) hv.push(v); } });
   const hmax=Math.max(.001,...hv);
   const hc=v=>v==null?`<td class="m">–</td>`:`<td class="heat" style="background:rgba(224,92,92,${(0.08+0.72*Math.min(1,v/hmax)).toFixed(2)})">${rateFmtP(v)}</td>`;
-  const heat=`<div class="rt-team-sub">${T.heatH}</div><div class="rt-tw"><table class="rt-t"><thead><tr><th style="text-align:left">${T.team}</th>${[1,2,3,4,5,6].map(i=>`<th style="${i===1?"color:#ef9a9a":""}">${R.wdLong[i]}</th>`).join("")}</tr></thead><tbody>${list.map(x=>`<tr><td class="n" style="text-align:left;white-space:normal">${escapeHtml(x.team)}</td>${[1,2,3,4,5,6].map(i=>hc(abr(wdA[x.team][i]))).join("")}</tr>`).join("")}</tbody></table></div>`;
+  const heat=`<div class="rt-team-sub">${T.heatH}</div><div class="rt-tw"><table class="rt-t"><thead><tr><th style="text-align:left">${T.team}</th>${[1,2,3,4,5,6].map(i=>`<th style="${i===1?"color:#ef9a9a":""}">${R.wdLong[i]}</th>`).join("")}</tr></thead><tbody>${list.map(x=>`<tr><td class="n" style="text-align:left;white-space:normal">${escapeHtml(x.label)}</td>${[1,2,3,4,5,6].map(i=>hc(abr(wdA[x.team][i]))).join("")}</tr>`).join("")}</tbody></table></div>`;
   const more=h=>`<details class="rt-more"${rtTeamOpen?" open":""} ontoggle="rtTeamOpen=this.open">${rtMoreSum()}${h}</details>`;
   box.innerHTML=ctrl+tiles+`<div class="rt-chart" id="rtTeamChWrap" style="height:${Math.max(220,list.length*34+60)}px"><canvas id="rtChTeam"></canvas></div>`+more(table)+heat+
     `<div class="rt-note">${T.note}</div>`;
@@ -3296,7 +3298,7 @@ async function rateTeamRender(){
   const avgP=totRow.att!=null?+(totRow.att*100).toFixed(2):null;
   const avgLine={id:"rtAvgLine",afterDatasetsDraw(ch){ if(avgP==null) return; const x=ch.scales.x.getPixelForValue(avgP); const {top,bottom}=ch.chartArea; const c=ch.ctx; c.save(); c.strokeStyle=pc; c.setLineDash([5,4]); c.lineWidth=1.5; c.beginPath(); c.moveTo(x,top); c.lineTo(x,bottom); c.stroke(); c.setLineDash([]); c.fillStyle=pc; c.font="700 10px 'Space Mono',monospace"; c.textAlign="center"; c.fillText(`${T.avg} ${avgP.toFixed(1)}%`,x,top-4); c.restore(); }};
   const minAtt=Math.min(...list.map(x=>x.att==null?1:x.att));
-  rateChart("rtChTeam",{type:"bar",data:{labels:list.map(x=>x.team),datasets:[{label:T.cAtt,data:list.map(x=>x.att==null?null:+(x.att*100).toFixed(2)),
+  rateChart("rtChTeam",{type:"bar",data:{labels:list.map(x=>x.label),datasets:[{label:T.cAtt,data:list.map(x=>x.att==null?null:+(x.att*100).toFixed(2)),
       backgroundColor:list.map(x=>x.att!=null&&totRow.att!=null&&x.att<totRow.att?"rgba(224,92,92,.55)":"rgba(129,199,132,.5)"),
       borderColor:list.map(x=>x.att!=null&&totRow.att!=null&&x.att<totRow.att?"#e05c5c":"#81c784"),borderWidth:1.5,borderRadius:5,labelColor:pc}]},
     options:{indexAxis:"y",responsive:true,maintainAspectRatio:false,layout:{padding:{top:16,right:56}},plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${T.cAtt}: ${c.parsed.x==null?"–":c.parsed.x.toFixed(1)+"%"}`}},rtLabels:{on:true}},
@@ -3313,7 +3315,7 @@ function rtTeamSheet(wb,put,hdr,title,widths,C,F,PCT,PP){
   title(ws,`${T.h} · ${plantLbl(L.plant)} · ${isM?rateYmLabel(L.month):T.pAll}`,cols+6);
   hdr(ws,4,[T.team,T.days,T.hold,T.pres,T.abs,T.att,T.absR,T.mon,T.wk,...(isM?[T.prev]:[]),...[1,2,3,4,5,6].map(i=>R.wdLong[i])]);
   let r=5; const pf=L.plant==="1"?C.p1:C.p2;
-  const row=(x,tot)=>{ const f=tot?C.tot:null; put(ws,r,1,x.team,null,{bold:true,fill:f||pf}).alignment={horizontal:"left",vertical:"middle",wrapText:true};
+  const row=(x,tot)=>{ const f=tot?C.tot:null; put(ws,r,1,x.label||x.team,null,{bold:true,fill:f||pf}).alignment={horizontal:"left",vertical:"middle",wrapText:true};
     put(ws,r,2,x.days,"0",{fill:f}); put(ws,r,3,x.hold,"#,##0.0",{fill:f}); put(ws,r,4,x.pres,"#,##0.0",{fill:f}); put(ws,r,5,x.abs,"#,##0",{fill:f});
     put(ws,r,6,x.att,PCT,{bold:true,fill:f,color:(!tot&&x.att!=null&&L.totRow.att!=null&&x.att<L.totRow.att)?C.red:C.bluef}); put(ws,r,7,x.absR,PCT,{fill:f}); put(ws,r,8,x.mon,PCT,{fill:f}); put(ws,r,9,x.wk,PCT,{fill:f});
     let c=10; if(isM){ put(ws,r,c,x.prev,PP,{bold:true,fill:f,color:x.prev==null?"FF808080":(x.prev>=0?C.bluef:C.red)}); c++; }
