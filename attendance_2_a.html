@@ -2107,7 +2107,7 @@ function updateSaveStatus(s){
   else if(s==='saved'){ic.textContent='✅';tx.textContent='저장됨';tx.style.color='#4caf7d';}
   else if(s==='error'){ic.textContent='⚠️';tx.textContent='저장 실패';tx.style.color='#e05c5c';}
 }
-var APP_BUILD=20260719;  // [자동업데이트] 배포할 때마다 숫자를 올리면 구버전 기기가 스스로 새로고침
+var APP_BUILD=20261023;  // [자동업데이트] 배포할 때마다 숫자를 올리면 구버전 기기가 스스로 새로고침
 // ════ [서버 전용 v3] 서버 연결 잠금 오버레이 (가공공정과 동일한 Supabase 전용 운영) ════
 function showServerLock(attempt){
   var el=document.getElementById('server-lock');
@@ -2789,6 +2789,10 @@ async function init(){
       await new Promise(function(r){ setTimeout(r, Math.min(12000, 3000+attempt*1500)); });
     }
   }
+  // [TRESS 연동] 서버 로드 후 입사·퇴사 자동 반영 + 10분마다 재확인
+  try{ await autoImportResigned(); }catch(_e){}
+  try{ await autoImportNewHires(); }catch(_e){}
+  try{ setInterval(function(){ autoImportResigned().then(function(){ autoImportNewHires(); }); }, 10*60*1000); }catch(_e){}
   // 페이지 닫힐 때 저장 보장
   window.addEventListener('beforeunload', function(){
     if(_sst){
@@ -2796,6 +2800,176 @@ async function init(){
       supaSave();
     }
   });
+}
+
+// ════ [TRESS 연동] 조립생산팀 입사·퇴사 자동 반영 (2026-10-23) ════
+// 관리자 대시보드 직원 마스터(att_employees_2 — TRESS 붙여넣기로 등록·갱신)를 기준으로
+//  ① 퇴사(active=false) 인원 → 이 근태관리 직원목록에 퇴사 반영 (퇴사일=resigned_at, 사유 기본 3 개인사정)
+//  ② 조립 부서(team ILIKE 'Produccion ensamble%') 재직자 중 직원목록에 없는 인원 → 기본값으로 자동 입사 등록
+//     (입사일: hire_date, 없으면 마스터 등록일 / 공정·반·성별·교통은 직원수정에서 보완, _autoImported 표식)
+//  ③ 자동등록 후 다른 팀으로 바뀐 인원(14일 이내·결근기록 없음)은 목록에서 제외
+// 매칭: 사번(empno ↔ employee_id), 사번 없는 직원만 이름(악센트/공백 무시) 완전일치 보조
+var TRESS_ROSTER_TABLE='att_employees_2', TRESS_APP_EMP_TABLE='att2_2a_employees';
+var RESIGN_SYNC_DEFAULT_CODE = 3;
+var _resignSyncBusy=false, _newHireSyncBusy=false;
+function _rsNormName(s){
+  try{ s=String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,''); }catch(e){ s=String(s||''); }
+  return s.replace(/\s+/g,' ').trim().toLowerCase();
+}
+function _rsMtyDate(ts){
+  try{
+    if(ts==null||ts==='') return null;
+    var d=new Date(ts); if(isNaN(d)) return null;
+    var loc=new Date(d.toLocaleString('en-US',{timeZone:'America/Monterrey'}));
+    return loc.getFullYear()+'-'+('0'+(loc.getMonth()+1)).slice(-2)+'-'+('0'+loc.getDate()).slice(-2);
+  }catch(e){ return String(ts||'').slice(0,10)||null; }
+}
+function _tressAfterChange(now){
+  if(!DB.settings)DB.settings={};
+  DB.settings.__localSavedAt=now; DB.settings.lastModifiedAt=now;
+  try{ lsSave(JSON.stringify(DB)); }catch(_e){}
+}
+async function _tressRefreshUI(){
+  try{ await supaSave(true); }catch(_e){}
+  try{ _doRender(); }catch(_e){}
+  try{ if(typeof renderEmpList==='function') renderEmpList(); }catch(_e){}
+  try{ updateFileStats(); }catch(_e){}
+  try{ if(typeof populateIndEmpSelect==='function') populateIndEmpSelect(); }catch(_e){}
+}
+function _tressNames(list){
+  var es=currentLang==='es';
+  return list.length+(es?' — ':'명 — ')+list.slice(0,3).join(', ')+(list.length>3?((es?' y ':' 외 ')+(list.length-3)+(es?' más':'명')):'');
+}
+async function autoImportResigned(){
+  if(_resignSyncBusy) return;
+  _resignSyncBusy=true;
+  try{
+    var sb=getSB(); if(!sb) return;
+    if(typeof _serverSynced!=='undefined' && !_serverSynced) return;
+    var r=await sb.from(TRESS_ROSTER_TABLE).select('employee_id,name,active,resigned_at').eq('active',false).range(0,9999);
+    if(r.error||!Array.isArray(r.data)||!r.data.length) return;
+    var byNo={}, byName={};
+    r.data.forEach(function(a){
+      if(!a) return;
+      var no=String(a.employee_id||'').trim().toUpperCase(); if(no) byNo[no]=a;
+      var nm=_rsNormName(a.name);
+      if(nm){ if(byName[nm]===undefined) byName[nm]=a; else byName[nm]=null; }
+    });
+    var changed=[], now=new Date().toISOString();
+    (DB.employees||[]).forEach(function(e){
+      if(!e||e.resigned) return;
+      var a=null, no=String(e.empno||'').trim().toUpperCase();
+      if(no) a=byNo[no]||null;
+      else { var nm=_rsNormName(e.name); if(nm&&byName[nm]) a=byName[nm]; }
+      if(!a) return;
+      e.resigned=true;
+      e.resignDate=(a.resigned_at?_rsMtyDate(a.resigned_at):null)||_rsMtyDate(now);
+      if(!e.resignCode) e.resignCode=RESIGN_SYNC_DEFAULT_CODE;
+      e._mt=now;
+      changed.push(e.name+' ('+e.resignDate+')');
+    });
+    if(!changed.length) return;
+    _tressAfterChange(now);
+    await _tressRefreshUI();
+    toast((currentLang==='es'?'📤 Bajas sincronizadas (TRESS): ':'📤 TRESS 퇴사자 자동 반영: ')+_tressNames(changed),'#8a4a20');
+    console.log('[TRESS 퇴사연동] '+changed.length+'명:',changed);
+  }catch(e){ console.warn('[TRESS 퇴사연동] 실패:',e); }
+  finally{ _resignSyncBusy=false; }
+}
+async function autoImportNewHires(){
+  if(_newHireSyncBusy) return;
+  _newHireSyncBusy=true;
+  try{
+    var sb=getSB(); if(!sb) return;
+    if(typeof _serverSynced!=='undefined' && !_serverSynced) return; // 서버 로드 전엔 중복등록 위험
+    var r=await sb.from(TRESS_ROSTER_TABLE).select('employee_id,name,team,hire_date,created_at,active')
+      .eq('active',true).ilike('team','Produccion ensamble%').range(0,9999);
+    if(r.error||!Array.isArray(r.data)) return;
+    var haveNo={}, haveName={};
+    (DB.employees||[]).forEach(function(e){
+      if(!e) return;
+      var no=String(e.empno||'').trim().toUpperCase(); if(no) haveNo[no]=true;
+      var nm=_rsNormName(e.name); if(nm) haveName[nm]=true;
+    });
+    // 서버 직원 테이블의 현재 사번도 확인 (다른 PC가 먼저 등록한 경우 이중 등록 차단) — 실패 시 이번 회차 보류
+    try{
+      var sv=await sb.from(TRESS_APP_EMP_TABLE).select('id,empno:data->>empno').eq('deleted',false).range(0,9999);
+      if(sv.error||!Array.isArray(sv.data)) return;
+      sv.data.forEach(function(x){ var no=String((x&&x.empno)||'').trim().toUpperCase(); if(no) haveNo[no]=true; });
+    }catch(_se){ return; }
+    // 다른 팀으로 바뀐 자동등록 인원 정리
+    var removed=[], keptMoved=[];
+    try{
+      var mv=await sb.from(TRESS_ROSTER_TABLE).select('employee_id,team').eq('active',true).not('team','ilike','Produccion ensamble%').range(0,9999);
+      if(!mv.error && Array.isArray(mv.data) && mv.data.length){
+        var movedNo={};
+        mv.data.forEach(function(a){ var no=String((a&&a.employee_id)||'').trim().toUpperCase(); if(no) movedNo[no]=a.team||''; });
+        var cut=new Date(); cut.setDate(cut.getDate()-14); var cutStr=cut.toISOString().slice(0,10);
+        if(!DB.settings)DB.settings={}; if(!DB.settings.empDeleted)DB.settings.empDeleted={};
+        var tomb=DB.settings.empDeleted, nowT=new Date().toISOString(), delIds={};
+        (DB.employees||[]).forEach(function(e){
+          if(!e||!e._autoImported||e.resigned) return;
+          var no=String(e.empno||'').trim().toUpperCase();
+          if(!no||!Object.prototype.hasOwnProperty.call(movedNo,no)) return;
+          var hasAbs=(DB.absences||[]).some(function(a){ return a&&String(a.empId)===String(e.id); });
+          if(String(e.hireDate||'')>=cutStr && !hasAbs){ tomb[String(e.id)]=nowT; delIds[String(e.id)]=1; removed.push(e.name); }
+          else keptMoved.push(e.name+' → '+movedNo[no]);
+        });
+        if(removed.length) DB.employees=DB.employees.filter(function(e){ return !(e&&delIds[String(e.id)]); });
+        if(keptMoved.length) console.warn('[TRESS 팀이동] 기록 보호로 유지:',keptMoved);
+      }
+    }catch(_me){ console.warn('[TRESS 팀이동] 확인 실패:',_me); }
+    var news=[];
+    r.data.forEach(function(a){
+      if(!a) return;
+      var no=String(a.employee_id||'').trim().toUpperCase();
+      if(!no || no.indexOf('ZZTEST')===0 || haveNo[no]) return;
+      var name=String(a.name||'').trim(); if(!name) return;
+      var nm=_rsNormName(name); if(nm && haveName[nm]) return;
+      var hire=a.hire_date?String(a.hire_date).slice(0,10):_rsMtyDate(a.created_at);
+      if(!hire) return;
+      haveNo[no]=true;
+      news.push({no:no, name:name, hire:hire});
+    });
+    if(!news.length && !removed.length) return;
+    if(!DB.meta) DB.meta={};
+    var maxId=0;
+    (DB.employees||[]).forEach(function(e){ var x=parseInt(e&&e.id,10)||0; if(x>maxId)maxId=x; });
+    try{ var _tt=(DB.settings&&DB.settings.empDeleted)||{}; for(var _tk in _tt){ var _tn=parseInt(_tk,10)||0; if(_tn>maxId)maxId=_tn; } }catch(_e){}
+    var next=Math.max(parseInt(DB.meta.nextEmpId,10)||1, maxId+1);
+    var procs=getProcesses();
+    var proc=procs.filter(function(p){return p.type==='직접인원';})[0]||procs[0]||{type:'직접인원',ko:'',es:'',ban:'',loc:''};
+    var grade=(JOB_GRADES['생산직']||[])[0]||{es:'OPERADOR',ko:'작업자'};
+    var now=new Date().toISOString(), added=[];
+    if(!DB.employees) DB.employees=[];
+    news.forEach(function(n){
+      DB.employees.push({
+        id:next++, _mt:now, _autoImported:true,
+        name:n.name, empno:n.no,
+        nationality:'멕시코인', gender:'남',
+        processType:proc.type, processName:proc.ko, processNameEs:proc.es,
+        ban:proc.ban||'', loc:proc.loc||'',
+        shiftHistory:[{shift:'주간', from:n.hire, to:null}],
+        jobType:'생산직', jobGrade:grade.es, jobGradeKo:grade.ko, level:1,
+        phone:'', hireDate:n.hire, birthDate:null, calType:'양력',
+        spouseBirth:null, childBirths:[], municipio:'', colonia:'', transport:'자차',
+        photo:null, resigned:false, resignDate:null, resignCode:null
+      });
+      added.push(n.name);
+    });
+    DB.meta.nextEmpId=next;
+    _tressAfterChange(now);
+    await _tressRefreshUI();
+    if(removed.length){
+      toast((currentLang==='es'?'🔁 Cambio de equipo en TRESS — eliminados: ':'🔁 TRESS에서 다른 팀으로 변경 → 근태관리에서 제외: ')+_tressNames(removed),'#6b3fa0');
+      console.log('[TRESS 팀이동] 제외:',removed);
+    }
+    if(added.length){
+      toast((currentLang==='es'?'📥 Nuevos ingresos (TRESS) registrados: ':'📥 TRESS 신규입사자 자동 등록: ')+_tressNames(added)+(currentLang==='es'?' (complete proceso/línea en Editar)':' (공정·반·교대는 직원수정에서 보완)'),'#1f5fa8');
+      console.log('[TRESS 입사연동] 등록 '+added.length+'명:',added);
+    }
+  }catch(e){ console.warn('[TRESS 입사연동] 실패:',e); }
+  finally{ _newHireSyncBusy=false; }
 }
 
 // ════ BIRTHDAY ALERTS ════
