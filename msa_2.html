@@ -940,7 +940,7 @@ function calcAtt(){
     '<div><b>'+fil.filter(r=>!r.pass).length+'</b><span>불합격 Rechazado</span></div></div>';
   const failed=fil.filter(r=>!r.pass);
   h+='<div class="diag"><div class="dhd '+(failed.length?'bad':(fil.length?'ok':'care'))+'">'+
-    (failed.length?'<span>판정 불합격 작업자</span><span class="who bad">'+failed.map(r=>'⚠ '+esc(shortName(r.op.name))+
+    (failed.length?'<span>판정 불합격 작업자</span><span class="who bad">'+failed.map(r=>'⚠ '+esc(opTag(r.op))+
         ' <small style="font-weight:400;color:#ffb3b3">('+(r.E!==null&&r.E<cE?'E '+r.E.toFixed(2)+' ':'')+
         (r.Pfa>cFa?'FALSE '+r.fa+'건 ':'')+(r.Pms>cMs?'MISS '+r.ms+'건':'')+')</small>').join(' &nbsp; ')+'</span>'
       :fil.length?'<span>불합격 작업자 없음 — 전원 합격</span>':'<span>판정이 입력되지 않았습니다</span>')+
@@ -964,27 +964,37 @@ function calcAtt(){
 }
 async function saveAtt(){
   if(!SEL.length) return toast('평가자를 선택하세요');
+  if(SAVING) return toast('저장 중입니다…');
+  SAVING=true;
   try{
-    const s=await sb('msa_sessions',{method:'POST',headers:{'Prefer':'return=representation'},
+    const rno=(RETEST&&RETEST.kind==='att')?RETEST.no:0, evd=$('aDate').value||today();
+    const dup=await sb('msa_sessions?select=id&factory=eq.'+$('fFactory').value+
+      eqf('period',periodOf('aYear','aQtr'))+'&eval_date=eq.'+evd+eqf('title',$('aTitle').value||null)+
+      eqf('process_name',$('aProc').value||null)+'&retest_no=eq.'+rno+'&order=created_at.desc&limit=1')||[];
+    const existing=dup.length?dup[0].id:null;
+    const s=await sb('msa_sessions'+(existing?'?id=eq.'+existing:''),{method:existing?'PATCH':'POST',headers:{'Prefer':'return=representation'},
       body:JSON.stringify([{
         factory:$('fFactory').value, team:$('fTeam').value||(SEL[0]&&SEL[0].team)||null,
         title:$('aTitle').value||null, process_name:$('aProc').value||null,
-        eval_date:$('aDate').value||today(), period:periodOf('aYear','aQtr'),
+        eval_date:evd, period:periodOf('aYear','aQtr'),
         sample_count:nSamp(), trial_count:nTri(),
         refs:REFS, crit_e:num($('cE').value), crit_pfa:num($('cFa').value), crit_pmiss:num($('cMs').value),
-        retest_of:(RETEST&&RETEST.kind==='att')?RETEST.of:null, retest_no:(RETEST&&RETEST.kind==='att')?RETEST.no:0,
-        fault_ops:(window._attRows||[]).filter(r=>r.tot>0&&!r.pass).map(r=>shortName(r.op.name))
-      }])});
+        retest_of:(RETEST&&RETEST.kind==='att')?RETEST.of:null, retest_no:rno,
+        fault_ops:(window._attRows||[]).filter(r=>r.tot>0&&!r.pass).map(r=>opTag(r.op)),
+        updated_at:new Date().toISOString()
+      }]['0'])});
     const sid=s[0].id, recs=[];
+    if(existing) await sb('msa_evaluations?session_id=eq.'+sid,{method:'DELETE'});
     SEL.forEach(op=>{ for(let tr=1;tr<=nTri();tr++){
       const a=(ANS[op.employee_id]||{})[tr];
       if(a&&a.some(v=>v)) recs.push({session_id:sid, employee_id:op.employee_id,
         employee_name:op.name, trial:tr, answers:a, updated_at:new Date().toISOString()});
     }});
     if(recs.length) await sb('msa_evaluations',{method:'POST',body:JSON.stringify(recs)});
-    toast((RETEST&&RETEST.kind==='att'?retestLabel(RETEST.no)+' 저장 완료 · ':'계수형 저장 완료 · ')+recs.length+'건');
+    toast((RETEST&&RETEST.kind==='att'?retestLabel(RETEST.no)+' 저장 완료 · ':'계수형 저장 완료 · ')+recs.length+'건'+(existing?' (같은 날 기록 덮어씀)':''));
     if(RETEST&&RETEST.kind==='att'){ RETEST=null; renderRetestBar(); }
   }catch(e){ toast('저장 실패: '+e.message); }
+  finally{ SAVING=false; }
 }
 function exportAttXlsx(){
   const rows=window._attRows||[]; if(!rows.length) return toast('결과가 없습니다');
@@ -1492,6 +1502,8 @@ function chInteract(V,id){
    · 편의(AV) 불량 : 본인 평균이 다른 측정자 평균과 3σ(EV/√(p·t)) 이상 벌어짐 (3명 조에서 최대 이탈자)
    · 등급이 우수면 문제 측정자 없음. 우수가 아닌데 기준에 걸리는 사람이 없으면 가장 나쁜 사람을 「주의」로 표시
    ══════════════════════════════════════════ */
+/* 진단 표시용: 짧은 이름 + 사번 */
+function opTag(op){ const id=op&&op.employee_id; return shortName(op&&op.name)+(id&&id!==op.name?' ('+id+')':''); }
 function diagOps(V){
   const o=V.o, p=V.p, t=V.t, excellent=(V.grade==='우수');
   const se3=3*V.EV/Math.sqrt(p*t);
@@ -1547,7 +1559,8 @@ function diagReason(r,D){
 }
 function opDiagHtml(V){
   const D=diagOps(V);
-  const names=(D.bad.length?D.bad:D.care).map(r=>esc(shortName(r.op.name)));
+  const names=(D.bad.length?D.bad:D.care).map(r=>esc(shortName(r.op.name))+
+    (r.op.employee_id&&r.op.employee_id!==r.op.name?' <small style="font-family:var(--mono);font-weight:400;opacity:.85">'+esc(r.op.employee_id)+'</small>':''));
   let h='<div class="diag"><div class="dhd '+D.cls+'">'+
     '<span>'+D.overall+'</span>'+
     (names.length?'<span class="who '+D.cls+'">'+names.map(n=>'⚠ '+n).join(' &nbsp; ')+'</span>':'')+
@@ -1556,7 +1569,8 @@ function opDiagHtml(V){
     '<th>평균 X̄</th><th>타 측정자와 차이</th><th>진단</th><th>원인</th></tr></thead><tbody>';
   D.rows.forEach(r=>{
     const pill=r.flag?'<span class="pill p-bad">측정 불량</span>':r.care?'<span class="pill p-care">주의</span>':'<span class="pill p-ok">정상</span>';
-    h+='<tr class="r'+r.state+'"><td class="opnm">'+esc(r.op.name)+'</td>'+
+    h+='<tr class="r'+r.state+'"><td class="opnm">'+esc(r.op.name)+
+      (r.op.employee_id&&r.op.employee_id!==r.op.name?'<br><small style="font-family:var(--mono);font-weight:400;color:#c9a84c">'+esc(r.op.employee_id)+'</small>':'')+'</td>'+
       '<td>'+r.Rbar.toFixed(4)+'</td><td>'+r.rRatio.toFixed(2)+'배</td><td>'+r.rOver+'</td>'+
       '<td>'+r.Xbar.toFixed(4)+'</td><td>'+(r.dev>0?'+':'')+r.dev.toFixed(4)+'</td>'+
       '<td>'+pill+'</td><td class="why">'+diagReason(r,D)+'</td></tr>';
@@ -1610,7 +1624,7 @@ async function startVarRetest(id){
     const MV=rebuildFromMeasures(r,ms);
     const D=MV?diagOps(Object.assign({grade:r.grade},MV)):null;
     const faultIds=D?D.bad.map(x=>x.op.employee_id):[];
-    const faultNames=D?D.bad.map(x=>shortName(x.op.name)):[];
+    const faultNames=D?D.bad.map(x=>opTag(x.op)):[];
     /* 조건 불러오기 */
     goTab('var');
     $('vTitle').value=r.title||''; $('vDate').value=today();
@@ -1667,7 +1681,7 @@ async function startAttRetest(id){
     SEL=target.map(o=>empFromRecord(o.id,o.name,r.team)); ANS={}; VD={};
     if(r.team && [...$('fTeam').options].some(o=>o.value===r.team)) $('fTeam').value=r.team;
     RETEST={kind:'att', of:r.retest_of||r.id, no:(r.retest_no||0)+1, group_name:null,
-      label:periodLabel(r.period)+' · '+r.eval_date+' · '+(r.title||''), faults:failed.map(o=>shortName(o.name))};
+      label:periodLabel(r.period)+' · '+r.eval_date+' · '+(r.title||''), faults:failed.map(o=>opTag({name:o.name,employee_id:o.id}))};
     closeModal();
     renderEmp(); renderAttInput(); renderGTabs(); renderVarInput(); renderRetestBar();
     toast(retestLabel(RETEST.no)+' 준비 완료'+(failed.length?' · 재평가: '+RETEST.faults.join(', '):''));
@@ -1922,21 +1936,45 @@ function admClear(){
   renderVarInput(); admPreview([]); toast('생성 데이터를 삭제했습니다');
 }
 
+let SAVING=false;
+function eqf(col,v){ return v==null||v==='' ? '&'+col+'=is.null' : '&'+col+'=eq.'+encodeURIComponent(v); }
 async function saveVar(){
+  if(SAVING) return toast('저장 중입니다…');
   saveGInfo();
   const rs=allResults();
   if(!rs.length) return toast('저장할 조 결과가 없습니다');
-  let ok=0;
+  SAVING=true; let ok=0, upd=0;
   try{
     for(const V of rs){
       const d=gi(V.g);
-      const s=await sb('msa_var_sessions',{method:'POST',headers:{'Prefer':'return=representation'},
-        body:JSON.stringify([{
+      const gname=(RETEST&&RETEST.kind==='var'&&RETEST.group_name)?RETEST.group_name:(V.g+'grupo');
+      const rno=(RETEST&&RETEST.kind==='var')?RETEST.no:0;
+      const evd=$('vDate').value||today();
+      /* 같은 공장·주기·평가일·평가명·조·차수의 기존 기록이 있으면 새로 만들지 않고 덮어쓴다 */
+      const dup=await sb('msa_var_sessions?select=id&factory=eq.'+$('fFactory').value+
+        eqf('period',periodOf('vYear','vQtr'))+'&eval_date=eq.'+evd+eqf('title',$('vTitle').value||null)+
+        '&group_name=eq.'+encodeURIComponent(gname)+'&retest_no=eq.'+rno+'&order=created_at.desc&limit=1')||[];
+      const existing=dup.length?dup[0].id:null;
+      const s=await sb('msa_var_sessions'+(existing?'?id=eq.'+existing:''),{method:existing?'PATCH':'POST',headers:{'Prefer':'return=representation'},
+        body:JSON.stringify(existing?{
+          team:$('fTeam').value||(V.ops[0]&&V.ops[0].team)||null,
+          retest_of:(RETEST&&RETEST.kind==='var')?RETEST.of:null,
+          fault_ops:(function(){ const D=diagOps(V); return D.bad.map(x=>opTag(x.op)); })(),
+          gage_no:d.gage||null,
+          period:periodOf('vYear','vQtr'),
+          usl:num(d.usl), lsl:num(d.lsl), tolerance:V.TOL,
+          n_parts:V.p, n_ops:V.o, n_trials:V.t,
+          ev:+V.EV.toFixed(6), av:+V.AV.toFixed(6), grr:+V.GRR.toFixed(6),
+          pv:+V.PV.toFixed(6), tv:+V.TV.toFixed(6),
+          pct_contrib:+V.pctC.toFixed(4), pct_study:+V.pctS.toFixed(4),
+          pct_tol:V.pctT===null?null:+V.pctT.toFixed(4), ndc:V.ndc,
+          grade:V.grade, result:V.result, action_plan:d.action||null, updated_at:new Date().toISOString()
+        }:[{
           factory:$('fFactory').value, team:$('fTeam').value||(V.ops[0]&&V.ops[0].team)||null,
-          title:$('vTitle').value||null, group_name:(RETEST&&RETEST.kind==='var'&&RETEST.group_name)?RETEST.group_name:(V.g+'grupo'),
-          retest_of:(RETEST&&RETEST.kind==='var')?RETEST.of:null, retest_no:(RETEST&&RETEST.kind==='var')?RETEST.no:0,
-          fault_ops:(function(){ const D=diagOps(V); return D.bad.map(x=>shortName(x.op.name)); })(),
-          gage_no:d.gage||null, eval_date:$('vDate').value||today(),
+          title:$('vTitle').value||null, group_name:gname,
+          retest_of:(RETEST&&RETEST.kind==='var')?RETEST.of:null, retest_no:rno,
+          fault_ops:(function(){ const D=diagOps(V); return D.bad.map(x=>opTag(x.op)); })(),
+          gage_no:d.gage||null, eval_date:evd,
           period:periodOf('vYear','vQtr'),
           usl:num(d.usl), lsl:num(d.lsl), tolerance:V.TOL,
           n_parts:V.p, n_ops:V.o, n_trials:V.t,
@@ -1947,6 +1985,7 @@ async function saveVar(){
           grade:V.grade, result:V.result, action_plan:d.action||null
         }])});
       const sid=s[0].id, recs=[];
+      if(existing){ upd++; await sb('msa_var_measures?session_id=eq.'+sid,{method:'DELETE'}); }
       V.ops.forEach((op,oi)=>{ for(let tr=1;tr<=V.t;tr++){
         recs.push({session_id:sid, employee_id:op.employee_id, employee_name:op.name,
           op_index:oi+1, trial:tr, vals:V.M[oi][tr-1], updated_at:new Date().toISOString()});
@@ -1954,9 +1993,10 @@ async function saveVar(){
       await sb('msa_var_measures',{method:'POST',body:JSON.stringify(recs)});
       ok++;
     }
-    toast((RETEST&&RETEST.kind==='var'?retestLabel(RETEST.no)+' 저장 완료 · ':'계량형 저장 완료 · ')+ok+'개 조');
+    toast((RETEST&&RETEST.kind==='var'?retestLabel(RETEST.no)+' 저장 완료 · ':'계량형 저장 완료 · ')+ok+'개 조'+(upd?' (기존 기록 '+upd+'개 덮어씀)':''));
     if(RETEST&&RETEST.kind==='var'){ RETEST=null; renderRetestBar(); }
   }catch(e){ toast('저장 실패('+ok+'개 저장됨): '+e.message); }
+  finally{ SAVING=false; }
 }
 function exportVarXlsx(){
   const rs=allResults(); if(!rs.length) return toast('결과가 없습니다');
@@ -2233,7 +2273,7 @@ async function openVarDetail(id){
          [1,2,3,4,5,6].map(i=>'<div class="chartbox"><canvas id="mv'+i+'" height="200"></canvas></div>').join('')+
          '</div>';
     }
-    const faultTxt = D && D.bad.length ? D.bad.map(x=>shortName(x.op.name)).join(', ') : '';
+    const faultTxt = D && D.bad.length ? D.bad.map(x=>opTag(x.op)).join(', ') : '';
     h+='<div class="row" style="margin-top:16px;align-items:center;gap:10px">'+
        '<button class="btn-gold" onclick="startVarRetest(\''+esc(r.id)+'\')">🔁 재평가 ('+retestLabel((r.retest_no||0)+1)+')</button>'+
        '<span class="note" style="margin:0">'+(faultTxt?'<b style="color:#ff9a9a">'+esc(faultTxt)+'</b>의 측정값만 비우고 나머지는 그대로 불러옵니다.':'원평가 조건·측정자를 그대로 불러옵니다.')+'</span>'+
@@ -2312,7 +2352,7 @@ async function openAttDetail(id){
     h+='</tbody></table></div>';
     const failedA=ops.filter(o=>o._stat&&!o._stat.pass);
     h+='<div class="diag"><div class="dhd '+(failedA.length?'bad':'ok')+'">'+
-      (failedA.length?'<span>판정 불합격 작업자</span><span class="who bad">'+failedA.map(o=>'⚠ '+esc(shortName(o.name))+
+      (failedA.length?'<span>판정 불합격 작업자</span><span class="who bad">'+failedA.map(o=>'⚠ '+esc(opTag({name:o.name,employee_id:o.id}))+
           ' <small style="font-weight:400;color:#ffb3b3">('+(o._stat.E!==null&&o._stat.E<cE?'E '+o._stat.E.toFixed(2)+' ':'')+
           (o._stat.Pfa>cFa?'FALSE '+o._stat.fa+'건 ':'')+(o._stat.Pms>cMs?'MISS '+o._stat.ms+'건':'')+')</small>').join(' &nbsp; ')+'</span>'
         :'<span>불합격 작업자 없음 — 전원 합격</span>')+'</div></div>';
@@ -2338,7 +2378,7 @@ async function openAttDetail(id){
     h+='</div><p class="note">PFA·PMISS 는 시료수 기준(현행 엑셀 방식)으로 재계산한 값입니다.</p>';
     h+='<div class="row" style="margin-top:16px;align-items:center;gap:10px">'+
        '<button class="btn-gold" onclick="startAttRetest(\''+esc(r.id)+'\')">🔁 재평가 ('+retestLabel((r.retest_no||0)+1)+')</button>'+
-       '<span class="note" style="margin:0">'+(failedA.length?'불합격자 <b style="color:#ff9a9a">'+esc(failedA.map(o=>shortName(o.name)).join(', '))+'</b>만 선택해서 같은 조건으로 재평가합니다.':'전원을 같은 조건으로 다시 평가합니다.')+'</span>'+
+       '<span class="note" style="margin:0">'+(failedA.length?'불합격자 <b style="color:#ff9a9a">'+esc(failedA.map(o=>opTag({name:o.name,employee_id:o.id})).join(', '))+'</b>만 선택해서 같은 조건으로 재평가합니다.':'전원을 같은 조건으로 다시 평가합니다.')+'</span>'+
        '<span style="flex:1"></span>'+
        '<button class="btn-danger" onclick="delRecord(\'att\',\''+
        esc(r.id)+'\',\''+esc(periodLabel(r.period)+' · '+(r.title||r.eval_date))+'\')">이 기록 삭제</button></div>';
@@ -2558,7 +2598,8 @@ const SUB={
 '먼저 인원을 선택하세요':'Seleccione personal primero',
 '기준값과 공차를 입력하세요':'Capture el valor nominal y la tolerancia',
 '이 조에 측정자가 2명 이상이어야 합니다':'Este grupo requiere al menos 2 operadores',
-'저장할 조 결과가 없습니다':'No hay resultados de grupo para guardar',
+'저장할 조 결과가 없습니다':'No hay resultados de grupo para guardar','저장 중입니다…':'Guardando…',
+'기존 기록':'registros existentes','개 덮어씀':' sobrescritos','같은 날 기록 덮어씀':'se sobrescribió el registro del mismo día',
 '개 저장됨':' guardados','개 조':' grupos','건':' registros',
 '규격':'Especificación','전폭':'ancho total','공차':'Tolerancia',
 '우수 (Excelente)':'Excelente','양호 (Bueno)':'Bueno','부족 (Insuficiente)':'Insuficiente',
