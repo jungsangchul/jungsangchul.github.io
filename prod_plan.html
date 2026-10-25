@@ -813,7 +813,7 @@ async function buildXlsx(){
   grp1(3,3,true);grp1(10,10,true);                 /* CODE · KEY */
   grp1(cQ,cQT-1,false);                            /* 계획수량 월별 (펼침) */
   grp1(cS,cST-1,true);grp1(cC,cCT-1,true);grp1(cB,cBT-1,true);   /* 매출·절단·BOX 월별 (접힘) */
-  s2.pageSetup={orientation:'landscape',fitToPage:true,fitToWidth:1,fitToHeight:0,paperSize:8,printTitlesRow:'4:5'};
+  s2.pageSetup={orientation:'landscape',paperSize:8,scale:55,printTitlesRow:'4:5'};  /* fitToPage 사용 금지: outlinePr와 함께 쓰면 Excel 복구 경고 */
 
   /* ── Sheet3 월별 생산일수 ── */
   const s3=wb.addWorksheet('월별 생산일수',{views:[{state:'frozen',ySplit:5,xSplit:2,showGridLines:false}],properties:{tabColor:{argb:'FF4CAF7D'}}});
