@@ -158,27 +158,63 @@
   .op-time{font-family:'Space Mono',Consolas,'Courier New',monospace;font-size:10px;color:var(--text-muted);flex:none;}
   .op-empty{padding:16px 12px;text-align:center;font-size:11px;color:var(--text-muted);}
   .op-foot{padding:6px 12px;font-family:'Space Mono',Consolas,'Courier New',monospace;font-size:8.5px;color:var(--text-muted);letter-spacing:0.08em;text-align:right;border-top:1px solid var(--divider);}
-  /* ── CHAT / 접속자 ── */
+  /* ── CHAT (전체 · 1:1 · 단체방) / 접속자 ── */
+  .sb-chat{display:inline-flex;align-items:center;gap:5px;margin-left:10px;background:rgba(201,168,76,0.12);border:1px solid rgba(201,168,76,0.55);border-radius:999px;color:var(--accent-gold);font-family:'Noto Sans KR','Malgun Gothic',sans-serif;font-size:12px;font-weight:700;letter-spacing:0;text-transform:none;padding:3px 11px;cursor:pointer;transition:all 0.15s;}
+  .sb-chat:hover{background:rgba(201,168,76,0.22);border-color:var(--accent-gold);}
+  .sb-chat-n{font-style:normal;font-family:'Space Mono',Consolas,monospace;font-size:12px;background:#e05c5c;color:#fff;border-radius:999px;padding:0 6px;line-height:17px;display:none;}
+  .sb-chat-n.on{display:inline-block;}
   #chat-fab{position:fixed;right:22px;bottom:22px;z-index:7600;width:56px;height:56px;border-radius:50%;background:#111;border:1px solid var(--accent-gold);color:var(--accent-gold);font-size:24px;cursor:pointer;display:none;align-items:center;justify-content:center;box-shadow:0 8px 24px rgba(0,0,0,0.55),0 0 0 4px rgba(201,168,76,0.08);transition:transform 0.15s,background 0.15s;}
   #chat-fab.show{display:flex;}
   #chat-fab:hover{transform:translateY(-2px);background:#171511;}
-  #chat-fab .cf-badge{position:absolute;top:-4px;right:-4px;min-width:22px;height:22px;padding:0 6px;border-radius:11px;background:#e05c5c;color:#fff;font-family:'Space Mono',Consolas,monospace;font-size:12px;font-weight:700;line-height:22px;text-align:center;display:none;border:2px solid var(--bg);}
-  #chat-fab .cf-badge.on{display:block;}
-  #chat-panel{position:fixed;right:22px;bottom:90px;z-index:7601;width:390px;height:min(580px,calc(100vh - 120px));background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:0 18px 48px rgba(0,0,0,0.7);display:none;flex-direction:column;overflow:hidden;}
+  .cf-badge{position:absolute;top:-4px;right:-4px;min-width:22px;height:22px;padding:0 6px;border-radius:11px;background:#e05c5c;color:#fff;font-family:'Space Mono',Consolas,monospace;font-size:12px;font-weight:700;line-height:22px;text-align:center;display:none;border:2px solid var(--bg);}
+  .cf-badge.on{display:block;}
+  #chat-panel{position:fixed;right:22px;bottom:90px;z-index:7601;width:400px;height:min(620px,calc(100vh - 120px));background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:0 18px 48px rgba(0,0,0,0.7);display:none;flex-direction:column;overflow:hidden;}
   #chat-panel.open{display:flex;}
-  .ch-head{display:flex;align-items:center;gap:6px;padding:10px 10px 10px 12px;background:#0d0d0d;border-bottom:1px solid var(--border);}
+  .ch-head{display:flex;align-items:center;gap:6px;padding:10px 10px 10px 12px;background:#0d0d0d;border-bottom:1px solid var(--border);flex:none;}
   .ch-tab{background:none;border:1px solid var(--border);border-radius:999px;color:var(--text-secondary);font-family:'Noto Sans KR','Malgun Gothic',sans-serif;font-size:13px;font-weight:600;padding:6px 14px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all 0.15s;}
   .ch-tab:hover{border-color:#444;color:var(--text-primary);}
   .ch-tab.on{background:rgba(201,168,76,0.14);border-color:var(--accent-gold);color:var(--accent-gold);}
   .ch-tab b{font-family:'Space Mono',Consolas,monospace;font-size:12px;color:#5ec97a;}
+  .ch-tab .ch-unread{font-family:'Space Mono',Consolas,monospace;font-size:12px;background:#e05c5c;color:#fff;border-radius:999px;padding:0 7px;line-height:18px;display:none;}
+  .ch-tab .ch-unread.on{display:inline-block;}
   .ch-tab .ch-dot{width:7px;height:7px;border-radius:50%;background:#5ec97a;box-shadow:0 0 6px #5ec97a;}
   .ch-close{margin-left:auto;background:none;border:1px solid var(--border);border-radius:6px;color:var(--text-muted);font-size:13px;padding:5px 10px;cursor:pointer;}
   .ch-close:hover{color:var(--text-primary);border-color:#555;}
   .ch-view{flex:1;min-height:0;display:none;flex-direction:column;}
   .ch-view.on{display:flex;}
-  #ch-msgs{flex:1;overflow-y:auto;padding:12px 12px 6px;display:flex;flex-direction:column;gap:6px;}
-  #ch-msgs::-webkit-scrollbar{width:6px;} #ch-msgs::-webkit-scrollbar-thumb{background:#2a2a2a;border-radius:3px;}
+  .ch-scroll{flex:1;min-height:0;overflow-y:auto;}
+  .ch-scroll::-webkit-scrollbar,#ch-msgs::-webkit-scrollbar{width:6px;} .ch-scroll::-webkit-scrollbar-thumb,#ch-msgs::-webkit-scrollbar-thumb{background:#2a2a2a;border-radius:3px;}
+  /* 방 목록 */
+  .cl-new{display:flex;gap:8px;padding:10px 12px;border-bottom:1px solid var(--divider);flex:none;}
+  .cl-new button{flex:1;background:#141414;border:1px solid var(--border);border-radius:8px;color:var(--text-primary);font-family:'Noto Sans KR','Malgun Gothic',sans-serif;font-size:13px;font-weight:600;padding:9px 6px;cursor:pointer;transition:all 0.15s;}
+  .cl-new button:hover{border-color:var(--accent-gold);color:var(--accent-gold);}
+  .cl-row{display:flex;align-items:center;gap:11px;padding:11px 14px;border-bottom:1px solid var(--divider);cursor:pointer;transition:background 0.12s;}
+  .cl-row:hover{background:rgba(201,168,76,0.06);}
+  .cl-av{width:38px;height:38px;border-radius:50%;background:#1f1c14;border:1px solid #3a3322;color:var(--accent-gold);font-weight:700;font-size:15px;display:flex;align-items:center;justify-content:center;flex:none;position:relative;}
+  .cl-av.all{background:rgba(201,168,76,0.15);border-color:var(--accent-gold);font-size:17px;}
+  .cl-av.grp{background:#14181f;border-color:#2a3446;color:#8fb3e8;font-size:16px;}
+  .cl-av i{position:absolute;right:-1px;bottom:-1px;width:11px;height:11px;border-radius:50%;background:#5ec97a;border:2px solid var(--surface);}
+  .cl-mid{flex:1;min-width:0;}
+  .cl-title{display:flex;align-items:center;gap:6px;font-size:14px;font-weight:700;color:var(--text-primary);}
+  .cl-title span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .cl-title small{font-family:'Space Mono',Consolas,monospace;font-size:12px;color:var(--text-muted);font-weight:400;flex:none;}
+  .cl-prev{font-size:13px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:3px;}
+  .cl-right{display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex:none;}
+  .cl-time{font-family:'Space Mono',Consolas,monospace;font-size:12px;color:var(--text-muted);}
+  .cl-badge{background:#e05c5c;color:#fff;font-family:'Space Mono',Consolas,monospace;font-size:12px;font-weight:700;border-radius:999px;padding:0 7px;line-height:19px;min-width:19px;text-align:center;}
+  /* 대화방 */
+  .cr-head{display:flex;align-items:center;gap:8px;padding:8px 10px;border-bottom:1px solid var(--divider);background:#101010;flex:none;}
+  .cr-back{background:none;border:1px solid var(--border);border-radius:6px;color:var(--text-secondary);font-size:13px;padding:5px 10px;cursor:pointer;flex:none;}
+  .cr-back:hover{color:var(--accent-gold);border-color:var(--accent-gold);}
+  .cr-title{flex:1;min-width:0;}
+  .cr-title b{display:block;font-size:14px;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .cr-title small{font-size:12px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;}
+  .cr-act{background:none;border:1px solid var(--border);border-radius:6px;color:var(--text-muted);font-family:'Noto Sans KR','Malgun Gothic',sans-serif;font-size:12px;padding:5px 8px;cursor:pointer;flex:none;}
+  .cr-act:hover{color:var(--text-primary);border-color:#555;}
+  .cr-act.danger:hover{color:#e05c5c;border-color:#e05c5c;}
+  #ch-msgs{flex:1;min-height:0;overflow-y:auto;padding:12px 12px 6px;display:flex;flex-direction:column;gap:6px;}
   .ch-date{align-self:center;margin:8px 0 4px;font-family:'Space Mono',Consolas,monospace;font-size:12px;color:var(--text-muted);background:#0d0d0d;border:1px solid var(--divider);border-radius:999px;padding:2px 12px;}
+  .ch-sys{align-self:center;max-width:90%;text-align:center;font-size:12px;color:var(--text-muted);background:#141414;border-radius:8px;padding:4px 12px;margin:2px 0;}
   .ch-m{display:flex;flex-direction:column;max-width:82%;align-self:flex-start;}
   .ch-m.me{align-self:flex-end;align-items:flex-end;}
   .ch-who{font-size:12px;color:var(--text-muted);margin:4px 0 3px 4px;font-weight:600;}
@@ -192,25 +228,40 @@
   .ch-del{background:none;border:none;color:var(--text-muted);font-size:12px;cursor:pointer;padding:0 2px;opacity:0;transition:opacity 0.15s;}
   .ch-m:hover .ch-del{opacity:1;}
   .ch-del:hover{color:#e05c5c;}
-  .ch-empty{margin:auto;text-align:center;color:var(--text-muted);font-size:13px;line-height:1.8;}
-  .ch-input{display:flex;gap:8px;align-items:flex-end;padding:10px;border-top:1px solid var(--border);background:#0d0d0d;}
+  .ch-empty{margin:auto;text-align:center;color:var(--text-muted);font-size:13px;line-height:1.8;padding:20px;}
+  .ch-input{display:flex;gap:8px;align-items:flex-end;padding:10px 10px 4px;border-top:1px solid var(--border);background:#0d0d0d;flex:none;}
   #ch-text{flex:1;resize:none;background:#141414;border:1px solid var(--border);border-radius:8px;color:var(--text-primary);font-family:'Noto Sans KR','Malgun Gothic',sans-serif;font-size:14px;line-height:1.45;padding:9px 12px;outline:none;max-height:110px;min-height:40px;}
   #ch-text:focus{border-color:var(--accent-gold);}
   #ch-send{background:var(--accent-gold);color:#0a0a0a;border:none;border-radius:8px;font-family:'Noto Sans KR','Malgun Gothic',sans-serif;font-size:14px;font-weight:700;padding:0 16px;height:40px;cursor:pointer;flex:none;}
   #ch-send:hover{background:#d4b05a;} #ch-send:disabled{opacity:0.5;cursor:not-allowed;}
-  #ch-err{font-size:12px;color:#e05c5c;padding:0 12px 6px;min-height:0;}
-  #ch-online{flex:1;overflow-y:auto;}
+  .ch-hint{display:flex;gap:14px;padding:3px 12px 8px;background:#0d0d0d;font-size:12px;color:var(--text-muted);flex:none;}
+  .ch-hint kbd{font-family:'Space Mono',Consolas,monospace;font-size:12px;color:var(--text-secondary);background:#1a1a1a;border:1px solid #2c2c2c;border-bottom-width:2px;border-radius:4px;padding:0 5px;margin-right:4px;}
+  #ch-err{font-size:12px;color:#e05c5c;padding:0 12px;background:#0d0d0d;flex:none;}
+  #ch-err:not(:empty){padding:4px 12px 0;}
+  /* 대상 선택 */
+  .cp-top{padding:10px 12px;border-bottom:1px solid var(--divider);display:flex;flex-direction:column;gap:8px;flex:none;}
+  .cp-top input{width:100%;background:#141414;border:1px solid var(--border);border-radius:8px;color:var(--text-primary);font-family:'Noto Sans KR','Malgun Gothic',sans-serif;font-size:14px;padding:9px 12px;outline:none;}
+  .cp-top input:focus{border-color:var(--accent-gold);}
+  .cp-row{display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid var(--divider);cursor:pointer;}
+  .cp-row:hover{background:rgba(201,168,76,0.06);}
+  .cp-row input{width:17px;height:17px;accent-color:var(--accent-gold);flex:none;pointer-events:none;}
+  .cp-row.sel{background:rgba(201,168,76,0.09);}
+  .cp-foot{padding:10px 12px;border-top:1px solid var(--border);background:#0d0d0d;flex:none;}
+  .cp-foot button{width:100%;background:var(--accent-gold);color:#0a0a0a;border:none;border-radius:8px;font-family:'Noto Sans KR','Malgun Gothic',sans-serif;font-size:14px;font-weight:700;padding:11px;cursor:pointer;}
+  .cp-foot button:disabled{opacity:0.4;cursor:not-allowed;}
+  /* 접속자 */
   .co-row{display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid var(--divider);cursor:pointer;transition:background 0.12s;}
   .co-row:hover{background:rgba(201,168,76,0.06);}
   .co-av{width:32px;height:32px;border-radius:50%;background:#1f1c14;border:1px solid #3a3322;color:var(--accent-gold);font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center;flex:none;position:relative;}
   .co-av i{position:absolute;right:-1px;bottom:-1px;width:10px;height:10px;border-radius:50%;background:#5ec97a;border:2px solid var(--surface);}
-  .co-av i.idle{background:#c9a84c;}
+  .co-av i.idle{background:#c9a84c;} .co-av i.off{background:#444;}
   .co-name{flex:1;min-width:0;font-size:14px;font-weight:600;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .co-name small{font-family:'Space Mono',Consolas,monospace;font-size:12px;color:var(--text-muted);font-weight:400;margin-left:6px;}
   .co-tag{font-size:12px;border-radius:999px;padding:1px 8px;border:1px solid var(--border);color:var(--text-muted);flex:none;}
   .co-tag.me{border-color:var(--accent-gold);color:var(--accent-gold);}
   .co-time{font-family:'Space Mono',Consolas,monospace;font-size:12px;color:var(--text-muted);flex:none;}
-  .co-foot{padding:8px 14px;font-family:'Space Mono',Consolas,monospace;font-size:12px;color:var(--text-muted);border-top:1px solid var(--divider);text-align:right;}
+  .co-dm{font-size:12px;color:var(--accent-gold);border:1px solid rgba(201,168,76,0.4);border-radius:999px;padding:1px 8px;flex:none;}
+  .co-foot{padding:8px 14px;font-family:'Space Mono',Consolas,monospace;font-size:12px;color:var(--text-muted);border-top:1px solid var(--divider);text-align:right;flex:none;}
   @media (max-width:600px){
     #chat-panel{right:8px;left:8px;width:auto;bottom:80px;height:calc(100vh - 100px);}
     #chat-fab{right:14px;bottom:14px;}
@@ -627,7 +678,7 @@
 </header>
 
 <div class="system-bar">
-  <span class="system-bar-stats"><span class="sb-stat sb-click" id="sb-online-stat" onclick="toggleOnlinePop(event)" title="현재 접속자 보기"><i class="sb-dot on"></i><span class="sb-k" data-i18n="접속중">접속중</span> <b id="sb-online">—</b></span><span class="sb-sep"></span><span class="sb-stat"><span class="sb-k" data-i18n="오늘">오늘</span> <b id="sb-today">—</b></span><span class="sb-sep"></span><span class="sb-stat"><span class="sb-k" data-i18n="누적 접속">누적 접속</span> <b id="sb-total">—</b></span></span>
+  <span class="system-bar-stats"><span class="sb-stat sb-click" id="sb-online-stat" onclick="toggleOnlinePop(event)" title="현재 접속자 보기"><i class="sb-dot on"></i><span class="sb-k" data-i18n="접속중">접속중</span> <b id="sb-online">—</b></span><button type="button" class="sb-chat" id="sb-chat" onclick="event.stopPropagation();toggleChat()" title="채팅">💬 <span>채팅</span><em class="sb-chat-n" id="sb-chat-n">0</em></button><span class="sb-sep"></span><span class="sb-stat"><span class="sb-k" data-i18n="오늘">오늘</span> <b id="sb-today">—</b></span><span class="sb-sep"></span><span class="sb-stat"><span class="sb-k" data-i18n="누적 접속">누적 접속</span> <b id="sb-total">—</b></span></span>
   <span class="system-bar-user"><span data-i18n="접속">접속</span>: <span id="sysbar-user">—</span></span>
 </div>
 
@@ -1815,11 +1866,19 @@
 const LANG_KEY = 'yura_index_lang';
 const I18N_ES = {
   // 채팅 / 접속자
-  '채팅':'Chat', '접속자':'En línea', '닫기':'Cerrar', '전송':'Enviar', '나':'Yo',
-  '메시지 입력 (Enter 전송)':'Escribe un mensaje (Enter para enviar)',
-  '아직 메시지가 없습니다.':'Aún no hay mensajes.', '첫 메시지를 남겨보세요!':'¡Escribe el primero!',
-  '메시지를 삭제할까요?':'¿Eliminar este mensaje?', '이름을 누르면 @멘션':'Toca un nombre para @mencionar',
-  '현재 접속자 보기':'Ver usuarios en línea',
+  '채팅':'Chat', '접속자':'En línea', '닫기':'Cerrar', '전송':'Enviar', '나':'Yo', '목록':'Lista', '뒤로':'Atrás',
+  '메시지 입력':'Escribe un mensaje', '줄바꿈':'Nueva línea', '전체 채팅':'Chat general', '포털 사용자 전체':'Todos los usuarios del portal',
+  '1:1 대화':'Chat 1:1', '1:1':'1:1', '단체방':'Grupo', '단체방 만들기':'Crear grupo', '초대':'Invitar', '초대하기':'Invitar',
+  '이름':'Nombre', '나가기':'Salir', '새 방 이름':'Nuevo nombre del grupo',
+  '이 단체방에서 나갈까요? 대화 내용은 다시 볼 수 없습니다.':'¿Salir de este grupo? No podrá ver la conversación de nuevo.',
+  '1:1 대화 상대 선택':'Elegir persona para chat 1:1', '대화 상대 초대':'Invitar personas',
+  '이름을 누르면 바로 대화가 열립니다':'Toque un nombre para abrir el chat', '참여할 사람을 여러 명 선택하세요':'Seleccione a los participantes',
+  '단체방 이름 (비워두면 참여자 이름으로)':'Nombre del grupo (vacío = nombres de participantes)', '이름 또는 아이디 검색':'Buscar nombre o usuario',
+  '검색 결과 없음':'Sin resultados', '아직 메시지가 없습니다.':'Aún no hay mensajes.', '첫 메시지를 남겨보세요!':'¡Escribe el primero!',
+  '메시지를 삭제할까요?':'¿Eliminar este mensaje?', '이름을 누르면 1:1 대화':'Toque un nombre para chat 1:1', '현재 접속자 보기':'Ver usuarios en línea',
+  '너무 빠르게 보내고 있습니다. 잠시 후 다시 시도하세요.':'Envía demasiado rápido. Intente en un momento.',
+  '대화방을 찾을 수 없습니다.':'No se encontró el chat.', '대화 상대를 선택하세요.':'Seleccione al menos una persona.',
+  '이름을 입력하세요.':'Ingrese un nombre.', '메시지를 입력하세요.':'Escriba un mensaje.',
   // 로그인
   '로그인':'Iniciar sesión',
   '아이디 / Usuario':'Usuario',
@@ -2199,7 +2258,7 @@ async function rpc(fn, body) {
   }
 }
 function forceRelogin() {
-  if (typeof chatStop === 'function' && typeof CHAT !== 'undefined' && CHAT.on) chatStop();
+  if (typeof CHAT !== 'undefined' && CHAT.on) chatStop();
   clearSession();
   document.getElementById('main-content').style.display  = 'none';
   document.getElementById('login-overlay').style.display = 'flex';
@@ -2410,72 +2469,174 @@ async function _presBeat(isNew){
   }catch(e){ /* 서버 미설정·오프라인 시 조용히 무시 */ }
 }
 // ══════════════════════════════════════════════════════
-//  현재 접속자(전체 사용자) + 전체 채팅
-//  RPC: portal_online_users / portal_chat_list / portal_chat_send / portal_chat_delete
+//  채팅 (전체 채팅 · 1:1 대화 · 단체방) + 현재 접속자
+//  RPC: portal_chat_rooms_list / portal_chat_list / portal_chat_send / portal_chat_read / portal_chat_delete
+//       portal_dm_open / portal_group_create / portal_group_invite / portal_group_rename / portal_room_leave
+//       portal_chat_users / portal_online_users
 // ══════════════════════════════════════════════════════
-const CHAT = { on:false, msgs:[], lastId:0, timer:null, onlineTimer:null, tab:'chat', open:false, online:[], busy:false };
-function _chatReadKey(){ return 'yura_chat_read_' + (getMe().id || ''); }
-function _chatGetRead(){ try { return Number(localStorage.getItem(_chatReadKey()) || 0); } catch(e){ return 0; } }
-function _chatSetRead(id){ try { localStorage.setItem(_chatReadKey(), String(id)); } catch(e){} }
+const CHAT = { on:false, open:false, tab:'chat', view:'list', rooms:[], room:null, msgs:[], lastId:0,
+               timer:null, onlineTimer:null, online:[], users:[], busy:false, polling:false,
+               pick:{ mode:'dm', sel:new Set(), back:'list' } };
 function toggleOnlinePop(ev){ ev && ev.stopPropagation(); openChat('online'); }   // 상단 「접속중」 클릭 → 접속자 목록
 function closeOnlinePop(){}
+async function _chatRpc(fn, body){ return sbFetch('/rest/v1/rpc/' + fn, { method:'POST', body: JSON.stringify(Object.assign({ p_token: sessToken() }, body || {})) }); }
+function _chatAuthErr(e){ if (String(e && e.message).startsWith('unauthorized')) { chatStop(); forceRelogin(); return true; } return false; }
+function _chatErrMsg(e){
+  const m = String(e && e.message || '');
+  const map = { too_many:'너무 빠르게 보내고 있습니다. 잠시 후 다시 시도하세요.', not_found:'대화방을 찾을 수 없습니다.', no_members:'대화 상대를 선택하세요.', bad_name:'이름을 입력하세요.', empty:'메시지를 입력하세요.' };
+  const k = Object.keys(map).find(c => m.startsWith(c));
+  return k ? t(map[k]) : m;
+}
 
+// ── 시작 / 종료 ────────────────────────────────────────
 function chatStart(){
   document.getElementById('chat-fab').classList.add('show');
-  if (CHAT.on) { chatRender(); chatRenderOnline(); return; }
-  CHAT.on = true; CHAT.msgs = []; CHAT.lastId = 0;
-  chatPoll(true);
+  if (CHAT.on) { chatRenderList(); chatRenderRoomHead(); chatRenderMsgs(); chatRenderOnline(); return; }
+  CHAT.on = true; CHAT.rooms = []; CHAT.room = null; CHAT.msgs = []; CHAT.lastId = 0; CHAT.view = 'list';
+  chatPoll();
   chatLoadOnline();
 }
 function chatStop(){
-  CHAT.on = false; CHAT.msgs = []; CHAT.lastId = 0; CHAT.online = [];
+  CHAT.on = false; CHAT.rooms = []; CHAT.room = null; CHAT.msgs = []; CHAT.lastId = 0; CHAT.online = [];
   if (CHAT.timer) { clearTimeout(CHAT.timer); CHAT.timer = null; }
   if (CHAT.onlineTimer) { clearInterval(CHAT.onlineTimer); CHAT.onlineTimer = null; }
   closeChat();
   document.getElementById('chat-fab').classList.remove('show');
   document.getElementById('cf-badge').classList.remove('on');
 }
+
+// ── 주기 조회: 방 목록(안읽음) + 열려 있는 방의 새 메시지 ──────────────
 function _chatNext(){
   if (!CHAT.on) return;
   if (CHAT.timer) clearTimeout(CHAT.timer);
   const hidden = document.visibilityState === 'hidden';
-  const delay = hidden ? 30000 : (CHAT.open && CHAT.tab === 'chat') ? 3000 : 12000;
-  CHAT.timer = setTimeout(() => chatPoll(false), delay);
+  const inRoom = CHAT.open && CHAT.tab === 'chat' && CHAT.view === 'room';
+  const delay = hidden ? 30000 : inRoom ? 3000 : CHAT.open ? 5000 : 12000;
+  CHAT.timer = setTimeout(chatPoll, delay);
 }
-async function chatPoll(first){
-  if (!CHAT.on || CHAT.polling) return;
+async function chatPoll(){
+  if (!CHAT.on) return;
+  if (CHAT.polling) { _chatNext(); return; }
   CHAT.polling = true;
-  try { await _chatPollInner(first); } finally { CHAT.polling = false; }
+  try {
+    if (!sessToken()) { chatStop(); return; }
+    if (CHAT.view === 'room' && CHAT.room !== null) await _chatFetchMsgs();
+    const rooms = await _chatRpc('portal_chat_rooms_list');
+    CHAT.rooms = Array.isArray(rooms) ? rooms : [];
+    chatRenderList(); chatRenderRoomHead();
+  } catch(e) {
+    if (_chatAuthErr(e)) return;
+    if (String(e.message).startsWith('not_found') && CHAT.view === 'room') { chatBack(); }   // 방에서 나가졌거나 삭제됨
+  } finally { CHAT.polling = false; }
   _chatNext();
 }
-async function _chatPollInner(first){
-  const tok = sessToken(); if (!tok) { chatStop(); return; }
-  try {
-    const arr = await sbFetch('/rest/v1/rpc/portal_chat_list', { method:'POST', body: JSON.stringify({ p_token: tok, p_after: CHAT.lastId }) });
-    const list = (Array.isArray(arr) ? arr : []).filter(m => m.id > CHAT.lastId);
-    if (list.length) {
-      CHAT.msgs = CHAT.msgs.concat(list).slice(-300);
-      CHAT.lastId = list[list.length - 1].id;
-      if (first && !_chatGetRead()) _chatSetRead(CHAT.lastId);   // 처음 쓰는 사람은 과거 메시지를 안읽음으로 치지 않음
-      chatRender(!first);
-    } else if (first) { chatRender(); }
-    document.getElementById('ch-err').textContent = '';
-  } catch(e) {
-    if (String(e.message).startsWith('unauthorized')) { chatStop(); forceRelogin(); return; }
+async function _chatFetchMsgs(){
+  const rid = CHAT.room;
+  const arr = await _chatRpc('portal_chat_list', { p_after: CHAT.lastId, p_room: rid });
+  if (rid !== CHAT.room) return;
+  const list = (Array.isArray(arr) ? arr : []).filter(m => m.id > CHAT.lastId);
+  if (list.length) {
+    CHAT.msgs = CHAT.msgs.concat(list).slice(-300);
+    CHAT.lastId = list[list.length - 1].id;
+    chatRenderMsgs(true);
   }
+  _chatMarkRead();
 }
-function _chatUnread(){
-  const me = getMe().id, read = _chatGetRead();
-  return CHAT.msgs.filter(m => m.id > read && m.user_id !== me).length;
+function _chatMarkRead(){
+  if (!(CHAT.open && CHAT.tab === 'chat' && CHAT.view === 'room' && CHAT.lastId && document.visibilityState !== 'hidden')) return;
+  const r = CHAT.rooms.find(x => x.id === CHAT.room);
+  if (r && Number(r.unread) === 0 && (r._read || 0) >= CHAT.lastId) return;
+  if (r) { r.unread = 0; r._read = CHAT.lastId; }
+  _chatRpc('portal_chat_read', { p_room: CHAT.room, p_id: CHAT.lastId }).catch(() => {});
+  chatRenderBadge();
 }
-function _chatBadge(){
-  if (CHAT.open && CHAT.tab === 'chat' && CHAT.lastId) _chatSetRead(CHAT.lastId);
-  const n = _chatUnread(), b = document.getElementById('cf-badge');
-  b.textContent = n > 99 ? '99+' : n;
-  b.classList.toggle('on', n > 0);
+
+async function _chatRefreshRooms(){
+  const rooms = await _chatRpc('portal_chat_rooms_list');
+  CHAT.rooms = Array.isArray(rooms) ? rooms : [];
+  chatRenderList();
 }
-function chatRender(appendOnly){
-  const box = document.getElementById('ch-msgs'); if (!box) return;
+// ── 표시 이름 / 배지 ───────────────────────────────────
+function _chatRoomName(r){
+  if (!r) return '';
+  if (r.kind === 'all') return t('전체 채팅');
+  if (r.kind === 'dm') { const o = (r.members || []).find(m => m.user_id !== getMe().id); return o ? (o.user_name || o.user_id) : t('1:1 대화'); }
+  return r.name || t('단체방');
+}
+function _chatCnt(n){ return curLang === 'es' ? n + ' ' + t('명') : n + '명'; }
+function _chatIsOnline(uid){ return (CHAT.online || []).some(o => o.user_id === uid); }
+function chatRenderBadge(){
+  const n = CHAT.rooms.reduce((s, r) => s + Number(r.unread || 0), 0);
+  const txt = n > 99 ? '99+' : String(n);
+  const b = document.getElementById('cf-badge'); b.textContent = txt; b.classList.toggle('on', n > 0);
+  const tb = document.getElementById('ch-tab-unread'); tb.textContent = txt; tb.classList.toggle('on', n > 0);
+  const sb = document.getElementById('sb-chat-n'); if (sb) { sb.textContent = txt; sb.classList.toggle('on', n > 0); }
+}
+function _chatDayLabel(d, tm){
+  const today = new Date(); const p = x => String(x).padStart(2, '0');
+  const ds = today.getFullYear() + '-' + p(today.getMonth() + 1) + '-' + p(today.getDate());
+  return d === ds ? tm : (d || '').slice(5).replace('-', '/');
+}
+
+// ── 방 목록 ────────────────────────────────────────────
+function chatRenderList(){
+  chatRenderBadge();
+  const box = document.getElementById('cl-list'); if (!box) return;
+  const me = getMe();
+  if (!CHAT.rooms.length) { box.innerHTML = `<div class="ch-empty">${t('로딩 중...')}</div>`; return; }
+  box.innerHTML = CHAT.rooms.map(r => {
+    const name = _chatRoomName(r);
+    let av;
+    if (r.kind === 'all') av = `<div class="cl-av all">📢</div>`;
+    else if (r.kind === 'group') av = `<div class="cl-av grp">👥</div>`;
+    else { const o = (r.members || []).find(m => m.user_id !== me.id) || {}; av = `<div class="cl-av">${esc(String(name).trim().charAt(0).toUpperCase())}${_chatIsOnline(o.user_id) ? '<i></i>' : ''}</div>`; }
+    const cnt = r.kind === 'group' ? `<small>${(r.members || []).length}</small>` : '';
+    let prev = r.last_id ? (r.last_sys ? r.last_msg : ((r.last_user_name && r.kind !== 'dm' ? r.last_user_name + ': ' : '') + r.last_msg)) : t('아직 메시지가 없습니다.');
+    prev = String(prev || '').replace(/\s+/g, ' ');
+    const unread = Number(r.unread || 0);
+    return `<div class="cl-row" onclick="chatOpenRoom(${Number(r.id)})">${av}`
+      + `<div class="cl-mid"><div class="cl-title"><span>${esc(name)}</span>${cnt}</div><div class="cl-prev">${esc(prev)}</div></div>`
+      + `<div class="cl-right"><span class="cl-time">${r.last_id ? esc(_chatDayLabel(r.last_d, r.last_t)) : ''}</span>`
+      + (unread ? `<span class="cl-badge">${unread > 99 ? '99+' : unread}</span>` : '') + `</div></div>`;
+  }).join('');
+}
+
+// ── 대화방 ─────────────────────────────────────────────
+function _chatShow(view){
+  CHAT.view = view;
+  ['list','room','pick','online'].forEach(k => document.getElementById('ch-view-' + k).classList.toggle('on',
+    CHAT.tab === 'online' ? k === 'online' : k === view));
+}
+function chatOpenRoom(id){
+  if (CHAT.room !== id) { CHAT.room = id; CHAT.msgs = []; CHAT.lastId = 0; }
+  document.getElementById('ch-err').textContent = '';
+  CHAT.tab = 'chat'; _chatTabBtns(); _chatShow('room');
+  chatRenderRoomHead(); chatRenderMsgs();
+  setTimeout(() => document.getElementById('ch-text').focus(), 30);
+  if (CHAT.timer) clearTimeout(CHAT.timer);
+  chatPoll();
+}
+function chatBack(){ CHAT.room = null; CHAT.msgs = []; CHAT.lastId = 0; _chatShow('list'); chatRenderList(); _chatNext(); }
+function chatRenderRoomHead(){
+  if (CHAT.view !== 'room' || CHAT.room === null) return;
+  const r = CHAT.rooms.find(x => x.id === CHAT.room) || { id: CHAT.room, kind: CHAT.room === 0 ? 'all' : 'pending', name: '…', members: [] };
+  document.getElementById('cr-name').textContent = _chatRoomName(r);
+  let sub = '', acts = '';
+  if (r.kind === 'pending') sub = '';
+  else if (r.kind === 'all') sub = t('포털 사용자 전체');
+  else if (r.kind === 'dm') { const o = (r.members || []).find(m => m.user_id !== getMe().id) || {}; sub = (o.user_id || '') + (_chatIsOnline(o.user_id) ? ' · ' + t('접속중') : ''); }
+  else {
+    const mem = r.members || [];
+    sub = _chatCnt(mem.length) + ' · ' + mem.map(m => m.user_name).join(', ');
+    acts = `<button type="button" class="cr-act" onclick="chatPick('invite')">＋ ${t('초대')}</button> `
+         + `<button type="button" class="cr-act" onclick="chatRename()">✎ ${t('이름')}</button> `
+         + `<button type="button" class="cr-act danger" onclick="chatLeave()">${t('나가기')}</button>`;
+  }
+  document.getElementById('cr-sub').textContent = sub;
+  document.getElementById('cr-acts').innerHTML = acts;
+}
+function chatRenderMsgs(appendOnly){
+  const box = document.getElementById('ch-msgs'); if (!box || CHAT.room === null) return;
   const me = getMe(), isAdmin = me.role === 'admin';
   const nearBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 80;
   if (!CHAT.msgs.length) {
@@ -2485,6 +2646,7 @@ function chatRender(appendOnly){
     const meName = (me.name || '').trim();
     CHAT.msgs.forEach(m => {
       if (m.d !== prevDay) { html += `<div class="ch-date">${esc(m.d)}</div>`; prevDay = m.d; prevUser = ''; }
+      if (m.sys) { html += `<div class="ch-sys">${esc(m.msg)} · ${esc(m.t)}</div>`; prevUser = ''; return; }
       const mine = m.user_id === me.id;
       const mention = !mine && meName && m.msg.indexOf('@' + meName) >= 0;
       const showWho = !mine && m.user_id !== prevUser;
@@ -2497,29 +2659,41 @@ function chatRender(appendOnly){
     });
     box.innerHTML = html;
   }
-  if (!appendOnly || nearBottom || (CHAT.msgs.length && CHAT.msgs[CHAT.msgs.length-1].user_id === me.id)) box.scrollTop = box.scrollHeight;
-  _chatBadge();
+  if (!appendOnly || nearBottom || (CHAT.msgs.length && CHAT.msgs[CHAT.msgs.length - 1].user_id === me.id)) box.scrollTop = box.scrollHeight;
 }
 async function chatSend(){
   const ta = document.getElementById('ch-text'), btn = document.getElementById('ch-send');
-  const msg = ta.value.trim(); if (!msg || CHAT.busy) return;
+  const msg = ta.value.trim(); if (!msg || CHAT.busy || CHAT.room === null) return;
   CHAT.busy = true; btn.disabled = true;
   try {
-    await rpc('portal_chat_send', { p_token: sessToken(), p_msg: msg });
+    await _chatRpc('portal_chat_send', { p_msg: msg, p_room: CHAT.room });
     ta.value = ''; chatAutoGrow(ta);
     document.getElementById('ch-err').textContent = '';
-    if (CHAT.polling) setTimeout(() => chatPoll(false), 400); else await chatPoll(false);
+    if (CHAT.timer) clearTimeout(CHAT.timer);
+    if (CHAT.polling) setTimeout(chatPoll, 400); else await chatPoll();
   } catch(e) {
-    document.getElementById('ch-err').textContent = e.message;
+    if (_chatAuthErr(e)) return;
+    document.getElementById('ch-err').textContent = _chatErrMsg(e);
   } finally { CHAT.busy = false; btn.disabled = false; ta.focus(); }
 }
 async function chatDelete(id){
   if (!confirm(t('메시지를 삭제할까요?'))) return;
   try {
-    await rpc('portal_chat_delete', { p_token: sessToken(), p_id: id });
+    await _chatRpc('portal_chat_delete', { p_id: id });
     CHAT.msgs = CHAT.msgs.filter(m => m.id !== id);
-    chatRender(true);
-  } catch(e) { document.getElementById('ch-err').textContent = e.message; }
+    chatRenderMsgs(true);
+  } catch(e) { if (!_chatAuthErr(e)) document.getElementById('ch-err').textContent = _chatErrMsg(e); }
+}
+async function chatRename(){
+  const r = CHAT.rooms.find(x => x.id === CHAT.room); if (!r) return;
+  const nm = prompt(t('새 방 이름'), r.name || ''); if (nm === null || !nm.trim()) return;
+  try { await _chatRpc('portal_group_rename', { p_room: CHAT.room, p_name: nm.trim() }); r.name = nm.trim(); chatRenderRoomHead(); chatPoll(); }
+  catch(e) { if (!_chatAuthErr(e)) document.getElementById('ch-err').textContent = _chatErrMsg(e); }
+}
+async function chatLeave(){
+  if (!confirm(t('이 단체방에서 나갈까요? 대화 내용은 다시 볼 수 없습니다.'))) return;
+  try { await _chatRpc('portal_room_leave', { p_room: CHAT.room }); CHAT.rooms = CHAT.rooms.filter(x => x.id !== CHAT.room); chatBack(); chatPoll(); }
+  catch(e) { if (!_chatAuthErr(e)) document.getElementById('ch-err').textContent = _chatErrMsg(e); }
 }
 function chatKey(ev){
   if (ev.key === 'Enter' && !ev.shiftKey && !ev.isComposing) { ev.preventDefault(); chatSend(); }
@@ -2527,51 +2701,111 @@ function chatKey(ev){
 }
 function chatAutoGrow(el){ el.style.height = 'auto'; el.style.height = Math.min(el.scrollHeight, 110) + 'px'; }
 
-async function chatLoadOnline(){
-  const tok = sessToken(); if (!tok || !CHAT.on) return;
+// ── 대상 선택: 1:1 / 단체방 만들기 / 초대 ──────────────────
+async function chatPick(mode){
+  CHAT.pick = { mode, sel: new Set(), back: CHAT.view === 'room' ? 'room' : 'list' };
+  CHAT.tab = 'chat'; _chatTabBtns(); _chatShow('pick');
+  document.getElementById('cp-title').textContent = mode === 'dm' ? t('1:1 대화 상대 선택') : mode === 'group' ? t('단체방 만들기') : t('대화 상대 초대');
+  document.getElementById('cp-sub').textContent = mode === 'dm' ? t('이름을 누르면 바로 대화가 열립니다') : t('참여할 사람을 여러 명 선택하세요');
+  document.getElementById('cp-name').style.display = mode === 'group' ? '' : 'none';
+  document.getElementById('cp-name').value = '';
+  document.getElementById('cp-search').value = '';
+  document.getElementById('cp-foot').style.display = mode === 'dm' ? 'none' : '';
+  document.getElementById('cp-list').innerHTML = `<div class="ch-empty">${t('로딩 중...')}</div>`;
+  chatPickRender();
   try {
-    const arr = await sbFetch('/rest/v1/rpc/portal_online_users', { method:'POST', body: JSON.stringify({ p_token: tok }) });
+    const arr = await _chatRpc('portal_chat_users');
+    CHAT.users = Array.isArray(arr) ? arr : [];
+    chatPickRender();
+  } catch(e) { if (!_chatAuthErr(e)) document.getElementById('cp-list').innerHTML = `<div class="ch-empty" style="color:#e05c5c;">${esc(_chatErrMsg(e))}</div>`; }
+  setTimeout(() => document.getElementById(mode === 'group' ? 'cp-name' : 'cp-search').focus(), 30);
+}
+function chatPickRender(){
+  const box = document.getElementById('cp-list'); if (!box || CHAT.view !== 'pick') return;
+  const pk = CHAT.pick, q = document.getElementById('cp-search').value.trim().toLowerCase();
+  let exclude = new Set();
+  if (pk.mode === 'invite') { const r = CHAT.rooms.find(x => x.id === CHAT.room); (r && r.members || []).forEach(m => exclude.add(m.user_id)); }
+  const list = (CHAT.users || []).filter(u => !exclude.has(u.user_id) &&
+    (!q || String(u.user_name || '').toLowerCase().includes(q) || String(u.user_id).toLowerCase().includes(q)));
+  if (CHAT.users.length) box.innerHTML = list.length ? list.map(u => {
+    const sel = pk.sel.has(u.user_id), nm = u.user_name || u.user_id;
+    return `<div class="cp-row${sel ? ' sel' : ''}" onclick="chatPickClick('${esc(u.user_id).replace(/'/g, '&#39;')}')">`
+      + (pk.mode === 'dm' ? '' : `<input type="checkbox" ${sel ? 'checked' : ''} tabindex="-1">`)
+      + `<div class="co-av">${esc(String(nm).trim().charAt(0).toUpperCase())}<i class="${u.online ? '' : 'off'}"></i></div>`
+      + `<div class="co-name">${esc(nm)}<small>${esc(u.user_id)}</small></div>`
+      + (u.online ? `<span class="co-tag" style="color:#5ec97a;border-color:rgba(94,201,122,0.4);">${t('접속중')}</span>` : '')
+      + `</div>`;
+  }).join('') : `<div class="ch-empty">${t('검색 결과 없음')}</div>`;
+  const n = pk.sel.size, ok = document.getElementById('cp-ok');
+  ok.disabled = n === 0;
+  ok.textContent = (pk.mode === 'group' ? t('단체방 만들기') : t('초대하기')) + (n ? ` (${_chatCnt(n)})` : '');
+}
+function chatPickClick(uid){
+  if (CHAT.pick.mode === 'dm') { chatOpenDm(uid); return; }
+  const s = CHAT.pick.sel; s.has(uid) ? s.delete(uid) : s.add(uid);
+  chatPickRender();
+}
+function chatPickBack(){ CHAT.pick.back === 'room' && CHAT.room !== null ? (_chatShow('room'), chatRenderMsgs()) : chatBack(); }
+async function chatPickOk(){
+  const pk = CHAT.pick, ids = Array.from(pk.sel); if (!ids.length) return;
+  const ok = document.getElementById('cp-ok'); ok.disabled = true;
+  try {
+    if (pk.mode === 'group') {
+      const r = await _chatRpc('portal_group_create', { p_name: document.getElementById('cp-name').value.trim(), p_members: ids });
+      await _chatRefreshRooms(); chatOpenRoom(Number(r.id));
+    } else {
+      await _chatRpc('portal_group_invite', { p_room: CHAT.room, p_members: ids });
+      await _chatRefreshRooms(); _chatShow('room'); chatRenderRoomHead(); chatRenderMsgs(); chatPoll();
+    }
+  } catch(e) { if (!_chatAuthErr(e)) alert(_chatErrMsg(e)); ok.disabled = false; }
+}
+async function chatOpenDm(uid){
+  if (!uid || uid === getMe().id) return;
+  try {
+    const r = await _chatRpc('portal_dm_open', { p_other: uid });
+    if (!CHAT.open) openChat('chat');
+    await _chatRefreshRooms(); chatOpenRoom(Number(r.id));
+  } catch(e) { if (!_chatAuthErr(e)) alert(_chatErrMsg(e)); }
+}
+
+// ── 접속자 ─────────────────────────────────────────────
+async function chatLoadOnline(){
+  if (!sessToken() || !CHAT.on) return;
+  try {
+    const arr = await _chatRpc('portal_online_users');
     CHAT.online = Array.isArray(arr) ? arr : [];
     CHAT.onlineAt = new Date();
     const so = document.getElementById('sb-online'); if (so) so.textContent = CHAT.online.length;
     chatRenderOnline();
   } catch(e) {
-    if (String(e.message).startsWith('unauthorized')) { chatStop(); forceRelogin(); return; }
+    if (_chatAuthErr(e)) return;
     const box = document.getElementById('ch-online');
-    if (box && !CHAT.online.length) box.innerHTML = `<div class="ch-empty" style="padding:20px;color:#e05c5c;">${esc(e.message)}</div>`;
+    if (box && !CHAT.online.length) box.innerHTML = `<div class="ch-empty" style="color:#e05c5c;">${esc(_chatErrMsg(e))}</div>`;
   }
 }
 function chatRenderOnline(){
   const box = document.getElementById('ch-online'); if (!box) return;
   const me = getMe(), arr = CHAT.online || [];
   document.getElementById('ch-online-n').textContent = arr.length;
-  const ago = s => s < 5 ? t('방금') : s < 60 ? s + t('초 전') : Math.floor(s/60) + t('분 전');
+  const ago = s => s < 5 ? t('방금') : s < 60 ? s + t('초 전') : Math.floor(s / 60) + t('분 전');
   box.innerHTML = arr.length ? arr.map(r => {
     const nm = r.user_name || r.user_id, mine = r.user_id === me.id;
-    return `<div class="co-row" onclick="chatMention('${esc(nm).replace(/'/g,'&#39;')}', ${mine})">`
+    return `<div class="co-row" ${mine ? '' : `onclick="chatOpenDm('${esc(r.user_id).replace(/'/g, '&#39;')}')"`}>`
       + `<div class="co-av">${esc(String(nm).trim().charAt(0).toUpperCase())}<i class="${Number(r.ago_sec) > 40 ? 'idle' : ''}"></i></div>`
       + `<div class="co-name">${esc(nm)}<small>${esc(r.user_id)}${Number(r.sessions) > 1 ? ' ×' + r.sessions : ''}</small></div>`
-      + (mine ? `<span class="co-tag me">${t('나')}</span>` : (r.role === 'admin' ? `<span class="co-tag">${t('관리자')}</span>` : ''))
+      + (mine ? `<span class="co-tag me">${t('나')}</span>` : `<span class="co-dm">💬 ${t('1:1')}</span>`)
       + `<span class="co-time">${ago(Number(r.ago_sec))}</span></div>`;
-  }).join('') : `<div class="ch-empty" style="padding:20px;">${t('접속자 없음')}</div>`;
-  document.getElementById('co-foot').textContent = (CHAT.onlineAt ? CHAT.onlineAt.toTimeString().slice(0,8) + ' · ' : '') + t('이름을 누르면 @멘션');
+  }).join('') : `<div class="ch-empty">${t('접속자 없음')}</div>`;
+  document.getElementById('co-foot').textContent = (CHAT.onlineAt ? CHAT.onlineAt.toTimeString().slice(0, 8) + ' · ' : '') + t('이름을 누르면 1:1 대화');
+  if (CHAT.view === 'room') chatRenderRoomHead();
 }
-function chatMention(name, mine){
-  chatTab('chat');
-  if (mine) return;
-  const ta = document.getElementById('ch-text');
-  const tag = '@' + name + ' ';
-  if (ta.value.indexOf(tag) < 0) ta.value = tag + ta.value;
-  ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length);
-}
+
+// ── 패널 열기/닫기/탭 ──────────────────────────────────
+function _chatTabBtns(){ ['chat','online'].forEach(k => document.getElementById('ch-tab-' + k).classList.toggle('on', k === CHAT.tab)); }
 function chatTab(tab){
-  CHAT.tab = tab;
-  ['chat','online'].forEach(k => {
-    document.getElementById('ch-tab-' + k).classList.toggle('on', k === tab);
-    document.getElementById('ch-view-' + k).classList.toggle('on', k === tab);
-  });
+  CHAT.tab = tab; _chatTabBtns(); _chatShow(CHAT.view);
   if (tab === 'online') chatLoadOnline();
-  else { const box = document.getElementById('ch-msgs'); box.scrollTop = box.scrollHeight; _chatBadge(); setTimeout(() => document.getElementById('ch-text').focus(), 30); }
+  else if (CHAT.view === 'room') { const box = document.getElementById('ch-msgs'); box.scrollTop = box.scrollHeight; _chatMarkRead(); setTimeout(() => document.getElementById('ch-text').focus(), 30); }
   _chatNext();
 }
 function openChat(tab){
@@ -2581,7 +2815,7 @@ function openChat(tab){
   chatTab(tab || CHAT.tab || 'chat');
   if (CHAT.onlineTimer) clearInterval(CHAT.onlineTimer);
   CHAT.onlineTimer = setInterval(() => { if (CHAT.open && document.visibilityState !== 'hidden') chatLoadOnline(); }, 15000);
-  chatPoll(false);
+  chatPoll();
 }
 function closeChat(){
   CHAT.open = false;
@@ -2590,7 +2824,7 @@ function closeChat(){
   _chatNext();
 }
 function toggleChat(){ CHAT.open ? closeChat() : openChat('chat'); }
-document.addEventListener('visibilitychange', () => { if (CHAT.on && document.visibilityState === 'visible') chatPoll(false); });
+document.addEventListener('visibilitychange', () => { if (CHAT.on && document.visibilityState === 'visible') chatPoll(); });
 
 function startPresence(u){
   _presUser = u;
@@ -3075,24 +3309,53 @@ async function fsXlsx(mode){
     </div>
   </div>
 </div>
-<!-- ═══ 채팅 / 현재 접속자 ═══ -->
+<!-- ═══ 채팅 (전체 · 1:1 · 단체방) / 현재 접속자 ═══ -->
 <button id="chat-fab" type="button" onclick="toggleChat()" title="채팅"><span>💬</span><span class="cf-badge" id="cf-badge">0</span></button>
 <div id="chat-panel" role="dialog" aria-label="채팅">
   <div class="ch-head">
-    <button type="button" class="ch-tab on" id="ch-tab-chat" onclick="chatTab('chat')">💬 <span>채팅</span></button>
+    <button type="button" class="ch-tab on" id="ch-tab-chat" onclick="chatTab('chat')">💬 <span>채팅</span> <em class="ch-unread" id="ch-tab-unread">0</em></button>
     <button type="button" class="ch-tab" id="ch-tab-online" onclick="chatTab('online')"><i class="ch-dot"></i><span>접속자</span> <b id="ch-online-n">—</b></button>
     <button type="button" class="ch-close" onclick="closeChat()">✕ <span>닫기</span></button>
   </div>
-  <div class="ch-view on" id="ch-view-chat">
-    <div id="ch-msgs"><div class="ch-empty"><span>로딩 중...</span></div></div>
+  <!-- 방 목록 -->
+  <div class="ch-view on" id="ch-view-list">
+    <div class="cl-new">
+      <button type="button" onclick="chatPick('dm')">＋ <span>1:1 대화</span></button>
+      <button type="button" onclick="chatPick('group')">＋ <span>단체방 만들기</span></button>
+    </div>
+    <div class="ch-scroll" id="cl-list"><div class="ch-empty"><span>로딩 중...</span></div></div>
+  </div>
+  <!-- 대화방 -->
+  <div class="ch-view" id="ch-view-room">
+    <div class="cr-head">
+      <button type="button" class="cr-back" onclick="chatBack()">← <span>목록</span></button>
+      <div class="cr-title"><b id="cr-name">—</b><small id="cr-sub"></small></div>
+      <span id="cr-acts"></span>
+    </div>
+    <div id="ch-msgs"></div>
     <div id="ch-err"></div>
     <div class="ch-input">
-      <textarea id="ch-text" rows="1" maxlength="1000" placeholder="메시지 입력 (Enter 전송)" oninput="chatAutoGrow(this)" onkeydown="chatKey(event)"></textarea>
+      <textarea id="ch-text" rows="1" maxlength="1000" placeholder="메시지 입력" oninput="chatAutoGrow(this)" onkeydown="chatKey(event)"></textarea>
       <button type="button" id="ch-send" onclick="chatSend()">전송</button>
     </div>
+    <div class="ch-hint"><span><kbd>Enter</kbd><span>전송</span></span><span><kbd>Shift</kbd>+<kbd>Enter</kbd><span>줄바꿈</span></span></div>
   </div>
+  <!-- 대상 선택 (1:1 / 단체방 / 초대) -->
+  <div class="ch-view" id="ch-view-pick">
+    <div class="cr-head">
+      <button type="button" class="cr-back" onclick="chatPickBack()">← <span>뒤로</span></button>
+      <div class="cr-title"><b id="cp-title">—</b><small id="cp-sub"></small></div>
+    </div>
+    <div class="cp-top">
+      <input id="cp-name" type="text" maxlength="60" placeholder="단체방 이름 (비워두면 참여자 이름으로)">
+      <input id="cp-search" type="text" placeholder="이름 또는 아이디 검색" oninput="chatPickRender()">
+    </div>
+    <div class="ch-scroll" id="cp-list"></div>
+    <div class="cp-foot" id="cp-foot"><button type="button" id="cp-ok" onclick="chatPickOk()">—</button></div>
+  </div>
+  <!-- 접속자 -->
   <div class="ch-view" id="ch-view-online">
-    <div id="ch-online"><div class="ch-empty" style="padding:20px;"><span>로딩 중...</span></div></div>
+    <div class="ch-scroll" id="ch-online"><div class="ch-empty"><span>로딩 중...</span></div></div>
     <div class="co-foot" id="co-foot">—</div>
   </div>
 </div>
