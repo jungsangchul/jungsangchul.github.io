@@ -225,6 +225,60 @@ nav.tabs button .wt{font-size:11px;font-weight:700;padding:1px 7px;border-radius
 .wait-box b{font-size:18px;color:var(--ink)}
 .wait-box span{font-family:var(--mono);font-size:12px;letter-spacing:.2em;color:var(--mute);text-transform:uppercase}
 .wait-box p{margin:0;color:var(--mute);font-size:13.5px}
+
+/* ── 수출단가 ── */
+.ep-kpis{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px}
+.ep-kpi{cursor:default;position:relative;overflow:hidden}
+.ep-kpi[onclick]{cursor:pointer;transition:border-color .15s,transform .15s}
+.ep-kpi[onclick]:hover{border-color:#3a3a3a;transform:translateY(-1px)}
+.ep-kpi .v{font-family:var(--code);font-size:30px;line-height:1.1}
+.ep-kpi.gold .v{color:var(--ac2);font-size:24px;padding-top:4px}
+.ep-kpi.up .v{color:var(--red)}.ep-kpi.dn .v{color:var(--blue)}
+.ep-kpi::after{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--line2)}
+.ep-kpi.gold::after{background:var(--ac)}.ep-kpi.up::after{background:var(--red)}.ep-kpi.dn::after{background:var(--blue)}
+.ep-up{color:var(--red)!important}.ep-dn{color:var(--blue)!important}
+.fs-tw td.ep-pr{color:#fff;font-weight:700}
+.fs-tw tr.ep-rc td{background:rgba(201,168,76,.06)}
+.fs-tw tr.ep-rc td:first-child{box-shadow:inset 2px 0 0 var(--ac)}
+.fs-tw tr.click{cursor:pointer}
+.ep-rm{max-width:260px;overflow:hidden;text-overflow:ellipsis}
+.ep-cnt{display:inline-block;min-width:22px;text-align:center;padding:0 6px;border-radius:999px;background:rgba(201,168,76,.14);color:var(--ac);font-weight:700}
+.ep-hb{background:none;border:1px solid var(--line2);border-radius:999px;color:var(--ink2);padding:3px 11px;font-size:12px;font-family:inherit;cursor:pointer}
+.ep-hb:hover{border-color:var(--ac);color:var(--ac)}
+.ep-hb.del:hover{border-color:var(--red);color:var(--red)}
+.fs-tag.ep-st{background:rgba(255,255,255,.05);color:var(--mute);font-weight:600}
+.fs-tag.ep-tu{background:rgba(224,92,92,.14);color:#ef8a8a}.fs-tag.ep-td{background:rgba(111,184,221,.14);color:var(--blue)}
+.fs-tag.ep-tn{background:rgba(201,168,76,.15);color:var(--ac)}.fs-tag.ep-ts{background:rgba(255,255,255,.05);color:var(--mute)}
+.ep-sel{height:34px;font-size:13px;padding:0 10px;width:auto}
+.fs-seg.ep-sm button{padding:6px 12px;font-size:12.5px}
+.ep-lb{font-size:13px;color:var(--ink2)}
+.ep-lb input{height:34px;font-size:13px;padding:0 8px}
+.ep-dchips{display:flex;gap:6px;flex-wrap:wrap}
+.ep-dchip{display:inline-flex;gap:8px;align-items:center;background:#0d0d0d;border:1px solid var(--line2);border-radius:999px;padding:5px 12px;font-family:var(--mono);font-size:12px;color:var(--ink2);cursor:pointer}
+.ep-dchip b{color:var(--ink);font-weight:700}
+.ep-dchip:hover{border-color:#444}.ep-dchip.on{border-color:var(--ac);background:rgba(201,168,76,.1)}
+.ep-in{display:grid;grid-template-columns:minmax(320px,420px) 1fr;gap:14px;align-items:start}
+.ep-inl{background:linear-gradient(180deg,#181818,#141414);border:1px solid var(--line2);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:12px}
+.ep-f{display:flex;flex-direction:column;gap:6px}
+.ep-f label{font-family:var(--mono);font-size:12px;letter-spacing:.12em;color:var(--ac);text-transform:uppercase;font-weight:700}
+.ep-f textarea{min-height:300px}
+.ep-act{display:flex;gap:8px}
+.ep-inr{display:flex;flex-direction:column;gap:10px;min-width:0}
+.ep-ph{min-height:300px;border:1px dashed var(--line2);border-radius:var(--r);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--mute);font-size:13px}
+.ep-ph b{color:var(--ink2);font-size:15px}
+.ep-pvk{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+.ep-pvk div{background:#0d0d0d;border:1px solid var(--line2);border-radius:8px;padding:9px 12px;min-width:0}
+.ep-pvk span{display:block;font-family:var(--mono);font-size:12px;letter-spacing:.1em;color:var(--mute)}
+.ep-pvk b{display:block;font-family:var(--code);font-size:24px;color:#fff;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ep-pvk .up b{color:var(--red)}.ep-pvk .dn b{color:var(--blue)}.ep-pvk .nw b{color:var(--ac)}
+.ep-warn{font-size:13px;color:var(--amb);background:var(--ambbg);border:1px solid rgba(224,168,74,.35);border-radius:6px;padding:8px 12px}
+.ep-warn.err{color:var(--red);background:var(--redbg);border-color:rgba(224,92,92,.35)}
+.ep-warn code{font-size:12px;color:var(--ink2)}
+.mdl#ep-mdl{z-index:300;padding-top:6vh}
+.ep-chart{background:#0d0d0d;border:1px solid var(--line2);border-radius:8px;padding:8px}
+@media(max-width:1100px){.ep-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:900px){.ep-in{grid-template-columns:1fr}.ep-pvk{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:560px){.ep-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
 </style>
 
 <!-- ═══ 포털 공통 (yh-common-v2): 제목 서체 · 닫기 버튼 · 최소 글자 크기 ═══ -->
@@ -340,7 +394,7 @@ nav.tabs button .wt{font-size:11px;font-weight:700;padding:1px 7px;border-radius
 </header>
 <nav id="nav" class="tabs">
   <button data-tab="fs" class="on"><svg viewBox="0 0 24 24"><path d="M3 7h18v13H3z"/><path d="M3 7l2-3.5h14L21 7"/><path d="M12 10v6M9 13l3 3 3-3"/></svg><span data-t="tab_fs">현장재고 받기</span></button>
-  <button data-tab="w1" class="wait"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg><span data-t="tab_w1">메뉴 2</span><span class="wt" data-t="wait_tag">준비대기중</span></button>
+  <button data-tab="ep"><svg viewBox="0 0 24 24"><path d="M12 2v20"/><path d="M17 6H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg><span data-t="tab_ep">자재품목별 수출단가</span></button>
   <button data-tab="w2" class="wait"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg><span data-t="tab_w2">메뉴 3</span><span class="wt" data-t="wait_tag">준비대기중</span></button>
   <button data-tab="w3" class="wait"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg><span data-t="tab_w3">메뉴 4</span><span class="wt" data-t="wait_tag">준비대기중</span></button>
 </nav>
@@ -349,6 +403,10 @@ nav.tabs button .wt{font-size:11px;font-weight:700;padding:1px 7px;border-radius
 <section class="tab on" id="t-fs">
   <div class="fs-head2"><h2 data-t="fs_title">현장재고 받기</h2><span class="fs-pl p1">PLANT 1 · <span data-t="city">몽클로바</span></span><span class="s">Field stock · machining + assembly</span></div>
   <div class="fs-body" id="fs-body"></div>
+</section>
+<section class="tab" id="t-ep">
+  <div class="fs-head2"><h2 data-t="ep_title">자재품목별 수출단가</h2><span class="fs-pl p1">PLANT 1 · <span data-t="city">몽클로바</span></span><span class="s">Export unit price · USD</span></div>
+  <div class="fs-body" id="ep-body"></div>
 </section>
 <section class="tab" id="t-wait">
   <div class="wait-box"><div class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg></div><b data-t="wait_t">준비대기중입니다</b><span>Coming soon</span><p data-t="wait_d">이 메뉴는 현재 준비 중입니다. 기능이 완성되면 이곳에서 바로 사용할 수 있습니다.</p></div>
@@ -536,13 +594,417 @@ async function fsXlsx(mode){
 }
 
 
+/* ══════════ 자재품목별 수출단가 ══════════ */
+const EP_SFX=FS.plant===2?'_2':'';
+const EP={rows:null,batches:[],loading:false,err:'',view:'cur',q:'',unit:'',flt:'',cq:'',cdir:'',cfrom:'',cto:'',
+  inDate:'',inNote:'',inText:'',parsed:null,C:null,saving:false};
+const epH=()=>({apikey:SUPABASE_ANON,Authorization:'Bearer '+SUPABASE_ANON});
+const epP=v=>v==null||isNaN(v)?'—':'$'+Number(v).toLocaleString('en-US',{minimumFractionDigits:3,maximumFractionDigits:6});
+const epD=v=>v==null||isNaN(v)?'':(v>0?'+':v<0?'−':'')+Math.abs(Number(v)).toLocaleString('en-US',{minimumFractionDigits:3,maximumFractionDigits:6});
+const epPct=v=>v==null||!isFinite(v)?'':(v>0?'+':v<0?'−':'')+Math.abs(v).toFixed(1)+'%';
+const epCls=v=>v>1e-12?'ep-up':v<-1e-12?'ep-dn':'';
+
+async function epGetAll(path){
+  const out=[],step=1000;
+  for(let from=0;;from+=step){
+    const r=await fetch(SUPABASE_URL+'/rest/v1/'+path,{headers:{...epH(),Range:from+'-'+(from+step-1),'Range-Unit':'items'}});
+    if(!r.ok)throw new Error(await r.text());const j=await r.json();out.push(...j);if(j.length<step)break}
+  return out;
+}
+async function epRpc(fn,body){
+  const r=await fetch(SUPABASE_URL+'/rest/v1/rpc/'+fn,{method:'POST',headers:{...epH(),'Content-Type':'application/json'},body:JSON.stringify(body)});
+  if(!r.ok)throw new Error(await r.text());const t=await r.text();return t?JSON.parse(t):null;
+}
+async function epLoad(){
+  EP.loading=true;EP.err='';epRender();
+  try{
+    const [b,rows]=await Promise.all([
+      epGetAll('mtrade_price_batch'+EP_SFX+'?select=price_date,cnt,note,created_at,updated_at&order=price_date.desc'),
+      epGetAll('mtrade_price'+EP_SFX+'?select=code,unit,price,price_date,remark&order=code,price_date,id')]);
+    EP.batches=b;EP.rows=rows;epCompute();
+  }catch(e){EP.err=e.message||String(e)}
+  EP.loading=false;if(EP.inText)EP.parsed=epParse(EP.inText);epRender();
+}
+
+/* ── 계산: 품목별 이력 / 최신 단가 / 변동내역 ── */
+function epCompute(){
+  const by=new Map();
+  (EP.rows||[]).forEach(r=>{const c=String(r.code||'').toUpperCase();if(!by.has(c))by.set(c,[]);by.get(c).push({d:r.price_date,p:Number(r.price),u:r.unit||'',rm:r.remark||''})});
+  const dates=EP.batches.map(b=>b.price_date).sort(),latest=dates[dates.length-1]||'';
+  const bs={};dates.forEach(d=>bs[d]={up:0,dn:0,nw:0,same:0});
+  const cur=[],chg=[];
+  for(const [code,h] of by){
+    h.sort((a,b)=>a.d<b.d?-1:a.d>b.d?1:0);
+    if(bs[h[0].d])bs[h[0].d].nw++;
+    let cnt=0,lc=null;
+    for(let i=1;i<h.length;i++){
+      const a=h[i-1],b=h[i];
+      if(Math.abs(b.p-a.p)>1e-9){cnt++;const e={code,unit:b.u||a.u,d:b.d,pd:a.d,from:a.p,to:b.p,diff:b.p-a.p,pct:a.p?(b.p-a.p)/a.p*100:null};chg.push(e);lc=e;
+        if(bs[b.d])bs[b.d][e.diff>0?'up':'dn']++}
+      else if(bs[b.d])bs[b.d].same++;
+    }
+    const L=h[h.length-1];
+    cur.push({code,unit:L.u,price:L.p,d:L.d,rm:L.rm,first:h[0].d,n:h.length,cnt,lc,stale:L.d!==latest,recent:!!(lc&&lc.d===latest)});
+  }
+  cur.sort((a,b)=>a.code.localeCompare(b.code));
+  chg.sort((a,b)=>a.d<b.d?1:a.d>b.d?-1:a.code.localeCompare(b.code));
+  EP.C={by,cur,chg,bs,dates,latest};
+}
+/* 기준일 이전 마지막 단가 (입력 미리보기 비교용) */
+function epBefore(code,date){const h=EP.C&&EP.C.by.get(code);if(!h)return null;let r=null;for(const x of h){if(x.d<date)r=x;else break}return r}
+
+/* ── 붙여넣기 해석: 구성요소 | 단위 | 수출단가(USD) | (비고…) ── */
+function epNum(s){s=String(s==null?'':s).replace(/[$,\s]/g,'').replace(/USD/i,'');if(!/^-?\d*\.?\d+(e-?\d+)?$/i.test(s))return null;return Math.round(Number(s)*1e6)/1e6}
+function epParse(text){
+  const out=new Map(),bad=[];let dup=0,hdr=0;
+  String(text||'').replace(/\r/g,'').split('\n').forEach((ln,li)=>{
+    if(!ln.trim())return;
+    const c=ln.split('\t').map(s=>s.trim());
+    let i=c.findIndex(s=>s!=='');if(i<0)return;
+    const code=c[i].toUpperCase();let unit=c[i+1]||'',price=epNum(c[i+2]),rest=c.slice(i+3);
+    if(price==null&&epNum(c[i+1])!=null&&epNum(c[i+2])==null){price=epNum(c[i+1]);unit='';rest=c.slice(i+2)}
+    if(price==null){if(/구성요소|자재|코드|code|품번|단가/i.test(ln))hdr++;else bad.push({ln:li+1,txt:ln.slice(0,80)});return}
+    if(price<0){bad.push({ln:li+1,txt:ln.slice(0,80)});return}
+    if(out.has(code))dup++;
+    out.set(code,{code,unit:unit.toUpperCase(),price,remark:rest.filter(Boolean).join(' / ')});
+  });
+  return{rows:[...out.values()],bad,dup,hdr};
+}
+function epPreview(){
+  const P=EP.parsed,d=EP.inDate||fsToday();if(!P)return null;
+  const st={nw:0,up:0,dn:0,same:0},list=P.rows.map(r=>{const b=epBefore(r.code,d);let k='nw',diff=null,pct=null;
+    if(b){diff=r.price-b.p;pct=b.p?diff/b.p*100:null;k=Math.abs(diff)>1e-9?(diff>0?'up':'dn'):'same'}st[k]++;return{...r,k,bp:b?b.p:null,bd:b?b.d:'',diff,pct}});
+  const ord={up:0,dn:1,nw:2,same:3};list.sort((a,b)=>ord[a.k]-ord[b.k]||a.code.localeCompare(b.code));
+  return{list,st,exists:EP.batches.some(b=>b.price_date===d),d};
+}
+async function epSave(){
+  const P=EP.parsed,d=EP.inDate||fsToday();
+  if(!P||!P.rows.length){epToast(fsL('붙여넣은 데이터가 없습니다','Sin datos pegados'),1);return}
+  const ex=EP.batches.some(b=>b.price_date===d);
+  if(ex&&!confirm(fsL(`${d} 적용일 데이터가 이미 있습니다. 덮어쓸까요?`,`Ya existen datos del ${d}. ¿Sobrescribir?`)))return;
+  EP.saving=true;epRender();
+  try{const n=await epRpc('mtrade_price_upload'+EP_SFX,{p_date:d,p_rows:P.rows,p_note:EP.inNote||null});
+    epToast(fsL(`${d} · ${Number(n).toLocaleString()}개 품목 저장 완료`,`${d} · ${Number(n).toLocaleString()} materiales guardados`));
+    EP.inText='';EP.parsed=null;EP.inNote='';EP.view='cur';EP.saving=false;await epLoad();
+  }catch(e){EP.saving=false;epRender();epToast(fsL('저장 실패: ','Error: ')+(e.message||e),1)}
+}
+async function epDel(d){
+  if(!confirm(fsL(`${d} 적용일 수출단가를 삭제할까요?\n(해당 날짜 입력분만 삭제됩니다)`,`¿Eliminar los precios del ${d}?`)))return;
+  try{await epRpc('mtrade_price_delete'+EP_SFX,{p_date:d});epToast(fsL(`${d} 삭제 완료`,`${d} eliminado`));await epLoad()}
+  catch(e){epToast(fsL('삭제 실패: ','Error: ')+(e.message||e),1)}
+}
+function epToast(m,err){let t=document.getElementById('ep-toast');if(!t){t=document.createElement('div');t.id='ep-toast';t.className='toast';document.body.appendChild(t)}
+  t.textContent=m;t.classList.toggle('err',!!err);t.style.display='block';clearTimeout(epToast._t);epToast._t=setTimeout(()=>t.style.display='none',3200)}
+
+/* ── 화면 ── */
+function epCurRows(){
+  const C=EP.C;if(!C)return[];const q=EP.q.trim().toUpperCase();
+  return C.cur.filter(r=>(!q||(r.code+' '+r.rm).toUpperCase().includes(q))&&(!EP.unit||r.unit===EP.unit)
+    &&(!EP.flt||(EP.flt==='chg'&&r.cnt>0)||(EP.flt==='recent'&&r.recent)||(EP.flt==='up'&&r.recent&&r.lc.diff>0)||(EP.flt==='dn'&&r.recent&&r.lc.diff<0)||(EP.flt==='stale'&&r.stale)));
+}
+function epChgRows(){
+  const C=EP.C;if(!C)return[];const q=EP.cq.trim().toUpperCase();
+  return C.chg.filter(e=>(!q||e.code.includes(q))&&(!EP.cdir||(EP.cdir==='up'?e.diff>0:e.diff<0))&&(!EP.cfrom||e.d>=EP.cfrom)&&(!EP.cto||e.d<=EP.cto));
+}
+function epRender(){
+  const box=document.getElementById('ep-body');if(!box)return;
+  const C=EP.C,L=C&&C.latest,bl=L&&C.bs[L]||{up:0,dn:0,nw:0},lb=EP.batches[0];
+  const first=C&&C.dates.length<=1;
+  const kp=(k,v,s,cls,on)=>`<div class="fs-card ep-kpi ${cls||''}" ${on?`onclick="${on}"`:''}><div class="k">${k}</div><div class="v">${v}</div><div class="d">${s}</div></div>`;
+  const kpis=!C?'':`<div class="ep-kpis">
+    ${kp(fsL('등록 품목','MATERIALES'),C.cur.length.toLocaleString(),fsL('품목별 가장 최근 입력 단가 기준','Último precio por material'),'',"EP.view='cur';EP.flt='';epRender()")}
+    ${kp(fsL('최근 적용일','ÚLTIMA FECHA'),L||'—',lb?fsL(`${Number(lb.cnt).toLocaleString()}개 품목 입력`,`${Number(lb.cnt).toLocaleString()} materiales`):fsL('입력 없음','Sin datos'),'gold')}
+    ${kp(fsL('최근 인상','SUBIDAS'),first?'—':bl.up.toLocaleString(),fsL('직전 입력 대비 단가 상승','vs. captura anterior'),'up',"EP.view='cur';EP.flt='up';epRender()")}
+    ${kp(fsL('최근 인하','BAJADAS'),first?'—':bl.dn.toLocaleString(),fsL('직전 입력 대비 단가 하락','vs. captura anterior'),'dn',"EP.view='cur';EP.flt='dn';epRender()")}
+    ${kp(fsL('최근 신규','NUEVOS'),first?'—':bl.nw.toLocaleString(),fsL('최근 입력에서 처음 등록','Nuevos en la última captura'),'')}
+    ${kp(fsL('누적 입력','CAPTURAS'),C.dates.length.toLocaleString(),fsL(`변동 ${C.chg.length.toLocaleString()}건 누적`,`${C.chg.length.toLocaleString()} cambios`),'',"EP.view='bat';epRender()")}
+  </div>`;
+  const V=EP.view,seg=[['cur',fsL('현재 단가','Precio vigente')],['chg',fsL('변동내역','Cambios')+(C?` ${C.chg.length}`:'')],['in',fsL('단가 입력 (붙여넣기)','Capturar (pegar)')],['bat',fsL('입력 이력','Historial')+(C?` ${C.dates.length}`:'')]];
+  let body='';
+  if(EP.err)body=`<div class="fs-card err"><div class="k">ERROR</div><div class="d">${fsEsc(EP.err)}</div><div class="d" style="margin-top:6px">${fsL('Supabase 테이블(mtrade_price'+EP_SFX+')이 없으면 SQL 파일을 먼저 실행하세요.','Ejecute primero el archivo SQL si no existe la tabla.')}</div></div>`;
+  else if(!C)body=`<div class="fs-tw"><div class="fs-empty"><span class="fs-spin"></span>${fsL('불러오는 중…','Cargando…')}</div></div>`;
+  else if(V==='cur')body=epVCur();
+  else if(V==='chg')body=epVChg();
+  else if(V==='in')body=epVIn();
+  else body=epVBat();
+  box.innerHTML=`${kpis}
+    <div class="fs-bar">
+      <div class="fs-seg">${seg.map(([k,h])=>`<button type="button" class="${V===k?'on':''}" onclick="EP.view='${k}';epRender()">${h}</button>`).join('')}</div>
+      <div class="fs-dl">
+        <button type="button" class="r" onclick="epLoad()" ${EP.loading?'disabled':''}>↻ ${fsL('새로고침','Actualizar')}</button>
+        <button type="button" class="a" onclick="epXlsx()" ${C&&C.cur.length?'':'disabled'} title="${fsL('요약·현재 단가·변동내역·날짜별 단가 4개 시트','Resumen · vigente · cambios · por fecha')}">⬇ ${fsL('수출단가 리포트 (엑셀)','Reporte de precios (Excel)')}</button>
+      </div>
+    </div>
+    ${body}`;
+  epBind();
+}
+function epVCur(){
+  const C=EP.C,R=epCurRows(),units=[...new Set(C.cur.map(r=>r.unit).filter(Boolean))].sort();
+  const fl=[['',fsL('전체','Todos')],['recent',fsL('최근 변동','Cambio reciente')],['up',fsL('최근 인상','Subida')],['dn',fsL('최근 인하','Bajada')],['chg',fsL('변동 이력 있음','Con cambios')],['stale',fsL('최근 입력에 없음','No en última')]];
+  const rows=R.map((r,i)=>{const lc=r.lc;return`<tr class="click${r.recent?' ep-rc':''}" data-code="${fsEsc(r.code)}">
+    <td class="mu">${i+1}</td><td><b>${fsEsc(r.code)}</b>${r.stale?` <span class="fs-tag ep-st">${fsL('이전 입력','previo')}</span>`:''}</td><td>${fsEsc(r.unit)}</td>
+    <td class="n ep-pr">${epP(r.price)}</td><td class="mu">${r.d}</td>
+    <td class="n mu">${lc?epP(lc.from):''}</td><td class="n ${lc?epCls(lc.diff):''}">${lc?epD(lc.diff):''}</td><td class="n ${lc?epCls(lc.diff):''}">${lc?epPct(lc.pct):''}</td>
+    <td class="mu">${lc?lc.d:''}</td><td class="n">${r.cnt?`<span class="ep-cnt">${r.cnt}</span>`:'<span class="mu">0</span>'}</td><td class="mu ep-rm">${fsEsc(r.rm)}</td>
+    <td><button type="button" class="ep-hb" data-code="${fsEsc(r.code)}">${fsL('이력','Historial')}</button></td></tr>`}).join('');
+  return`<div class="fs-bar">
+      <input type="text" id="ep-q" placeholder="${fsL('자재코드·비고 검색','Buscar código·nota')}" value="${fsEsc(EP.q)}">
+      <select id="ep-unit" class="ep-sel"><option value="">${fsL('단위 전체','Unidad: todas')}</option>${units.map(u=>`<option ${EP.unit===u?'selected':''}>${fsEsc(u)}</option>`).join('')}</select>
+      <div class="fs-seg ep-sm">${fl.map(([k,h])=>`<button type="button" class="${EP.flt===k?'on':''}" onclick="EP.flt='${k}';epRender()">${h}</button>`).join('')}</div>
+      <span class="fs-note">${R.length.toLocaleString()} / ${C.cur.length.toLocaleString()} ${fsL('품목','mat.')}</span>
+    </div>
+    <div class="fs-tw"><table><thead><tr><th>#</th><th>${fsL('자재코드 (구성요소)','Código')}</th><th>${fsL('단위','Unid.')}</th><th class="n">${fsL('수출단가 (USD)','Precio USD')}</th><th>${fsL('적용일','Vigente desde')}</th>
+      <th class="n">${fsL('이전단가','Anterior')}</th><th class="n">${fsL('증감','Dif.')}</th><th class="n">${fsL('증감률','%')}</th><th>${fsL('최근 변동일','Últ. cambio')}</th><th class="n">${fsL('변동횟수','Cambios')}</th><th>${fsL('비고','Nota')}</th><th></th></tr></thead>
+      <tbody>${rows||`<tr><td class="fs-empty" colspan="12">${C.cur.length?fsL('조건에 맞는 품목이 없습니다','Sin resultados'):fsL('등록된 수출단가가 없습니다 — 「단가 입력」에서 엑셀을 붙여넣으세요','Sin precios — capture en «Capturar»')}</td></tr>`}</tbody></table></div>
+    <div class="fs-note">${fsL('· 품목별로 가장 최근 적용일에 입력된 단가를 사용합니다 · 최근 입력에 빠진 품목은 직전 입력 단가 유지(「이전 입력」 표시) · 행을 누르면 단가 변동 이력 · 금색 줄 = 최근 입력에서 변동','· Se usa el precio de la captura más reciente por material · Clic en un renglón para ver historial')}</div>`;
+}
+function epVChg(){
+  const C=EP.C,R=epChgRows();
+  const dl=C.dates.slice().reverse().filter(d=>C.bs[d].up||C.bs[d].dn).map(d=>`<button type="button" class="ep-dchip ${EP.cfrom===d&&EP.cto===d?'on':''}" onclick="EP.cfrom=EP.cto=(EP.cfrom==='${d}'&&EP.cto==='${d}')?'':'${d}';epRender()"><b>${d}</b><span class="ep-up">▲${C.bs[d].up}</span><span class="ep-dn">▼${C.bs[d].dn}</span></button>`).join('');
+  const rows=R.slice(0,3000).map((e,i)=>`<tr class="click" data-code="${fsEsc(e.code)}"><td class="mu">${i+1}</td><td>${e.d}</td><td><b>${fsEsc(e.code)}</b></td><td>${fsEsc(e.unit)}</td>
+    <td class="n mu">${epP(e.from)}</td><td class="mu">${e.pd}</td><td class="n ep-pr">${epP(e.to)}</td><td class="n ${epCls(e.diff)}">${epD(e.diff)}</td><td class="n ${epCls(e.diff)}"><b>${epPct(e.pct)}</b></td>
+    <td><span class="fs-tag ${e.diff>0?'ep-tu':'ep-td'}">${e.diff>0?fsL('인상','Subida'):fsL('인하','Bajada')}</span></td></tr>`).join('');
+  const up=R.filter(e=>e.diff>0).length;
+  return`${dl?`<div class="ep-dchips">${dl}</div>`:''}
+    <div class="fs-bar">
+      <input type="text" id="ep-cq" placeholder="${fsL('자재코드 검색','Buscar código')}" value="${fsEsc(EP.cq)}">
+      <label class="ep-lb">${fsL('기간','Periodo')} <input type="date" id="ep-cf" value="${EP.cfrom}"> ~ <input type="date" id="ep-ct" value="${EP.cto}"></label>
+      <div class="fs-seg ep-sm">${[['',fsL('전체','Todos')],['up',fsL('인상','Subida')],['dn',fsL('인하','Bajada')]].map(([k,h])=>`<button type="button" class="${EP.cdir===k?'on':''}" onclick="EP.cdir='${k}';epRender()">${h}</button>`).join('')}</div>
+      <span class="fs-note">${R.length.toLocaleString()}${fsL('건','')} · <span class="ep-up">▲ ${up}</span> · <span class="ep-dn">▼ ${R.length-up}</span></span>
+    </div>
+    <div class="fs-tw"><table><thead><tr><th>#</th><th>${fsL('변경 적용일','Fecha')}</th><th>${fsL('자재코드','Código')}</th><th>${fsL('단위','Unid.')}</th><th class="n">${fsL('이전단가','Anterior')}</th><th>${fsL('이전 적용일','Desde')}</th>
+      <th class="n">${fsL('변경단가','Nuevo')}</th><th class="n">${fsL('증감','Dif.')}</th><th class="n">${fsL('증감률','%')}</th><th>${fsL('구분','Tipo')}</th></tr></thead>
+      <tbody>${rows||`<tr><td class="fs-empty" colspan="10">${C.dates.length<2?fsL('두 번 이상 입력하면 변동내역이 쌓입니다','Se requieren 2+ capturas'):fsL('변동내역이 없습니다','Sin cambios')}</td></tr>`}</tbody></table></div>
+    <div class="fs-note">${fsL('· 같은 품목의 연속된 두 입력 사이에 단가가 달라진 경우만 표시 · 날짜 칩을 누르면 해당 입력일만 보기 · 행을 누르면 품목 이력','· Solo cuando el precio cambia entre capturas consecutivas')}</div>`;
+}
+function epVIn(){
+  const d=EP.inDate||fsToday(),P=EP.parsed,pv=epPreview();
+  const kk={up:[fsL('인상','Subida'),'ep-tu'],dn:[fsL('인하','Bajada'),'ep-td'],nw:[fsL('신규','Nuevo'),'ep-tn'],same:[fsL('동일','Igual'),'ep-ts']};
+  const pr=pv?pv.list.slice(0,400).map((r,i)=>`<tr><td class="mu">${i+1}</td><td><span class="fs-tag ${kk[r.k][1]}">${kk[r.k][0]}</span></td><td><b>${fsEsc(r.code)}</b></td><td>${fsEsc(r.unit)}</td>
+    <td class="n mu">${r.bp!=null?epP(r.bp):''}</td><td class="n ep-pr">${epP(r.price)}</td><td class="n ${epCls(r.diff)}">${r.diff!=null&&r.k!=='same'?epD(r.diff):''}</td><td class="n ${epCls(r.diff)}">${r.k==='up'||r.k==='dn'?epPct(r.pct):''}</td><td class="mu ep-rm">${fsEsc(r.remark)}</td></tr>`).join(''):'';
+  return`<div class="ep-in">
+    <div class="ep-inl">
+      <div class="ep-f"><label>${fsL('적용일 (입력 기준일)','Fecha de vigencia')}</label><input type="date" id="ep-d" value="${d}"></div>
+      <div class="ep-f"><label>${fsL('비고 (선택)','Nota (opcional)')}</label><input type="text" id="ep-note" value="${fsEsc(EP.inNote)}" placeholder="${fsL('예: 2026년 4분기 단가','Ej.: precios Q4')}"></div>
+      <div class="ep-f"><label>${fsL('엑셀 붙여넣기','Pegar desde Excel')}</label>
+        <textarea id="ep-txt" spellcheck="false" placeholder="${fsL('엑셀에서 [구성요소 | 단위 | 수출단가(USD) | 비고] 열을 선택해 복사(Ctrl+C) 후 여기에 붙여넣기(Ctrl+V)\n머리글 행은 자동으로 건너뜁니다','Copie las columnas [Código | Unidad | Precio USD | Nota] y pegue aquí')}">${fsEsc(EP.inText)}</textarea></div>
+      <div class="ep-act">
+        <button type="button" class="btn" onclick="epSave()" ${P&&P.rows.length&&!EP.saving?'':'disabled'}>${EP.saving?fsL('저장 중…','Guardando…'):fsL(`${d} 기준으로 저장`,`Guardar (${d})`)}</button>
+        <button type="button" class="btn sec" onclick="EP.inText='';EP.parsed=null;epRender()">${fsL('지우기','Limpiar')}</button>
+      </div>
+      <div class="fs-note">${fsL('· 적용일 순으로 날짜별 누적 저장 · 같은 적용일로 다시 저장하면 그 날짜 입력분을 덮어씀 · 품목별 가장 최근 적용일 단가가 「현재 단가」가 됩니다 · 과거 날짜로 입력하면 이력 중간에 끼워집니다','· Se acumula por fecha · misma fecha = sobrescribir · el precio vigente es el de la fecha más reciente')}</div>
+    </div>
+    <div class="ep-inr">
+      ${!P?`<div class="ep-ph"><b>${fsL('미리보기','Vista previa')}</b><span>${fsL('붙여넣으면 직전 단가와 비교 결과가 표시됩니다','Al pegar se compara con el precio anterior')}</span></div>`:`
+      <div class="ep-pvk">
+        <div><span>${fsL('인식 품목','Leídos')}</span><b>${P.rows.length.toLocaleString()}</b></div>
+        <div class="up"><span>${fsL('인상','Subida')}</span><b>${pv.st.up}</b></div>
+        <div class="dn"><span>${fsL('인하','Bajada')}</span><b>${pv.st.dn}</b></div>
+        <div class="nw"><span>${fsL('신규','Nuevo')}</span><b>${pv.st.nw}</b></div>
+        <div><span>${fsL('동일','Igual')}</span><b>${pv.st.same}</b></div>
+      </div>
+      ${pv.exists?`<div class="ep-warn">⚠ ${fsL(`${d} 적용일 데이터가 이미 있습니다 — 저장 시 덮어씁니다`,`Ya existe ${d} — se sobrescribirá`)}</div>`:''}
+      ${P.dup?`<div class="ep-warn">⚠ ${fsL(`중복 코드 ${P.dup}건 — 마지막 행 기준으로 처리`,`${P.dup} códigos duplicados — se usa el último`)}</div>`:''}
+      ${P.bad.length?`<div class="ep-warn err">✕ ${fsL(`단가를 읽지 못한 행 ${P.bad.length}건 (제외)`,`${P.bad.length} renglones sin precio (excluidos)`)}: ${P.bad.slice(0,5).map(b=>`#${b.ln} <code>${fsEsc(b.txt)}</code>`).join(' · ')}</div>`:''}
+      <div class="fs-tw" style="max-height:52vh"><table><thead><tr><th>#</th><th>${fsL('구분','Tipo')}</th><th>${fsL('자재코드','Código')}</th><th>${fsL('단위','Unid.')}</th><th class="n">${fsL('직전단가','Anterior')}</th><th class="n">${fsL('입력단가','Nuevo')}</th><th class="n">${fsL('증감','Dif.')}</th><th class="n">%</th><th>${fsL('비고','Nota')}</th></tr></thead><tbody>${pr}</tbody></table></div>
+      ${pv.list.length>400?`<div class="fs-note">${fsL(`변동 품목 우선 400행만 표시 (전체 ${pv.list.length.toLocaleString()}행 저장)`,`Mostrando 400 de ${pv.list.length}`)}</div>`:''}`}
+    </div></div>`;
+}
+function epVBat(){
+  const C=EP.C;
+  const rows=EP.batches.map((b,i)=>{const s=C.bs[b.price_date]||{};const isFirst=b.price_date===C.dates[0];
+    return`<tr><td class="mu">${EP.batches.length-i}</td><td><b>${b.price_date}</b>${i===0?` <span class="fs-tag c">${fsL('최신','Vigente')}</span>`:''}</td><td class="n">${Number(b.cnt).toLocaleString()}</td>
+    <td class="n ep-up">${isFirst?'':s.up||0}</td><td class="n ep-dn">${isFirst?'':s.dn||0}</td><td class="n">${isFirst?`<span class="mu">${fsL('최초','Inicial')}</span>`:s.nw||0}</td><td class="n mu">${isFirst?'':s.same||0}</td>
+    <td>${fsEsc(b.note||'')}</td><td class="mu">${String(b.updated_at||b.created_at||'').replace('T',' ').slice(0,16)}</td>
+    <td><button type="button" class="ep-hb" onclick="EP.view='chg';EP.cfrom=EP.cto='${b.price_date}';epRender()">${fsL('변동보기','Cambios')}</button> <button type="button" class="ep-hb del" onclick="epDel('${b.price_date}')">${fsL('삭제','Eliminar')}</button></td></tr>`}).join('');
+  return`<div class="fs-tw"><table><thead><tr><th>#</th><th>${fsL('적용일','Fecha')}</th><th class="n">${fsL('입력 품목','Materiales')}</th><th class="n">${fsL('인상','Subida')}</th><th class="n">${fsL('인하','Bajada')}</th><th class="n">${fsL('신규','Nuevo')}</th><th class="n">${fsL('동일','Igual')}</th><th>${fsL('비고','Nota')}</th><th>${fsL('등록시각 (UTC)','Registrado (UTC)')}</th><th></th></tr></thead>
+    <tbody>${rows||`<tr><td class="fs-empty" colspan="10">${fsL('입력 이력이 없습니다','Sin historial')}</td></tr>`}</tbody></table></div>
+    <div class="fs-note">${fsL('· 인상/인하/신규/동일은 품목별 직전 입력 대비 · 삭제하면 해당 적용일 입력분만 지워지고 현재 단가는 그 이전 입력 기준으로 돌아갑니다','· Comparado con la captura anterior de cada material · eliminar regresa al precio previo')}</div>`;
+}
+function epBind(){
+  const on=(id,ev,fn)=>{const e=document.getElementById(id);if(e)e[ev]=fn};
+  const deb=(id,key)=>on(id,'oninput',e=>{EP[key]=e.target.value;clearTimeout(epBind._t);epBind._t=setTimeout(()=>{epRender();const n=document.getElementById(id);if(n){n.focus();n.setSelectionRange(n.value.length,n.value.length)}},250)});
+  deb('ep-q','q');deb('ep-cq','cq');
+  on('ep-unit','onchange',e=>{EP.unit=e.target.value;epRender()});
+  on('ep-cf','onchange',e=>{EP.cfrom=e.target.value;epRender()});
+  on('ep-ct','onchange',e=>{EP.cto=e.target.value;epRender()});
+  on('ep-d','onchange',e=>{EP.inDate=e.target.value;epRender()});
+  on('ep-note','oninput',e=>{EP.inNote=e.target.value});
+  on('ep-txt','oninput',e=>{EP.inText=e.target.value;clearTimeout(epBind._p);epBind._p=setTimeout(()=>{EP.parsed=EP.inText.trim()?epParse(EP.inText):null;const s=document.getElementById('ep-txt'),p=s?s.selectionStart:0;epRender();const n=document.getElementById('ep-txt');if(n){n.focus();n.setSelectionRange(p,p)}},350)});
+  document.querySelectorAll('#ep-body tr.click').forEach(tr=>tr.onclick=()=>epHist(tr.dataset.code));
+}
+
+/* ── 품목 이력 팝업 ── */
+function epHist(code){
+  const C=EP.C,h=C&&C.by.get(code);if(!h)return;
+  const W=880,H=230,pl=64,pr=44,pt=22,pb=34,ps=h.map(x=>x.p),mn=Math.min(...ps),mx=Math.max(...ps),pad=(mx-mn)*.15||Math.max(mx*.1,.001);
+  const lo=Math.max(0,mn-pad),hi=mx+pad,n=h.length;
+  const X=i=>n===1?(pl+W-pr)/2:pl+(W-pl-pr)*i/(n-1),Y=v=>pt+(H-pt-pb)*(1-(v-lo)/(hi-lo));
+  let path='';h.forEach((x,i)=>{path+=i?` H${X(i).toFixed(1)} V${Y(x.p).toFixed(1)}`:`M${X(i).toFixed(1)} ${Y(x.p).toFixed(1)}`});
+  const area=path+` V${H-pb} H${X(0).toFixed(1)} Z`;
+  const grid=[0,.5,1].map(t=>{const v=lo+(hi-lo)*t,y=Y(v);return`<line x1="${pl}" x2="${W-pr}" y1="${y}" y2="${y}" stroke="#262626"/><text x="${pl-8}" y="${y+4}" text-anchor="end" fill="#8f8f8f" font-size="12" font-family="Space Mono,monospace">$${v.toFixed(3)}</text>`}).join('');
+  const step=Math.max(1,Math.ceil(n/8));
+  const dots=h.map((x,i)=>{const ch=i&&Math.abs(x.p-h[i-1].p)>1e-9,c=!ch?'#c9a84c':x.p>h[i-1].p?'#e05c5c':'#6fb8dd';
+    return`<circle cx="${X(i)}" cy="${Y(x.p)}" r="${ch||i===n-1?5:3.5}" fill="#0a0a0a" stroke="${c}" stroke-width="2"><title>${x.d} · $${x.p}</title></circle>`+
+      (i%step===0||i===n-1?`<text x="${X(i)}" y="${H-12}" text-anchor="middle" fill="#8f8f8f" font-size="12" font-family="Space Mono,monospace">${x.d.slice(2)}</text>`:'')}).join('');
+  const L=h[n-1],F=h[0],tot=F.p?(L.p-F.p)/F.p*100:null;
+  const tr=h.map((x,i)=>{const p=i?h[i-1]:null,df=p?x.p-p.p:null,ch=p&&Math.abs(df)>1e-9;
+    return`<tr class="${ch?'ep-rc':''}"><td class="mu">${i+1}</td><td><b>${x.d}</b>${i===n-1?` <span class="fs-tag c">${fsL('현재','Vigente')}</span>`:''}</td><td>${fsEsc(x.u)}</td><td class="n ep-pr">${epP(x.p)}</td>
+    <td class="n ${ch?epCls(df):'mu'}">${p?(ch?epD(df):fsL('동일','=')):''}</td><td class="n ${ch?epCls(df):''}">${ch&&p.p?epPct(df/p.p*100):''}</td><td class="mu ep-rm">${fsEsc(x.rm)}</td></tr>`}).reverse().join('');
+  let m=document.getElementById('ep-mdl');
+  if(!m){m=document.createElement('div');m.id='ep-mdl';m.className='mdl';m.setAttribute('role','dialog');document.body.appendChild(m);
+    m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('on')});
+    window.addEventListener('keydown',e=>{if(e.key==='Escape'&&m.classList.contains('on'))m.classList.remove('on')})}
+  m.innerHTML=`<div class="mbox" style="width:min(960px,100%)"><div class="mhd"><b>${fsL('수출단가 변동 이력','Historial de precio')} · <span style="color:var(--ac)">${fsEsc(code)}</span></b><button type="button" onclick="document.getElementById('ep-mdl').classList.remove('on')">×</button></div>
+    <div class="mbd">
+      <div class="ep-pvk" style="margin-bottom:12px">
+        <div><span>${fsL('현재 단가','Vigente')}</span><b>${epP(L.p)}</b></div>
+        <div><span>${fsL('최초 단가','Inicial')}</span><b>${epP(F.p)}</b></div>
+        <div class="${tot>0?'up':tot<0?'dn':''}"><span>${fsL('최초 대비','vs. inicial')}</span><b>${tot==null?'—':epPct(tot)||'0.0%'}</b></div>
+        <div><span>${fsL('최저 / 최고','Mín / Máx')}</span><b style="font-size:17px">${epP(mn)} / ${epP(mx)}</b></div>
+        <div><span>${fsL('입력 / 변동','Capt. / camb.')}</span><b>${n} / ${h.filter((x,i)=>i&&Math.abs(x.p-h[i-1].p)>1e-9).length}</b></div>
+      </div>
+      <div class="ep-chart"><svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" style="width:100%;height:230px">
+        <defs><linearGradient id="epg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c9a84c" stop-opacity=".28"/><stop offset="1" stop-color="#c9a84c" stop-opacity="0"/></linearGradient></defs>
+        ${grid}<path d="${area}" fill="url(#epg)"/><path d="${path}" fill="none" stroke="#c9a84c" stroke-width="2.2"/>${dots}</svg></div>
+      <div class="fs-tw" style="max-height:38vh;margin-top:12px"><table><thead><tr><th>#</th><th>${fsL('적용일','Fecha')}</th><th>${fsL('단위','Unid.')}</th><th class="n">${fsL('수출단가 (USD)','Precio USD')}</th><th class="n">${fsL('증감','Dif.')}</th><th class="n">%</th><th>${fsL('비고','Nota')}</th></tr></thead><tbody>${tr}</tbody></table></div>
+    </div></div>`;
+  m.classList.add('on');
+}
+
+/* ── 고급 엑셀 리포트 ── */
+async function epXlsx(){
+  const C=EP.C;if(!C)return;
+  try{await fsExcelJS()}catch(e){alert(e.message);return}
+  const PL=FS_CFG[FS.plant],plN=fsL(PL.pl,PL.ples);
+  const NAVY='FF0F1B2D',NAVY2='FF1B2A41',GOLD='FFC9A84C',GOLDL='FFF6EFD9',GOLDM='FFE9DDB5',INK='FF1E2430',MUTE='FF7B8494',LINE='FFE4E7EC',BAND='FFF7F8FA',UP='FFC0392B',UPBG='FFFDECEA',DN='FF1F6FB2',DNBG='FFE8F1FA',WHITE='FFFFFFFF';
+  const F='맑은 고딕',FE='Calibri';
+  const fill=c=>({type:'pattern',pattern:'solid',fgColor:{argb:c}});
+  const thin=c=>({style:'thin',color:{argb:c}});
+  const PF='"$"#,##0.000###;[Red]-"$"#,##0.000###;"-"',DF='+"$"#,##0.000###;-"$"#,##0.000###;"-"',PCF='+0.0%;-0.0%;"-"';
+  const now=new Date(),stamp=fsToday()+' '+String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
+  const wb=new ExcelJS.Workbook();wb.creator='YURA HARNESS MÉXICO';wb.company='YURA HARNESS MÉXICO';wb.title=fsL('자재품목별 수출단가','Precios de exportación');wb.created=now;
+  const L=C.latest,bl=C.bs[L]||{up:0,dn:0,nw:0},first=C.dates.length<=1;
+
+  /* 공통 시트 머리 */
+  function head(ws,n,title,sub){
+    ws.mergeCells(1,1,1,n);const b=ws.getCell(1,1);b.value='YURA HARNESS MÉXICO   ·   '+fsL('자재무역팀','MATERIALES Y COMERCIO')+'   ·   '+plN;
+    b.font={name:FE,size:9,bold:true,color:{argb:GOLD}};b.fill=fill(NAVY);b.alignment={vertical:'middle',indent:1};ws.getRow(1).height=20;
+    for(let c=1;c<=n;c++)ws.getCell(1,c).fill=fill(NAVY);
+    ws.mergeCells(2,1,2,n);const t=ws.getCell(2,1);t.value=title;t.font={name:F,size:18,bold:true,color:{argb:NAVY}};t.alignment={vertical:'middle',indent:1};ws.getRow(2).height=36;
+    ws.mergeCells(3,1,3,n);const s=ws.getCell(3,1);s.value=sub;s.font={name:F,size:9,color:{argb:MUTE}};s.alignment={vertical:'top',indent:1};ws.getRow(3).height=18;
+    for(let c=1;c<=n;c++)ws.getCell(4,c).border={top:{style:'medium',color:{argb:GOLD}}};ws.getRow(4).height=6;
+  }
+  function table(ws,r0,cols,rows,opt={}){
+    cols.forEach((c,i)=>{const h=ws.getCell(r0,i+1);h.value=c.h;h.fill=fill(NAVY2);h.font={name:F,size:10,bold:true,color:{argb:WHITE}};
+      h.alignment={horizontal:'center',vertical:'middle',wrapText:true};h.border={top:thin(NAVY2),bottom:{style:'medium',color:{argb:GOLD}},left:thin('FF2E3E57'),right:thin('FF2E3E57')};
+      if(c.w)ws.getColumn(i+1).width=c.w});
+    ws.getRow(r0).height=30;
+    rows.forEach((r,ri)=>{const row=ws.getRow(r0+1+ri),bg=opt.bg?opt.bg(r,ri):(ri%2?BAND:WHITE);
+      cols.forEach((c,i)=>{const cell=row.getCell(i+1);let v=c.v(r,ri);
+        cell.fill=fill(c.bg?c.bg(r)||bg:bg);cell.border={bottom:thin(LINE),right:thin(LINE)};
+        const col=c.color?c.color(r):null;
+        cell.font={name:c.fmt?FE:F,size:10,bold:!!c.b,color:{argb:col||INK}};
+        cell.alignment={vertical:'middle',horizontal:c.fmt?'right':c.c?'center':'left',indent:c.fmt||c.c?0:1};
+        if(c.fmt){cell.value=v==null||v===''?null:Number(v);cell.numFmt=c.fmt}else cell.value=v==null?'':v});
+      row.height=19});
+    if(rows.length&&!opt.nf)ws.autoFilter={from:{row:r0,column:1},to:{row:r0+rows.length,column:cols.length}};
+    return r0+rows.length;
+  }
+  function page(ws,land,rep){ws.pageSetup={orientation:land?'landscape':'portrait',paperSize:9,fitToPage:true,fitToWidth:1,fitToHeight:0,horizontalCentered:true,
+      margins:{left:.35,right:.35,top:.55,bottom:.55,header:.25,footer:.25},...(rep?{printTitlesRow:rep}:{})};
+    ws.headerFooter={oddHeader:'&L&8&K7B8494YURA HARNESS MÉXICO&R&8&K7B8494'+fsL('자재품목별 수출단가','Precios de exportación')+' · '+plN,
+      oddFooter:'&L&8&K7B8494'+fsL('출력 ','Impreso ')+stamp+'&R&8&K7B8494&P / &N'}}
+  const pctOf=(a,b)=>b?(a-b)/b:null;
+
+  /* ① 요약 */
+  {const ws=wb.addWorksheet(fsL('요약','Resumen'),{views:[{showGridLines:false}],properties:{tabColor:{argb:GOLD}}});
+    const n=8;[4,20,14,16,16,16,16,4].forEach((w,i)=>ws.getColumn(i+1).width=w);
+    head(ws,n,fsL('자재품목별 수출단가 현황','Precios de exportación por material'),fsL(`기준 적용일 ${L||'-'}   ·   품목별 가장 최근 입력 단가 기준   ·   작성 ${stamp}`,`Fecha base ${L||'-'} · último precio por material · ${stamp}`));
+    const cards=[[fsL('등록 품목','Materiales'),C.cur.length,'#,##0',NAVY],[fsL('최근 적용일','Última fecha'),L||'-',null,NAVY],[fsL('누적 입력','Capturas'),C.dates.length,'#,##0',NAVY],
+      [fsL('최근 인상','Subidas'),first?'-':bl.up,'#,##0',UP],[fsL('최근 인하','Bajadas'),first?'-':bl.dn,'#,##0',DN],[fsL('최근 신규','Nuevos'),first?'-':bl.nw,'#,##0',NAVY]];
+    cards.forEach((k,i)=>{const r=6+Math.floor(i/3)*3,c=2+(i%3)*2;
+      ws.mergeCells(r,c,r,c+1);ws.mergeCells(r+1,c,r+1,c+1);
+      const a=ws.getCell(r,c),b=ws.getCell(r+1,c);a.value=k[0];b.value=k[1];
+      a.font={name:F,size:9,bold:true,color:{argb:MUTE}};a.alignment={horizontal:'left',vertical:'bottom',indent:1};
+      b.font={name:FE,size:22,bold:true,color:{argb:k[3]}};b.alignment={horizontal:'left',vertical:'middle',indent:1};if(k[2])b.numFmt=k[2];
+      for(const rr of [r,r+1])for(const cc of [c,c+1]){const x=ws.getCell(rr,cc);x.fill=fill(GOLDL);x.border={left:cc===c?{style:'thick',color:{argb:GOLD}}:undefined}}
+      ws.getRow(r).height=20;ws.getRow(r+1).height=34;ws.getRow(r+2).height=8});
+    let r=13;
+    const sec=(row,txt)=>{ws.mergeCells(row,2,row,7);const c=ws.getCell(row,2);c.value=txt;c.font={name:F,size:12,bold:true,color:{argb:NAVY}};c.border={bottom:thin(GOLD)};ws.getRow(row).height=24};
+    sec(r,fsL('입력 이력 (적용일별)','Historial de capturas'));r+=1;
+    const bcols=[{h:fsL('적용일','Fecha'),c:1,b:1,v:b=>b.price_date},{h:fsL('입력 품목','Materiales'),fmt:'#,##0',v:b=>b.cnt},{h:fsL('인상','Subida'),fmt:'#,##0;;"-"',color:()=>UP,v:b=>b.price_date===C.dates[0]?null:(C.bs[b.price_date]||{}).up||0},
+      {h:fsL('인하','Bajada'),fmt:'#,##0;;"-"',color:()=>DN,v:b=>b.price_date===C.dates[0]?null:(C.bs[b.price_date]||{}).dn||0},{h:fsL('신규','Nuevo'),fmt:'#,##0;;"-"',v:b=>b.price_date===C.dates[0]?null:(C.bs[b.price_date]||{}).nw||0},{h:fsL('비고','Nota'),v:b=>b.note||''}];
+    // 요약 표는 B열부터
+    const shift=(cols)=>[{h:'',v:()=>''}].concat(cols);
+    const endB=table(ws,r,shift(bcols),EP.batches,{nf:1});ws.getCell(r,1).fill=fill(WHITE);ws.getCell(r,1).border={};
+    for(let i=r+1;i<=endB;i++){ws.getCell(i,1).fill=fill(WHITE);ws.getCell(i,1).border={}}
+    r=endB+2;
+    const top=(dir)=>C.chg.filter(e=>e.d===L&&(dir>0?e.diff>0:e.diff<0)).sort((a,b)=>dir>0?(b.pct||0)-(a.pct||0):(a.pct||0)-(b.pct||0)).slice(0,10);
+    for(const dir of [1,-1]){
+      const T=top(dir);if(!T.length)continue;
+      sec(r,dir>0?fsL(`최근 인상 TOP ${T.length}  (${L})`,`Top subidas (${L})`):fsL(`최근 인하 TOP ${T.length}  (${L})`,`Top bajadas (${L})`));r+=1;
+      const e2=table(ws,r,shift([{h:fsL('자재코드','Código'),b:1,v:e=>e.code},{h:fsL('단위','Unid.'),c:1,v:e=>e.unit},{h:fsL('이전단가','Anterior'),fmt:PF,v:e=>e.from},{h:fsL('변경단가','Nuevo'),fmt:PF,b:1,v:e=>e.to},{h:fsL('증감','Dif.'),fmt:DF,color:()=>dir>0?UP:DN,v:e=>e.diff},{h:fsL('증감률','%'),fmt:PCF,b:1,color:()=>dir>0?UP:DN,v:e=>e.pct==null?null:e.pct/100}]),T,{nf:1});
+      for(let i=r;i<=e2;i++){ws.getCell(i,1).fill=fill(WHITE);ws.getCell(i,1).border={}}
+      r=e2+2}
+    page(ws,false)}
+
+  /* ② 현재 수출단가 */
+  {const ws=wb.addWorksheet(fsL('현재 수출단가','Precio vigente'),{views:[{state:'frozen',ySplit:5,xSplit:2,showGridLines:false}],properties:{tabColor:{argb:NAVY}}});
+    const cols=[{h:'No.',w:7,c:1,color:()=>MUTE,v:(r,i)=>i+1},{h:fsL('자재코드\n(구성요소)','Código'),w:18,b:1,v:r=>r.code},{h:fsL('단위','Unid.'),w:7,c:1,v:r=>r.unit},
+      {h:fsL('수출단가\n(USD)','Precio\nUSD'),w:14,fmt:PF,b:1,color:()=>NAVY,v:r=>r.price},{h:fsL('적용일','Vigente desde'),w:12,c:1,v:r=>r.d},
+      {h:fsL('이전단가','Anterior'),w:13,fmt:PF,color:()=>MUTE,v:r=>r.lc?r.lc.from:null},{h:fsL('증감','Dif.'),w:13,fmt:DF,color:r=>r.lc?(r.lc.diff>0?UP:DN):null,v:r=>r.lc?r.lc.diff:null},
+      {h:fsL('증감률','%'),w:10,fmt:PCF,b:1,color:r=>r.lc?(r.lc.diff>0?UP:DN):null,bg:r=>r.recent?(r.lc.diff>0?UPBG:DNBG):null,v:r=>r.lc&&r.lc.pct!=null?r.lc.pct/100:null},
+      {h:fsL('최근 변동일','Últ. cambio'),w:12,c:1,v:r=>r.lc?r.lc.d:''},{h:fsL('변동\n횟수','Cambios'),w:8,fmt:'0;;"-"',v:r=>r.cnt},
+      {h:fsL('최초 등록일','Alta'),w:12,c:1,color:()=>MUTE,v:r=>r.first},{h:fsL('상태','Estado'),w:12,c:1,color:r=>r.stale?MUTE:r.recent?(r.lc.diff>0?UP:DN):INK,v:r=>r.stale?fsL('이전 입력','Previo'):r.recent?(r.lc.diff>0?fsL('▲ 인상','▲ Subida'):fsL('▼ 인하','▼ Bajada')):(r.first===L&&!first?fsL('신규','Nuevo'):fsL('유지','Igual'))},
+      {h:fsL('비고','Nota'),w:26,color:()=>MUTE,v:r=>r.rm}];
+    head(ws,cols.length,fsL('현재 수출단가 (품목별 최신)','Precio vigente por material'),fsL(`기준 적용일 ${L}   ·   ${C.cur.length.toLocaleString()}개 품목   ·   음영 = 최근 입력(${L})에서 단가 변동   ·   작성 ${stamp}`,`Fecha base ${L} · ${C.cur.length} materiales · ${stamp}`));
+    const end=table(ws,5,cols,C.cur);
+    const t=ws.getRow(end+1);for(let c=1;c<=cols.length;c++){const x=t.getCell(c);x.border={top:{style:'medium',color:{argb:GOLD}}};x.fill=fill(GOLDL);x.font={name:F,size:10,bold:true,color:{argb:NAVY}}}
+    t.getCell(2).value=fsL(`합계  ${C.cur.length.toLocaleString()} 품목`,`Total ${C.cur.length}`);
+    t.getCell(10).value={formula:`SUBTOTAL(9,J6:J${end})`};t.getCell(10).numFmt='0';t.getCell(10).alignment={horizontal:'right'};t.height=22;
+    page(ws,true,'5:5')}
+
+  /* ③ 변동내역 */
+  {const ws=wb.addWorksheet(fsL('변동내역','Cambios'),{views:[{state:'frozen',ySplit:5,showGridLines:false}],properties:{tabColor:{argb:UP}}});
+    const cols=[{h:'No.',w:7,c:1,color:()=>MUTE,v:(r,i)=>i+1},{h:fsL('변경 적용일','Fecha'),w:12,c:1,b:1,v:e=>e.d},{h:fsL('자재코드','Código'),w:18,b:1,v:e=>e.code},{h:fsL('단위','Unid.'),w:7,c:1,v:e=>e.unit},
+      {h:fsL('이전단가','Anterior'),w:14,fmt:PF,color:()=>MUTE,v:e=>e.from},{h:fsL('이전 적용일','Desde'),w:12,c:1,color:()=>MUTE,v:e=>e.pd},{h:fsL('변경단가','Nuevo'),w:14,fmt:PF,b:1,color:()=>NAVY,v:e=>e.to},
+      {h:fsL('증감','Dif.'),w:13,fmt:DF,color:e=>e.diff>0?UP:DN,v:e=>e.diff},{h:fsL('증감률','%'),w:10,fmt:PCF,b:1,color:e=>e.diff>0?UP:DN,bg:e=>e.diff>0?UPBG:DNBG,v:e=>e.pct==null?null:e.pct/100},
+      {h:fsL('구분','Tipo'),w:9,c:1,b:1,color:e=>e.diff>0?UP:DN,v:e=>e.diff>0?fsL('▲ 인상','▲ Subida'):fsL('▼ 인하','▼ Bajada')}];
+    const up=C.chg.filter(e=>e.diff>0).length;
+    head(ws,cols.length,fsL('수출단가 변동내역','Historial de cambios de precio'),fsL(`전체 ${C.chg.length.toLocaleString()}건   ·   인상 ${up}건 · 인하 ${C.chg.length-up}건   ·   같은 품목의 연속 입력 사이 단가가 달라진 경우   ·   작성 ${stamp}`,`${C.chg.length} cambios · ${up} subidas · ${C.chg.length-up} bajadas · ${stamp}`));
+    if(C.chg.length)table(ws,5,cols,C.chg);
+    else{table(ws,5,cols,[]);ws.mergeCells(6,1,6,cols.length);const c=ws.getCell(6,1);c.value=fsL('변동내역이 없습니다 (두 번 이상 입력 시 누적)','Sin cambios');c.font={name:F,size:10,italic:true,color:{argb:MUTE}};c.alignment={horizontal:'center'};ws.getRow(6).height=26}
+    page(ws,true,'5:5')}
+
+  /* ④ 날짜별 단가 (피벗) */
+  {const ds=C.dates,ws=wb.addWorksheet(fsL('날짜별 단가','Por fecha'),{views:[{state:'frozen',ySplit:5,xSplit:3,showGridLines:false}],properties:{tabColor:{argb:'FF5B6B82'}}});
+    const cols=[{h:'No.',w:7,c:1,color:()=>MUTE,v:(r,i)=>i+1},{h:fsL('자재코드','Código'),w:18,b:1,v:r=>r.code},{h:fsL('단위','Unid.'),w:7,c:1,v:r=>r.unit}];
+    ds.forEach((d,j)=>cols.push({h:d,w:13,fmt:PF,
+      v:r=>{const x=r._m[d];return x?x.p:null},
+      color:r=>{const x=r._m[d];if(!x)return null;const k=r._k[d];return k>0?UP:k<0?DN:(d===r.d?NAVY:INK)},
+      bg:r=>{const k=r._k[d];return k>0?UPBG:k<0?DNBG:null},b:j===ds.length-1}));
+    cols.push({h:fsL('최초 대비','vs. inicial'),w:11,fmt:PCF,b:1,color:r=>r._t>0?UP:r._t<0?DN:INK,v:r=>r._t});
+    const rows=C.cur.map(r=>{const h=C.by.get(r.code),m={},k={};h.forEach((x,i)=>{m[x.d]=x;if(i){const df=x.p-h[i-1].p;k[x.d]=Math.abs(df)>1e-9?df:0}});
+      return{...r,_m:m,_k:k,_t:h.length>1?pctOf(h[h.length-1].p,h[0].p):null}});
+    head(ws,cols.length,fsL('날짜별 수출단가 추이','Precio por fecha de captura'),fsL(`적용일 ${ds.length}회 (${ds[0]||'-'} ~ ${L||'-'})   ·   빨강 = 인상 · 파랑 = 인하 · 빈칸 = 해당 입력에 없음   ·   작성 ${stamp}`,`${ds.length} capturas · rojo = subida · azul = bajada · ${stamp}`));
+    table(ws,5,cols,rows);
+    page(ws,true,'5:5')}
+
+  const buf=await wb.xlsx.writeBuffer(),a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));
+  a.download=`${fsL('수출단가_리포트_','PreciosExport_')}${PL.pl}_${L||fsToday()}.xlsx`;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1500);
+}
+
 /* ── 탭 ── */
 document.getElementById('nav').addEventListener('click',e=>{
   const b=e.target.closest('button[data-tab]');if(!b)return;
   document.querySelectorAll('#nav button').forEach(x=>x.classList.toggle('on',x===b));
   const t=b.dataset.tab;
   document.getElementById('t-fs').classList.toggle('on',t==='fs');
-  document.getElementById('t-wait').classList.toggle('on',t!=='fs');
+  document.getElementById('t-ep').classList.toggle('on',t==='ep');
+  document.getElementById('t-wait').classList.toggle('on',t!=='fs'&&t!=='ep');
+  if(t==='ep'&&!EP.C&&!EP.loading)epLoad();
 });
 
 /* ── 언어 ── */
@@ -550,6 +1012,7 @@ const I18N={
   title:['자재무역팀 자재관리','Gestión de materiales · Materiales y Comercio'],
   plant:['멕시코 1공장 · Monclova','México Planta 1 · Monclova'],
   tab_fs:['현장재고 받기','Stock en piso'],
+  tab_ep:['자재품목별 수출단가','Precio de exportación'],ep_title:['자재품목별 수출단가','Precio de exportación por material'],
   tab_w1:['메뉴 2','Menú 2'],tab_w2:['메뉴 3','Menú 3'],tab_w3:['메뉴 4','Menú 4'],
   wait_tag:['준비대기중','Próximamente'],
   fs_title:['현장재고 받기','Stock en piso'],
@@ -563,7 +1026,7 @@ function applyLang(){
   document.getElementById('lg-ko').classList.toggle('on',curLang==='ko');
   document.getElementById('lg-es').classList.toggle('on',curLang==='es');
   document.title=fsL('자재무역팀 자재관리 · 1공장','Materiales y Comercio · Planta 1');
-  fsRender();
+  fsRender();epRender();
 }
 document.querySelectorAll('.lang button').forEach(b=>b.onclick=()=>{curLang=b.dataset.l;try{localStorage.setItem('mtrade_lang',curLang)}catch(e){}applyLang()});
 
