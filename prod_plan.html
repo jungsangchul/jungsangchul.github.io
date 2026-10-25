@@ -191,7 +191,7 @@ tr.sep td{border-top:1px solid var(--line2)}
 tr.tot td{background:rgba(201,168,76,.08);font-weight:700;color:#fff;border-top:1px solid rgba(201,168,76,.35)}
 td.hrs{white-space:nowrap;color:var(--mute);font-size:12.5px}
 input.dcell{width:54px;height:30px;padding:0 5px;text-align:right;font-size:13.5px;background:rgba(201,168,76,.08);border-color:rgba(201,168,76,.3);color:#fff;font-variant-numeric:tabular-nums}
-input.dcell.h{width:50px;margin-right:2px}
+input.dcell.h{width:58px;margin-right:3px;font-weight:700;color:var(--ac2);border-color:rgba(201,168,76,.55)}
 input.ratio{width:64px;height:30px;padding:0 6px;text-align:right;font-size:13.5px;background:rgba(201,168,76,.08);border-color:rgba(201,168,76,.3);color:#fff;margin-right:3px}
 input.ratio.bad{border-color:rgba(224,168,74,.7);background:var(--ambbg);color:var(--amb)}
 input.ratio.auto{border-style:dashed;color:var(--mute)}
@@ -416,7 +416,7 @@ body.nodaily .legend>span:nth-child(2){display:none}
   <div class="sub" id="s-days">
     <div class="card paste">
       <div class="row hd"><h3><span data-t="p_days_h">월별 생산일수 붙여넣기</span></h3><button class="btn sm sec tgl" data-for="pasteDays">▾</button></div>
-      <div class="hint" data-t="p_days_hint">엑셀 「월별 생산일수」 시트의 <b>일수 · 일요일 · 휴무일 · 생산시간(주간/야간) 행</b>을 A열부터 N열(12월)까지 복사해 붙여넣으세요. 근무일수·공수·10HR 생산일수는 자동 계산됩니다. 표에서 직접 수정해도 됩니다.</div>
+      <div class="hint" data-t="p_days_hint">엑셀 「월별 생산일수」 시트의 <b>일수 · 일요일 · 휴무일 · 생산시간(주간/야간) 행</b>을 A열부터 N열(12월)까지 복사해 붙여넣으세요. 근무일수·공수·기준시간당 생산일수는 자동 계산됩니다. 표의 노란 칸(일수·생산시간·기준시간)은 직접 수정할 수 있습니다.</div>
       <div class="pbox" id="pasteDays">
         <textarea id="txDays" placeholder="일수		31	28	31	30	31	30	31	31	30	31	30	31&#10;일요일		5	4	4	4	5	4	4	4	4	5	4	4&#10;휴무일		2	0	1	3	4	1	0	0	3	3	3	1&#10;생산시간	7.75	8	6	6	8	8	7	7	6	8	9	7	6&#10;	9.75	16	18	20	15	14	18	20	21	15	14	16	20"></textarea>
         <div class="row"><button class="btn" id="applyDays">✔ <span data-t="b_apply">적용</span></button><button class="btn sec" id="autoSun" title="연도 기준 달력으로 일수·일요일 자동 입력"><span data-t="b_autosun">일수·일요일 자동</span></button></div>
@@ -457,7 +457,8 @@ const dim=(y,m)=>new Date(y,m+1,0).getDate();
 
 /* ═══════════════ 상태 ═══════════════ */
 const S={year:2027,site:'',dailySales:37000,useDaily:true,boxPer:84,plan:[],master:[],days:null,sub:'sum'};
-function defaultDays(y){return{days:MONTHS.map((_,i)=>dim(y,i)),sun:MONTHS.map((_,i)=>sundays(y,i)),hol:MONTHS.map(()=>0),hA:7.75,dA:MONTHS.map(()=>0),hB:9.75,dB:MONTHS.map(()=>0)}}
+function defaultDays(y){return{days:MONTHS.map((_,i)=>dim(y,i)),sun:MONTHS.map((_,i)=>sundays(y,i)),hol:MONTHS.map(()=>0),hA:7.75,dA:MONTHS.map(()=>0),hB:9.75,dB:MONTHS.map(()=>0),stdH:10}}
+const stdH=()=>Number(S.days&&S.days.stdH)||10;
 
 /* ═══════════════ 저장 (Supabase → 실패 시 로컬) ═══════════════ */
 const DB={off:false};
@@ -554,7 +555,7 @@ function calc(){
   const d=S.days||defaultDays(S.year);
   const work=MONTHS.map((_,i)=>d.days[i]-d.sun[i]-d.hol[i]);
   const mh=MONTHS.map((_,i)=>d.dA[i]*d.hA+d.dB[i]*d.hB);
-  const d10=mh.map(v=>v/10);
+  const SH=stdH();const d10=mh.map(v=>v/SH);
   const exp=d10.map(v=>v*S.dailySales);
   const R={master,plan,work,mh,d10,exp,qty:col('qty'),sales:col('sales'),cut:col('cut'),box:col('box')};
   R.ft=R.box.map(v=>S.boxPer>0?v/S.boxPer:0);
@@ -582,7 +583,7 @@ function render(){
     [L('연간 매출 (계획)','Ventas anuales (plan)'),fmtS(R.tot.sales),'g',L('판매단가 × 계획수량','precio × cantidad')],
     [L('연간 절단본수','Cortes anuales'),fmt(R.tot.cut),'',L('회로수 × 계획수량','circuitos × cantidad')],
     [L('연간 BOX / 53FT','Cajas / 53FT'),fmt(R.tot.box)+' <small>/ '+fmt(R.tot.ft,1)+'</small>','',L('포장단위 기준','por unidad de empaque')],
-    [L('연간 근무일수 / 10HR 생산일','Días laborales / días 10h'),fmt(R.tot.work)+' <small>/ '+fmt(R.tot.d10,1)+'</small>','',L('공수 ÷ 10','horas ÷ 10')],
+    [L(`연간 근무일수 / ${stdH()}HR 생산일`,`Días laborales / días ${stdH()}h`),fmt(R.tot.work)+' <small>/ '+fmt(R.tot.d10,1)+'</small>','',L(`공수 ÷ ${stdH()}`,`horas ÷ ${stdH()}`)],
     ...(UD?[[L('생산일수 기준 예상매출 달성률','Logro vs ventas esperadas'),pct(R.tot.ratio),R.tot.ratio>=1?'g':R.tot.ratio>=.9?'a':'r',L(`예상 ${fmtS(R.tot.exp)} · 차이 ${fmtS(R.tot.diff)}`,`esperado ${fmtS(R.tot.exp)} · dif. ${fmtS(R.tot.diff)}`)]]:[])
   ].map(([k,v,c,d])=>`<div class="kpi ${c}"><span>${k}</span><b>${v}</b><small>${d}</small></div>`).join('');
   renderChart(R);renderSum(R);renderModel(R);renderPlan(R);renderMaster(R);renderDays(R);
@@ -605,7 +606,7 @@ function renderSum(R){
     [L('일 생산수량','Producción diaria'),R.dq,R.tot.work?R.tot.qty/R.tot.work:0,0,''],
     [L('일 매출 ($)','Ventas diarias ($)'),R.ds,R.tot.work?R.tot.sales/R.tot.work:0,0,''],
     [L('공수 (시간)','Horas-hombre'),R.mh,R.tot.mh,2,'sep'],
-    [L('10HR 생산일수','Días 10h'),R.d10,R.tot.d10,2,''],
+    [L(`${stdH()}HR 생산일수`,`Días ${stdH()}h`),R.d10,R.tot.d10,2,''],
     ...(S.useDaily?[[L(`생산일수 기준 예상매출 ($${fmt(S.dailySales)}/일)`,`Ventas esperadas ($${fmt(S.dailySales)}/día)`),R.exp,R.tot.exp,0,''],
     [L('달성비율 (계획 ÷ 예상)','Logro (plan ÷ esperado)'),R.ratio,R.tot.ratio,'p',''],
     [L('차이 (계획 − 예상)','Diferencia (plan − esperado)'),R.diff,R.tot.diff,0,'']]:[])
@@ -653,13 +654,13 @@ function renderDays(R){
   const rowI=(lb,k,sub='')=>`<tr><td class="lb">${lb}</td><td class="n hrs">${sub}</td>${MONTHS.map((_,i)=>inp(k,i)).join('')}${tdn(d[k].reduce((a,b)=>a+b,0),0,'b')}${tdn(d[k].reduce((a,b)=>a+b,0)/12,1)}</tr>`;
   const rowC=(lb,a,t,dec=0,cls='',avg=true)=>`<tr class="${cls}"><td class="lb">${lb}</td><td></td>${a.map(v=>tdn(v,dec)).join('')}${tdn(t,dec,'b')}${avg?tdn(t/12,dec===0?1:dec):'<td></td>'}</tr>`;
   const sum=a=>a.reduce((x,y)=>x+y,0);
-  $('tblDays').innerHTML=`<table><thead><tr>${th(L('구분','Concepto'))}${th(L('시간','Horas'),'n')}${MONTHS.map((_,i)=>th(MN(i),'n')).join('')}${th(L('합계','Total'),'n')}${th(L('월평균','Prom.'),'n')}</tr></thead><tbody>
+  $('tblDays').innerHTML=`<table><thead><tr>${th(L('구분','Concepto'))}${th(L('시간 (수정 가능)','Horas (editable)'),'n')}${MONTHS.map((_,i)=>th(MN(i),'n')).join('')}${th(L('합계','Total'),'n')}${th(L('월평균','Prom.'),'n')}</tr></thead><tbody>
     ${rowI(L('일수','Días'),'days')}${rowI(L('일요일','Domingos'),'sun')}${rowI(L('휴무일','Festivos'),'hol')}
     ${rowC(L('근무일수','Días laborales'),R.work,R.tot.work,0,'b')}
-    ${rowI(L('생산시간 ① 일수','Turno ① días'),'dA',`<input class="dcell h" data-k="hA" value="${d.hA}">h`)}
-    ${rowI(L('생산시간 ② 일수','Turno ② días'),'dB',`<input class="dcell h" data-k="hB" value="${d.hB}">h`)}
+    ${rowI(L('생산시간 ① (시간 × 일수)','Turno ① (h × días)'),'dA',`<input class="dcell h" data-k="hA" value="${d.hA}" title="${L('① 생산시간 (시간)','Horas turno ①')}">h`)}
+    ${rowI(L('생산시간 ② (시간 × 일수)','Turno ② (h × días)'),'dB',`<input class="dcell h" data-k="hB" value="${d.hB}" title="${L('② 생산시간 (시간)','Horas turno ②')}">h`)}
     ${rowC(L('공수 (시간)','Horas-hombre'),R.mh,R.tot.mh,2,'b')}
-    ${rowC(L('일 10HR 생산일수','Días 10h'),R.d10,R.tot.d10,2,'')}
+    <tr><td class="lb">${L('일 기준시간당 생산일수','Días por horas estándar')}</td><td class="n hrs"><input class="dcell h" data-k="stdH" value="${stdH()}" title="${L('1일 기준 시간 (예: 10)','Horas estándar por día')}">h</td>${R.d10.map(v=>tdn(v,2)).join('')}${tdn(R.tot.d10,2,'b')}${tdn(R.tot.d10/12,2)}</tr>
     ${S.useDaily?rowC(L(`생산일수대비 예상매출 ($${fmt(S.dailySales)}/일)`,`Ventas esperadas ($${fmt(S.dailySales)}/día)`),R.exp,R.tot.exp,0,'sep'):''}
     ${rowC(L('계획 매출 (사계)','Ventas plan'),R.sales,R.tot.sales,0,'gold'+(S.useDaily?'':' sep'))}
     ${S.useDaily?`<tr><td class="lb">${L('비율 (계획 ÷ 예상)','Proporción')}</td><td></td>${R.ratio.map(v=>`<td class="n">${v?pct(v):'-'}</td>`).join('')}<td class="n b">${R.tot.ratio?pct(R.tot.ratio):'-'}</td><td></td></tr>`:''}
@@ -695,7 +696,7 @@ document.addEventListener('change',e=>{
   /* 구성비 입력: "11" → 11%, "0.11" → 11%, "11%" → 11% */
   const r=e.target.closest('input.ratio');if(r){const row=S.master.find(x=>x.pn===r.dataset.pn);if(row){let v=num(r.value);if(v>1)v=v/100;row.ratio=v;row.auto=false;saveMaster();render()}return}
   const l=e.target.closest('select.lnk');if(l){const row=S.master.find(x=>x.pn===l.dataset.pn);if(row){const v=l.value||null;S.master.forEach(x=>{if(x.model===row.model&&x.name===row.name)x.link=v});saveMaster();render()}return}
-  const d=e.target.closest('input.dcell');if(d){const k=d.dataset.k;if(d.dataset.i!=null)S.days[k][+d.dataset.i]=num(d.value);else S.days[k]=num(d.value);saveDays();render();return}
+  const d=e.target.closest('input.dcell');if(d){const k=d.dataset.k;if(d.dataset.i!=null)S.days[k][+d.dataset.i]=num(d.value);else S.days[k]=(k==='stdH'?(num(d.value)||10):num(d.value));saveDays();render();return}
 });
 ['inYear','inDaily','inBox','inUseDaily'].forEach(id=>$(id).onchange=()=>{S.year=+$('inYear').value||2027;S.dailySales=num($('inDaily').value);S.useDaily=$('inUseDaily').checked;S.boxPer=num($('inBox').value)||84;saveSettings();render()});
 $('inSite').onchange=()=>{S.site=$('inSite').value;render()};
@@ -713,7 +714,7 @@ const I18N={
   b_apply:['적용','Aplicar'],b_replace:['전체 교체','Reemplazar todo'],b_clear:['전체 삭제','Eliminar todo'],h_plan_t:['사업계획수량 (판매계획)','Plan de negocio (ventas)'],
   p_master_h:['품번 마스터 붙여넣기','Pegar maestro de partes'],p_master_hint:['엑셀 「월매출 및 절단 본수」 시트에서 <b>구분 · 차종 · 품명CODE · 품명 · 품번 · 판매단가 · 회로수 · 포장단위</b> 열(C~J)을 복사해 붙여넣으세요. 월별 계획수량 열(K~V)까지 같이 복사하면 품번별 <b>구성비</b>를 자동 산출하고, 9번째 열에 구성비(%)를 직접 넣어도 됩니다. 구성비가 없으면 같은 차종·품명 안에서 균등 배분합니다.','Copie de la hoja «월매출 및 절단 본수» las columnas <b>Planta · Modelo · CODE · Producto · N° parte · Precio · Circuitos · Empaque</b> (C~J). Si incluye las cantidades mensuales (K~V) se calcula la <b>proporción</b> por número de parte; también puede poner la proporción (%) en la 9ª columna.'],
   h_master_t:['품번 마스터 · 구성비 · 연간 계획','Maestro · proporción · plan anual'],
-  p_days_h:['월별 생산일수 붙여넣기','Pegar días de producción'],p_days_hint:['엑셀 「월별 생산일수」 시트의 <b>일수 · 일요일 · 휴무일 · 생산시간(주간/야간) 행</b>을 A열부터 N열(12월)까지 복사해 붙여넣으세요. 근무일수·공수·10HR 생산일수는 자동 계산됩니다. 표에서 직접 수정해도 됩니다.','Copie de la hoja «월별 생산일수» las filas <b>Días · Domingos · Festivos · Horas de producción</b> (A~N). Los días laborales, horas-hombre y días 10h se calculan automáticamente.'],
+  p_days_h:['월별 생산일수 붙여넣기','Pegar días de producción'],p_days_hint:['엑셀 「월별 생산일수」 시트의 <b>일수 · 일요일 · 휴무일 · 생산시간(주간/야간) 행</b>을 A열부터 N열(12월)까지 복사해 붙여넣으세요. 근무일수·공수·기준시간당 생산일수는 자동 계산됩니다. 표의 노란 칸(일수·생산시간·기준시간)은 직접 수정할 수 있습니다.','Copie de la hoja «월별 생산일수» las filas <b>Días · Domingos · Festivos · Horas de producción</b> (A~N). Los días laborales, horas-hombre y días 10h se calculan automáticamente.'],
   b_autosun:['일수·일요일 자동','Días·domingos auto'],h_days_t:['월별 생산 가능일수 · 공수 · 예상매출','Días disponibles · horas · ventas esperadas'],h_days_hint:['노란 칸은 직접 입력 가능','Celdas amarillas editables'],
   wait_t:['준비중입니다','En preparación'],wait_d:['이 메뉴는 현재 준비 중입니다. 기능이 완성되면 이곳에서 바로 사용할 수 있습니다.','Este menú está en preparación. Estará disponible aquí cuando se complete.']
 };
@@ -817,7 +818,7 @@ async function buildXlsx(){
   /* ── Sheet3 월별 생산일수 ── */
   const s3=wb.addWorksheet('월별 생산일수',{views:[{state:'frozen',ySplit:5,xSplit:2,showGridLines:false}],properties:{tabColor:{argb:'FF4CAF7D'}}});
   const d=S.days||defaultDays(Y);
-  title(s3,L(`${String(Y).slice(2)}년 월별 생산 일수`,`Días de producción ${Y}`),L('근무일수 = 일수 − 일요일 − 휴무일 · 공수 = Σ(생산시간 × 일수) · 10HR 생산일수 = 공수 ÷ 10','Días lab. = días − domingos − festivos · horas = Σ(h × días) · días 10h = horas ÷ 10'),16);
+  title(s3,L(`${String(Y).slice(2)}년 월별 생산 일수`,`Días de producción ${Y}`),L(`근무일수 = 일수 − 일요일 − 휴무일 · 공수 = Σ(생산시간 × 일수) · 기준시간당 생산일수 = 공수 ÷ 기준시간(B13) · 노란 칸 수정 가능`,`Días lab. = días − domingos − festivos · horas = Σ(h × días) · días = horas ÷ horas estándar (B13)`),16);
   s3.mergeCells(4,1,5,2);H(s3.getCell(4,1),L('구분','Concepto'));s3.mergeCells(4,3,4,14);H(s3.getCell(4,3),L('월별 생산 가능일수','Días disponibles por mes'));
   months.forEach((t,i)=>H(s3.getCell(5,3+i),t));s3.mergeCells(4,15,5,15);H(s3.getCell(4,15),L('합계','Total'));s3.mergeCells(4,16,5,16);H(s3.getCell(4,16),L('월평균','Promedio'));
   s3.getColumn(1).width=28;s3.getColumn(2).width=10;for(let c=3;c<=14;c++)s3.getColumn(c).width=13;s3.getColumn(15).width=15;s3.getColumn(16).width=14;
@@ -830,9 +831,9 @@ async function buildXlsx(){
   rowV(10,L('생산시간 ① (시간 × 일수)','Turno ① (h × días)'),d.dA,{b2:d.hA,b2bg:INPUT,b2f:NUM2});
   rowV(11,L('생산시간 ② (시간 × 일수)','Turno ② (h × días)'),d.dB,{b2:d.hB,b2bg:INPUT,b2f:NUM2});
   rowF(12,L('공수 (시간)','Horas-hombre'),c=>`${c}10*$B$10+${c}11*$B$11`,{f:NUM2,b:1});
-  rowF(13,L('일 10HR 생산일수','Días 10h'),c=>`${c}12/10`,{f:NUM2});
+  rowF(13,L('일 기준시간당 생산일수','Días por horas estándar'),c=>`${c}12/$B$13`,{f:NUM2,b2:stdH(),b2bg:INPUT,b2f:NUM2});
   if(S.useDaily){
-  D(s3.getCell(14,1),L('일 매출 기준 ($/10HR 일)','Ventas base ($/día 10h)'),{bg:SOFT,b:1});D(s3.getCell(14,2),S.dailySales,{bg:INPUT,f:USD});for(let c=3;c<=16;c++)D(s3.getCell(14,c),'',{bg:SOFT});
+  D(s3.getCell(14,1),L('일 매출 기준 ($/기준시간 1일)','Ventas base ($/día estándar)'),{bg:SOFT,b:1});D(s3.getCell(14,2),S.dailySales,{bg:INPUT,f:USD});for(let c=3;c<=16;c++)D(s3.getCell(14,c),'',{bg:SOFT});
   rowF(15,L('생산일수대비 예상 매출','Ventas esperadas por días'),c=>`${c}13*$B$14`,{f:USD,b:1,af:USD});
   rowF(16,L('계획 매출 (사계 · ② 시트)','Ventas plan (hoja ②)'),(c,i)=>`'월매출 및 절단본수'!${COL(cQ+i)}${salesRow}`,{f:USD,b:1,bg:BLUE_L,af:USD});
   rowF(17,L('비율 (계획 ÷ 예상)','Proporción'),c=>`IFERROR(${c}16/${c}15,0)`,{f:PCT,tot:()=>`IFERROR(O16/O15,0)`,avg:()=>`IFERROR(P16/P15,0)`,af:PCT});
@@ -857,7 +858,7 @@ async function buildXlsx(){
     [L('일 생산수량','Producción diaria'),i=>`IFERROR(${COL(2+i)}5/${COL(2+i)}10,0)`,NUM],
     [L('일 매출 ($)','Ventas diarias ($)'),i=>`IFERROR(${COL(2+i)}6/${COL(2+i)}10,0)`,USD],
     [L('공수 (시간)','Horas-hombre'),i=>`${S3}!${COL(3+i)}12`,NUM2],
-    [L('10HR 생산일수','Días 10h'),i=>`${S3}!${COL(3+i)}13`,NUM2],
+    [L(`${stdH()}HR 생산일수`,`Días ${stdH()}h`),i=>`${S3}!${COL(3+i)}13`,NUM2],
     ...(S.useDaily?[[L('생산일수 기준 예상매출','Ventas esperadas'),i=>`${S3}!${COL(3+i)}15`,USD],
     [L('달성비율 (계획 ÷ 예상)','Logro'),i=>`IFERROR(${COL(2+i)}6/${COL(2+i)}15,0)`,PCT,0,'r'],
     [L('차이 (계획 − 예상)','Diferencia'),i=>`${COL(2+i)}6-${COL(2+i)}15`,USD]]:[])
