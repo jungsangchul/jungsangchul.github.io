@@ -64,7 +64,7 @@ nav.tabs button.on svg{opacity:1}
 @media(max-width:760px){.bar,.system-bar,nav.tabs{padding-left:16px;padding-right:16px}.bar{padding:10px 16px;flex-wrap:wrap}.brand{width:100%}.hdr-right{width:100%;justify-content:flex-end}.brand-sub{display:none}.lang button{height:34px;padding:0 12px}header .who{height:34px}header .who input{width:84px;height:24px}.system-bar>span:first-child{display:none}.system-bar{justify-content:flex-end}}
 
 /* ── 본문 ── */
-main{padding:22px 24px 90px;max-width:1500px;margin:0 auto}
+main{padding:22px 24px 90px;max-width:none;margin:0 auto}
 .tab{display:none}.tab.on{display:block}
 .card{background:linear-gradient(180deg,#181818,#141414);border:1px solid var(--line2);border-radius:var(--r);padding:16px 18px;margin-bottom:14px;box-shadow:var(--sh2)}
 .card h3{margin:0 0 12px;font-family:var(--mono);font-size:14.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--ac);display:flex;align-items:center;gap:10px}
@@ -99,6 +99,7 @@ textarea{width:100%;min-height:150px;height:auto;padding:10px 12px;font-family:C
 .kpi.r b{color:var(--red)}.kpi.a b{color:var(--amb)}.kpi.g b{color:var(--grn)}
 .tw{overflow:auto;max-height:65vh;border:1px solid var(--line2);border-radius:var(--r);background:var(--panel)}
 .tw.m{max-height:42vh}
+.carc{white-space:nowrap;color:var(--ac);font-weight:600}
 table{border-collapse:separate;border-spacing:0;width:100%;font-size:14.5px;background:transparent}
 th,td{padding:8px 8px;border-bottom:1px solid var(--line);white-space:normal;overflow-wrap:break-word;vertical-align:middle;color:var(--ink2)}
 td.n{white-space:nowrap}
@@ -811,11 +812,12 @@ $('mQ').oninput=renderMst;
 /* ---------- 부족예상 계산 ---------- */
 $('sThr').onchange=async()=>{CFG.threshold=$('sThr').value;try{await ins('mshort_config_2',[{key:'threshold',value:CFG.threshold}],'key')}catch(e){}renderSum()};
 $('sRun').onclick=calc;
+let CARS={};async function loadCars(){try{const r=await fetch(SB+'rpc/mshort_cars',{method:'POST',headers:H,body:JSON.stringify({p_plant:2})});if(r.ok)CARS=await r.json()||{}}catch(e){console.warn('cars',e)}}
 async function calc(fresh=true){
   const cd=$('sCnt').value,f=$('sFrom').value,t=$('sTo').value;
   busy(1);
   try{
-    if(fresh)await Promise.all([loadNeed(),loadMst(),loadAdj()]);
+    if(fresh)await Promise.all([loadNeed(),loadMst(),loadAdj(),loadCars()]);
     const [cnt,use,rec]=await Promise.all([
       cd?sel('mshort_count_2',`select=code,qty&cdate=eq.${cd}`):[],
       f&&t?sel('mshort_usage_2',`select=code,qty&udate=gte.${f}&udate=lte.${t}`):[],
@@ -840,9 +842,9 @@ function status(r){const th=Number(CFG.threshold)||0;return r.short<0?'short':r.
 function viewList(){
   if(!SUM)return[];
   const q=$('sQ').value.trim().toUpperCase(),f=$('sF').value,ty=selTypes();
-  SUM.list.forEach(r=>{r.type=mtype(r.code)});
+  SUM.list.forEach(r=>{r.type=mtype(r.code);r.car=CARS[String(r.code).toUpperCase()]||CARS[r.code]||''});
   let l=SUM.list.filter(r=>{if(!ty.has(r.type))return false;const s=status(r);if(f==='short'&&s!=='short')return false;if(f==='care'&&s!=='care')return false;if(f==='chk'&&s==='ok')return false;
-    return!q||(r.code+' '+r.name+' '+r.type).toUpperCase().includes(q)});
+    return!q||(r.code+' '+r.name+' '+r.type+' '+(r.car||'')).toUpperCase().includes(q)});
   if(sortK)l=[...l].sort((a,b)=>{const x=a[sortK],y=b[sortK];return(typeof x==='string'?x.localeCompare(y):x-y)*sortD});
   return l;
 }
@@ -850,13 +852,13 @@ function cols(){
   const cd=SUM?SUM.cd:'',rng=SUM&&SUM.f?`${md(SUM.f)}~${md(SUM.t)}`:'';
   return[['type',tr('구분','Tipo')],['code',tr('자재코드','Código')],['name',tr('자재명','Nombre')],['unit',tr('단위','Unid.')],['need',tr('필요량','Requerido'),1],
    ['cnt',tr('실사','Inv.')+(cd?`<br><small>${md(cd)}</small>`:''),1],['use',tr('사용량','Consumo')+`<br><small>${rng}</small>`,1],['rec',tr('입고량','Entrada')+`<br><small>${rng}</small>`,1],['ret',tr('반납','Devol.')+`<br><small>${rng}</small>`,1],['adj',tr('조정','Ajuste'),1],
-   ['cur',tr('현재고','Stock')+(SUM&&SUM.t?`<br><small>${md(SUM.t)}</small>`:''),1],['wh',tr('창고재고','Almacén'),1],['short',tr('부족예상','Pronóstico'),1],['chk','CHECK']];
+   ['cur',tr('현재고','Stock')+(SUM&&SUM.t?`<br><small>${md(SUM.t)}</small>`:''),1],['wh',tr('창고재고','Almacén'),1],['short',tr('부족예상','Pronóstico'),1],['chk','CHECK'],['car',tr('적용차종','Modelo')]];
 }
 function renderSum(){
   $('sThr').value=CFG.threshold;
   if(!SUM){$('sTbl').innerHTML=`<tr><td class="hint" style="padding:20px">${tr('조회 버튼을 누르세요','Presione Consultar')}</td></tr>`;return}
-  SUM.list.forEach(r=>{r.type=mtype(r.code)});
-  {const f=$('sF').value,q=$('sQ').value.trim().toUpperCase();TYPES.forEach(t=>{const e=document.querySelector(`#sType b[data-tc="${t}"]`);if(e)e.textContent=SUM.list.filter(r=>{if(r.type!==t)return false;const s=status(r);if(f==='short'&&s!=='short')return false;if(f==='care'&&s!=='care')return false;if(f==='chk'&&s==='ok')return false;if(f==='need'&&r.extra)return false;if(f==='extra'&&!r.extra)return false;return!q||(r.code+' '+r.name+' '+r.type).toUpperCase().includes(q)}).length})}
+  SUM.list.forEach(r=>{r.type=mtype(r.code);r.car=CARS[String(r.code).toUpperCase()]||CARS[r.code]||''});
+  {const f=$('sF').value,q=$('sQ').value.trim().toUpperCase();TYPES.forEach(t=>{const e=document.querySelector(`#sType b[data-tc="${t}"]`);if(e)e.textContent=SUM.list.filter(r=>{if(r.type!==t)return false;const s=status(r);if(f==='short'&&s!=='short')return false;if(f==='care'&&s!=='care')return false;if(f==='chk'&&s==='ok')return false;if(f==='need'&&r.extra)return false;if(f==='extra'&&!r.extra)return false;return!q||(r.code+' '+r.name+' '+r.type+' '+(r.car||'')).toUpperCase().includes(q)}).length})}
   const all=SUM.list.filter(r=>selTypes().has(r.type)),st=all.map(status);
   $('kAll').textContent=all.length;$('kShort').textContent=st.filter(s=>s==='short').length;
   $('kCare').textContent=st.filter(s=>s==='care').length;$('kEx').textContent=SUM.exRows;
@@ -867,6 +869,7 @@ function renderSum(){
   $('sTbl').innerHTML='<tr>'+C.map(([k,h,n])=>`<th class="${n?'n':''}" data-k="${k}">${h}${sortK===k?(sortD>0?' ▲':' ▼'):''}</th>`).join('')+'</tr>'+
     l.map(r=>{const s=status(r);return`<tr class="${s==='ok'?'':s}">`+C.map(([k,h,n])=>{
       if(k==='chk')return`<td><span class="tag ${s}">${lab[s]}</span></td>`;
+      if(k==='car')return`<td class="carc">${r.car?esc(r.car):'<span class="hint">-</span>'}</td>`;
       const v=r[k];
       if(k==='adj')return`<td class="n ${v<0?'neg':''}">${v?fmt(v):'<span class="hint">0</span>'}</td>`;
       if(k==='ret')return`<td class="n">${v?fmt(v):'<span class="hint">0</span>'}</td>`;
