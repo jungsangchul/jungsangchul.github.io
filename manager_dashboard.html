@@ -629,7 +629,25 @@
   .rt-sum3 .n{font-family:var(--mono);font-size:19px;font-weight:700;color:#fafafa;white-space:nowrap}
   .rt-sum3 .n small{font-size:12px;color:#888;font-weight:400;margin-left:4px}
   @media (max-width:900px){.rt-evform{grid-template-columns:1fr 1fr}.rt-sum3{grid-template-columns:1fr}}
-  .rt-hero.tn-hero4{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .rt-hero.tn-hero4{grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+  #turnModal .rt-tile{padding:11px 14px 10px;border-radius:12px}
+  #turnModal .rt-tile .k{letter-spacing:.04em;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;padding-right:52px}
+  #turnModal .rt-tile .k i{margin-right:6px;vertical-align:1px}
+  #turnModal .rt-tile .v{font-size:26px;margin:6px 0 4px;padding-right:52px}
+  #turnModal .rt-tile .v small{font-size:12px}
+  #turnModal .rt-tile .s{font-size:12px;line-height:1.45;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #turnModal .rt-ring{width:44px;height:44px;right:12px;top:11px;font-size:12px}
+  #turnModal .rt-ring::before{inset:5px}
+  #turnModal .rt-bar{margin-top:6px;height:5px}
+  #turnModal .rt-card{padding:14px 16px;margin-bottom:12px}
+  #turnModal .rt-card .h{margin-bottom:6px}
+  #turnModal .rt-grid2{margin-bottom:12px;gap:12px}
+  #turnModal .rt-chart{height:220px}
+  #turnModal .rt-chart.tall{height:250px}
+  #turnModal #tnChMonth{max-height:none}
+  #turnModal .rt-tw{margin-top:8px}
+  #turnModal .rt-t td,#turnModal .rt-t th{padding-top:5px;padding-bottom:5px}
+  #turnModal .rt-note{margin-top:6px}
   @media (max-width:1180px){.rt-hero.tn-hero4{grid-template-columns:repeat(2,minmax(0,1fr))}}
   @media (max-width:560px){.rt-hero.tn-hero4{grid-template-columns:1fr}}
   .addbtn.rt-open.rp-open{background:linear-gradient(180deg,#9fd8b8,#4caf7d);border-color:rgba(76,175,125,.55);box-shadow:0 4px 16px rgba(76,175,125,.28);position:relative}
@@ -1059,7 +1077,7 @@
     <div class="rt-hero tn-hero4" id="tnHero"></div>
     <div class="rt-card">
       <div class="h"><h3 id="tnH1">월별 퇴사자 · 퇴사율 추이 — 1공장 vs 2공장</h3><span class="d" id="tnD1">monthly · jan–dec</span></div>
-      <div class="rt-chart tall"><canvas id="tnChMonth"></canvas></div>
+      <div class="rt-chart" style="height:260px"><canvas id="tnChMonth"></canvas></div>
       <div class="rt-tw"><table class="rt-t" id="tnTbMonth"></table></div>
       <div class="rt-note" id="tnN1"></div>
     </div>
@@ -1099,7 +1117,7 @@
     </div>
     <div class="rt-card">
       <div class="h"><h3 id="tnH12">입사 월별 잔존율 (코호트)</h3><span class="d" id="tnD12">채용 품질 추적</span></div>
-      <div class="rt-chart tall"><canvas id="tnChCoh"></canvas></div>
+      <div class="rt-chart" style="height:250px"><canvas id="tnChCoh"></canvas></div>
       <div class="rt-tw"><table class="rt-t" id="tnTbCoh"></table></div>
       <div class="rt-note" id="tnN12"></div>
     </div>
@@ -1128,6 +1146,7 @@
         <div class="rt-sub" id="rptSub">출근율 · 퇴사율 자동 요약 · <span>Plant 1 · Plant 2</span></div>
       </div>
       <div class="rt-ctrl">
+        <span class="rt-act"><select class="rt-sel" id="rptMonth" onchange="rptYm=this.value;rptBuild()"></select><small id="rptCapMonth">조회 기간</small></span>
         <span class="rt-act"><button class="rt-btn blue" id="rptReload" onclick="rptBuild()">↻ 새로고침</button><small id="rptCapReload">최신 데이터로 다시 분석</small></span>
         <span class="rt-act"><button class="rt-btn green" id="rptXls" onclick="rptExport()">⤓ Excel 다운로드</button><small id="rptCapXls">5개 시트 · 서식 포함</small></span>
         <span class="rt-act"><button class="rt-btn red" id="rptClose" onclick="closeReport()">✕ 닫기</button><small id="rptCapClose">대시보드로 돌아가기 (ESC)</small></span>
@@ -1162,7 +1181,7 @@
     </div>
     <div class="rt-card">
       <div class="h"><h3 id="rtH2">일별 비교 — 선택 월</h3><span class="d" id="rtD2">daily · selected month</span></div>
-      <div class="rt-chart" style="height:360px"><canvas id="rtChDay"></canvas></div>
+      <div class="rt-chart" style="height:380px"><canvas id="rtChDay"></canvas></div>
       <details class="rt-more"><summary><span class="ar">▾</span><span class="o rt-more-o">세부데이터 펼치기</span><span class="c rt-more-c">세부데이터 접기</span></summary><div class="rt-tw"><table class="rt-t" id="rtTbDay"></table></div></details>
     </div>
     <div class="rt-card">
@@ -2959,10 +2978,17 @@ const rateEventPlugin={id:"rtEvents",beforeDatasetsDraw(ch,_a,opt){
   opt.items.forEach(it=>{ const px=x.getPixelForValue(it.i); if(isNaN(px)) return; lvl=(it.i-lastI<=2)?(lvl+1)%2:0; lastI=it.i; ctx.save();
     ctx.fillStyle=it.color+(it.kind==="bridge"?"14":"22"); ctx.fillRect(px-bw/2+1,top,bw-2,bottom-top);
     ctx.strokeStyle=it.color+"aa"; ctx.setLineDash([3,3]); ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(px,top); ctx.lineTo(px,bottom); ctx.stroke(); ctx.setLineDash([]);
-    ctx.font="700 10px 'Noto Sans KR','Space Mono',sans-serif"; ctx.fillStyle=it.color; ctx.textAlign="center"; ctx.textBaseline="top";
-    const mx=opt.above?Math.max(4,Math.floor(bw*1.9/10)):14; const txt=it.label.length>mx?it.label.slice(0,mx-1)+"…":it.label;
-    if(opt.above){ ctx.strokeStyle=it.color+"aa"; ctx.setLineDash([3,3]); ctx.beginPath(); ctx.moveTo(px,top-(lvl?6:20)); ctx.lineTo(px,top); ctx.stroke(); ctx.setLineDash([]); ctx.translate(px,top-(lvl?20:34)); }
-    else ctx.translate(px,top+4+lvl*13);
+    ctx.font=opt.above?"700 9.5px 'Noto Sans KR','Space Mono',sans-serif":"700 10px 'Noto Sans KR','Space Mono',sans-serif"; ctx.fillStyle=it.color; ctx.textAlign="center"; ctx.textBaseline="top";
+    if(opt.above){ /* 이웃 이벤트와 안 겹치는 폭 안에서 줄바꿈 → 위에서 아래로 최대 4줄 */
+      const near=opt.items.some(o=>o!==it&&Math.abs(o.i-it.i)===1); const maxW=Math.max(28,bw*(near?0.96:1.9)-4);
+      const lines=[]; let cur="";
+      for(const ch of it.label){ const t=cur+ch; if(ctx.measureText(t).width>maxW&&cur){ lines.push(cur); cur=ch.trim()?ch:""; } else cur=t; }
+      if(cur) lines.push(cur);
+      if(lines.length>4){ lines.length=4; let l=lines[3]; while(l.length>1&&ctx.measureText(l+"…").width>maxW) l=l.slice(0,-1); lines[3]=l+"…"; }
+      const LH=11, y0=top-6-lines.length*LH;
+      ctx.strokeStyle=it.color+"aa"; ctx.setLineDash([3,3]); ctx.beginPath(); ctx.moveTo(px,top-4); ctx.lineTo(px,top); ctx.stroke(); ctx.setLineDash([]);
+      lines.forEach((l,k)=>ctx.fillText(l,px,y0+k*LH)); ctx.restore(); return; }
+    const txt=it.label.length>14?it.label.slice(0,13)+"…":it.label; ctx.translate(px,top+4+lvl*13);
     ctx.fillText(txt,0,0); ctx.restore(); });
 }};
 
@@ -3190,7 +3216,7 @@ function rateRender(){
       {type:"bar",isWk:true,label:`${T.p1} ${lang==="es"?"asistentes fin de semana":"주말 출근"}`,data:cs.map(x=>x.wk&&x.k1&&x.k1.p>0?x.k1.p:null),yAxisID:"yW",backgroundColor:"rgba(226,196,106,.30)",borderColor:RATE_C.p1,borderWidth:1.5,borderRadius:5,barPercentage:.9,categoryPercentage:.55,labelColor:RATE_C.p1,yOff:4,labelFmt:v=>`${v}${pplU}`,order:2},
       {type:"bar",isWk:true,label:`${T.p2} ${lang==="es"?"asistentes fin de semana":"주말 출근"}`,data:cs.map(x=>x.wk&&x.k2&&x.k2.p>0?x.k2.p:null),yAxisID:"yW",backgroundColor:"rgba(111,184,221,.30)",borderColor:RATE_C.p2,borderWidth:1.5,borderRadius:5,barPercentage:.9,categoryPercentage:.55,labelColor:RATE_C.p2,yOff:4,labelFmt:v=>`${v}${pplU}`,order:2}]},
     options:{responsive:true,maintainAspectRatio:false,interaction:{mode:"index",intersect:false},
-      layout:{padding:{top:40}},plugins:{legend:Object.assign({},rateLegend,{position:"bottom",labels:Object.assign({},rateLegend.labels,{padding:12,filter:(it,d)=>!d.datasets[it.datasetIndex].isWk||wkDays.length>0})}),tooltip:Object.assign({},rateTip,{callbacks:{label:c=>c.dataset.isWk?` ${c.dataset.label}: ${c.parsed.y}${pplU} / ${((c.datasetIndex===2?cs[c.dataIndex].k1:cs[c.dataIndex].k2)||{h:'–'}).h}${pplU}`:rateTip.callbacks.label(c),afterTitle:items=>{ const x=cs[items[0].dataIndex]; if(x&&x.wk) return "◇ "+wkLbl; return x&&x.ev&&x.ev.length?"★ "+x.ev.map(rateEvLabel).join(", "):(x&&x.br?"◇ "+T.evKind.bridge:""); }}}),rtLabels:{on:cs.length<=23},rtEvents:{items:evItemsC,above:true}},
+      layout:{padding:{top:52}},plugins:{legend:Object.assign({},rateLegend,{position:"bottom",labels:Object.assign({},rateLegend.labels,{padding:12,filter:(it,d)=>!d.datasets[it.datasetIndex].isWk||wkDays.length>0})}),tooltip:Object.assign({},rateTip,{filter:i=>i.raw!=null,callbacks:{label:c=>c.dataset.isWk?` ${c.dataset.label}: ${c.parsed.y}${pplU} / ${((c.datasetIndex===2?cs[c.dataIndex].k1:cs[c.dataIndex].k2)||{h:'–'}).h}${pplU}`:rateTip.callbacks.label(c),afterTitle:items=>{ const x=cs[items[0].dataIndex]; if(x&&x.wk) return "◇ "+wkLbl; return x&&x.ev&&x.ev.length?"★ "+x.ev.map(rateEvLabel).join(", "):(x&&x.br?"◇ "+T.evKind.bridge:""); }}}),rtLabels:{on:cs.length<=23},rtEvents:{items:evItemsC,above:true}},
       scales:{x:{grid:{display:false},ticks:{color:ctx=>cs[ctx.index]&&cs[ctx.index].wk?"#6a6a6a":cs[ctx.index]&&cs[ctx.index].w===1?RATE_C.mon:(cs[ctx.index]&&cs[ctx.index].ev&&cs[ctx.index].ev.length?(RATE_EVC[cs[ctx.index].ev[0].kind]||RATE_EVC.custom):RATE_C.tick),font:ctx=>({weight:cs[ctx.index]&&cs[ctx.index].w===1?"700":"400",size:10})}},
         y:{suggestedMin:80,max:103,grid:{color:c=>c.tick&&c.tick.value>100?"transparent":RATE_C.grid},ticks:{stepSize:5,callback:v=>v>100?"":v+"%"}},
         yW:{display:false,min:0,max:Math.ceil(wkMax*3.2)}}},
@@ -3592,7 +3618,7 @@ const TURN_I18N={
     status:(y,p1,p2)=>`<b>${y}</b>년 · 1공장 ${p1}개월 · 2공장 ${p2}개월 입력됨`,
     p1:"1공장",p2:"2공장",mo:["1월","2월","3월","4월","5월","6월","7월","8월","9월","10월","11월","12월"],
     kYear:"연간 퇴사",kMonth:"퇴사",sRate:"퇴사율",sAvgRate:"월평균 퇴사율",sHold:"재직",sPrev:"전월 대비",sNoHold:"재직인원 없음 → 퇴사율 미산출",
-    kTopReason:"최다 퇴사 사유 · 연간",kEarly:"조기 퇴사 · 3개월 미만",sOf:"전체 퇴사 중",sEarlyNote:"1개월 + 3개월미만",
+    kTopReason:"최다 퇴사 사유",kEarly:"조기 퇴사 (3개월 미만)",sOf:"전체 퇴사 중",sEarlyNote:"1개월 + 3개월미만",
     h1:"월별 퇴사자 · 퇴사율 추이 — 1공장 vs 2공장",d1:"monthly · jan–dec",h2:"사유별 퇴사자 — 연간 누적",d2:"by reason · ytd",h3:"월별 사유별 퇴사자",d3:"stacked by reason",
     h4:"근무개월별 퇴사자 — 연간 누적",d4:"by tenure",h5:"부서별 퇴사자 — 연간 누적",d5:"by department",h6:"근무개월별 월 상세",d6:"monthly by tenure",h7:"사유별 월 상세",d7:"monthly by reason",h8:"월별 근무개월별 퇴사자",d8:"stacked by tenure",h9:"월별 부서별 퇴사자",d9:"stacked by department",h10:"부서별 월 상세",d10:"monthly by department",
     cMonth:"월",cLeave:"퇴사",cHold:"재직",cRate:"퇴사율",cTotal:"합계",cSum:"1+2공장",cReason:"사유",cTenure:"근무개월",cDept:"부서",
@@ -3613,7 +3639,7 @@ const TURN_I18N={
     status:(y,p1,p2)=>`<b>${y}</b> · Planta 1: ${p1} meses · Planta 2: ${p2} meses`,
     p1:"Planta 1",p2:"Planta 2",mo:["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"],
     kYear:"Bajas del año",kMonth:"Bajas",sRate:"rotación",sAvgRate:"rotación mensual prom.",sHold:"plantilla",sPrev:"vs mes anterior",sNoHold:"sin plantilla → rotación no calculada",
-    kTopReason:"Motivo principal · año",kEarly:"Bajas tempranas · < 3 meses",sOf:"de todas las bajas",sEarlyNote:"1 mes + < 3 meses",
+    kTopReason:"Motivo principal",kEarly:"Bajas tempranas (< 3m)",sOf:"de todas las bajas",sEarlyNote:"1 mes + < 3 meses",
     h1:"Bajas y rotación mensual — Planta 1 vs Planta 2",d1:"mensual · ene–dic",h2:"Bajas por motivo — acumulado",d2:"por motivo · ytd",h3:"Bajas mensuales por motivo",d3:"apilado por motivo",
     h4:"Bajas por antigüedad — acumulado",d4:"por antigüedad",h5:"Bajas por departamento — acumulado",d5:"por departamento",h6:"Detalle mensual por antigüedad",d6:"mensual · antigüedad",h7:"Detalle mensual por motivo",d7:"mensual · motivo",h8:"Bajas mensuales por antigüedad",d8:"apilado por antigüedad",h9:"Bajas mensuales por departamento",d9:"apilado por depto",h10:"Detalle mensual por departamento",d10:"mensual · depto",
     cMonth:"Mes",cLeave:"Bajas",cHold:"Plantilla",cRate:"Rotación",cTotal:"Total",cSum:"P1+P2",cReason:"Motivo",cTenure:"Antigüedad",cDept:"Depto",
@@ -4126,12 +4152,14 @@ async function openReport(){
   $("rptModal").classList.add("open"); document.body.style.overflow="hidden";
   $("rptTitle").textContent=L2("분석 리포트","Reporte de análisis"); $("rptSub").firstChild.textContent=L2("출근율 · 퇴사율 자동 요약 · ","Asistencia · Rotación · resumen automático · ");
   $("rptReload").textContent=L2("↻ 새로고침","↻ Actualizar"); $("rptXls").textContent=L2("⤓ Excel 다운로드","⤓ Descargar Excel"); $("rptClose").textContent=L2("✕ 닫기","✕ Cerrar");
-  $("rptCapReload").textContent=L2("최신 데이터로 다시 분석","Reanalizar con datos nuevos"); $("rptCapXls").textContent=L2("5개 시트 · 서식 포함","5 hojas · con formato"); $("rptCapClose").textContent=L2("대시보드로 돌아가기 (ESC)","Volver al tablero (ESC)");
+  $("rptCapMonth").textContent=L2("조회 기간 (월)","Periodo (mes)"); $("rptCapReload").textContent=L2("최신 데이터로 다시 분석","Reanalizar con datos nuevos"); $("rptCapXls").textContent=L2("5개 시트 · 서식 포함","5 hojas · con formato"); $("rptCapClose").textContent=L2("대시보드로 돌아가기 (ESC)","Volver al tablero (ESC)");
   await rptBuild();
 }
 function closeReport(){ $("rptModal").classList.remove("open"); document.body.style.overflow=""; }
 document.addEventListener("keydown",e=>{ if(e.key==="Escape"&&$("rptModal").classList.contains("open")) closeReport(); });
-let rptText="", rptData=null, rptCur=null;
+let rptText="", rptData=null, rptCur=null, rptYm=null, rptEnd=null, rptTM=null;
+/* 선택 기간 끝(rptEnd)까지의 일별 집계 */
+function rptMap(p){ const m=rateDayMap(p); if(!rptEnd) return m; const o={}; for(const d in m) if(d<=rptEnd) o[d]=m[d]; return o; }
 async function rptBuild(){
   const box=$("rptBody"); box.innerHTML=`<div class="rt-status">${L2("데이터를 모아 분석하는 중…","Analizando datos…")}</div>`;
   const btn=$("rptReload"); btn.disabled=true;
@@ -4140,7 +4168,10 @@ async function rptBuild(){
     const [rr,tr]=await Promise.all([rateFetchAll(),turnFetchAll(),rateEvLoad(),empFetchAll(),rptSignature().then(s=>rptSig=s)]);
     rateRows=rr; rateLoaded=true; turnRows=tr; turnLoaded=true;
     /* 팀별(당월) — 공장별 RPC */
-    const allD=[...new Set(rateRows.map(r=>r.d))].sort(); const lastD=allD[allD.length-1]||todayDate(); const curYm=lastD.slice(0,7);
+    const allD=[...new Set(rateRows.map(r=>r.d))].sort(); const months=[...new Set(allD.map(d=>d.slice(0,7)))].sort();
+    if(!rptYm||!months.includes(rptYm)) rptYm=months[months.length-1]||todayDate().slice(0,7);
+    $("rptMonth").innerHTML=months.slice().reverse().map(m=>`<option value="${m}"${m===rptYm?" selected":""}>${rateYmLabel(m)}</option>`).join("");
+    const inM=allD.filter(d=>d.slice(0,7)===rptYm); const lastD=inM[inM.length-1]||allD[allD.length-1]||todayDate(); const curYm=rptYm; rptEnd=lastD;
     const teamOf=async(rpc)=>{ try{ const r=await fetch(REST("rpc/"+rpc),{method:"POST",headers:Object.assign({},HEADERS,{"Content-Type":"application/json"}),body:JSON.stringify({p_from:curYm+"-01",p_to:lastD,p_factory:null})}); if(!r.ok) return [];
         const by={}, dd=new Set(); for(const x of await r.json()){ const dx=String(x.d).slice(0,10), w=rateWd(dx); if(w===0||w===6) continue; dd.add(dx); const g=(by[x.team]=by[x.team]||{h:0,p:0}); g.h+=+x.headcount||0; g.p+=+x.attended||0; }
         const nd=Math.max(1,dd.size); /* 평균 재직 10명 미만 소규모 팀은 제외(1~2명 결근으로 왜곡) */
@@ -4154,12 +4185,12 @@ async function rptBuild(){
 
 /* ---------- 분석 리포트 Excel (ExcelJS · 5시트 · 고급 서식) ---------- */
 function rptKpi(p,ym,tY){
-  const m=rateDayMap(p); const days=Object.keys(m).sort(); const [yy,mm]=ym.split("-").map(Number); const pym=mm===1?`${yy-1}-12`:`${yy}-${String(mm-1).padStart(2,"0")}`;
+  const m=rptMap(p); const days=Object.keys(m).sort(); const [yy,mm]=ym.split("-").map(Number); const pym=mm===1?`${yy-1}-12`:`${yy}-${String(mm-1).padStart(2,"0")}`;
   const last=days[days.length-1]; const a=rateAgg(m,d=>rateYm(d)===ym), b=rateAgg(m,d=>rateYm(d)===pym); const w=rateWeekday(m,null);
   let r5=null,p5=null; if(days.length>=10){ r5=rateAgg(m,d=>days.slice(-5).includes(d)).att; p5=rateAgg(m,d=>days.slice(-10,-5).includes(d)).att; }
   const K={lastD:last||null,lastAtt:last?m[last].p/m[last].h:null,lastPres:last?m[last].p:null,lastHold:last?m[last].h:null,curAtt:a.att,curDays:a.days,prevAtt:b.days?b.att:null,
     mon:w.mon.rate,week:w.week.rate,monDiff:w.diff,monExcess:w.excess,r5,p5};
-  if(tY){ const M=turnMonthly(p,tY); if(M.months.length){ const lm=M.months[M.months.length-1]; const h=turnHold(p,tY,lm); K.tMonth=lm; K.tCnt=M.tot[lm-1]; K.tRate=h?M.tot[lm-1]/h.v:null; K.tSum=M.sum;
+  if(tY){ const M=turnMonthly(p,tY); const Mu=M.months.filter(x=>!rptTM||x<=rptTM); if(Mu.length){ const lm=Mu[Mu.length-1]; const h=turnHold(p,tY,lm); K.tMonth=lm; K.tCnt=M.tot[lm-1]; K.tRate=h?M.tot[lm-1]/h.v:null; K.tSum=M.sum;
       const rs=M.months.map(mo=>{ const hh=turnHold(p,tY,mo); return hh?M.tot[mo-1]/hh.v:null; }).filter(v=>v!=null); K.tAvg=rs.length?rs.reduce((x,y)=>x+y,0)/rs.length:null; }
     const Tn=turnMatrix(p,tY,"tenure"); let e=0,al=0; Tn.keys.forEach(k=>{ al+=Tn.keyTot[k]; if((TURN_I18N.ko.tenureEarly).includes(k)) e+=Tn.keyTot[k]; }); K.early=al?e/al:null;
     const R=turnMatrix(p,tY,"reason"); const top=R.keys.filter(k=>R.keyTot[k]>0).sort((x,y)=>R.keyTot[y]-R.keyTot[x])[0]; K.topReason=top?`${turnKey(top)} (${R.keyTot[top]})`:null;
@@ -4343,8 +4374,11 @@ function rptCompose(ctx){
   const allD=[...new Set(rateRows.map(r=>r.d))].sort(); const s=ctx.prevSeen;
   const newDays=s&&s.rateD?allD.filter(d=>d>s.rateD):[];
   const head=[];
+  head.push(`<span class="rp-chip">${L2("조회 기간","Periodo")} <b>${rateYmLabel(ctx.curYm)}</b></span>`);
   head.push(`<span class="rp-chip">${L2("출근율 기준일","Asistencia al")} <b>${ctx.lastD}</b> (${T.wd[rateWd(ctx.lastD)]})</span>`);
-  const ty=turnYears(); const tY=ty[ty.length-1]; const ent=tY?[...new Set([...turnMonthsEntered("1공장",tY),...turnMonthsEntered("2공장",tY)])].sort((a,b)=>a-b):[]; const tM=ent[ent.length-1];
+  const ty=turnYears(); const sy=+ctx.curYm.slice(0,4), sm=+ctx.curYm.slice(5,7); const tY=ty.includes(sy)?sy:ty[ty.length-1];
+  const ent=tY?[...new Set([...turnMonthsEntered("1공장",tY),...turnMonthsEntered("2공장",tY)])].sort((a,b)=>a-b):[];
+  const entU=tY===sy?ent.filter(x=>x<=sm):ent; const tM=entU[entU.length-1]||ent[0]; rptTM=tM||null;
   rptData.meta.tY=tY||null; rptData.meta.turnTo=tY&&tM?`${tY}.${String(tM).padStart(2,"0")}`:"";
   if(tY&&tM) head.push(`<span class="rp-chip">${L2("퇴사 데이터","Bajas")} <b>${tY}.${String(tM).padStart(2,"0")}</b> ${L2("까지","")}</span>`);
   if(s){ head.push(newDays.length?`<span class="rp-chip new">NEW · ${L2("출근율","asistencia")} +${newDays.length}${L2("일","d")} (${newDays[0].slice(5)}${newDays.length>1?"~"+newDays[newDays.length-1].slice(5):""})</span>`:"");
@@ -4358,7 +4392,7 @@ function rptCompose(ctx){
   const ym=ctx.curYm; const [yy,mm]=ym.split("-").map(Number); const pym=mm===1?`${yy-1}-12`:`${yy}-${String(mm-1).padStart(2,"0")}`;
   const evm=rateEventMap([yy,yy-1]); const warn=[]; const sec=[];
   txt.push(""); txt.push(L2("■ 출근율","■ Asistencia"));
-  for(const p of PL){ const m=rateDayMap(p); const days=Object.keys(m).sort(); if(!days.length) continue;
+  for(const p of PL){ const m=rptMap(p); const days=Object.keys(m).sort(); if(!days.length) continue;
     const last=days[days.length-1], lr=m[last].p/m[last].h;
     const a=rateAgg(m,d=>rateYm(d)===ym), b=rateAgg(m,d=>rateYm(d)===pym);
     const li=[]; txt.push(`[${PN(p)}]`); rptCur=(rptData.att[p]=[]);
@@ -4382,7 +4416,7 @@ function rptCompose(ctx){
     const tm=ctx.tm[p]||[]; if(tm.length){ const lo3=tm.slice(0,3); li.push(it(lo3[0].att<.88?"bad":"warn",L2(`당월 출근율 낮은 팀: ${lo3.map(t=>`<b>${escapeHtml(t.team.replace(/\(.*\)$/,""))}</b> ${P(t.att)}`).join(" · ")}`,`Equipos más bajos del mes: ${lo3.map(t=>`<b>${escapeHtml(t.team.replace(/^.*\(|\)$/g,""))}</b> ${P(t.att)}`).join(" · ")}`)));
       if(lo3[0].att<.88) warn.push(L2(`${PN(p)} ${lo3[0].team.replace(/\(.*\)$/,"")}: 당월 출근율 ${P(lo3[0].att)}`,`${PN(p)} ${lo3[0].team}: asistencia del mes ${P(lo3[0].att)}`)); }
     /* 주말 */
-    const wk=rateWkRows.filter(r=>r.plant===p).sort((x,y)=>x.d<y.d?-1:1); const lw=wk[wk.length-1];
+    const wk=rateWkRows.filter(r=>r.plant===p&&r.d<=ctx.lastD).sort((x,y)=>x.d<y.d?-1:1); const lw=wk[wk.length-1];
     if(lw&&lw.present>0&&empDays(lw.d,ctx.lastD)<=7) li.push(it("info",L2(`주말 출근 ${lw.d.slice(5).replace("-","/")}(${T.wd[rateWd(lw.d)]}) <b>${lw.present}명</b> (출근율 미반영)`,`Fin de semana ${lw.d.slice(5).replace("-","/")} (${T.wd[rateWd(lw.d)]}): <b>${lw.present}</b> asistentes (no cuenta)`)));
     sec.push(`<div class="rp-pl" style="--rp-c:${PC(p)}"><div class="rp-pt">${PN(p)}</div><ul>${li.join("")}</ul></div>`);
   }
@@ -4397,7 +4431,7 @@ function rptCompose(ctx){
   const tsec=[]; txt.push(""); txt.push(L2("■ 퇴사율","■ Rotación"));
   if(tY){
     for(const p of PL){ const M=turnMonthly(p,tY); const li=[]; txt.push(`[${PN(p)}]`); rptCur=(rptData.turn[p]=[]);
-      if(M.months.length){ const lm=M.months[M.months.length-1], i=lm-1; const h=turnHold(p,tY,lm); const r=h?M.tot[i]/h.v:null; const prev=M.months.includes(lm-1)?M.tot[i-1]:null;
+      const Mu=M.months.filter(x=>!rptTM||x<=rptTM); if(Mu.length){ const lm=Mu[Mu.length-1], i=lm-1; const h=turnHold(p,tY,lm); const r=h?M.tot[i]/h.v:null; const prev=M.months.includes(lm-1)?M.tot[i-1]:null;
         li.push(it(r==null?"info":r>.08?"bad":r>.05?"warn":"good",L2(`${lm}월 퇴사 <b>${M.tot[i]}명</b>`+(r!=null?` · 퇴사율 <b>${P(r)}</b>`:"")+(prev!=null?` · 전월 ${prev}명 대비 <b>${M.tot[i]-prev>0?"+":""}${M.tot[i]-prev}</b>`:""),
           `${TT.mo[i]}: <b>${M.tot[i]}</b> bajas`+(r!=null?` · rotación <b>${P(r)}</b>`:"")+(prev!=null?` · vs. mes anterior ${prev}: <b>${M.tot[i]-prev>0?"+":""}${M.tot[i]-prev}</b>`:""))));
         const rates=M.months.map(mo=>{ const hh=turnHold(p,tY,mo); return hh?M.tot[mo-1]/hh.v:null; }).filter(v=>v!=null); const avg=rates.length?rates.reduce((a,b)=>a+b,0)/rates.length:null;
