@@ -593,11 +593,11 @@
 <div class="grid-wrapper">
   <!-- PLANT 헤더 행 -->
   <div class="plant-col">
-    <div class="plant-header"><span class="plant-dot"></span><span class="plant-label">PLANT 1<span class="plant-label-sub">(몽클로바)</span></span><button class="fs-btn" type="button" onclick="event.stopPropagation();fsOpen(1)" title="가공+조립 현장재고 조회·엑셀 다운로드">📥 현장재고 받기 <small>(자재무역 전용)</small></button></div>
+    <div class="plant-header"><span class="plant-dot"></span><span class="plant-label">PLANT 1<span class="plant-label-sub">(몽클로바)</span></span></div>
   </div>
   <div class="divider-v"></div>
   <div class="plant-col">
-    <div class="plant-header"><span class="plant-dot"></span><span class="plant-label">PLANT 2<span class="plant-label-sub">(라하트)</span></span><button class="fs-btn" type="button" onclick="event.stopPropagation();fsOpen(2)" title="가공+조립 현장재고 조회·엑셀 다운로드">📥 현장재고 받기 <small>(자재무역 전용)</small></button></div>
+    <div class="plant-header"><span class="plant-dot"></span><span class="plant-label">PLANT 2<span class="plant-label-sub">(라하트)</span></span></div>
   </div>
 </div>
 </div><!-- /top-fixed -->
@@ -855,33 +855,31 @@
   <div class="mobile-plant-hdr hdr-p2"><span class="mp-dot mp-dot2"></span>PLANT 2 · 라하트</div>
 
   <div class="card-cell p1">
-    <div class="card qual card-soon">
-      <span class="mg-state">준비중</span>
+    <a class="card qual" href="prod_plan.html?plant=1" target="_blank" rel="noopener">
       <span class="card-icon">🎯</span>
       <div class="card-module-no">PROD 01 · PLAN</div>
       <div class="card-title-row">
         <div class="card-title">생산계획 대비 실적</div>
       </div>
       <div class="card-title-en">Plan vs Actual</div>
-      <div class="card-desc"><span>일·주·월 달성률</span><span class="mg-sep"> · </span><span>차종별 실적</span></div>
+      <div class="card-desc">생산·매출계획 — 사업계획수량·품번별 단가·회로수로 월별 매출·절단본수·BOX 산출, 엑셀 붙여넣기 입력·다운로드</div>
       <span class="badge badge-qual">생산지표</span>
       <span class="card-arrow">›</span>
-    </div>
+    </a>
   </div>
   <div class="divider-cell"></div>
   <div class="card-cell p2">
-    <div class="card qual card-soon">
-      <span class="mg-state">준비중</span>
+    <a class="card qual" href="prod_plan.html?plant=2" target="_blank" rel="noopener">
       <span class="card-icon">🎯</span>
       <div class="card-module-no">PROD 01 · PLAN</div>
       <div class="card-title-row">
         <div class="card-title">생산계획 대비 실적</div>
       </div>
       <div class="card-title-en">Plan vs Actual</div>
-      <div class="card-desc"><span>일·주·월 달성률</span><span class="mg-sep"> · </span><span>차종별 실적</span></div>
+      <div class="card-desc">생산·매출계획 — 사업계획수량·품번별 단가·회로수로 월별 매출·절단본수·BOX 산출, 엑셀 붙여넣기 입력·다운로드</div>
       <span class="badge badge-qual">생산지표</span>
       <span class="card-arrow">›</span>
-    </div>
+    </a>
   </div>
 
   <div class="card-cell p1">
@@ -1533,8 +1531,8 @@
 
 <!-- ═══ 탭: 자재관리 ═══ -->
 <div class="row-grid tab-panel" data-cat="matl">
-  <div class="mobile-plant-hdr hdr-p1"><span class="mp-dot mp-dot1"></span>PLANT 1 · 몽클로바<span style="margin-left:auto"></span><button class="fs-btn" style="margin-left:0" type="button" onclick="event.stopPropagation();fsOpen(1)" title="가공+조립 현장재고 조회·엑셀 다운로드">📥 현장재고 받기 <small>(자재무역 전용)</small></button></div>
-  <div class="mobile-plant-hdr hdr-p2"><span class="mp-dot mp-dot2"></span>PLANT 2 · 라하트<span style="margin-left:auto"></span><button class="fs-btn" style="margin-left:0" type="button" onclick="event.stopPropagation();fsOpen(2)" title="가공+조립 현장재고 조회·엑셀 다운로드">📥 현장재고 받기 <small>(자재무역 전용)</small></button></div>
+  <div class="mobile-plant-hdr hdr-p1"><span class="mp-dot mp-dot1"></span>PLANT 1 · 몽클로바</div>
+  <div class="mobile-plant-hdr hdr-p2"><span class="mp-dot mp-dot2"></span>PLANT 2 · 라하트</div>
 
   <div class="card-cell p1">
     <a class="card inv" href="material_trade.html" target="_blank" rel="noopener">
@@ -1943,6 +1941,7 @@ const I18N_ES = {
   'TML · WIRE 입고 지정호기 관리':'TML · WIRE: Máquina asignada de entrada',
   '입고 자재 바코드 스캔·위치 체크, 지정호기 실시간 업데이트, 마스터 현황 조회, 배치 호기 추천':'Escaneo de material recibido, verificación de ubicación, actualización en tiempo real, consulta maestra y recomendación de máquina',
   '입고·로케이션':'Entrada · Ubicación',
+  '생산·매출계획 — 사업계획수량·품번별 단가·회로수로 월별 매출·절단본수·BOX 산출, 엑셀 붙여넣기 입력·다운로드':'Plan de producción y ventas — cantidad del plan de negocio, precio y circuitos por número de parte → ventas, cortes y cajas mensuales; captura pegando desde Excel y descarga',
   '가공·조립 현장재고를 한 번에 조회 — 가공자재·조립자재 분류 / 통합 시트로 엑셀 다운로드':'Consulta en un solo paso el stock en piso de corte y ensamble — descarga Excel por tipo o unificado',
   '작업필요자재(제외 LOT 설정) 대비 실사·현장입고·사용량·창고보유자재로 현재고와 부족예상 산출, 엑셀 붙여넣기 입력':'Calcula inventario actual y faltantes vs. material requerido (con LOT excluidos) usando conteo físico, entradas, consumo y almacén; captura pegando desde Excel',
   '자재·재고':'Material · Inventario',
