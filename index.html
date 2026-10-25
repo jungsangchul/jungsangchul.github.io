@@ -253,6 +253,52 @@
   .cat-tab.active{color:var(--accent-gold);background:rgba(201,168,76,0.12);border-color:rgba(201,168,76,0.35);box-shadow:0 0 0 1px rgba(201,168,76,0.08),0 4px 14px rgba(201,168,76,0.08);}
   .row-grid.tab-panel{display:none;}
   .row-grid.tab-panel.active{display:grid;}
+  /* ── 비밀번호 변경 모달 / 사용자 상태 ── */
+  .pw-field{margin-bottom:10px;} .pw-field label{display:block;font-size:12px;color:var(--text-muted);margin-bottom:4px;}
+  .pw-field input{width:100%;box-sizing:border-box;height:42px;background:#0d0d0d;border:1px solid var(--border);border-radius:8px;color:var(--text-primary);font-size:15px;padding:0 12px;outline:none;}
+  .pw-field input:focus{border-color:var(--accent-gold);box-shadow:0 0 0 3px rgba(201,168,76,.15);}
+  .pw-rules{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12px;color:var(--text-muted);margin:2px 0 4px;}
+  .pw-rules .ok{color:#6fd39a;}
+  .pw-flag{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:3px;white-space:nowrap;}
+  .pw-ok{color:#6fd39a;background:rgba(76,175,125,.12);} .pw-must{color:#e8c25a;background:rgba(201,168,76,.14);} .pw-lock{color:#ff7a7a;background:rgba(224,92,92,.14);}
+  .btn-reset{background:none;border:1px solid rgba(201,168,76,.35);border-radius:4px;color:var(--accent-gold);font-size:11px;padding:3px 8px;cursor:pointer;}
+  .btn-reset:hover{background:rgba(201,168,76,.12);}
+  .btn-pw{color:var(--text-secondary);}
+  @media(max-width:760px){ .btn-pw{display:none;} }
+  /* ── 경영현황 인증 모달 ── */
+  .mgmt-auth{position:fixed;inset:0;z-index:9999;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.72);backdrop-filter:blur(4px);padding:16px;}
+  .mgmt-auth.open{display:flex;}
+  .mgmt-box{width:100%;max-width:360px;background:linear-gradient(180deg,#181818,#121212);border:1px solid rgba(201,168,76,.35);border-radius:12px;padding:24px 22px 20px;box-shadow:0 20px 60px rgba(0,0,0,.6);}
+  .mgmt-box.shake{animation:mgmtShake .35s;}
+  @keyframes mgmtShake{20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
+  .mgmt-cap{font-family:'Space Mono',Consolas,monospace;font-size:12px;letter-spacing:.2em;color:var(--accent-gold);margin-bottom:6px;}
+  .mgmt-title{font-size:18px;font-weight:700;color:var(--text-primary);margin-bottom:6px;}
+  .mgmt-desc{font-size:13px;color:var(--text-secondary);margin-bottom:14px;line-height:1.5;}
+  #mgmt-code{width:100%;box-sizing:border-box;height:44px;background:#0d0d0d;border:1px solid var(--border);border-radius:8px;color:var(--text-primary);font-size:16px;padding:0 14px;letter-spacing:.15em;outline:none;}
+  #mgmt-code:focus{border-color:var(--accent-gold);box-shadow:0 0 0 3px rgba(201,168,76,.15);}
+  .mgmt-err{min-height:18px;font-size:12px;color:#ff7a7a;margin:6px 2px 8px;}
+  .mgmt-btns{display:flex;gap:8px;}
+  .mgmt-btns button{flex:1;height:42px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;}
+  .mgmt-cancel{background:none;border:1px solid var(--border);color:var(--text-secondary);}
+  .mgmt-cancel:hover{color:var(--text-primary);border-color:#555;}
+  .mgmt-ok{background:var(--accent-gold);border:1px solid var(--accent-gold);color:#111;}
+  .mgmt-ok:hover{filter:brightness(1.08);}
+  /* ── 경영현황·생산관리 카드 그리드 (공장당 2열, 모든 카드 동일 규격) ── */
+  .mg-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:1fr;gap:10px;}
+  .mg-card{position:relative;display:flex;flex-direction:column;box-sizing:border-box;height:100%;min-height:128px;min-width:0;background:linear-gradient(180deg,#181818,#141414);border:1px solid var(--border);border-radius:8px;padding:12px 15px 12px;color:inherit;text-decoration:none;overflow:hidden;transition:border-color .2s,background .2s,transform .15s;}
+  .mg-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;opacity:.55;}
+  .mg-gold::before{background:var(--accent-gold);} .mg-blue::before{background:#4a9ec9;} .mg-green::before{background:#4caf7d;} .mg-purple::before{background:#a98af0;}
+  .mg-card:hover{background:#1b1b1b;border-color:rgba(201,168,76,.35);}
+  .mg-live{cursor:pointer;} .mg-live:hover{transform:translateY(-1px);box-shadow:0 8px 20px rgba(0,0,0,.35);}
+  .mg-card .card-title{margin-bottom:2px;padding-right:56px;}
+  .mg-card .card-module-no,.mg-card .card-title-en{font-size:12px;letter-spacing:.12em;}
+  .mg-card .card-module-no{font-size:10px;} .mg-card .card-title-en{font-size:10px;margin-bottom:8px;}
+  .mg-state{position:absolute;top:10px;right:10px;font-size:12px;font-weight:700;color:var(--accent-gold);background:rgba(201,168,76,.12);border:1px solid rgba(201,168,76,.35);border-radius:4px;padding:1px 8px;line-height:1.5;}
+  .mg-state.mg-on{color:#6fd39a;background:rgba(76,175,125,.12);border-color:rgba(76,175,125,.4);}
+  .mg-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:auto;}
+  .mg-chip{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--text-secondary);background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:999px;padding:2px 10px;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis;}
+  .mg-chip::before{content:'';width:4px;height:4px;border-radius:50%;background:var(--accent-gold);flex-shrink:0;}
+  @media(max-width:520px){.mg-grid{grid-template-columns:minmax(0,1fr);grid-auto-rows:auto;}.mg-card{min-height:0;}}
   .plant-label-sub{font-family:'Noto Sans KR','Malgun Gothic','Apple SD Gothic Neo',sans-serif;font-size:13px;font-weight:500;color:#d9d0b4;margin-left:4px;}
 
   /* ── 설비관리 (가공보전팀) 카드 ── */
@@ -442,7 +488,7 @@
         <div class="add-user-form-title">신규 사용자 등록 / Agregar Usuario</div>
         <div class="add-user-row">
           <div class="auf"><label>아이디</label><input type="text"     id="nu-id"   placeholder="아이디"/></div>
-          <div class="auf"><label>비밀번호</label><input type="password" id="nu-pw"   placeholder="비밀번호"/></div>
+          <div class="auf"><label>비밀번호</label><input type="password" id="nu-pw"   placeholder="8자 이상, 영문+숫자" autocomplete="new-password"/></div>
           <div class="auf"><label>이름</label><input type="text"     id="nu-name" placeholder="이름"/></div>
           <div class="auf"><label>권한</label>
             <select id="nu-role"><option value="user">일반</option><option value="admin">관리자</option></select>
@@ -458,7 +504,7 @@
           <div class="uth-badge" id="user-count">로딩 중...</div>
         </div>
         <table class="users">
-          <thead><tr><th>아이디</th><th>이름</th><th>권한</th><th>등록일</th><th></th></tr></thead>
+          <thead><tr><th>아이디</th><th>이름</th><th>권한</th><th>등록일</th><th>비밀번호</th><th></th></tr></thead>
           <tbody id="user-tbody"></tbody>
         </table>
       </div>
@@ -522,6 +568,7 @@
     </div>
     <button class="btn-admin" id="btn-admin" onclick="openAdmin()" style="display:none;">⚙ 회원관리</button>
     <button class="btn-lang" onclick="toggleLang()">🌐 Español</button>
+    <button class="btn-logout btn-pw" onclick="openPwChange(false)" title="비밀번호 변경">🔑 비밀번호</button>
     <button class="btn-logout" onclick="doLogout()">로그아웃</button>
     <div class="header-right-text"><span id="clock" style="font-size:20px;font-weight:700;letter-spacing:0.08em;color:var(--text-primary);">--:--:--</span><br><span id="date-display-hdr" style="font-size:11px;"></span></div>
   </div>
@@ -534,6 +581,8 @@
 
 <!-- ═══════════ 카테고리 탭 ═══════════ -->
 <div class="cat-tabs" id="cat-tabs">
+  <button class="cat-tab" data-cat="mgmt"    onclick="switchTab('mgmt')"><svg class="tab-ico" viewBox="0 0 24 24"><path d="M3 20h18"/><path d="M4 16l5-5 4 3 7-7"/><path d="M16 7h4v4"/></svg>경영현황</button>
+  <button class="cat-tab" data-cat="prod"    onclick="switchTab('prod')"><svg class="tab-ico" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 15v-3M11 15V9M15 15v-5"/></svg>생산관리</button>
   <button class="cat-tab" data-cat="checkin" onclick="switchTab('checkin')"><svg class="tab-ico" viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V2.5h6V4"/><path d="M9 13l2 2 4-4"/></svg>출근율 현황</button>
   <button class="cat-tab" data-cat="attend"  onclick="switchTab('attend')"><svg class="tab-ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>근태관리</button>
   <button class="cat-tab" data-cat="qual"    onclick="switchTab('qual')"><svg class="tab-ico" viewBox="0 0 24 24"><circle cx="12" cy="9" r="5.5"/><path d="M8.5 13.5L7 21l5-2.5L17 21l-1.5-7.5"/></svg>자격인증관리</button>
@@ -554,6 +603,292 @@
   <div class="divider-v"></div>
   <div class="plant-col">
     <div class="plant-header"><span class="plant-dot"></span><span class="plant-label">PLANT 2<span class="plant-label-sub">(라하트)</span></span><button class="fs-btn" type="button" onclick="event.stopPropagation();fsOpen(2)" title="가공+조립 현장재고 조회·엑셀 다운로드">📥 현장재고 받기 <small>(자재무역 전용)</small></button></div>
+  </div>
+</div>
+
+<!-- ═══ 탭: 경영현황 ═══ -->
+<div class="row-grid tab-panel" data-cat="mgmt">
+  <div class="mobile-plant-hdr hdr-p1"><span class="mp-dot mp-dot1"></span>PLANT 1 · 몽클로바</div>
+  <div class="mobile-plant-hdr hdr-p2"><span class="mp-dot mp-dot2"></span>PLANT 2 · 라하트</div>
+  <div class="card-cell p1">
+    <div class="mg-grid">
+      <div class="mg-card mg-gold">
+        <span class="mg-state">준비중</span>
+        <span class="card-icon">💰</span>
+        <div class="card-module-no">MGMT 01 · SALES</div>
+        <div class="card-title">매출현황</div>
+        <div class="card-title-en">Sales by Model</div>
+        <div class="mg-chips"><span class="mg-chip">차종별 매출현황</span><span class="mg-chip">계획대비 실적</span></div>
+      </div>
+      <div class="mg-card mg-gold">
+        <span class="mg-state">준비중</span>
+        <span class="card-icon">📊</span>
+        <div class="card-module-no">MGMT 02 · COST</div>
+        <div class="card-title">원가율 현황</div>
+        <div class="card-title-en">Cost Ratio</div>
+        <div class="mg-chips"><span class="mg-chip">재료비 비중</span><span class="mg-chip">인건비 비중</span></div>
+      </div>
+      <div class="mg-card mg-blue">
+        <span class="mg-state">준비중</span>
+        <span class="card-icon">✈️</span>
+        <div class="card-module-no">MGMT 03 · FREIGHT</div>
+        <div class="card-title">프리미엄 운임</div>
+        <div class="card-title-en">Premium Freight</div>
+        <div class="mg-chips"><span class="mg-chip">특송·항공비</span><span class="mg-chip">발생 사유</span></div>
+      </div>
+      <div class="mg-card mg-blue">
+        <span class="mg-state">준비중</span>
+        <span class="card-icon">⚙️</span>
+        <div class="card-module-no">MGMT 04 · PRODUCTIVITY</div>
+        <div class="card-title">생산·효율</div>
+        <div class="card-title-en">Production · Efficiency</div>
+        <div class="mg-chips"><span class="mg-chip">가공·조립 생산성</span><span class="mg-chip">재공(WIP) 현황</span></div>
+      </div>
+      <div class="mg-card mg-green">
+        <span class="mg-state">준비중</span>
+        <span class="card-icon">🚚</span>
+        <div class="card-module-no">MGMT 05 · DELIVERY</div>
+        <div class="card-title">납기·출하</div>
+        <div class="card-title-en">Delivery · Shipping</div>
+        <div class="mg-chips"><span class="mg-chip">납기준수율</span><span class="mg-chip">결품리스크 자재 경고</span></div>
+      </div>
+      <div class="mg-card mg-green">
+        <span class="mg-state">준비중</span>
+        <span class="card-icon">📦</span>
+        <div class="card-module-no">MGMT 06 · INVENTORY</div>
+        <div class="card-title">재고</div>
+        <div class="card-title-en">Inventory</div>
+        <div class="mg-chips"><span class="mg-chip">원자재·재공·완제품 재고</span><span class="mg-chip">장기·불용재고</span></div>
+      </div>
+      <div class="mg-card mg-purple">
+        <span class="mg-state">준비중</span>
+        <span class="card-icon">👥</span>
+        <div class="card-module-no">MGMT 07 · WORKFORCE</div>
+        <div class="card-title">인원·노무</div>
+        <div class="card-title-en">Workforce · Labor</div>
+        <div class="mg-chips"><span class="mg-chip">계획대비 인원</span><span class="mg-chip">이직률·결근율</span><span class="mg-chip">잔업·특근</span><span class="mg-chip">자격인증 현황</span></div>
+      </div>
+      <div class="mg-card mg-purple">
+        <span class="mg-state">준비중</span>
+        <span class="card-icon">🛡️</span>
+        <div class="card-module-no">MGMT 08 · QUALITY</div>
+        <div class="card-title">품질</div>
+        <div class="card-title-en">Quality</div>
+        <div class="mg-chips"><span class="mg-chip">공정불량 PPM</span><span class="mg-chip">고객 클레임</span><span class="mg-chip">폐기·재작업 비용</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="divider-cell"></div>
+  <div class="card-cell p2">
+    <div class="mg-grid">
+      <div class="mg-card mg-gold">
+        <span class="mg-state">준비중</span>
+        <span class="card-icon">💰</span>
+        <div class="card-module-no">MGMT 01 · SALES</div>
+        <div class="card-title">매출현황</div>
+        <div class="card-title-en">Sales by Model</div>
+        <div class="mg-chips"><span class="mg-chip">차종별 매출현황</span><span class="mg-chip">계획대비 실적</span></div>
+      </div>
+      <div class="mg-card mg-gold">
+        <span class="mg-state">준비중</span>
+        <span class="card-icon">📊</span>
+        <div class="card-module-no">MGMT 02 · COST</div>
+        <div class="card-title">원가율 현황</div>
+        <div class="card-title-en">Cost Ratio</div>
+        <div class="mg-chips"><span class="mg-chip">재료비 비중</span><span class="mg-chip">인건비 비중</span></div>
+      </div>
+      <div class="mg-card mg-blue">
+        <span class="mg-state">준비중</span>
+        <span class="card-icon">✈️</span>
+        <div class="card-module-no">MGMT 03 · FREIGHT</div>
+        <div class="card-title">프리미엄 운임</div>
+        <div class="card-title-en">Premium Freight</div>
+        <div class="mg-chips"><span class="mg-chip">특송·항공비</span><span class="mg-chip">발생 사유</span></div>
+      </div>
+      <div class="mg-card mg-blue">
+        <span class="mg-state">준비중</span>
+        <span class="card-icon">⚙️</span>
+        <div class="card-module-no">MGMT 04 · PRODUCTIVITY</div>
+        <div class="card-title">생산·효율</div>
+        <div class="card-title-en">Production · Efficiency</div>
+        <div class="mg-chips"><span class="mg-chip">가공·조립 생산성</span><span class="mg-chip">재공(WIP) 현황</span></div>
+      </div>
+      <div class="mg-card mg-green">
+        <span class="mg-state">준비중</span>
+        <span class="card-icon">🚚</span>
+        <div class="card-module-no">MGMT 05 · DELIVERY</div>
+        <div class="card-title">납기·출하</div>
+        <div class="card-title-en">Delivery · Shipping</div>
+        <div class="mg-chips"><span class="mg-chip">납기준수율</span><span class="mg-chip">결품리스크 자재 경고</span></div>
+      </div>
+      <div class="mg-card mg-green">
+        <span class="mg-state">준비중</span>
+        <span class="card-icon">📦</span>
+        <div class="card-module-no">MGMT 06 · INVENTORY</div>
+        <div class="card-title">재고</div>
+        <div class="card-title-en">Inventory</div>
+        <div class="mg-chips"><span class="mg-chip">원자재·재공·완제품 재고</span><span class="mg-chip">장기·불용재고</span></div>
+      </div>
+      <div class="mg-card mg-purple">
+        <span class="mg-state">준비중</span>
+        <span class="card-icon">👥</span>
+        <div class="card-module-no">MGMT 07 · WORKFORCE</div>
+        <div class="card-title">인원·노무</div>
+        <div class="card-title-en">Workforce · Labor</div>
+        <div class="mg-chips"><span class="mg-chip">계획대비 인원</span><span class="mg-chip">이직률·결근율</span><span class="mg-chip">잔업·특근</span><span class="mg-chip">자격인증 현황</span></div>
+      </div>
+      <div class="mg-card mg-purple">
+        <span class="mg-state">준비중</span>
+        <span class="card-icon">🛡️</span>
+        <div class="card-module-no">MGMT 08 · QUALITY</div>
+        <div class="card-title">품질</div>
+        <div class="card-title-en">Quality</div>
+        <div class="mg-chips"><span class="mg-chip">공정불량 PPM</span><span class="mg-chip">고객 클레임</span><span class="mg-chip">폐기·재작업 비용</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ 탭: 생산관리 ═══ -->
+<div class="row-grid tab-panel" data-cat="prod">
+  <div class="mobile-plant-hdr hdr-p1"><span class="mp-dot mp-dot1"></span>PLANT 1 · 몽클로바</div>
+  <div class="mobile-plant-hdr hdr-p2"><span class="mp-dot mp-dot2"></span>PLANT 2 · 라하트</div>
+  <div class="card-cell p1">
+    <div class="mg-grid">
+      <div class="mg-card mg-gold">
+        <span class="mg-state">준비중</span>
+        <span class="card-icon">🎯</span>
+        <div class="card-module-no">PROD 01 · PLAN</div>
+        <div class="card-title">생산계획 대비 실적</div>
+        <div class="card-title-en">Plan vs Actual</div>
+        <div class="mg-chips"><span class="mg-chip">일·주·월 달성률</span><span class="mg-chip">차종별 실적</span></div>
+      </div>
+      <div class="mg-card mg-gold">
+        <span class="mg-state">준비중</span>
+        <span class="card-icon">🔀</span>
+        <div class="card-module-no">PROD 02 · FLOW</div>
+        <div class="card-title">공정 흐름 현황</div>
+        <div class="card-title-en">Process Flow</div>
+        <div class="mg-chips"><span class="mg-chip">가공 → SUB → 조립</span><span class="mg-chip">통전검사 → 출하</span></div>
+      </div>
+      <div class="mg-card mg-blue">
+        <span class="mg-state">준비중</span>
+        <span class="card-icon">⏱️</span>
+        <div class="card-module-no">PROD 03 · LINE</div>
+        <div class="card-title">라인 생산성</div>
+        <div class="card-title-en">Line Productivity</div>
+        <div class="mg-chips"><span class="mg-chip">HPU·인당 생산량</span><span class="mg-chip">라인별 UPH</span></div>
+      </div>
+      <div class="mg-card mg-blue">
+        <span class="mg-state">준비중</span>
+        <span class="card-icon">🏭</span>
+        <div class="card-module-no">PROD 04 · EQUIPMENT</div>
+        <div class="card-title">설비 가동률</div>
+        <div class="card-title-en">Equipment OEE</div>
+        <div class="mg-chips"><span class="mg-chip">가공기 OEE</span><span class="mg-chip">비가동 시간·사유</span><span class="mg-chip">MTTR</span></div>
+      </div>
+      <div class="mg-card mg-green">
+        <span class="mg-state">준비중</span>
+        <span class="card-icon">🔍</span>
+        <div class="card-module-no">PROD 05 · DEFECT</div>
+        <div class="card-title">공정 불량</div>
+        <div class="card-title-en">Process Defects</div>
+        <div class="mg-chips"><span class="mg-chip">압착 불량</span><span class="mg-chip">통전 NG</span><span class="mg-chip">공정별 PPM</span></div>
+      </div>
+      <div class="mg-card mg-green">
+        <span class="mg-state">준비중</span>
+        <span class="card-icon">🧮</span>
+        <div class="card-module-no">PROD 06 · MANPOWER</div>
+        <div class="card-title">필요인원 산출</div>
+        <div class="card-title-en">Manpower Planning</div>
+        <div class="mg-chips"><span class="mg-chip">공정별 필요인원</span><span class="mg-chip">현원 대비 과부족</span></div>
+      </div>
+      <a class="mg-card mg-purple mg-live" href="shortage_circuit.html" target="_blank" rel="noopener">
+        <span class="mg-state mg-on">운영중</span>
+        <span class="card-icon">🧵</span>
+        <div class="card-module-no">PROD 07 · SHORTAGE</div>
+        <div class="card-title">부족회로·추가선</div>
+        <div class="card-title-en">Shortage Circuits</div>
+        <div class="mg-chips"><span class="mg-chip">조립 요청</span><span class="mg-chip">가공 처리 현황</span></div>
+      </a>
+      <div class="mg-card mg-purple">
+        <span class="mg-state">준비중</span>
+        <span class="card-icon">📋</span>
+        <div class="card-module-no">PROD 08 · WORK ORDER</div>
+        <div class="card-title">작업지시·LOT 진행</div>
+        <div class="card-title-en">Work Order · LOT</div>
+        <div class="mg-chips"><span class="mg-chip">지시 대비 완료율</span><span class="mg-chip">지연 LOT</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="divider-cell"></div>
+  <div class="card-cell p2">
+    <div class="mg-grid">
+      <div class="mg-card mg-gold">
+        <span class="mg-state">준비중</span>
+        <span class="card-icon">🎯</span>
+        <div class="card-module-no">PROD 01 · PLAN</div>
+        <div class="card-title">생산계획 대비 실적</div>
+        <div class="card-title-en">Plan vs Actual</div>
+        <div class="mg-chips"><span class="mg-chip">일·주·월 달성률</span><span class="mg-chip">차종별 실적</span></div>
+      </div>
+      <div class="mg-card mg-gold">
+        <span class="mg-state">준비중</span>
+        <span class="card-icon">🔀</span>
+        <div class="card-module-no">PROD 02 · FLOW</div>
+        <div class="card-title">공정 흐름 현황</div>
+        <div class="card-title-en">Process Flow</div>
+        <div class="mg-chips"><span class="mg-chip">가공 → SUB → 조립</span><span class="mg-chip">통전검사 → 출하</span></div>
+      </div>
+      <div class="mg-card mg-blue">
+        <span class="mg-state">준비중</span>
+        <span class="card-icon">⏱️</span>
+        <div class="card-module-no">PROD 03 · LINE</div>
+        <div class="card-title">라인 생산성</div>
+        <div class="card-title-en">Line Productivity</div>
+        <div class="mg-chips"><span class="mg-chip">HPU·인당 생산량</span><span class="mg-chip">라인별 UPH</span></div>
+      </div>
+      <div class="mg-card mg-blue">
+        <span class="mg-state">준비중</span>
+        <span class="card-icon">🏭</span>
+        <div class="card-module-no">PROD 04 · EQUIPMENT</div>
+        <div class="card-title">설비 가동률</div>
+        <div class="card-title-en">Equipment OEE</div>
+        <div class="mg-chips"><span class="mg-chip">가공기 OEE</span><span class="mg-chip">비가동 시간·사유</span><span class="mg-chip">MTTR</span></div>
+      </div>
+      <div class="mg-card mg-green">
+        <span class="mg-state">준비중</span>
+        <span class="card-icon">🔍</span>
+        <div class="card-module-no">PROD 05 · DEFECT</div>
+        <div class="card-title">공정 불량</div>
+        <div class="card-title-en">Process Defects</div>
+        <div class="mg-chips"><span class="mg-chip">압착 불량</span><span class="mg-chip">통전 NG</span><span class="mg-chip">공정별 PPM</span></div>
+      </div>
+      <div class="mg-card mg-green">
+        <span class="mg-state">준비중</span>
+        <span class="card-icon">🧮</span>
+        <div class="card-module-no">PROD 06 · MANPOWER</div>
+        <div class="card-title">필요인원 산출</div>
+        <div class="card-title-en">Manpower Planning</div>
+        <div class="mg-chips"><span class="mg-chip">공정별 필요인원</span><span class="mg-chip">현원 대비 과부족</span></div>
+      </div>
+      <a class="mg-card mg-purple mg-live" href="shortage_circuit_2.html" target="_blank" rel="noopener">
+        <span class="mg-state mg-on">운영중</span>
+        <span class="card-icon">🧵</span>
+        <div class="card-module-no">PROD 07 · SHORTAGE</div>
+        <div class="card-title">부족회로·추가선</div>
+        <div class="card-title-en">Shortage Circuits</div>
+        <div class="mg-chips"><span class="mg-chip">조립 요청</span><span class="mg-chip">가공 처리 현황</span></div>
+      </a>
+      <div class="mg-card mg-purple">
+        <span class="mg-state">준비중</span>
+        <span class="card-icon">📋</span>
+        <div class="card-module-no">PROD 08 · WORK ORDER</div>
+        <div class="card-title">작업지시·LOT 진행</div>
+        <div class="card-title-en">Work Order · LOT</div>
+        <div class="mg-chips"><span class="mg-chip">지시 대비 완료율</span><span class="mg-chip">지연 LOT</span></div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1234,6 +1569,92 @@ const I18N_ES = {
   '메뉴를 선택하세요 / Seleccione un módulo':'Seleccione un módulo',
   '접속:':'Usuario:',
   // 탭
+  '경영현황':'Gestión',
+  '생산관리':'Producción',
+  '준비중':'Próximamente',
+  '운영중':'Activo',
+  '매출현황':'Ventas',
+  '원가율 현황':'Relación de costos',
+  '프리미엄 운임':'Flete premium',
+  '생산·효율':'Producción · Eficiencia',
+  '납기·출하':'Entregas · Embarques',
+  '재고':'Inventario',
+  '인원·노무':'Personal · Laboral',
+  '품질':'Calidad',
+  '차종별 매출현황':'Ventas por modelo',
+  '계획대비 실적':'Plan vs real',
+  '재료비 비중':'% Material',
+  '인건비 비중':'% Mano de obra',
+  '특송·항공비':'Flete expreso · aéreo',
+  '발생 사유':'Causas',
+  '가공·조립 생산성':'Productividad corte · ensamble',
+  '재공(WIP) 현황':'WIP',
+  '납기준수율':'OTD',
+  '결품리스크 자재 경고':'Alerta de faltantes',
+  '원자재·재공·완제품 재고':'MP · WIP · PT',
+  '장기·불용재고':'Inventario obsoleto',
+  '계획대비 인원':'Plantilla vs plan',
+  '이직률·결근율':'Rotación · ausentismo',
+  '잔업·특근':'Tiempo extra',
+  '자격인증 현황':'Certificaciones',
+  '공정불량 PPM':'PPM de proceso',
+  '고객 클레임':'Reclamos de cliente',
+  '폐기·재작업 비용':'Costo de scrap · retrabajo',
+  '생산계획 대비 실적':'Plan vs real',
+  '공정 흐름 현황':'Flujo de proceso',
+  '라인 생산성':'Productividad de línea',
+  '설비 가동률':'OEE de equipos',
+  '공정 불량':'Defectos de proceso',
+  '필요인원 산출':'Cálculo de personal',
+  '부족회로·추가선':'Circuitos faltantes',
+  '작업지시·LOT 진행':'Órdenes · LOT',
+  '일·주·월 달성률':'Cumplimiento día·sem·mes',
+  '차종별 실적':'Real por modelo',
+  '가공 → SUB → 조립':'Corte → SUB → Ensamble',
+  '통전검사 → 출하':'Prueba eléctrica → Embarque',
+  'HPU·인당 생산량':'HPU · piezas/persona',
+  '라인별 UPH':'UPH por línea',
+  '가공기 OEE':'OEE de cortadoras',
+  '비가동 시간·사유':'Tiempo muerto · causas',
+  '압착 불량':'Defectos de crimpado',
+  '통전 NG':'NG eléctrico',
+  '공정별 PPM':'PPM por proceso',
+  '공정별 필요인원':'Personal requerido por proceso',
+  '현원 대비 과부족':'Exceso/falta vs actual',
+  '조립 요청':'Solicitudes de ensamble',
+  '가공 처리 현황':'Atención de corte',
+  '지시 대비 완료율':'Avance vs orden',
+  '지연 LOT':'LOT atrasados',
+  '로그인 실패가 반복되어 계정이 잠겼습니다.':'Cuenta bloqueada por intentos fallidos.',
+  '요청이 너무 많습니다. 잠시 후 다시 시도하세요.':'Demasiados intentos. Espere un momento.',
+  '세션이 만료되었습니다. 다시 로그인하세요.':'La sesión expiró. Inicie sesión de nuevo.',
+  '현재 비밀번호가 올바르지 않습니다.':'La contraseña actual es incorrecta.',
+  '비밀번호는 8자 이상, 영문과 숫자를 모두 포함해야 합니다.':'La contraseña debe tener 8+ caracteres con letras y números.',
+  '이전과 다른 비밀번호를 입력하세요.':'Use una contraseña diferente a la anterior.',
+  '아이디는 2~40자, 영문·숫자·._@- 만 사용할 수 있습니다.':'Usuario: 2–40 caracteres, solo letras, números y ._@-',
+  '이름을 입력하세요.':'Ingrese el nombre.',
+  '본인 계정은 삭제할 수 없습니다.':'No puede eliminar su propia cuenta.',
+  '사용자를 찾을 수 없습니다.':'Usuario no encontrado.',
+  '🔑 비밀번호 변경':'🔑 Cambiar contraseña',
+  '🔑 비밀번호':'🔑 Contraseña',
+  '비밀번호 변경':'Cambiar contraseña',
+  '보안 강화를 위해 새 비밀번호를 설정해야 합니다.':'Por seguridad debe establecer una nueva contraseña.',
+  '현재 비밀번호를 확인한 뒤 새 비밀번호로 변경합니다.':'Confirme la contraseña actual y escriba la nueva.',
+  '현재 비밀번호':'Contraseña actual','새 비밀번호':'Nueva contraseña','새 비밀번호 확인':'Confirmar nueva contraseña',
+  '8자 이상, 영문+숫자':'8+ caracteres, letras y números',
+  '● 8자 이상':'● 8+ caracteres','● 영문 포함':'● Letras','● 숫자 포함':'● Números','● 확인 일치':'● Coinciden',
+  '나중에':'Después','변경':'Cambiar',
+  '현재 비밀번호를 입력하세요.':'Ingrese la contraseña actual.',
+  '새 비밀번호 확인이 일치하지 않습니다.':'Las contraseñas no coinciden.',
+  '비밀번호가 변경되었습니다.':'Contraseña actualizada.',
+  '비밀번호':'Contraseña','잠김':'Bloqueado','변경필요':'Debe cambiar','정상':'OK','비번 초기화':'Restablecer',
+  '🔒 경영현황 인증':'🔒 Acceso a Gestión',
+  '경영현황은 인증코드를 입력해야 볼 수 있습니다.':'Ingrese el código de acceso para ver Gestión.',
+  '인증코드 입력':'Código de acceso',
+  '인증코드가 올바르지 않습니다.':'Código incorrecto.',
+  '이 브라우저에서는 인증을 처리할 수 없습니다.':'Este navegador no puede validar el código.',
+  '취소':'Cancelar',
+  '확인':'Aceptar',
   '출근율 현황':'Tasa de asistencia',
   '근태관리':'Control de asistencia',
   '자격인증관리':'Certificaciones',
@@ -1461,69 +1882,132 @@ async function sbFetch(path, options = {}, retry = 1) {
   return text ? JSON.parse(text) : {};
 }
 
-// ── 로그인: user_id + password 일치 여부 조회
+// ── 인증 RPC (비밀번호는 서버에서 bcrypt 검증, 테이블 직접 접근 불가) ──
+const AUTH_ERR = {
+  invalid:      '아이디 또는 비밀번호가 올바르지 않습니다.',
+  locked:       '로그인 실패가 반복되어 계정이 잠겼습니다.',
+  too_many:     '요청이 너무 많습니다. 잠시 후 다시 시도하세요.',
+  unauthorized: '세션이 만료되었습니다. 다시 로그인하세요.',
+  wrong_old:    '현재 비밀번호가 올바르지 않습니다.',
+  weak:         '비밀번호는 8자 이상, 영문과 숫자를 모두 포함해야 합니다.',
+  same:         '이전과 다른 비밀번호를 입력하세요.',
+  dup:          '이미 존재하는 아이디입니다.',
+  bad_id:       '아이디는 2~40자, 영문·숫자·._@- 만 사용할 수 있습니다.',
+  bad_name:     '이름을 입력하세요.',
+  self:         '본인 계정은 삭제할 수 없습니다.',
+  not_found:    '사용자를 찾을 수 없습니다.',
+};
+function authMsg(code) { return t(AUTH_ERR[code] || code); }
+async function rpc(fn, body) {
+  try {
+    return await sbFetch('/rest/v1/rpc/' + fn, { method: 'POST', body: JSON.stringify(body || {}) });
+  } catch (e) {
+    const m = String(e.message || '');
+    const k = Object.keys(AUTH_ERR).find(c => m === c || m.startsWith(c));
+    if (k === 'unauthorized') { forceRelogin(); }
+    throw new Error(k ? authMsg(k) : m);
+  }
+}
+function forceRelogin() {
+  clearSession();
+  document.getElementById('main-content').style.display  = 'none';
+  document.getElementById('login-overlay').style.display = 'flex';
+  document.getElementById('login-error').textContent = authMsg('unauthorized');
+}
+function sessToken() { return (loadSession() || {}).token || ''; }
+
 async function callGAS(payload) {
   const { action } = payload;
-
-  // ── LOGIN ──────────────────────────────────────────
-  if (action === 'login') {
-    const rows = await sbFetch(
-      `/rest/v1/portal_users?user_id=eq.${encodeURIComponent(payload.user_id)}&password=eq.${encodeURIComponent(payload.password)}&select=user_id,name,role&limit=1`
-    );
-    if (!rows.length) throw new Error(t('아이디 또는 비밀번호가 올바르지 않습니다.'));
-    return { ok: true, name: rows[0].name, role: rows[0].role };
-  }
-
-  // ── GET USERS ──────────────────────────────────────
-  if (action === 'getUsers') {
-    const me = await sbFetch(
-      `/rest/v1/portal_users?user_id=eq.${encodeURIComponent(payload.admin_id)}&password=eq.${encodeURIComponent(payload.admin_pw)}&role=eq.admin&select=user_id&limit=1`
-    );
-    if (!me.length) { _adminPwCache = ''; throw new Error(t('관리자 인증 실패 — 비밀번호를 다시 확인하세요')); }
-    const users = await sbFetch(`/rest/v1/portal_users?select=user_id,name,role,created_at&order=created_at.asc`);
-    return { ok: true, users };
-  }
-
-  // ── ADD USER ───────────────────────────────────────
-  if (action === 'addUser') {
-    const me = await sbFetch(
-      `/rest/v1/portal_users?user_id=eq.${encodeURIComponent(payload.admin_id)}&password=eq.${encodeURIComponent(payload.admin_pw)}&role=eq.admin&select=user_id&limit=1`
-    );
-    if (!me.length) { _adminPwCache = ''; throw new Error(t('관리자 인증 실패 — 비밀번호를 다시 확인하세요')); }
-    await sbFetch(`/rest/v1/portal_users`, {
-      method: 'POST',
-      headers: { 'Prefer': 'return=minimal' },
-      body: JSON.stringify({
-        user_id:  payload.user_id,
-        password: payload.password,
-        name:     payload.name,
-        role:     payload.role
-      })
-    });
-    return { ok: true };
-  }
-
-  // ── DELETE USER ────────────────────────────────────
-  if (action === 'delUser') {
-    const me = await sbFetch(
-      `/rest/v1/portal_users?user_id=eq.${encodeURIComponent(payload.admin_id)}&password=eq.${encodeURIComponent(payload.admin_pw)}&role=eq.admin&select=user_id&limit=1`
-    );
-    if (!me.length) { _adminPwCache = ''; throw new Error(t('관리자 인증 실패 — 비밀번호를 다시 확인하세요')); }
-    await sbFetch(
-      `/rest/v1/portal_users?user_id=eq.${encodeURIComponent(payload.target_id)}`,
-      { method: 'DELETE' }
-    );
-    return { ok: true };
-  }
-
+  const tok = sessToken();
+  if (action === 'getUsers') return { ok: true, users: await rpc('portal_admin_users', { p_token: tok }) };
+  if (action === 'addUser') { await rpc('portal_admin_add_user', { p_token: tok, p_user_id: payload.user_id, p_password: payload.password, p_name: payload.name, p_role: payload.role }); return { ok: true }; }
+  if (action === 'delUser') { await rpc('portal_admin_del_user', { p_token: tok, p_target: payload.target_id }); return { ok: true }; }
+  if (action === 'resetPw') { await rpc('portal_admin_reset_password', { p_token: tok, p_target: payload.target_id, p_temp: payload.temp }); return { ok: true }; }
   throw new Error('알 수 없는 액션: ' + action);
 }
 
 // ══════════════════════════════════════════════════════
 //  페이지 로드
 // ══════════════════════════════════════════════════════
+// ── 비밀번호 변경 ──
+let _pwForced = false, _pwUser = null;
+function openPwChange(forced, user) {
+  _pwForced = !!forced; _pwUser = user || loadSession();
+  const m = document.getElementById('pw-modal');
+  ['pw-old','pw-new','pw-new2'].forEach(i => document.getElementById(i).value = '');
+  document.getElementById('pw-err').textContent = '';
+  document.getElementById('pw-desc').textContent = forced
+    ? t('보안 강화를 위해 새 비밀번호를 설정해야 합니다.')
+    : t('현재 비밀번호를 확인한 뒤 새 비밀번호로 변경합니다.');
+  document.getElementById('pw-cancel').style.display = forced ? 'none' : '';
+  pwRulesUpdate();
+  m.classList.add('open');
+  setTimeout(() => document.getElementById('pw-old').focus(), 30);
+}
+function closePwChange() { if (_pwForced) return; document.getElementById('pw-modal').classList.remove('open'); }
+function pwRulesUpdate() {
+  const p = document.getElementById('pw-new').value, q = document.getElementById('pw-new2').value;
+  document.getElementById('pwr-len').classList.toggle('ok', p.length >= 8);
+  document.getElementById('pwr-alpha').classList.toggle('ok', /[A-Za-z]/.test(p));
+  document.getElementById('pwr-num').classList.toggle('ok', /[0-9]/.test(p));
+  document.getElementById('pwr-match').classList.toggle('ok', p.length > 0 && p === q);
+}
+['pw-new','pw-new2'].forEach(i => document.addEventListener('DOMContentLoaded', () => document.getElementById(i).addEventListener('input', pwRulesUpdate)));
+async function submitPwChange() {
+  const o = document.getElementById('pw-old').value, n = document.getElementById('pw-new').value, n2 = document.getElementById('pw-new2').value;
+  const err = document.getElementById('pw-err');
+  err.textContent = '';
+  if (!o) { err.textContent = t('현재 비밀번호를 입력하세요.'); return; }
+  if (!pwPolicyOk(n)) { err.textContent = authMsg('weak'); return; }
+  if (n !== n2) { err.textContent = t('새 비밀번호 확인이 일치하지 않습니다.'); return; }
+  try {
+    await rpc('portal_change_password', { p_token: (_pwUser||{}).token || sessToken(), p_old: o, p_new: n });
+  } catch(e) { err.textContent = e.message; return; }
+  const forced = _pwForced; _pwForced = false;
+  document.getElementById('pw-modal').classList.remove('open');
+  if (forced && _pwUser) showMain(_pwUser);
+  alert(t('비밀번호가 변경되었습니다.'));
+}
+
+// ── 경영현황 인증코드 ──
+const MGMT_CODE_HASH = '8be2978e343799a3747a31957706009d207d6a3de7978e63f00b2a41cc99355f';
+const MGMT_KEY = 'yura_mgmt_ok';
+let _mgmtSave = true;
+function mgmtUnlocked(){ try { return sessionStorage.getItem(MGMT_KEY) === MGMT_CODE_HASH; } catch(e){ return false; } }
+async function _sha256(txt){
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(txt));
+  return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2,'0')).join('');
+}
+function mgmtAskCode(save){
+  _mgmtSave = save;
+  const m = document.getElementById('mgmt-auth');
+  const inp = document.getElementById('mgmt-code');
+  document.getElementById('mgmt-err').textContent = '';
+  inp.value = '';
+  m.classList.add('open');
+  setTimeout(() => inp.focus(), 30);
+}
+function mgmtClose(){ document.getElementById('mgmt-auth').classList.remove('open'); }
+async function mgmtSubmit(){
+  const inp = document.getElementById('mgmt-code');
+  const err = document.getElementById('mgmt-err');
+  let h = '';
+  try { h = await _sha256(inp.value.trim()); } catch(e){ err.textContent = t('이 브라우저에서는 인증을 처리할 수 없습니다.'); return; }
+  if (h !== MGMT_CODE_HASH) {
+    err.textContent = t('인증코드가 올바르지 않습니다.');
+    inp.select();
+    const box = document.querySelector('#mgmt-auth .mgmt-box');
+    box.classList.remove('shake'); void box.offsetWidth; box.classList.add('shake');
+    return;
+  }
+  try { sessionStorage.setItem(MGMT_KEY, MGMT_CODE_HASH); } catch(e){}
+  mgmtClose();
+  switchTab('mgmt', _mgmtSave);
+}
+
 // ── 카테고리 탭 전환 ──
 function switchTab(cat, save = true) {
+  if (cat === 'mgmt' && !mgmtUnlocked()) { mgmtAskCode(save); return; }
   document.querySelectorAll('.cat-tab').forEach(b => b.classList.toggle('active', b.dataset.cat === cat));
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.dataset.cat === cat));
   document.body.dataset.tab = cat;
@@ -1531,12 +2015,24 @@ function switchTab(cat, save = true) {
 }
 
 window.addEventListener('DOMContentLoaded', function() {
-  var _t=localStorage.getItem('yura_index_tab')||'checkin'; if(_t==='consum')_t='checkin';
+  var _t=localStorage.getItem('yura_index_tab')||'checkin'; if(_t==='consum')_t='checkin'; if(_t==='mgmt'&&!mgmtUnlocked())_t='checkin';
   switchTab(_t, false);
-  try {
-    const u = loadSession();
-    if (u) showMain(u);
-  } catch(e) { clearSession(); }
+  (async () => {
+    let u = null;
+    try { u = loadSession(); } catch(e) { clearSession(); }
+    if (!u || !u.token) { if (u) clearSession(); return; }
+    showMain(u);                       // 캐시로 먼저 표시
+    try {
+      const r = await rpc('portal_session', { p_token: u.token });
+      const fresh = { token: u.token, id: r.user_id, name: r.name, role: r.role };
+      saveSession(fresh, !!localStorage.getItem(SESSION_KEY));
+      showMain(fresh);
+      if (r.must_change) openPwChange(true, fresh);
+    } catch(e) {
+      if (!loadSession()) return;      // 이미 unauthorized 처리됨
+      // 네트워크 오류 등: 캐시 세션 유지
+    }
+  })();
   ['login-id','login-pw'].forEach(id =>
     document.getElementById(id).addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); })
   );
@@ -1558,10 +2054,17 @@ async function doLogin() {
   spin.style.display = 'block';
   btn.disabled = true;
   try {
-    const res  = await callGAS({ action: 'login', user_id: id, password: pw });
-    const user = { id, name: res.name, role: res.role };
     const remember = document.getElementById('login-remember-chk').checked;
+    const res = await rpc('portal_login', { p_user_id: id, p_password: pw, p_remember: remember, p_ua: navigator.userAgent });
+    if (res.error) {
+      if (res.error === 'locked') throw new Error(authMsg('locked') + ' ' + (curLang==='es' ? `Intente en ${res.minutes} min.` : `${res.minutes}분 후 다시 시도하세요.`));
+      if (res.error === 'invalid' && res.remaining !== undefined) throw new Error(authMsg('invalid') + ' ' + (curLang==='es' ? `(${res.remaining} intentos restantes)` : `(남은 시도 ${res.remaining}회)`));
+      throw new Error(authMsg(res.error));
+    }
+    const user = { token: res.token, id: res.user_id, name: res.name, role: res.role };
     saveSession(user, remember);
+    document.getElementById('login-pw').value = '';
+    if (res.must_change) { openPwChange(true, user); return; }
     showMain(user);
   } catch(e) {
     errEl.textContent = e.message;
@@ -1573,6 +2076,8 @@ async function doLogin() {
 }
 
 function doLogout() {
+  const tok = sessToken();
+  if (tok) { rpc('portal_logout', { p_token: tok }).catch(()=>{}); }
   clearSession();
   document.getElementById('main-content').style.display  = 'none';
   document.getElementById('login-overlay').style.display = 'flex';
@@ -1688,8 +2193,7 @@ async function loadAccessStats(silent) {
   if (!silent) { document.getElementById('acc-online-tbody').innerHTML = '<tr><td colspan="4" style="text-align:center;padding:16px;color:var(--text-muted);">' + t('로딩 중...') + '</td></tr>'; }
   msg.textContent = '';
   try {
-    const pw = await getAdminPw();
-    const d = await sbFetch('/rest/v1/rpc/portal_access_admin', { method:'POST', body: JSON.stringify({ p_admin_id: me.id, p_admin_pw: pw }) });
+    const d = await rpc('portal_access_admin', { p_token: sessToken() });
     window._lastAccess = d;
     renderAccessStats(d);
   } catch(e) {
@@ -1730,14 +2234,14 @@ document.getElementById('admin-overlay').addEventListener('click', function(e) {
 async function loadUserList() {
   const tbody = document.getElementById('user-tbody');
   const me    = getMe();
-  tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--text-muted);">' + t('로딩 중...') + '</td></tr>';
+  tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text-muted);">' + t('로딩 중...') + '</td></tr>';
   document.getElementById('user-count').textContent = '...';
   try {
     const pw  = await getAdminPw();
     const res = await callGAS({ action:'getUsers', admin_id: me.id, admin_pw: pw });
     renderUserTable(res.users, me.id);
   } catch(e) {
-    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:20px;color:#e05c5c;">${esc(e.message)}<br><button class="btn-del" style="margin-top:10px;" onclick="loadUserList()">${t('다시 시도 / Reintentar')}</button></td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:20px;color:#e05c5c;">${esc(e.message)}<br><button class="btn-del" style="margin-top:10px;" onclick="loadUserList()">${t('다시 시도 / Reintentar')}</button></td></tr>`;
   }
 }
 
@@ -1746,7 +2250,7 @@ function renderUserTable(users, myId) {
   document.getElementById('user-count').textContent = `${users.length} ${t('명')}`;
   const tbody = document.getElementById('user-tbody');
   if (!users.length) {
-    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--text-muted);">' + t('사용자 없음') + '</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text-muted);">' + t('사용자 없음') + '</td></tr>';
     return;
   }
   tbody.innerHTML = users.map(u => `
@@ -1755,9 +2259,10 @@ function renderUserTable(users, myId) {
       <td style="color:var(--text-primary);font-weight:600;">${esc(u.name)}</td>
       <td><span class="role-badge ${u.role==='admin'?'role-admin':'role-user'}">${u.role==='admin'?t('관리자'):t('일반')}</span></td>
       <td style="font-family:'Space Mono',Consolas,'Courier New',monospace;font-size:11px;">${esc(String(u.created_at||'—').substring(0,10))}</td>
-      <td>${u.user_id !== myId
-        ? `<button class="btn-del" onclick="deleteUser('${esc(u.user_id)}',this)">${t('삭제')}</button>`
-        : '<span style="font-size:10px;color:var(--text-muted);">' + t('본인') + '</span>'}</td>
+      <td>${u.locked ? `<span class="pw-flag pw-lock">${t('잠김')}</span>` : u.must_change ? `<span class="pw-flag pw-must">${t('변경필요')}</span>` : `<span class="pw-flag pw-ok">${t('정상')}</span>`}</td>
+      <td style="white-space:nowrap;"><button class="btn-reset" onclick="resetUserPw('${esc(u.user_id)}',this)">${t('비번 초기화')}</button>${u.user_id !== myId
+        ? ` <button class="btn-del" onclick="deleteUser('${esc(u.user_id)}',this)">${t('삭제')}</button>`
+        : ''}</td>
     </tr>
   `).join('');
 }
@@ -1773,6 +2278,8 @@ async function addUser() {
   msg.textContent = '';
 
   if (!id||!pw||!name) { msg.style.color='#e05c5c'; msg.textContent=t('아이디, 비밀번호, 이름을 모두 입력하세요.'); return; }
+  if (!/^[A-Za-z0-9._@-]{2,40}$/.test(id)) { msg.style.color='#e05c5c'; msg.textContent=authMsg('bad_id'); return; }
+  if (!pwPolicyOk(pw)) { msg.style.color='#e05c5c'; msg.textContent=authMsg('weak'); return; }
 
   btn.disabled=true; btn.textContent=t('등록 중...');
   try {
@@ -1790,6 +2297,21 @@ async function addUser() {
   }
 }
 
+async function resetUserPw(uid, btnEl) {
+  const temp = prompt(curLang==='es'
+    ? `Contraseña temporal para '${uid}' (mín. 8, letras y números).\nEl usuario deberá cambiarla al iniciar sesión.`
+    : `'${uid}' 임시 비밀번호 (8자 이상, 영문+숫자).\n사용자는 다음 로그인 시 반드시 변경해야 합니다.`);
+  if (temp === null) return;
+  if (!pwPolicyOk(temp)) { alert(authMsg('weak')); return; }
+  btnEl.disabled=true;
+  try {
+    await callGAS({ action:'resetPw', target_id: uid, temp });
+    alert(curLang==='es' ? `Contraseña de '${uid}' restablecida.` : `'${uid}' 비밀번호를 초기화했습니다. (잠금 해제·기존 세션 종료)`);
+    await loadUserList();
+  } catch(e) { alert(e.message); btnEl.disabled=false; }
+}
+function pwPolicyOk(p){ return !!p && p.length >= 8 && /[A-Za-z]/.test(p) && /[0-9]/.test(p); }
+
 async function deleteUser(uid, btnEl) {
   if (!confirm(curLang==='es' ? `¿Eliminar al usuario '${uid}'?` : `'${uid}' 사용자를 삭제하시겠습니까?`)) return;
   const me = getMe();
@@ -1805,14 +2327,7 @@ async function deleteUser(uid, btnEl) {
 
 // 관리자 비밀번호 캐시 (세션 내 10분)
 let _adminPwCache = '';
-async function getAdminPw() {
-  if (_adminPwCache) return _adminPwCache;
-  const pw = prompt(t('관리자 비밀번호를 입력하세요 (보안 확인):'));
-  if (!pw) throw new Error(t('비밀번호 입력 취소됨'));
-  _adminPwCache = pw;
-  setTimeout(() => { _adminPwCache = ''; }, 10 * 60 * 1000);
-  return pw;
-}
+async function getAdminPw() { return sessToken(); }
 
 function esc(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -2082,5 +2597,39 @@ async function fsXlsx(mode){
   a.download=`${fn}${C.pl}_${fsToday()}.xlsx`;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1500);
 }
 </script>
+<!-- ═══ 비밀번호 변경 모달 ═══ -->
+<div id="pw-modal" class="mgmt-auth" onclick="if(event.target===this&&!_pwForced)closePwChange()">
+  <div class="mgmt-box" role="dialog" aria-modal="true" style="max-width:400px;">
+    <div class="mgmt-cap">ACCOUNT · PASSWORD</div>
+    <div class="mgmt-title">🔑 비밀번호 변경</div>
+    <div class="mgmt-desc" id="pw-desc">보안 강화를 위해 새 비밀번호를 설정해야 합니다.</div>
+    <div class="pw-field"><label>현재 비밀번호</label><input id="pw-old" type="password" autocomplete="current-password"></div>
+    <div class="pw-field"><label>새 비밀번호</label><input id="pw-new" type="password" autocomplete="new-password" placeholder="8자 이상, 영문+숫자"></div>
+    <div class="pw-field"><label>새 비밀번호 확인</label><input id="pw-new2" type="password" autocomplete="new-password" onkeydown="if(event.key==='Enter')submitPwChange()"></div>
+    <div class="pw-rules">
+      <span id="pwr-len">● 8자 이상</span><span id="pwr-alpha">● 영문 포함</span><span id="pwr-num">● 숫자 포함</span><span id="pwr-match">● 확인 일치</span>
+    </div>
+    <div id="pw-err" class="mgmt-err"></div>
+    <div class="mgmt-btns">
+      <button type="button" class="mgmt-cancel" id="pw-cancel" onclick="closePwChange()">나중에</button>
+      <button type="button" class="mgmt-ok" onclick="submitPwChange()">변경</button>
+    </div>
+  </div>
+</div>
+<!-- ═══ 경영현황 인증코드 모달 ═══ -->
+<div id="mgmt-auth" class="mgmt-auth" onclick="if(event.target===this)mgmtClose()">
+  <div class="mgmt-box" role="dialog" aria-modal="true">
+    <div class="mgmt-cap">MANAGEMENT · ACCESS</div>
+    <div class="mgmt-title">🔒 경영현황 인증</div>
+    <div class="mgmt-desc">경영현황은 인증코드를 입력해야 볼 수 있습니다.</div>
+    <input id="mgmt-code" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="인증코드 입력"
+           onkeydown="if(event.key==='Enter')mgmtSubmit();if(event.key==='Escape')mgmtClose();">
+    <div id="mgmt-err" class="mgmt-err"></div>
+    <div class="mgmt-btns">
+      <button type="button" class="mgmt-cancel" onclick="mgmtClose()">취소</button>
+      <button type="button" class="mgmt-ok" onclick="mgmtSubmit()">확인</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
