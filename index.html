@@ -283,22 +283,12 @@
   .mgmt-cancel:hover{color:var(--text-primary);border-color:#555;}
   .mgmt-ok{background:var(--accent-gold);border:1px solid var(--accent-gold);color:#111;}
   .mgmt-ok:hover{filter:brightness(1.08);}
-  /* ── 경영현황·생산관리 카드 그리드 (공장당 2열, 모든 카드 동일 규격) ── */
-  .mg-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:1fr;gap:10px;}
-  .mg-card{position:relative;display:flex;flex-direction:column;box-sizing:border-box;height:100%;min-height:128px;min-width:0;background:linear-gradient(180deg,#181818,#141414);border:1px solid var(--border);border-radius:8px;padding:12px 15px 12px;color:inherit;text-decoration:none;overflow:hidden;transition:border-color .2s,background .2s,transform .15s;}
-  .mg-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;opacity:.55;}
-  .mg-gold::before{background:var(--accent-gold);} .mg-blue::before{background:#4a9ec9;} .mg-green::before{background:#4caf7d;} .mg-purple::before{background:#a98af0;}
-  .mg-card:hover{background:#1b1b1b;border-color:rgba(201,168,76,.35);}
-  .mg-live{cursor:pointer;} .mg-live:hover{transform:translateY(-1px);box-shadow:0 8px 20px rgba(0,0,0,.35);}
-  .mg-card .card-title{margin-bottom:2px;padding-right:56px;}
-  .mg-card .card-module-no,.mg-card .card-title-en{font-size:12px;letter-spacing:.12em;}
-  .mg-card .card-module-no{font-size:10px;} .mg-card .card-title-en{font-size:10px;margin-bottom:8px;}
-  .mg-state{position:absolute;top:10px;right:10px;font-size:12px;font-weight:700;color:var(--accent-gold);background:rgba(201,168,76,.12);border:1px solid rgba(201,168,76,.35);border-radius:4px;padding:1px 8px;line-height:1.5;}
-  .mg-state.mg-on{color:#6fd39a;background:rgba(76,175,125,.12);border-color:rgba(76,175,125,.4);}
-  .mg-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:auto;}
-  .mg-chip{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--text-secondary);background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:999px;padding:2px 10px;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis;}
-  .mg-chip::before{content:'';width:4px;height:4px;border-radius:50%;background:var(--accent-gold);flex-shrink:0;}
-  @media(max-width:520px){.mg-grid{grid-template-columns:minmax(0,1fr);grid-auto-rows:auto;}.mg-card{min-height:0;}}
+  /* ── 경영현황·생산관리: 기본 카드 + 준비중 표시 ── */
+  .card-soon{cursor:default;}
+  .card-soon:hover{transform:none;box-shadow:none;}
+  .card-soon .card-arrow{display:none;}
+  .mg-state{position:absolute;top:8px;right:10px;font-size:12px;font-weight:700;color:var(--accent-gold);background:rgba(201,168,76,.12);border:1px solid rgba(201,168,76,.35);border-radius:4px;padding:1px 8px;line-height:1.5;}
+  .mg-sep{color:var(--text-muted);}
   .plant-label-sub{font-family:'Noto Sans KR','Malgun Gothic','Apple SD Gothic Neo',sans-serif;font-size:13px;font-weight:500;color:#d9d0b4;margin-left:4px;}
 
   /* ── 설비관리 (가공보전팀) 카드 ── */
@@ -610,286 +600,492 @@
 <div class="row-grid tab-panel" data-cat="mgmt">
   <div class="mobile-plant-hdr hdr-p1"><span class="mp-dot mp-dot1"></span>PLANT 1 · 몽클로바</div>
   <div class="mobile-plant-hdr hdr-p2"><span class="mp-dot mp-dot2"></span>PLANT 2 · 라하트</div>
+
   <div class="card-cell p1">
-    <div class="mg-grid">
-      <div class="mg-card mg-gold">
-        <span class="mg-state">준비중</span>
-        <span class="card-icon">💰</span>
-        <div class="card-module-no">MGMT 01 · SALES</div>
+    <div class="card qual card-soon">
+      <span class="mg-state">준비중</span>
+      <span class="card-icon">💰</span>
+      <div class="card-module-no">MGMT 01 · SALES</div>
+      <div class="card-title-row">
         <div class="card-title">매출현황</div>
-        <div class="card-title-en">Sales by Model</div>
-        <div class="mg-chips"><span class="mg-chip">차종별 매출현황</span><span class="mg-chip">계획대비 실적</span></div>
       </div>
-      <div class="mg-card mg-gold">
-        <span class="mg-state">준비중</span>
-        <span class="card-icon">📊</span>
-        <div class="card-module-no">MGMT 02 · COST</div>
-        <div class="card-title">원가율 현황</div>
-        <div class="card-title-en">Cost Ratio</div>
-        <div class="mg-chips"><span class="mg-chip">재료비 비중</span><span class="mg-chip">인건비 비중</span></div>
-      </div>
-      <div class="mg-card mg-blue">
-        <span class="mg-state">준비중</span>
-        <span class="card-icon">✈️</span>
-        <div class="card-module-no">MGMT 03 · FREIGHT</div>
-        <div class="card-title">프리미엄 운임</div>
-        <div class="card-title-en">Premium Freight</div>
-        <div class="mg-chips"><span class="mg-chip">특송·항공비</span><span class="mg-chip">발생 사유</span></div>
-      </div>
-      <div class="mg-card mg-blue">
-        <span class="mg-state">준비중</span>
-        <span class="card-icon">⚙️</span>
-        <div class="card-module-no">MGMT 04 · PRODUCTIVITY</div>
-        <div class="card-title">생산·효율</div>
-        <div class="card-title-en">Production · Efficiency</div>
-        <div class="mg-chips"><span class="mg-chip">가공·조립 생산성</span><span class="mg-chip">재공(WIP) 현황</span></div>
-      </div>
-      <div class="mg-card mg-green">
-        <span class="mg-state">준비중</span>
-        <span class="card-icon">🚚</span>
-        <div class="card-module-no">MGMT 05 · DELIVERY</div>
-        <div class="card-title">납기·출하</div>
-        <div class="card-title-en">Delivery · Shipping</div>
-        <div class="mg-chips"><span class="mg-chip">납기준수율</span><span class="mg-chip">결품리스크 자재 경고</span></div>
-      </div>
-      <div class="mg-card mg-green">
-        <span class="mg-state">준비중</span>
-        <span class="card-icon">📦</span>
-        <div class="card-module-no">MGMT 06 · INVENTORY</div>
-        <div class="card-title">재고</div>
-        <div class="card-title-en">Inventory</div>
-        <div class="mg-chips"><span class="mg-chip">원자재·재공·완제품 재고</span><span class="mg-chip">장기·불용재고</span></div>
-      </div>
-      <div class="mg-card mg-purple">
-        <span class="mg-state">준비중</span>
-        <span class="card-icon">👥</span>
-        <div class="card-module-no">MGMT 07 · WORKFORCE</div>
-        <div class="card-title">인원·노무</div>
-        <div class="card-title-en">Workforce · Labor</div>
-        <div class="mg-chips"><span class="mg-chip">계획대비 인원</span><span class="mg-chip">이직률·결근율</span><span class="mg-chip">잔업·특근</span><span class="mg-chip">자격인증 현황</span></div>
-      </div>
-      <div class="mg-card mg-purple">
-        <span class="mg-state">준비중</span>
-        <span class="card-icon">🛡️</span>
-        <div class="card-module-no">MGMT 08 · QUALITY</div>
-        <div class="card-title">품질</div>
-        <div class="card-title-en">Quality</div>
-        <div class="mg-chips"><span class="mg-chip">공정불량 PPM</span><span class="mg-chip">고객 클레임</span><span class="mg-chip">폐기·재작업 비용</span></div>
-      </div>
+      <div class="card-title-en">Sales by Model</div>
+      <div class="card-desc"><span>차종별 매출현황</span><span class="mg-sep"> · </span><span>계획대비 실적</span></div>
+      <span class="badge badge-qual">경영지표</span>
+      <span class="card-arrow">›</span>
     </div>
   </div>
   <div class="divider-cell"></div>
   <div class="card-cell p2">
-    <div class="mg-grid">
-      <div class="mg-card mg-gold">
-        <span class="mg-state">준비중</span>
-        <span class="card-icon">💰</span>
-        <div class="card-module-no">MGMT 01 · SALES</div>
+    <div class="card qual card-soon">
+      <span class="mg-state">준비중</span>
+      <span class="card-icon">💰</span>
+      <div class="card-module-no">MGMT 01 · SALES</div>
+      <div class="card-title-row">
         <div class="card-title">매출현황</div>
-        <div class="card-title-en">Sales by Model</div>
-        <div class="mg-chips"><span class="mg-chip">차종별 매출현황</span><span class="mg-chip">계획대비 실적</span></div>
       </div>
-      <div class="mg-card mg-gold">
-        <span class="mg-state">준비중</span>
-        <span class="card-icon">📊</span>
-        <div class="card-module-no">MGMT 02 · COST</div>
-        <div class="card-title">원가율 현황</div>
-        <div class="card-title-en">Cost Ratio</div>
-        <div class="mg-chips"><span class="mg-chip">재료비 비중</span><span class="mg-chip">인건비 비중</span></div>
-      </div>
-      <div class="mg-card mg-blue">
-        <span class="mg-state">준비중</span>
-        <span class="card-icon">✈️</span>
-        <div class="card-module-no">MGMT 03 · FREIGHT</div>
-        <div class="card-title">프리미엄 운임</div>
-        <div class="card-title-en">Premium Freight</div>
-        <div class="mg-chips"><span class="mg-chip">특송·항공비</span><span class="mg-chip">발생 사유</span></div>
-      </div>
-      <div class="mg-card mg-blue">
-        <span class="mg-state">준비중</span>
-        <span class="card-icon">⚙️</span>
-        <div class="card-module-no">MGMT 04 · PRODUCTIVITY</div>
-        <div class="card-title">생산·효율</div>
-        <div class="card-title-en">Production · Efficiency</div>
-        <div class="mg-chips"><span class="mg-chip">가공·조립 생산성</span><span class="mg-chip">재공(WIP) 현황</span></div>
-      </div>
-      <div class="mg-card mg-green">
-        <span class="mg-state">준비중</span>
-        <span class="card-icon">🚚</span>
-        <div class="card-module-no">MGMT 05 · DELIVERY</div>
-        <div class="card-title">납기·출하</div>
-        <div class="card-title-en">Delivery · Shipping</div>
-        <div class="mg-chips"><span class="mg-chip">납기준수율</span><span class="mg-chip">결품리스크 자재 경고</span></div>
-      </div>
-      <div class="mg-card mg-green">
-        <span class="mg-state">준비중</span>
-        <span class="card-icon">📦</span>
-        <div class="card-module-no">MGMT 06 · INVENTORY</div>
-        <div class="card-title">재고</div>
-        <div class="card-title-en">Inventory</div>
-        <div class="mg-chips"><span class="mg-chip">원자재·재공·완제품 재고</span><span class="mg-chip">장기·불용재고</span></div>
-      </div>
-      <div class="mg-card mg-purple">
-        <span class="mg-state">준비중</span>
-        <span class="card-icon">👥</span>
-        <div class="card-module-no">MGMT 07 · WORKFORCE</div>
-        <div class="card-title">인원·노무</div>
-        <div class="card-title-en">Workforce · Labor</div>
-        <div class="mg-chips"><span class="mg-chip">계획대비 인원</span><span class="mg-chip">이직률·결근율</span><span class="mg-chip">잔업·특근</span><span class="mg-chip">자격인증 현황</span></div>
-      </div>
-      <div class="mg-card mg-purple">
-        <span class="mg-state">준비중</span>
-        <span class="card-icon">🛡️</span>
-        <div class="card-module-no">MGMT 08 · QUALITY</div>
-        <div class="card-title">품질</div>
-        <div class="card-title-en">Quality</div>
-        <div class="mg-chips"><span class="mg-chip">공정불량 PPM</span><span class="mg-chip">고객 클레임</span><span class="mg-chip">폐기·재작업 비용</span></div>
-      </div>
+      <div class="card-title-en">Sales by Model</div>
+      <div class="card-desc"><span>차종별 매출현황</span><span class="mg-sep"> · </span><span>계획대비 실적</span></div>
+      <span class="badge badge-qual">경영지표</span>
+      <span class="card-arrow">›</span>
     </div>
   </div>
+
+  <div class="card-cell p1">
+    <div class="card qual card-soon">
+      <span class="mg-state">준비중</span>
+      <span class="card-icon">📊</span>
+      <div class="card-module-no">MGMT 02 · COST</div>
+      <div class="card-title-row">
+        <div class="card-title">원가율 현황</div>
+      </div>
+      <div class="card-title-en">Cost Ratio</div>
+      <div class="card-desc"><span>재료비 비중</span><span class="mg-sep"> · </span><span>인건비 비중</span></div>
+      <span class="badge badge-qual">경영지표</span>
+      <span class="card-arrow">›</span>
+    </div>
+  </div>
+  <div class="divider-cell"></div>
+  <div class="card-cell p2">
+    <div class="card qual card-soon">
+      <span class="mg-state">준비중</span>
+      <span class="card-icon">📊</span>
+      <div class="card-module-no">MGMT 02 · COST</div>
+      <div class="card-title-row">
+        <div class="card-title">원가율 현황</div>
+      </div>
+      <div class="card-title-en">Cost Ratio</div>
+      <div class="card-desc"><span>재료비 비중</span><span class="mg-sep"> · </span><span>인건비 비중</span></div>
+      <span class="badge badge-qual">경영지표</span>
+      <span class="card-arrow">›</span>
+    </div>
+  </div>
+
+  <div class="card-cell p1">
+    <div class="card etc card-soon">
+      <span class="mg-state">준비중</span>
+      <span class="card-icon">✈️</span>
+      <div class="card-module-no">MGMT 03 · FREIGHT</div>
+      <div class="card-title-row">
+        <div class="card-title">프리미엄 운임</div>
+      </div>
+      <div class="card-title-en">Premium Freight</div>
+      <div class="card-desc"><span>특송·항공비</span><span class="mg-sep"> · </span><span>발생 사유</span></div>
+      <span class="badge badge-etc">경영지표</span>
+      <span class="card-arrow">›</span>
+    </div>
+  </div>
+  <div class="divider-cell"></div>
+  <div class="card-cell p2">
+    <div class="card etc card-soon">
+      <span class="mg-state">준비중</span>
+      <span class="card-icon">✈️</span>
+      <div class="card-module-no">MGMT 03 · FREIGHT</div>
+      <div class="card-title-row">
+        <div class="card-title">프리미엄 운임</div>
+      </div>
+      <div class="card-title-en">Premium Freight</div>
+      <div class="card-desc"><span>특송·항공비</span><span class="mg-sep"> · </span><span>발생 사유</span></div>
+      <span class="badge badge-etc">경영지표</span>
+      <span class="card-arrow">›</span>
+    </div>
+  </div>
+
+  <div class="card-cell p1">
+    <div class="card etc card-soon">
+      <span class="mg-state">준비중</span>
+      <span class="card-icon">⚙️</span>
+      <div class="card-module-no">MGMT 04 · PRODUCTIVITY</div>
+      <div class="card-title-row">
+        <div class="card-title">생산·효율</div>
+      </div>
+      <div class="card-title-en">Production · Efficiency</div>
+      <div class="card-desc"><span>가공·조립 생산성</span><span class="mg-sep"> · </span><span>재공(WIP) 현황</span></div>
+      <span class="badge badge-etc">경영지표</span>
+      <span class="card-arrow">›</span>
+    </div>
+  </div>
+  <div class="divider-cell"></div>
+  <div class="card-cell p2">
+    <div class="card etc card-soon">
+      <span class="mg-state">준비중</span>
+      <span class="card-icon">⚙️</span>
+      <div class="card-module-no">MGMT 04 · PRODUCTIVITY</div>
+      <div class="card-title-row">
+        <div class="card-title">생산·효율</div>
+      </div>
+      <div class="card-title-en">Production · Efficiency</div>
+      <div class="card-desc"><span>가공·조립 생산성</span><span class="mg-sep"> · </span><span>재공(WIP) 현황</span></div>
+      <span class="badge badge-etc">경영지표</span>
+      <span class="card-arrow">›</span>
+    </div>
+  </div>
+
+  <div class="card-cell p1">
+    <div class="card hr card-soon">
+      <span class="mg-state">준비중</span>
+      <span class="card-icon">🚚</span>
+      <div class="card-module-no">MGMT 05 · DELIVERY</div>
+      <div class="card-title-row">
+        <div class="card-title">납기·출하</div>
+      </div>
+      <div class="card-title-en">Delivery · Shipping</div>
+      <div class="card-desc"><span>납기준수율</span><span class="mg-sep"> · </span><span>결품리스크 자재 경고</span></div>
+      <span class="badge badge-hr">경영지표</span>
+      <span class="card-arrow">›</span>
+    </div>
+  </div>
+  <div class="divider-cell"></div>
+  <div class="card-cell p2">
+    <div class="card hr card-soon">
+      <span class="mg-state">준비중</span>
+      <span class="card-icon">🚚</span>
+      <div class="card-module-no">MGMT 05 · DELIVERY</div>
+      <div class="card-title-row">
+        <div class="card-title">납기·출하</div>
+      </div>
+      <div class="card-title-en">Delivery · Shipping</div>
+      <div class="card-desc"><span>납기준수율</span><span class="mg-sep"> · </span><span>결품리스크 자재 경고</span></div>
+      <span class="badge badge-hr">경영지표</span>
+      <span class="card-arrow">›</span>
+    </div>
+  </div>
+
+  <div class="card-cell p1">
+    <div class="card hr card-soon">
+      <span class="mg-state">준비중</span>
+      <span class="card-icon">📦</span>
+      <div class="card-module-no">MGMT 06 · INVENTORY</div>
+      <div class="card-title-row">
+        <div class="card-title">재고</div>
+      </div>
+      <div class="card-title-en">Inventory</div>
+      <div class="card-desc"><span>원자재·재공·완제품 재고</span><span class="mg-sep"> · </span><span>장기·불용재고</span></div>
+      <span class="badge badge-hr">경영지표</span>
+      <span class="card-arrow">›</span>
+    </div>
+  </div>
+  <div class="divider-cell"></div>
+  <div class="card-cell p2">
+    <div class="card hr card-soon">
+      <span class="mg-state">준비중</span>
+      <span class="card-icon">📦</span>
+      <div class="card-module-no">MGMT 06 · INVENTORY</div>
+      <div class="card-title-row">
+        <div class="card-title">재고</div>
+      </div>
+      <div class="card-title-en">Inventory</div>
+      <div class="card-desc"><span>원자재·재공·완제품 재고</span><span class="mg-sep"> · </span><span>장기·불용재고</span></div>
+      <span class="badge badge-hr">경영지표</span>
+      <span class="card-arrow">›</span>
+    </div>
+  </div>
+
+  <div class="card-cell p1">
+    <div class="card inv card-soon">
+      <span class="mg-state">준비중</span>
+      <span class="card-icon">👥</span>
+      <div class="card-module-no">MGMT 07 · WORKFORCE</div>
+      <div class="card-title-row">
+        <div class="card-title">인원·노무</div>
+      </div>
+      <div class="card-title-en">Workforce · Labor</div>
+      <div class="card-desc"><span>계획대비 인원</span><span class="mg-sep"> · </span><span>이직률·결근율</span><span class="mg-sep"> · </span><span>잔업·특근</span><span class="mg-sep"> · </span><span>자격인증 현황</span></div>
+      <span class="badge badge-inv">경영지표</span>
+      <span class="card-arrow">›</span>
+    </div>
+  </div>
+  <div class="divider-cell"></div>
+  <div class="card-cell p2">
+    <div class="card inv card-soon">
+      <span class="mg-state">준비중</span>
+      <span class="card-icon">👥</span>
+      <div class="card-module-no">MGMT 07 · WORKFORCE</div>
+      <div class="card-title-row">
+        <div class="card-title">인원·노무</div>
+      </div>
+      <div class="card-title-en">Workforce · Labor</div>
+      <div class="card-desc"><span>계획대비 인원</span><span class="mg-sep"> · </span><span>이직률·결근율</span><span class="mg-sep"> · </span><span>잔업·특근</span><span class="mg-sep"> · </span><span>자격인증 현황</span></div>
+      <span class="badge badge-inv">경영지표</span>
+      <span class="card-arrow">›</span>
+    </div>
+  </div>
+
+  <div class="card-cell p1">
+    <div class="card inv card-soon">
+      <span class="mg-state">준비중</span>
+      <span class="card-icon">🛡️</span>
+      <div class="card-module-no">MGMT 08 · QUALITY</div>
+      <div class="card-title-row">
+        <div class="card-title">품질</div>
+      </div>
+      <div class="card-title-en">Quality</div>
+      <div class="card-desc"><span>공정불량 PPM</span><span class="mg-sep"> · </span><span>고객 클레임</span><span class="mg-sep"> · </span><span>폐기·재작업 비용</span></div>
+      <span class="badge badge-inv">경영지표</span>
+      <span class="card-arrow">›</span>
+    </div>
+  </div>
+  <div class="divider-cell"></div>
+  <div class="card-cell p2">
+    <div class="card inv card-soon">
+      <span class="mg-state">준비중</span>
+      <span class="card-icon">🛡️</span>
+      <div class="card-module-no">MGMT 08 · QUALITY</div>
+      <div class="card-title-row">
+        <div class="card-title">품질</div>
+      </div>
+      <div class="card-title-en">Quality</div>
+      <div class="card-desc"><span>공정불량 PPM</span><span class="mg-sep"> · </span><span>고객 클레임</span><span class="mg-sep"> · </span><span>폐기·재작업 비용</span></div>
+      <span class="badge badge-inv">경영지표</span>
+      <span class="card-arrow">›</span>
+    </div>
+  </div>
+
 </div>
 
 <!-- ═══ 탭: 생산관리 ═══ -->
 <div class="row-grid tab-panel" data-cat="prod">
   <div class="mobile-plant-hdr hdr-p1"><span class="mp-dot mp-dot1"></span>PLANT 1 · 몽클로바</div>
   <div class="mobile-plant-hdr hdr-p2"><span class="mp-dot mp-dot2"></span>PLANT 2 · 라하트</div>
+
   <div class="card-cell p1">
-    <div class="mg-grid">
-      <div class="mg-card mg-gold">
-        <span class="mg-state">준비중</span>
-        <span class="card-icon">🎯</span>
-        <div class="card-module-no">PROD 01 · PLAN</div>
+    <div class="card qual card-soon">
+      <span class="mg-state">준비중</span>
+      <span class="card-icon">🎯</span>
+      <div class="card-module-no">PROD 01 · PLAN</div>
+      <div class="card-title-row">
         <div class="card-title">생산계획 대비 실적</div>
-        <div class="card-title-en">Plan vs Actual</div>
-        <div class="mg-chips"><span class="mg-chip">일·주·월 달성률</span><span class="mg-chip">차종별 실적</span></div>
       </div>
-      <div class="mg-card mg-gold">
-        <span class="mg-state">준비중</span>
-        <span class="card-icon">🔀</span>
-        <div class="card-module-no">PROD 02 · FLOW</div>
-        <div class="card-title">공정 흐름 현황</div>
-        <div class="card-title-en">Process Flow</div>
-        <div class="mg-chips"><span class="mg-chip">가공 → SUB → 조립</span><span class="mg-chip">통전검사 → 출하</span></div>
-      </div>
-      <div class="mg-card mg-blue">
-        <span class="mg-state">준비중</span>
-        <span class="card-icon">⏱️</span>
-        <div class="card-module-no">PROD 03 · LINE</div>
-        <div class="card-title">라인 생산성</div>
-        <div class="card-title-en">Line Productivity</div>
-        <div class="mg-chips"><span class="mg-chip">HPU·인당 생산량</span><span class="mg-chip">라인별 UPH</span></div>
-      </div>
-      <div class="mg-card mg-blue">
-        <span class="mg-state">준비중</span>
-        <span class="card-icon">🏭</span>
-        <div class="card-module-no">PROD 04 · EQUIPMENT</div>
-        <div class="card-title">설비 가동률</div>
-        <div class="card-title-en">Equipment OEE</div>
-        <div class="mg-chips"><span class="mg-chip">가공기 OEE</span><span class="mg-chip">비가동 시간·사유</span><span class="mg-chip">MTTR</span></div>
-      </div>
-      <div class="mg-card mg-green">
-        <span class="mg-state">준비중</span>
-        <span class="card-icon">🔍</span>
-        <div class="card-module-no">PROD 05 · DEFECT</div>
-        <div class="card-title">공정 불량</div>
-        <div class="card-title-en">Process Defects</div>
-        <div class="mg-chips"><span class="mg-chip">압착 불량</span><span class="mg-chip">통전 NG</span><span class="mg-chip">공정별 PPM</span></div>
-      </div>
-      <div class="mg-card mg-green">
-        <span class="mg-state">준비중</span>
-        <span class="card-icon">🧮</span>
-        <div class="card-module-no">PROD 06 · MANPOWER</div>
-        <div class="card-title">필요인원 산출</div>
-        <div class="card-title-en">Manpower Planning</div>
-        <div class="mg-chips"><span class="mg-chip">공정별 필요인원</span><span class="mg-chip">현원 대비 과부족</span></div>
-      </div>
-      <a class="mg-card mg-purple mg-live" href="shortage_circuit.html" target="_blank" rel="noopener">
-        <span class="mg-state mg-on">운영중</span>
-        <span class="card-icon">🧵</span>
-        <div class="card-module-no">PROD 07 · SHORTAGE</div>
-        <div class="card-title">부족회로·추가선</div>
-        <div class="card-title-en">Shortage Circuits</div>
-        <div class="mg-chips"><span class="mg-chip">조립 요청</span><span class="mg-chip">가공 처리 현황</span></div>
-      </a>
-      <div class="mg-card mg-purple">
-        <span class="mg-state">준비중</span>
-        <span class="card-icon">📋</span>
-        <div class="card-module-no">PROD 08 · WORK ORDER</div>
-        <div class="card-title">작업지시·LOT 진행</div>
-        <div class="card-title-en">Work Order · LOT</div>
-        <div class="mg-chips"><span class="mg-chip">지시 대비 완료율</span><span class="mg-chip">지연 LOT</span></div>
-      </div>
+      <div class="card-title-en">Plan vs Actual</div>
+      <div class="card-desc"><span>일·주·월 달성률</span><span class="mg-sep"> · </span><span>차종별 실적</span></div>
+      <span class="badge badge-qual">생산지표</span>
+      <span class="card-arrow">›</span>
     </div>
   </div>
   <div class="divider-cell"></div>
   <div class="card-cell p2">
-    <div class="mg-grid">
-      <div class="mg-card mg-gold">
-        <span class="mg-state">준비중</span>
-        <span class="card-icon">🎯</span>
-        <div class="card-module-no">PROD 01 · PLAN</div>
+    <div class="card qual card-soon">
+      <span class="mg-state">준비중</span>
+      <span class="card-icon">🎯</span>
+      <div class="card-module-no">PROD 01 · PLAN</div>
+      <div class="card-title-row">
         <div class="card-title">생산계획 대비 실적</div>
-        <div class="card-title-en">Plan vs Actual</div>
-        <div class="mg-chips"><span class="mg-chip">일·주·월 달성률</span><span class="mg-chip">차종별 실적</span></div>
       </div>
-      <div class="mg-card mg-gold">
-        <span class="mg-state">준비중</span>
-        <span class="card-icon">🔀</span>
-        <div class="card-module-no">PROD 02 · FLOW</div>
-        <div class="card-title">공정 흐름 현황</div>
-        <div class="card-title-en">Process Flow</div>
-        <div class="mg-chips"><span class="mg-chip">가공 → SUB → 조립</span><span class="mg-chip">통전검사 → 출하</span></div>
-      </div>
-      <div class="mg-card mg-blue">
-        <span class="mg-state">준비중</span>
-        <span class="card-icon">⏱️</span>
-        <div class="card-module-no">PROD 03 · LINE</div>
-        <div class="card-title">라인 생산성</div>
-        <div class="card-title-en">Line Productivity</div>
-        <div class="mg-chips"><span class="mg-chip">HPU·인당 생산량</span><span class="mg-chip">라인별 UPH</span></div>
-      </div>
-      <div class="mg-card mg-blue">
-        <span class="mg-state">준비중</span>
-        <span class="card-icon">🏭</span>
-        <div class="card-module-no">PROD 04 · EQUIPMENT</div>
-        <div class="card-title">설비 가동률</div>
-        <div class="card-title-en">Equipment OEE</div>
-        <div class="mg-chips"><span class="mg-chip">가공기 OEE</span><span class="mg-chip">비가동 시간·사유</span><span class="mg-chip">MTTR</span></div>
-      </div>
-      <div class="mg-card mg-green">
-        <span class="mg-state">준비중</span>
-        <span class="card-icon">🔍</span>
-        <div class="card-module-no">PROD 05 · DEFECT</div>
-        <div class="card-title">공정 불량</div>
-        <div class="card-title-en">Process Defects</div>
-        <div class="mg-chips"><span class="mg-chip">압착 불량</span><span class="mg-chip">통전 NG</span><span class="mg-chip">공정별 PPM</span></div>
-      </div>
-      <div class="mg-card mg-green">
-        <span class="mg-state">준비중</span>
-        <span class="card-icon">🧮</span>
-        <div class="card-module-no">PROD 06 · MANPOWER</div>
-        <div class="card-title">필요인원 산출</div>
-        <div class="card-title-en">Manpower Planning</div>
-        <div class="mg-chips"><span class="mg-chip">공정별 필요인원</span><span class="mg-chip">현원 대비 과부족</span></div>
-      </div>
-      <a class="mg-card mg-purple mg-live" href="shortage_circuit_2.html" target="_blank" rel="noopener">
-        <span class="mg-state mg-on">운영중</span>
-        <span class="card-icon">🧵</span>
-        <div class="card-module-no">PROD 07 · SHORTAGE</div>
-        <div class="card-title">부족회로·추가선</div>
-        <div class="card-title-en">Shortage Circuits</div>
-        <div class="mg-chips"><span class="mg-chip">조립 요청</span><span class="mg-chip">가공 처리 현황</span></div>
-      </a>
-      <div class="mg-card mg-purple">
-        <span class="mg-state">준비중</span>
-        <span class="card-icon">📋</span>
-        <div class="card-module-no">PROD 08 · WORK ORDER</div>
-        <div class="card-title">작업지시·LOT 진행</div>
-        <div class="card-title-en">Work Order · LOT</div>
-        <div class="mg-chips"><span class="mg-chip">지시 대비 완료율</span><span class="mg-chip">지연 LOT</span></div>
-      </div>
+      <div class="card-title-en">Plan vs Actual</div>
+      <div class="card-desc"><span>일·주·월 달성률</span><span class="mg-sep"> · </span><span>차종별 실적</span></div>
+      <span class="badge badge-qual">생산지표</span>
+      <span class="card-arrow">›</span>
     </div>
   </div>
+
+  <div class="card-cell p1">
+    <div class="card qual card-soon">
+      <span class="mg-state">준비중</span>
+      <span class="card-icon">🔀</span>
+      <div class="card-module-no">PROD 02 · FLOW</div>
+      <div class="card-title-row">
+        <div class="card-title">공정 흐름 현황</div>
+      </div>
+      <div class="card-title-en">Process Flow</div>
+      <div class="card-desc"><span>가공 → SUB → 조립</span><span class="mg-sep"> · </span><span>통전검사 → 출하</span></div>
+      <span class="badge badge-qual">생산지표</span>
+      <span class="card-arrow">›</span>
+    </div>
+  </div>
+  <div class="divider-cell"></div>
+  <div class="card-cell p2">
+    <div class="card qual card-soon">
+      <span class="mg-state">준비중</span>
+      <span class="card-icon">🔀</span>
+      <div class="card-module-no">PROD 02 · FLOW</div>
+      <div class="card-title-row">
+        <div class="card-title">공정 흐름 현황</div>
+      </div>
+      <div class="card-title-en">Process Flow</div>
+      <div class="card-desc"><span>가공 → SUB → 조립</span><span class="mg-sep"> · </span><span>통전검사 → 출하</span></div>
+      <span class="badge badge-qual">생산지표</span>
+      <span class="card-arrow">›</span>
+    </div>
+  </div>
+
+  <div class="card-cell p1">
+    <div class="card etc card-soon">
+      <span class="mg-state">준비중</span>
+      <span class="card-icon">⏱️</span>
+      <div class="card-module-no">PROD 03 · LINE</div>
+      <div class="card-title-row">
+        <div class="card-title">라인 생산성</div>
+      </div>
+      <div class="card-title-en">Line Productivity</div>
+      <div class="card-desc"><span>HPU·인당 생산량</span><span class="mg-sep"> · </span><span>라인별 UPH</span></div>
+      <span class="badge badge-etc">생산지표</span>
+      <span class="card-arrow">›</span>
+    </div>
+  </div>
+  <div class="divider-cell"></div>
+  <div class="card-cell p2">
+    <div class="card etc card-soon">
+      <span class="mg-state">준비중</span>
+      <span class="card-icon">⏱️</span>
+      <div class="card-module-no">PROD 03 · LINE</div>
+      <div class="card-title-row">
+        <div class="card-title">라인 생산성</div>
+      </div>
+      <div class="card-title-en">Line Productivity</div>
+      <div class="card-desc"><span>HPU·인당 생산량</span><span class="mg-sep"> · </span><span>라인별 UPH</span></div>
+      <span class="badge badge-etc">생산지표</span>
+      <span class="card-arrow">›</span>
+    </div>
+  </div>
+
+  <div class="card-cell p1">
+    <div class="card etc card-soon">
+      <span class="mg-state">준비중</span>
+      <span class="card-icon">🏭</span>
+      <div class="card-module-no">PROD 04 · EQUIPMENT</div>
+      <div class="card-title-row">
+        <div class="card-title">설비 가동률</div>
+      </div>
+      <div class="card-title-en">Equipment OEE</div>
+      <div class="card-desc"><span>가공기 OEE</span><span class="mg-sep"> · </span><span>비가동 시간·사유</span><span class="mg-sep"> · </span><span>MTTR</span></div>
+      <span class="badge badge-etc">생산지표</span>
+      <span class="card-arrow">›</span>
+    </div>
+  </div>
+  <div class="divider-cell"></div>
+  <div class="card-cell p2">
+    <div class="card etc card-soon">
+      <span class="mg-state">준비중</span>
+      <span class="card-icon">🏭</span>
+      <div class="card-module-no">PROD 04 · EQUIPMENT</div>
+      <div class="card-title-row">
+        <div class="card-title">설비 가동률</div>
+      </div>
+      <div class="card-title-en">Equipment OEE</div>
+      <div class="card-desc"><span>가공기 OEE</span><span class="mg-sep"> · </span><span>비가동 시간·사유</span><span class="mg-sep"> · </span><span>MTTR</span></div>
+      <span class="badge badge-etc">생산지표</span>
+      <span class="card-arrow">›</span>
+    </div>
+  </div>
+
+  <div class="card-cell p1">
+    <div class="card hr card-soon">
+      <span class="mg-state">준비중</span>
+      <span class="card-icon">🔍</span>
+      <div class="card-module-no">PROD 05 · DEFECT</div>
+      <div class="card-title-row">
+        <div class="card-title">공정 불량</div>
+      </div>
+      <div class="card-title-en">Process Defects</div>
+      <div class="card-desc"><span>압착 불량</span><span class="mg-sep"> · </span><span>통전 NG</span><span class="mg-sep"> · </span><span>공정별 PPM</span></div>
+      <span class="badge badge-hr">생산지표</span>
+      <span class="card-arrow">›</span>
+    </div>
+  </div>
+  <div class="divider-cell"></div>
+  <div class="card-cell p2">
+    <div class="card hr card-soon">
+      <span class="mg-state">준비중</span>
+      <span class="card-icon">🔍</span>
+      <div class="card-module-no">PROD 05 · DEFECT</div>
+      <div class="card-title-row">
+        <div class="card-title">공정 불량</div>
+      </div>
+      <div class="card-title-en">Process Defects</div>
+      <div class="card-desc"><span>압착 불량</span><span class="mg-sep"> · </span><span>통전 NG</span><span class="mg-sep"> · </span><span>공정별 PPM</span></div>
+      <span class="badge badge-hr">생산지표</span>
+      <span class="card-arrow">›</span>
+    </div>
+  </div>
+
+  <div class="card-cell p1">
+    <div class="card hr card-soon">
+      <span class="mg-state">준비중</span>
+      <span class="card-icon">🧮</span>
+      <div class="card-module-no">PROD 06 · MANPOWER</div>
+      <div class="card-title-row">
+        <div class="card-title">필요인원 산출</div>
+      </div>
+      <div class="card-title-en">Manpower Planning</div>
+      <div class="card-desc"><span>공정별 필요인원</span><span class="mg-sep"> · </span><span>현원 대비 과부족</span></div>
+      <span class="badge badge-hr">생산지표</span>
+      <span class="card-arrow">›</span>
+    </div>
+  </div>
+  <div class="divider-cell"></div>
+  <div class="card-cell p2">
+    <div class="card hr card-soon">
+      <span class="mg-state">준비중</span>
+      <span class="card-icon">🧮</span>
+      <div class="card-module-no">PROD 06 · MANPOWER</div>
+      <div class="card-title-row">
+        <div class="card-title">필요인원 산출</div>
+      </div>
+      <div class="card-title-en">Manpower Planning</div>
+      <div class="card-desc"><span>공정별 필요인원</span><span class="mg-sep"> · </span><span>현원 대비 과부족</span></div>
+      <span class="badge badge-hr">생산지표</span>
+      <span class="card-arrow">›</span>
+    </div>
+  </div>
+
+  <div class="card-cell p1">
+    <a class="card inv" href="shortage_circuit.html" target="_blank" rel="noopener">
+      <span class="card-icon">🧵</span>
+      <div class="card-module-no">PROD 07 · SHORTAGE</div>
+      <div class="card-title-row">
+        <div class="card-title">부족회로·추가선</div>
+      </div>
+      <div class="card-title-en">Shortage Circuits</div>
+      <div class="card-desc"><span>조립 요청</span><span class="mg-sep"> · </span><span>가공 처리 현황</span></div>
+      <span class="badge badge-inv">생산지표</span>
+      <span class="card-arrow">›</span>
+    </a>
+  </div>
+  <div class="divider-cell"></div>
+  <div class="card-cell p2">
+    <a class="card inv" href="shortage_circuit_2.html" target="_blank" rel="noopener">
+      <span class="card-icon">🧵</span>
+      <div class="card-module-no">PROD 07 · SHORTAGE</div>
+      <div class="card-title-row">
+        <div class="card-title">부족회로·추가선</div>
+      </div>
+      <div class="card-title-en">Shortage Circuits</div>
+      <div class="card-desc"><span>조립 요청</span><span class="mg-sep"> · </span><span>가공 처리 현황</span></div>
+      <span class="badge badge-inv">생산지표</span>
+      <span class="card-arrow">›</span>
+    </a>
+  </div>
+
+  <div class="card-cell p1">
+    <div class="card inv card-soon">
+      <span class="mg-state">준비중</span>
+      <span class="card-icon">📋</span>
+      <div class="card-module-no">PROD 08 · WORK ORDER</div>
+      <div class="card-title-row">
+        <div class="card-title">작업지시·LOT 진행</div>
+      </div>
+      <div class="card-title-en">Work Order · LOT</div>
+      <div class="card-desc"><span>지시 대비 완료율</span><span class="mg-sep"> · </span><span>지연 LOT</span></div>
+      <span class="badge badge-inv">생산지표</span>
+      <span class="card-arrow">›</span>
+    </div>
+  </div>
+  <div class="divider-cell"></div>
+  <div class="card-cell p2">
+    <div class="card inv card-soon">
+      <span class="mg-state">준비중</span>
+      <span class="card-icon">📋</span>
+      <div class="card-module-no">PROD 08 · WORK ORDER</div>
+      <div class="card-title-row">
+        <div class="card-title">작업지시·LOT 진행</div>
+      </div>
+      <div class="card-title-en">Work Order · LOT</div>
+      <div class="card-desc"><span>지시 대비 완료율</span><span class="mg-sep"> · </span><span>지연 LOT</span></div>
+      <span class="badge badge-inv">생산지표</span>
+      <span class="card-arrow">›</span>
+    </div>
+  </div>
+
 </div>
 
 <!-- ═══ 탭 1: 출근율 현황 ═══ -->
@@ -1648,6 +1844,8 @@ const I18N_ES = {
   '새 비밀번호 확인이 일치하지 않습니다.':'Las contraseñas no coinciden.',
   '비밀번호가 변경되었습니다.':'Contraseña actualizada.',
   '비밀번호':'Contraseña','잠김':'Bloqueado','변경필요':'Debe cambiar','정상':'OK','비번 초기화':'Restablecer',
+  '경영지표':'Indicador de gestión',
+  '생산지표':'Indicador de producción',
   '🔒 경영현황 인증':'🔒 Acceso a Gestión',
   '경영현황은 인증코드를 입력해야 볼 수 있습니다.':'Ingrese el código de acceso para ver Gestión.',
   '인증코드 입력':'Código de acceso',
