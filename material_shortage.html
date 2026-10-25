@@ -932,8 +932,71 @@ function exportRows(){const C=cols().map(([k,h,n])=>[k,String(h).replace(/<br><s
   return[C.map(c=>c[1])].concat(viewList().map(r=>C.map(([k])=>k==='chk'?lab[status(r)]:r[k])))}
 $('sCopy').onclick=async()=>{if(!SUM)return;const t=exportRows().map(r=>r.join('\t')).join('\n');
   try{await navigator.clipboard.writeText(t);toast(tr('클립보드에 복사됨 — 엑셀에 붙여넣기','Copiado'))}catch(e){alert(e.message)}};
-$('sXlsx').onclick=()=>{if(!SUM)return;const ws=XLSX.utils.aoa_to_sheet(exportRows());ws['!cols']=cols().map((c,i)=>({wch:i===2?24:i===0?10:14}));
-  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'부족예상');XLSX.writeFile(wb,`재고부족예상_1공장_${SUM.t||today()}.xlsx`)};
+function loadExcelJS(){if(window.ExcelJS)return Promise.resolve();return new Promise((ok,ng)=>{const s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js';s.onload=ok;s.onerror=()=>ng(new Error(tr('엑셀 모듈을 불러오지 못했습니다','No se pudo cargar el módulo Excel')));document.head.appendChild(s)})}
+$('sXlsx').onclick=async()=>{if(!SUM)return;busy(1);try{await loadExcelJS();await buildXlsx()}catch(e){alert(e.message)}busy(0)};
+async function buildXlsx(){
+  const PL='1공장',rows=viewList(),C0=cols().filter(c=>c[0]!=='car');
+  const hdr=h=>String(h).replace(/<br><small>/,'\n').replace(/<\/small>/,'').replace(/<[^>]+>/g,'');
+  const pk=p=>p[0]+'|'+p[1];
+  const pairs=[...new Map(rows.flatMap(r=>r.cpairs||[]).map(p=>[pk(p),p])).values()].sort((a,b)=>a[0].localeCompare(b[0])||a[1].localeCompare(b[1]));
+  const INK='FF161616',GOLD='FFC9A84C',LINE='FFE3E3E3',MUTE='FF7A7A7A',FONT='맑은 고딕';
+  const PAL=['FF1F4E79','FF6B3FA0','FF1E6B4F','FF9C4A1A','FF8A2346','FF3D5A73'];
+  const CC={};[...new Set(pairs.map(p=>p[0]))].forEach((c,i)=>CC[c]=PAL[i%PAL.length]);
+  const lab={short:tr('부족','Faltante'),care:tr('주의','Alerta'),ok:'OK'};
+  const fill=c=>({type:'pattern',pattern:'solid',fgColor:{argb:c}});
+  const bd={bottom:{style:'thin',color:{argb:LINE}}};
+  const hb={top:{style:'thin',color:{argb:'FF3A3A3A'}},bottom:{style:'thin',color:{argb:'FF3A3A3A'}},left:{style:'thin',color:{argb:'FF3A3A3A'}},right:{style:'thin',color:{argb:'FF3A3A3A'}}};
+  const flt=[$('fCar').value&&tr('차종 ','Modelo ')+$('fCar').value,$('fPn').value&&tr('품명 ','Producto ')+$('fPn').value,$('sQ').value&&tr('검색 ','Buscar ')+$('sQ').value,$('sF').selectedOptions[0].textContent].filter(Boolean).join(' / ');
+  const wb=new ExcelJS.Workbook();wb.creator='YURA HARNESS MÉXICO';wb.created=new Date();
+  const titleRows=(ws,n,title)=>{
+    ws.mergeCells(1,1,1,n);const t=ws.getCell(1,1);t.value=title;t.font={name:FONT,size:16,bold:true,color:{argb:INK}};t.alignment={vertical:'middle'};ws.getRow(1).height=30;
+    ws.mergeCells(2,1,2,n);const s=ws.getCell(2,1);s.value='YURA HARNESS MÉXICO · '+PL+'   |   '+$('sInfo').textContent+(flt?'   |   '+flt:'');s.font={name:FONT,size:9,color:{argb:MUTE}};s.alignment={vertical:'middle'};ws.getRow(2).height=18;
+    for(let c=1;c<=n;c++)ws.getCell(3,c).border={top:{style:'medium',color:{argb:GOLD}}};ws.getRow(3).height=6};
+  const hcell=(cell,v,bg,fg,sz)=>{cell.value=v;cell.fill=fill(bg);cell.font={name:FONT,size:sz||10,bold:true,color:{argb:fg}};cell.alignment={horizontal:'center',vertical:'middle',wrapText:true};cell.border=hb};
+  /* ===== 시트1: 부족예상 + 차종·품명 매트릭스 ===== */
+  const ws=wb.addWorksheet(tr('부족예상','Faltantes'),{views:[{state:'frozen',xSplit:3,ySplit:5,showGridLines:false}],properties:{tabColor:{argb:GOLD}}});
+  const nB=C0.length,nC=nB+pairs.length;
+  titleRows(ws,nC,tr(`가공생산팀 자재관리 · 부족예상 (${PL})`,`Gestión de materiales · Faltantes (${PL})`));
+  C0.forEach(([k,h],i)=>{ws.mergeCells(4,i+1,5,i+1);hcell(ws.getCell(4,i+1),hdr(h),INK,GOLD)});
+  for(let i=0;i<pairs.length;){let j=i;while(j+1<pairs.length&&pairs[j+1][0]===pairs[i][0])j++;
+    if(j>i)ws.mergeCells(4,nB+i+1,4,nB+j+1);hcell(ws.getCell(4,nB+i+1),pairs[i][0]||'-',CC[pairs[i][0]],'FFFFFFFF',11);
+    for(let x=i;x<=j;x++)hcell(ws.getCell(5,nB+x+1),pairs[x][1]||'-','FF2B2B2B','FFFFFFFF',9);i=j+1}
+  ws.getRow(4).height=22;ws.getRow(5).height=30;
+  rows.forEach((r,ri)=>{const s=status(r),R=ws.getRow(6+ri),dec=String(r.unit||'').toUpperCase()!=='EA';
+    const bg=s==='short'?'FFFDECEC':s==='care'?'FFFFF6E0':(ri%2?'FFF8F8F8':'FFFFFFFF'),has=new Set((r.cpairs||[]).map(pk));
+    C0.forEach(([k,h,n],i)=>{const c=R.getCell(i+1);c.fill=fill(bg);c.border=bd;c.font={name:FONT,size:10,color:{argb:INK}};c.alignment={vertical:'middle'};
+      if(k==='chk'){c.value=lab[s];c.alignment={horizontal:'center',vertical:'middle'};
+        if(s==='short'){c.fill=fill('FFC0392B');c.font={name:FONT,size:10,bold:true,color:{argb:'FFFFFFFF'}}}
+        else if(s==='care'){c.fill=fill('FFE0A526');c.font={name:FONT,size:10,bold:true,color:{argb:'FFFFFFFF'}}}
+        else c.font={name:FONT,size:10,bold:true,color:{argb:'FF1E8449'}};return}
+      const v=r[k];
+      if(n){c.value=Number(v)||0;c.numFmt=dec?'#,##0.00;[Red]-#,##0.00;"-"':'#,##0;[Red]-#,##0;"-"';c.alignment={horizontal:'right',vertical:'middle'};
+        if(k==='short'||k==='cur')c.font={name:FONT,size:10,bold:true,color:{argb:INK}}}
+      else{c.value=v==null?'':String(v);if(k==='code')c.font={name:FONT,size:10,bold:true,color:{argb:INK}};if(k==='type'||k==='unit')c.alignment={horizontal:'center',vertical:'middle'}}});
+    pairs.forEach((p,x)=>{const c=R.getCell(nB+x+1);c.fill=fill(bg);c.border=bd;c.alignment={horizontal:'center',vertical:'middle'};
+      if(has.has(pk(p))){c.value='●';c.font={name:FONT,size:11,color:{argb:CC[p[0]]}}}});
+    R.height=19});
+  ws.columns.forEach((col,i)=>{const k=i<nB?C0[i][0]:'p';col.width=k==='name'?24:k==='code'?17:k==='type'?10:k==='unit'?7:k==='chk'?9:k==='p'?Math.max(8,String(pairs[i-nB][1]||'').length+3):12});
+  if(rows.length)ws.autoFilter={from:{row:5,column:1},to:{row:5+rows.length,column:nC}};
+  ws.pageSetup={orientation:'landscape',fitToPage:true,fitToWidth:1,fitToHeight:0,paperSize:9,printTitlesRow:'4:5',margins:{left:.3,right:.3,top:.4,bottom:.4,header:.2,footer:.2}};
+  /* ===== 시트2: 차종·품명별 요약 ===== */
+  const w2=wb.addWorksheet(tr('차종·품명 요약','Resumen modelo'),{views:[{state:'frozen',ySplit:4,showGridLines:false}],properties:{tabColor:{argb:'FF1F4E79'}}});
+  const H2=[tr('차종','Modelo'),tr('품명','Producto'),tr('자재 수','Materiales'),tr('부족','Faltante'),tr('주의','Alerta'),'OK',tr('부족 자재코드','Códigos faltantes')];
+  titleRows(w2,H2.length,tr(`적용차종 · 품명별 부족 현황 (${PL})`,`Faltantes por modelo · producto (${PL})`));
+  H2.forEach((h,i)=>hcell(w2.getCell(4,i+1),h,INK,GOLD));w2.getRow(4).height=24;
+  const sp=[...pairs,['','']];let rr=5;
+  sp.forEach(p=>{const L=p[0]?rows.filter(r=>(r.cpairs||[]).some(q=>pk(q)===pk(p))):rows.filter(r=>!(r.cpairs||[]).length);if(!L.length)return;
+    const st=L.map(status),sh=L.filter(r=>status(r)==='short').map(r=>r.code);
+    const vals=[p[0]||tr('(미등록)','(sin registro)'),p[1],L.length,st.filter(x=>x==='short').length,st.filter(x=>x==='care').length,st.filter(x=>x==='ok').length,sh.join(', ')];
+    const R=w2.getRow(rr),bg=(rr%2)?'FFFFFFFF':'FFF8F8F8';
+    vals.forEach((v,i)=>{const c=R.getCell(i+1);c.value=v;c.fill=fill(bg);c.border=bd;c.font={name:FONT,size:10,color:{argb:INK}};c.alignment={vertical:'middle',horizontal:i>=2&&i<=5?'center':'left',wrapText:i===6}});
+    R.getCell(1).font={name:FONT,size:10,bold:true,color:{argb:CC[p[0]]||MUTE}};
+    if(vals[3])R.getCell(4).font={name:FONT,size:10,bold:true,color:{argb:'FFC0392B'}};if(vals[4])R.getCell(5).font={name:FONT,size:10,bold:true,color:{argb:'FFB7791F'}};
+    rr++});
+  [10,16,10,9,9,9,70].forEach((w,i)=>w2.getColumn(i+1).width=w);
+  const buf=await wb.xlsx.writeBuffer(),a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));
+  a.download=`재고부족예상_${PL}_${SUM.t||today()}.xlsx`;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1500)}
 
 /* ---------- 재고조정 ---------- */
 async function rpc(fn,body){const r=await fetch(SB+'rpc/'+fn,{method:'POST',headers:H,body:JSON.stringify(body)});if(!r.ok)throw new Error(await r.text());return r.json()}
