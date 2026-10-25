@@ -64,7 +64,7 @@ nav.tabs button.on svg{opacity:1}
 @media(max-width:760px){.bar,.system-bar,nav.tabs{padding-left:16px;padding-right:16px}.bar{padding:10px 16px;flex-wrap:wrap}.brand{width:100%}.hdr-right{width:100%;justify-content:flex-end}.brand-sub{display:none}.lang button{height:34px;padding:0 12px}header .who{height:34px}header .who input{width:84px;height:24px}.system-bar>span:first-child{display:none}.system-bar{justify-content:flex-end}}
 
 /* ── 본문 ── */
-main{padding:22px 24px 90px;max-width:none;margin:0 auto}
+main{padding:22px 24px 90px;max-width:1680px;margin:0 auto}
 .tab{display:none}.tab.on{display:block}
 .card{background:linear-gradient(180deg,#181818,#141414);border:1px solid var(--line2);border-radius:var(--r);padding:16px 18px;margin-bottom:14px;box-shadow:var(--sh2)}
 .card h3{margin:0 0 12px;font-family:var(--mono);font-size:14.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--ac);display:flex;align-items:center;gap:10px}
@@ -99,7 +99,10 @@ textarea{width:100%;min-height:150px;height:auto;padding:10px 12px;font-family:C
 .kpi.r b{color:var(--red)}.kpi.a b{color:var(--amb)}.kpi.g b{color:var(--grn)}
 .tw{overflow:auto;max-height:65vh;border:1px solid var(--line2);border-radius:var(--r);background:var(--panel)}
 .tw.m{max-height:42vh}
-.carc{white-space:nowrap;color:var(--ac);font-weight:600}
+.carc{min-width:120px;white-space:nowrap;line-height:1.35;padding-top:6px;padding-bottom:6px}
+.carc .cl{display:block;font-size:12px;color:var(--ink2);}
+.carc .cl+.cl{margin-top:2px}
+.carc .cl b{color:var(--ac);font-weight:700;margin-right:4px}
 table{border-collapse:separate;border-spacing:0;width:100%;font-size:14.5px;background:transparent}
 th,td{padding:8px 8px;border-bottom:1px solid var(--line);white-space:normal;overflow-wrap:break-word;vertical-align:middle;color:var(--ink2)}
 td.n{white-space:nowrap}
@@ -818,7 +821,7 @@ async function calc(fresh=true){
   const cd=$('sCnt').value,f=$('sFrom').value,t=$('sTo').value;
   busy(1);
   try{
-    if(fresh)await Promise.all([loadNeed(),loadMst(),loadAdj(),loadCars()]);
+    if(fresh)await Promise.all([loadNeed(),loadMst(),loadAdj(),loadCars()]);else if(!Object.keys(CARS).length)await loadCars();
     const [cnt,use,rec]=await Promise.all([
       cd?sel('mshort_count',`select=code,qty&cdate=eq.${cd}`):[],
       f&&t?sel('mshort_usage',`select=code,name,qty&udate=gte.${f}&udate=lte.${t}`):[],
@@ -899,7 +902,7 @@ function renderSum(){
   $('sTbl').innerHTML='<tr>'+C.map(([k,h,n])=>`<th class="${n?'n':''}" data-k="${k}">${h}${sortK===k?(sortD>0?' ▲':' ▼'):''}</th>`).join('')+'</tr>'+
     l.map(r=>{const s=status(r);return`<tr class="${s==='ok'?'':s}">`+C.map(([k,h,n])=>{
       if(k==='chk')return`<td><span class="tag ${s}">${lab[s]}</span></td>`;
-      if(k==='car')return`<td class="carc">${r.car?esc(r.car):'<span class="hint">-</span>'}</td>`;
+      if(k==='car')return`<td class="carc">${r.car?r.car.split(', ').flatMap(x=>{const i=x.indexOf(' '),c=i<0?x:x.slice(0,i),ps=i<0?['']:x.slice(i+1).split('·');return ps.map(p=>`<span class="cl"><b>${esc(c)}</b>${esc(p)}</span>`)}).join(''):'<span class="hint">-</span>'}</td>`;
       const v=r[k];
       if(k==='adj')return`<td class="n ${v<0?'neg':''}" title="${r.auto?tr('0처리 자동조정 포함: ','Incluye ajuste por cierre: ')+fmt(r.auto):''}">${v?fmt(v):'<span class="hint">0</span>'}${r.auto?'<span class="tag az">0</span>':''}</td>`;
       if(k==='ret')return`<td class="n">${v?fmt(v):'<span class="hint">0</span>'}</td>`;
