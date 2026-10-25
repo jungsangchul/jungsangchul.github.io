@@ -201,6 +201,10 @@
   .cl-prev{font-size:13px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:3px;}
   .cl-right{display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex:none;}
   .cl-time{font-family:'Space Mono',Consolas,monospace;font-size:12px;color:var(--text-muted);}
+  .cl-del{background:none;border:1px solid transparent;border-radius:6px;color:var(--text-muted);font-size:14px;line-height:1;padding:5px 7px;cursor:pointer;opacity:0;transition:all 0.12s;}
+  .cl-row:hover .cl-del{opacity:1;}
+  .cl-del:hover{color:#e05c5c;border-color:#e05c5c;background:rgba(224,92,92,0.08);}
+  @media (hover:none){.cl-del{opacity:0.75;}}
   .cl-badge{background:#e05c5c;color:#fff;font-family:'Space Mono',Consolas,monospace;font-size:12px;font-weight:700;border-radius:999px;padding:0 7px;line-height:19px;min-width:19px;text-align:center;}
   /* 대화방 */
   .cr-head{display:flex;align-items:center;gap:8px;padding:8px 10px;border-bottom:1px solid var(--divider);background:#101010;flex:none;}
@@ -1871,6 +1875,10 @@ const I18N_ES = {
   '1:1 대화':'Chat 1:1', '1:1':'1:1', '단체방':'Grupo', '단체방 만들기':'Crear grupo', '초대':'Invitar', '초대하기':'Invitar',
   '이름':'Nombre', '나가기':'Salir', '새 방 이름':'Nuevo nombre del grupo',
   '이 단체방에서 나갈까요? 대화 내용은 다시 볼 수 없습니다.':'¿Salir de este grupo? No podrá ver la conversación de nuevo.',
+  '대화방 삭제':'Eliminar chat',
+  '전체 채팅의 대화 내용을 내 화면에서 지울까요?\n(다른 사람에게는 그대로 보입니다)':'¿Borrar la conversación del chat general solo para usted?\n(Los demás la seguirán viendo)',
+  '이 1:1 대화방을 삭제할까요?\n대화 내용이 내 화면에서 지워지며, 상대가 새 메시지를 보내면 다시 나타납니다.':'¿Eliminar este chat 1:1?\nLa conversación se borrará solo para usted y reaparecerá si la otra persona envía un mensaje nuevo.',
+  '이 단체방을 삭제(나가기)할까요?\n대화 내용은 다시 볼 수 없습니다.':'¿Eliminar (salir de) este grupo?\nNo podrá ver la conversación de nuevo.',
   '1:1 대화 상대 선택':'Elegir persona para chat 1:1', '대화 상대 초대':'Invitar personas',
   '이름을 누르면 바로 대화가 열립니다':'Toque un nombre para abrir el chat', '참여할 사람을 여러 명 선택하세요':'Seleccione a los participantes',
   '단체방 이름 (비워두면 참여자 이름으로)':'Nombre del grupo (vacío = nombres de participantes)', '이름 또는 아이디 검색':'Buscar nombre o usuario',
@@ -2597,7 +2605,8 @@ function chatRenderList(){
     return `<div class="cl-row" onclick="chatOpenRoom(${Number(r.id)})">${av}`
       + `<div class="cl-mid"><div class="cl-title"><span>${esc(name)}</span>${cnt}</div><div class="cl-prev">${esc(prev)}</div></div>`
       + `<div class="cl-right"><span class="cl-time">${r.last_id ? esc(_chatDayLabel(r.last_d, r.last_t)) : ''}</span>`
-      + (unread ? `<span class="cl-badge">${unread > 99 ? '99+' : unread}</span>` : '') + `</div></div>`;
+      + (unread ? `<span class="cl-badge">${unread > 99 ? '99+' : unread}</span>` : '') + `</div>`
+      + `<button type="button" class="cl-del" title="${t('대화방 삭제')}" onclick="event.stopPropagation();chatRoomDelete(${Number(r.id)})">🗑</button></div>`;
   }).join('');
 }
 
@@ -2622,9 +2631,10 @@ function chatRenderRoomHead(){
   const r = CHAT.rooms.find(x => x.id === CHAT.room) || { id: CHAT.room, kind: CHAT.room === 0 ? 'all' : 'pending', name: '…', members: [] };
   document.getElementById('cr-name').textContent = _chatRoomName(r);
   let sub = '', acts = '';
+  const delBtn = `<button type="button" class="cr-act danger" onclick="chatRoomDelete(${Number(r.id)})">🗑 ${t('삭제')}</button>`;
   if (r.kind === 'pending') sub = '';
-  else if (r.kind === 'all') sub = t('포털 사용자 전체');
-  else if (r.kind === 'dm') { const o = (r.members || []).find(m => m.user_id !== getMe().id) || {}; sub = (o.user_id || '') + (_chatIsOnline(o.user_id) ? ' · ' + t('접속중') : ''); }
+  else if (r.kind === 'all') { sub = t('포털 사용자 전체'); acts = delBtn; }
+  else if (r.kind === 'dm') { const o = (r.members || []).find(m => m.user_id !== getMe().id) || {}; sub = (o.user_id || '') + (_chatIsOnline(o.user_id) ? ' · ' + t('접속중') : ''); acts = delBtn; }
   else {
     const mem = r.members || [];
     sub = _chatCnt(mem.length) + ' · ' + mem.map(m => m.user_name).join(', ');
@@ -2694,6 +2704,25 @@ async function chatLeave(){
   if (!confirm(t('이 단체방에서 나갈까요? 대화 내용은 다시 볼 수 없습니다.'))) return;
   try { await _chatRpc('portal_room_leave', { p_room: CHAT.room }); CHAT.rooms = CHAT.rooms.filter(x => x.id !== CHAT.room); chatBack(); chatPoll(); }
   catch(e) { if (!_chatAuthErr(e)) document.getElementById('ch-err').textContent = _chatErrMsg(e); }
+}
+async function chatRoomDelete(id){
+  const r = CHAT.rooms.find(x => x.id === id); if (!r) return;
+  const q = r.kind === 'all' ? '전체 채팅의 대화 내용을 내 화면에서 지울까요?\n(다른 사람에게는 그대로 보입니다)'
+          : r.kind === 'dm'  ? '이 1:1 대화방을 삭제할까요?\n대화 내용이 내 화면에서 지워지며, 상대가 새 메시지를 보내면 다시 나타납니다.'
+          : '이 단체방을 삭제(나가기)할까요?\n대화 내용은 다시 볼 수 없습니다.';
+  if (!confirm(t(q))) return;
+  try {
+    await _chatRpc('portal_chat_room_delete', { p_room: id });
+    if (r.kind === 'all') { r.last_id = null; r.unread = 0; if (CHAT.room === id) { CHAT.msgs = []; chatRenderMsgs(); } }
+    else { CHAT.rooms = CHAT.rooms.filter(x => x.id !== id); if (CHAT.room === id) chatBack(); }
+    chatRenderList();
+    if (CHAT.timer) clearTimeout(CHAT.timer);
+    chatPoll();
+  } catch(e) {
+    if (_chatAuthErr(e)) return;
+    const el = document.getElementById('ch-err'); if (el) el.textContent = _chatErrMsg(e);
+    if (CHAT.view === 'list') alert(_chatErrMsg(e));
+  }
 }
 function chatKey(ev){
   if (ev.key === 'Enter' && !ev.shiftKey && !ev.isComposing) { ev.preventDefault(); chatSend(); }
