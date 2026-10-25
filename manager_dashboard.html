@@ -1129,7 +1129,7 @@
       </div>
       <div class="rt-ctrl">
         <span class="rt-act"><button class="rt-btn blue" id="rptReload" onclick="rptBuild()">↻ 새로고침</button><small id="rptCapReload">최신 데이터로 다시 분석</small></span>
-        <span class="rt-act"><button class="rt-btn gold" id="rptCopy" onclick="rptCopyText()">⧉ 텍스트 복사</button><small id="rptCapCopy">메신저·메일 붙여넣기용</small></span>
+        <span class="rt-act"><button class="rt-btn green" id="rptXls" onclick="rptExport()">⤓ Excel 다운로드</button><small id="rptCapXls">5개 시트 · 서식 포함</small></span>
         <span class="rt-act"><button class="rt-btn red" id="rptClose" onclick="closeReport()">✕ 닫기</button><small id="rptCapClose">대시보드로 돌아가기 (ESC)</small></span>
       </div>
     </div>
@@ -1162,7 +1162,7 @@
     </div>
     <div class="rt-card">
       <div class="h"><h3 id="rtH2">일별 비교 — 선택 월</h3><span class="d" id="rtD2">daily · selected month</span></div>
-      <div class="rt-chart"><canvas id="rtChDay"></canvas></div>
+      <div class="rt-chart" style="height:360px"><canvas id="rtChDay"></canvas></div>
       <details class="rt-more"><summary><span class="ar">▾</span><span class="o rt-more-o">세부데이터 펼치기</span><span class="c rt-more-c">세부데이터 접기</span></summary><div class="rt-tw"><table class="rt-t" id="rtTbDay"></table></div></details>
     </div>
     <div class="rt-card">
@@ -2959,8 +2959,11 @@ const rateEventPlugin={id:"rtEvents",beforeDatasetsDraw(ch,_a,opt){
   opt.items.forEach(it=>{ const px=x.getPixelForValue(it.i); if(isNaN(px)) return; lvl=(it.i-lastI<=2)?(lvl+1)%2:0; lastI=it.i; ctx.save();
     ctx.fillStyle=it.color+(it.kind==="bridge"?"14":"22"); ctx.fillRect(px-bw/2+1,top,bw-2,bottom-top);
     ctx.strokeStyle=it.color+"aa"; ctx.setLineDash([3,3]); ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(px,top); ctx.lineTo(px,bottom); ctx.stroke(); ctx.setLineDash([]);
-    ctx.font="700 9.5px 'Noto Sans KR','Space Mono',sans-serif"; ctx.fillStyle=it.color; ctx.textAlign="center"; ctx.textBaseline="top";
-    const txt=it.label.length>14?it.label.slice(0,13)+"…":it.label; ctx.translate(px,top+4+lvl*13); ctx.fillText(txt,0,0); ctx.restore(); });
+    ctx.font="700 10px 'Noto Sans KR','Space Mono',sans-serif"; ctx.fillStyle=it.color; ctx.textAlign="center"; ctx.textBaseline="top";
+    const mx=opt.above?Math.max(4,Math.floor(bw*1.9/10)):14; const txt=it.label.length>mx?it.label.slice(0,mx-1)+"…":it.label;
+    if(opt.above){ ctx.strokeStyle=it.color+"aa"; ctx.setLineDash([3,3]); ctx.beginPath(); ctx.moveTo(px,top-(lvl?6:20)); ctx.lineTo(px,top); ctx.stroke(); ctx.setLineDash([]); ctx.translate(px,top-(lvl?20:34)); }
+    else ctx.translate(px,top+4+lvl*13);
+    ctx.fillText(txt,0,0); ctx.restore(); });
 }};
 
 /* ---------- 유틸 ---------- */
@@ -3076,7 +3079,7 @@ const rateLabelPlugin={id:"rtLabels",afterDatasetsDraw(ch,_a,opt){
         ctx.fillStyle="rgba(8,8,8,.9)"; ctx.strokeStyle=(ds.labelColor||(Array.isArray(ds.borderColor)?ds.borderColor[j]:col)); ctx.lineWidth=1;
         ctx.beginPath(); if(ctx.roundRect) ctx.roundRect(x,y,w,h,7); else ctx.rect(x,y,w,h); ctx.fill(); ctx.stroke();
         ctx.fillStyle="#fff"; ctx.textAlign="center"; ctx.textBaseline="middle"; ctx.fillText(txt,x+w/2,y+h/2+.5); ctx.restore(); return; }
-      const w=ctx.measureText(txt).width+10, h=15; const x=el.x-w/2; const off=(ds.yOff==null?9:ds.yOff); let y=el.y-off-h;
+      const w=ctx.measureText(txt).width+10, h=15; const x=el.x-w/2; const off=(ds.yOff==null?9:ds.yOff); let y=el.y-off-h; if(y+h>bottom-2) y=el.y-9-h; /* 축 라벨 침범 방지: 아래로 넘치면 점 위로 */
       /* 겹침 회피: 위쪽 라벨은 위로, 아래쪽 라벨은 아래로 밀어냄 */
       const dir=off>=0?-1:1; let r={x:x-2,y:y-1,w:w+4,h:h+2}; let n=0;
       while(hit(r)&&n<8){ y+=dir*(h+3); r.y=y-1; n++; if(y<top-h||y>bottom) break; }
@@ -3187,9 +3190,9 @@ function rateRender(){
       {type:"bar",isWk:true,label:`${T.p1} ${lang==="es"?"asistentes fin de semana":"주말 출근"}`,data:cs.map(x=>x.wk&&x.k1&&x.k1.p>0?x.k1.p:null),yAxisID:"yW",backgroundColor:"rgba(226,196,106,.30)",borderColor:RATE_C.p1,borderWidth:1.5,borderRadius:5,barPercentage:.9,categoryPercentage:.55,labelColor:RATE_C.p1,yOff:4,labelFmt:v=>`${v}${pplU}`,order:2},
       {type:"bar",isWk:true,label:`${T.p2} ${lang==="es"?"asistentes fin de semana":"주말 출근"}`,data:cs.map(x=>x.wk&&x.k2&&x.k2.p>0?x.k2.p:null),yAxisID:"yW",backgroundColor:"rgba(111,184,221,.30)",borderColor:RATE_C.p2,borderWidth:1.5,borderRadius:5,barPercentage:.9,categoryPercentage:.55,labelColor:RATE_C.p2,yOff:4,labelFmt:v=>`${v}${pplU}`,order:2}]},
     options:{responsive:true,maintainAspectRatio:false,interaction:{mode:"index",intersect:false},
-      layout:{padding:{top:16}},plugins:{legend:Object.assign({},rateLegend,{labels:Object.assign({},rateLegend.labels,{filter:(it,d)=>!d.datasets[it.datasetIndex].isWk||wkDays.length>0})}),tooltip:Object.assign({},rateTip,{callbacks:{label:c=>c.dataset.isWk?` ${c.dataset.label}: ${c.parsed.y}${pplU} / ${((c.datasetIndex===2?cs[c.dataIndex].k1:cs[c.dataIndex].k2)||{h:'–'}).h}${pplU}`:rateTip.callbacks.label(c),afterTitle:items=>{ const x=cs[items[0].dataIndex]; if(x&&x.wk) return "◇ "+wkLbl; return x&&x.ev&&x.ev.length?"★ "+x.ev.map(rateEvLabel).join(", "):(x&&x.br?"◇ "+T.evKind.bridge:""); }}}),rtLabels:{on:cs.length<=23},rtEvents:{items:evItemsC}},
+      layout:{padding:{top:40}},plugins:{legend:Object.assign({},rateLegend,{position:"bottom",labels:Object.assign({},rateLegend.labels,{padding:12,filter:(it,d)=>!d.datasets[it.datasetIndex].isWk||wkDays.length>0})}),tooltip:Object.assign({},rateTip,{callbacks:{label:c=>c.dataset.isWk?` ${c.dataset.label}: ${c.parsed.y}${pplU} / ${((c.datasetIndex===2?cs[c.dataIndex].k1:cs[c.dataIndex].k2)||{h:'–'}).h}${pplU}`:rateTip.callbacks.label(c),afterTitle:items=>{ const x=cs[items[0].dataIndex]; if(x&&x.wk) return "◇ "+wkLbl; return x&&x.ev&&x.ev.length?"★ "+x.ev.map(rateEvLabel).join(", "):(x&&x.br?"◇ "+T.evKind.bridge:""); }}}),rtLabels:{on:cs.length<=23},rtEvents:{items:evItemsC,above:true}},
       scales:{x:{grid:{display:false},ticks:{color:ctx=>cs[ctx.index]&&cs[ctx.index].wk?"#6a6a6a":cs[ctx.index]&&cs[ctx.index].w===1?RATE_C.mon:(cs[ctx.index]&&cs[ctx.index].ev&&cs[ctx.index].ev.length?(RATE_EVC[cs[ctx.index].ev[0].kind]||RATE_EVC.custom):RATE_C.tick),font:ctx=>({weight:cs[ctx.index]&&cs[ctx.index].w===1?"700":"400",size:10})}},
-        y:{suggestedMin:80,max:100,grid:{color:RATE_C.grid},ticks:{callback:v=>v+"%"}},
+        y:{suggestedMin:80,max:103,grid:{color:c=>c.tick&&c.tick.value>100?"transparent":RATE_C.grid},ticks:{stepSize:5,callback:v=>v>100?"":v+"%"}},
         yW:{display:false,min:0,max:Math.ceil(wkMax*3.2)}}},
     plugins:[rateEventPlugin,rateLabelPlugin]});
   const dc=(x,k)=>x? `<td class="${k}">${rateFmtN(x.h)}</td><td class="${k}">${rateFmtN(x.p)}</td><td class="${k}">${rateFmtN(x.h-x.p)}</td>${cellP(x.p/x.h,k)}` : `<td class="${k} m">–</td>`.repeat(4);
@@ -4122,13 +4125,13 @@ async function rptCheckNew(){
 async function openReport(){
   $("rptModal").classList.add("open"); document.body.style.overflow="hidden";
   $("rptTitle").textContent=L2("분석 리포트","Reporte de análisis"); $("rptSub").firstChild.textContent=L2("출근율 · 퇴사율 자동 요약 · ","Asistencia · Rotación · resumen automático · ");
-  $("rptReload").textContent=L2("↻ 새로고침","↻ Actualizar"); $("rptCopy").textContent=L2("⧉ 텍스트 복사","⧉ Copiar texto"); $("rptClose").textContent=L2("✕ 닫기","✕ Cerrar");
-  $("rptCapReload").textContent=L2("최신 데이터로 다시 분석","Reanalizar con datos nuevos"); $("rptCapCopy").textContent=L2("메신저·메일 붙여넣기용","para chat / correo"); $("rptCapClose").textContent=L2("대시보드로 돌아가기 (ESC)","Volver al tablero (ESC)");
+  $("rptReload").textContent=L2("↻ 새로고침","↻ Actualizar"); $("rptXls").textContent=L2("⤓ Excel 다운로드","⤓ Descargar Excel"); $("rptClose").textContent=L2("✕ 닫기","✕ Cerrar");
+  $("rptCapReload").textContent=L2("최신 데이터로 다시 분석","Reanalizar con datos nuevos"); $("rptCapXls").textContent=L2("5개 시트 · 서식 포함","5 hojas · con formato"); $("rptCapClose").textContent=L2("대시보드로 돌아가기 (ESC)","Volver al tablero (ESC)");
   await rptBuild();
 }
 function closeReport(){ $("rptModal").classList.remove("open"); document.body.style.overflow=""; }
 document.addEventListener("keydown",e=>{ if(e.key==="Escape"&&$("rptModal").classList.contains("open")) closeReport(); });
-let rptText="";
+let rptText="", rptData=null, rptCur=null;
 async function rptBuild(){
   const box=$("rptBody"); box.innerHTML=`<div class="rt-status">${L2("데이터를 모아 분석하는 중…","Analizando datos…")}</div>`;
   const btn=$("rptReload"); btn.disabled=true;
@@ -4148,13 +4151,193 @@ async function rptBuild(){
   }catch(e){ console.error(e); box.innerHTML=`<div class="rt-status" style="color:#ef9a9a">${L2("분석 실패 — 네트워크/Supabase 확인","Error en el análisis — revise la red / Supabase")}</div>`; }
   finally{ btn.disabled=false; }
 }
+
+/* ---------- 분석 리포트 Excel (ExcelJS · 5시트 · 고급 서식) ---------- */
+function rptKpi(p,ym,tY){
+  const m=rateDayMap(p); const days=Object.keys(m).sort(); const [yy,mm]=ym.split("-").map(Number); const pym=mm===1?`${yy-1}-12`:`${yy}-${String(mm-1).padStart(2,"0")}`;
+  const last=days[days.length-1]; const a=rateAgg(m,d=>rateYm(d)===ym), b=rateAgg(m,d=>rateYm(d)===pym); const w=rateWeekday(m,null);
+  let r5=null,p5=null; if(days.length>=10){ r5=rateAgg(m,d=>days.slice(-5).includes(d)).att; p5=rateAgg(m,d=>days.slice(-10,-5).includes(d)).att; }
+  const K={lastD:last||null,lastAtt:last?m[last].p/m[last].h:null,lastPres:last?m[last].p:null,lastHold:last?m[last].h:null,curAtt:a.att,curDays:a.days,prevAtt:b.days?b.att:null,
+    mon:w.mon.rate,week:w.week.rate,monDiff:w.diff,monExcess:w.excess,r5,p5};
+  if(tY){ const M=turnMonthly(p,tY); if(M.months.length){ const lm=M.months[M.months.length-1]; const h=turnHold(p,tY,lm); K.tMonth=lm; K.tCnt=M.tot[lm-1]; K.tRate=h?M.tot[lm-1]/h.v:null; K.tSum=M.sum;
+      const rs=M.months.map(mo=>{ const hh=turnHold(p,tY,mo); return hh?M.tot[mo-1]/hh.v:null; }).filter(v=>v!=null); K.tAvg=rs.length?rs.reduce((x,y)=>x+y,0)/rs.length:null; }
+    const Tn=turnMatrix(p,tY,"tenure"); let e=0,al=0; Tn.keys.forEach(k=>{ al+=Tn.keyTot[k]; if((TURN_I18N.ko.tenureEarly).includes(k)) e+=Tn.keyTot[k]; }); K.early=al?e/al:null;
+    const R=turnMatrix(p,tY,"reason"); const top=R.keys.filter(k=>R.keyTot[k]>0).sort((x,y)=>R.keyTot[y]-R.keyTot[x])[0]; K.topReason=top?`${turnKey(top)} (${R.keyTot[top]})`:null;
+    const ten=empTenure(p,tY); if(ten.n){ K.w1=ten.cum.w1/ten.n; K.m1=ten.cum.m1/ten.n; K.m3=ten.cum.m3/ten.n; } }
+  const r1=empRetention(p,30), r3=empRetention(p,90); K.ret1=r1?r1.rate:null; K.ret3=r3?r3.rate:null;
+  return K;
+}
+async function rptExport(){
+  if(!rptData){ return; }
+  const btn=$("rptXls"); const o=btn.textContent; btn.disabled=true; btn.textContent=L2("만드는 중…","Generando…");
+  try{
+    await rateLoadScript(RATE_XLSX_SRC,()=>!!window.ExcelJS);
+    const T=RATE_I18N[lang]||RATE_I18N.ko; const PL=["1공장","2공장"]; const PN=p=>p==="1공장"?T.p1:T.p2;
+    const wb=new ExcelJS.Workbook(); wb.creator="YURA HARNESS MÉXICO"; wb.created=new Date();
+    /* 팔레트: 차콜 · 골드 · 아이보리 */
+    const C={ink:"FF1B1B1F",ink2:"FF2B2B31",gold:"FFB8933F",goldL:"FFF3E9D2",ivory:"FFFBF8F1",line:"FFD9D2C3",lineD:"FF8C7A55",muted:"FF8A8A8A",
+      p1:"FFC9A227",p1L:"FFFBF3DC",p2:"FF3E8FB8",p2L:"FFE4F1F8",good:"FF2E7D4F",goodL:"FFE3F2E8",warn:"FFB7791F",warnL:"FFFDF1DC",bad:"FFB3261E",badL:"FFFBE4E2",info:"FF3E6F9E",infoL:"FFE6EEF6",white:"FFFFFFFF"};
+    const FN="Malgun Gothic";
+    const F=(o={})=>({name:FN,size:o.size||10,bold:!!o.bold,italic:!!o.italic,color:{argb:o.color||C.ink}});
+    const fill=c=>({type:"pattern",pattern:"solid",fgColor:{argb:c}});
+    const thin=c=>({style:"thin",color:{argb:c||C.line}});
+    const box={top:thin(),bottom:thin(),left:thin(),right:thin()};
+    const LV={good:{c:C.good,l:C.goodL,ko:"양호",es:"Bien"},warn:{c:C.warn,l:C.warnL,ko:"주의",es:"Atención"},bad:{c:C.bad,l:C.badL,ko:"경고",es:"Alerta"},info:{c:C.info,l:C.infoL,ko:"참고",es:"Info"}};
+    const lvTxt=lv=>L2(LV[lv].ko,LV[lv].es);
+    const banner=(ws,cols,title,sub)=>{
+      ws.pageSetup={orientation:"landscape",paperSize:9,fitToPage:true,fitToWidth:1,fitToHeight:0,margins:{left:.4,right:.4,top:.5,bottom:.5,header:.2,footer:.2}};
+      ws.headerFooter={oddFooter:`&L&8YURA HARNESS MÉXICO&C&8&P / &N&R&8 ${todayDate()}`};
+      ws.properties.showGridLines=false; ws.views=[{showGridLines:false}];
+      ws.mergeCells(1,1,1,cols); const a=ws.getCell(1,1); a.value="YURA HARNESS MÉXICO"; a.font=F({size:9,bold:true,color:C.gold}); a.fill=fill(C.ink); a.alignment={vertical:"bottom",indent:1}; ws.getRow(1).height=20;
+      ws.mergeCells(2,1,2,cols); const b=ws.getCell(2,1); b.value=title; b.font=F({size:18,bold:true,color:C.white}); b.fill=fill(C.ink); b.alignment={vertical:"middle",indent:1}; ws.getRow(2).height=34;
+      ws.mergeCells(3,1,3,cols); const c=ws.getCell(3,1); c.value=sub; c.font=F({size:9.5,color:"FFCFC6B4"}); c.fill=fill(C.ink); c.alignment={vertical:"top",indent:1}; ws.getRow(3).height=20;
+      for(let i=1;i<=cols;i++){ ws.getCell(4,i).fill=fill(C.gold); } ws.getRow(4).height=4;
+      return 6; };
+    const section=(ws,r,cols,text,color)=>{ ws.mergeCells(r,1,r,cols); const c=ws.getCell(r,1); c.value=text; c.font=F({size:12,bold:true,color:C.ink});
+      c.border={left:{style:"thick",color:{argb:color||C.gold}},bottom:thin(C.lineD)}; c.alignment={vertical:"middle",indent:1}; ws.getRow(r).height=24; return r+1; };
+    const hdr=(ws,r,vals,bg)=>{ vals.forEach((v,i)=>{ const c=ws.getCell(r,i+1); c.value=v; c.font=F({size:9.5,bold:true,color:C.white}); c.fill=fill(bg||C.ink2); c.alignment={horizontal:"center",vertical:"middle",wrapText:true}; c.border={top:thin(C.ink2),bottom:thin(C.gold),left:thin(C.ink2),right:thin(C.ink2)}; }); ws.getRow(r).height=24; };
+    const put=(ws,r,c,v,o={})=>{ const cell=ws.getCell(r,c); cell.value=(v==null||(typeof v==="number"&&!isFinite(v)))?"–":v; if(o.fmt&&typeof v==="number") cell.numFmt=o.fmt;
+      cell.font=F({bold:o.bold,color:o.color,size:o.size,italic:o.italic}); if(o.fill) cell.fill=fill(o.fill); cell.border=box; cell.alignment={horizontal:o.h||"center",vertical:"middle",wrapText:!!o.wrap,indent:o.indent||0}; return cell; };
+    const meta=rptData.meta;
+
+    /* ── 1. 분석 리포트 (요약 문장) ── */
+    { const ws=wb.addWorksheet(L2("분석리포트","Reporte"),{properties:{tabColor:{argb:C.gold}}}); const cols=3;
+      ws.getColumn(1).width=12; ws.getColumn(2).width=10; ws.getColumn(3).width=110; ws.getColumn(4).width=1;
+      let r=banner(ws,cols,L2("출근율 · 퇴사율 분석 리포트","Reporte de asistencia y rotación"),`${L2("작성","Generado")} ${todayDate()}  ·  ${L2("출근율 기준일","Asistencia al")} ${meta.lastD}  ·  ${meta.turnTo?L2("퇴사 데이터 ","Bajas hasta ")+meta.turnTo:""}`);
+      /* 주의 포인트 */
+      r=section(ws,r,cols,`${L2("주의 포인트","Puntos de atención")}  (${rptData.warn.length}${L2("건","")})`,C.bad);
+      if(!rptData.warn.length){ ws.mergeCells(r,1,r,3); put(ws,r,1,"✓ "+L2("기준을 벗어난 항목이 없습니다","Sin alertas"),{h:"left",color:C.good,bold:true,fill:C.goodL,indent:1}); r++; }
+      rptData.warn.forEach((w,i)=>{ put(ws,r,1,i+1,{color:C.bad,bold:true,fill:C.badL}); put(ws,r,2,lvTxt("bad"),{color:C.white,bold:true,fill:C.bad,size:9}); put(ws,r,3,w,{h:"left",indent:1,wrap:true,fill:i%2?C.white:C.ivory}); ws.getRow(r).height=20; r++; });
+      r++;
+      const block=(title,obj,color)=>{ r=section(ws,r,cols,title,color);
+        PL.forEach(p=>{ const arr=obj[p]||[]; if(!arr.length) return; const pc=p==="1공장"?C.p1:C.p2, pl=p==="1공장"?C.p1L:C.p2L;
+          ws.mergeCells(r,1,r,3); const c=ws.getCell(r,1); c.value="  "+PN(p); c.font=F({bold:true,size:11,color:C.white}); c.fill=fill(pc); c.alignment={vertical:"middle"}; ws.getRow(r).height=21; r++;
+          arr.forEach((x,i)=>{ const L=LV[x.lv]||LV.info; put(ws,r,1,PN(p),{fill:pl,color:C.muted,size:9}); put(ws,r,2,lvTxt(x.lv in LV?x.lv:"info"),{color:C.white,bold:true,fill:L.c,size:9});
+            put(ws,r,3,x.t,{h:"left",indent:1,wrap:true,fill:i%2?C.white:C.ivory}); ws.getRow(r).height=x.t.length>95?32:20; r++; });
+          r++; }); };
+      block(L2("출근율 분석 결과","Resultado — asistencia")+`  ·  ${rateYmLabel(meta.ym)}`,rptData.att,C.gold);
+      if(rptData.cmp){ ws.mergeCells(r,1,r,3); put(ws,r,1,rptData.cmp,{h:"left",indent:1,bold:true,fill:C.goldL}); ws.getRow(r).height=22; r+=2; }
+      block(L2("퇴사율 분석 결과","Resultado — rotación")+(meta.tY?`  ·  ${meta.tY}`:""),rptData.turn,C.gold);
+      ws.mergeCells(r,1,r,3); const n=ws.getCell(r,1); n.value=L2("기준 — 출근율: 평일(월~금)만 · 주말은 별도 표시 / 퇴사: 엑셀 「퇴사자 현황」 / 근속구간·코호트: 직원 마스터 입사일·퇴사일. 판정: 양호·주의·경고·참고","Base — asistencia: solo lun–vie / bajas: tabla «퇴사자 현황» / antigüedad y cohortes: maestro de empleados.");
+      n.font=F({size:8.5,italic:true,color:C.muted}); n.alignment={wrapText:true,vertical:"top"}; ws.getRow(r).height=28;
+      ws.views=[{state:"frozen",ySplit:4,showGridLines:false}]; }
+
+    /* ── 2. 핵심 지표 (1공장 vs 2공장) ── */
+    { const ws=wb.addWorksheet(L2("핵심지표","Indicadores"),{properties:{tabColor:{argb:C.ink2}}}); const cols=5;
+      [6,38,24,24,16].forEach((w,i)=>ws.getColumn(i+1).width=w);
+      let r=banner(ws,cols,L2("핵심 지표 — 1공장 vs 2공장","Indicadores clave — Planta 1 vs Planta 2"),`${rateYmLabel(meta.ym)}  ·  ${L2("출근율 기준일","Asistencia al")} ${meta.lastD}`);
+      const K1=rptKpi("1공장",meta.ym,meta.tY), K2=rptKpi("2공장",meta.ym,meta.tY);
+      hdr(ws,r,["#",L2("지표","Indicador"),T.p1,T.p2,L2("차이 (1−2)","Dif. (1−2)")]); ws.getCell(r,3).fill=fill(C.p1); ws.getCell(r,4).fill=fill(C.p2); r++;
+      /* [라벨, 키, 형식, 좋은방향(+1 높을수록 좋음 / -1 낮을수록 좋음 / 0 중립), 경고기준] */
+      const rows=[
+        ["grp",L2("출근율","Asistencia")],
+        [L2("최근 입력일 출근율","Asistencia último día"),"lastAtt","0.0%",1,v=>v<.9?"bad":v<.93?"warn":"good"],
+        [L2("당월 누적 출근율","Asistencia acumulada del mes"),"curAtt","0.0%",1,v=>v<.9?"bad":v<.93?"warn":"good"],
+        [L2("전월 출근율","Asistencia mes anterior"),"prevAtt","0.0%",1,null],
+        [L2("최근 5근무일 평균","Prom. últimos 5 días"),"r5","0.0%",1,null],
+        [L2("직전 5근무일 평균","Prom. 5 días previos"),"p5","0.0%",1,null],
+        [L2("월요일 결근율","Ausentismo lunes"),"mon","0.0%",-1,null],
+        [L2("평일(화~금) 결근율","Ausentismo mar–vie"),"week","0.0%",-1,null],
+        [L2("월요일 효과 (%p)","Efecto lunes (pp)"),"monDiff",'+0.0%;-0.0%',-1,v=>v>.02?"bad":v>.005?"warn":"good"],
+        [L2("월요일 초과결근 (명/일)","Faltas extra por lunes"),"monExcess","0.0",-1,null],
+        ["grp",L2("퇴사율","Rotación")],
+        [L2("최근 월 퇴사자 (명)","Bajas último mes"),"tCnt","#,##0",-1,null],
+        [L2("최근 월 퇴사율","Rotación último mes"),"tRate","0.0%",-1,v=>v>.08?"bad":v>.05?"warn":"good"],
+        [L2("연간 누계 퇴사자 (명)","Bajas acumuladas"),"tSum","#,##0",-1,null],
+        [L2("월평균 퇴사율","Rotación mensual prom."),"tAvg","0.0%",-1,v=>v>.08?"bad":v>.05?"warn":"good"],
+        [L2("조기 퇴사 비율 (3개월 미만)","Bajas tempranas (< 3 meses)"),"early","0.0%",-1,v=>v>.6?"bad":v>.4?"warn":"good"],
+        [L2("최다 퇴사 사유","Motivo principal"),"topReason",null,0,null],
+        ["grp",L2("근속 · 잔존 (직원 마스터)","Antigüedad y retención (maestro)")],
+        [L2("퇴사자 중 1주 이내 비율","Bajas ≤ 1 semana"),"w1","0.0%",-1,null],
+        [L2("퇴사자 중 1개월 이내 비율","Bajas ≤ 1 mes"),"m1","0.0%",-1,null],
+        [L2("퇴사자 중 3개월 이내 비율","Bajas ≤ 3 meses"),"m3","0.0%",-1,null],
+        [L2("신규 입사자 1개월 잔존율","Retención a 1 mes"),"ret1","0.0%",1,v=>v<.75?"bad":v<.85?"warn":"good"],
+        [L2("신규 입사자 3개월 잔존율","Retención a 3 meses"),"ret3","0.0%",1,v=>v<.75?"bad":v<.85?"warn":"good"]];
+      let n=0;
+      rows.forEach(x=>{ if(x[0]==="grp"){ ws.mergeCells(r,1,r,cols); const c=ws.getCell(r,1); c.value="  "+x[1]; c.font=F({bold:true,color:C.ink,size:10.5}); c.fill=fill(C.goldL); c.border={top:thin(C.gold),bottom:thin(C.gold)}; ws.getRow(r).height=22; r++; return; }
+        n++; const [lab,key,fmt,dir,judge]=x; const v1=K1[key], v2=K2[key]; const zebra=n%2?C.white:C.ivory;
+        put(ws,r,1,n,{color:C.muted,size:9,fill:zebra}); put(ws,r,2,lab,{h:"left",indent:1,fill:zebra});
+        [[3,v1],[4,v2]].forEach(([ci,v])=>{ const lv=(judge&&typeof v==="number")?judge(v):null; const c=put(ws,r,ci,v,{fmt,bold:true,fill:lv?LV[lv].l:zebra,color:lv?LV[lv].c:C.ink}); });
+        const d=(typeof v1==="number"&&typeof v2==="number"&&key!=="topReason")?v1-v2:null;
+        const better=d==null||dir===0?null:(d*dir>0); put(ws,r,5,d,{fmt:fmt&&fmt.includes("%")?'+0.0"%p";-0.0"%p"':(fmt==="#,##0"?"+#,##0;-#,##0;0":"+0.0;-0.0;0"),color:better==null?C.muted:(better?C.good:C.bad),fill:zebra});
+        if(d!=null&&fmt&&fmt.includes("%")) ws.getCell(r,5).value=+(d*100).toFixed(2);
+        ws.getRow(r).height=20; r++; });
+      r++; ws.mergeCells(r,1,r,cols); const nt=ws.getCell(r,1); nt.value=L2(`셀 색: 녹색 양호 · 노랑 주의 · 빨강 경고. 차이 열은 1공장이 유리하면 녹색. 최근 입력일 ${K1.lastD||"–"}(1공장) / ${K2.lastD||"–"}(2공장).`,`Colores: verde bien · amarillo atención · rojo alerta. En «Dif.» verde = favorable a Planta 1.`);
+      nt.font=F({size:8.5,italic:true,color:C.muted}); nt.alignment={wrapText:true}; ws.getRow(r).height=26;
+      ws.views=[{state:"frozen",ySplit:6,showGridLines:false}]; }
+
+    /* ── 3. 코호트 잔존율 ── */
+    { const ws=wb.addWorksheet(L2("코호트잔존율","Cohortes"),{properties:{tabColor:{argb:C.good}}}); const cols=8;
+      [14,10,12,12,12,12,12,14].forEach((w,i)=>ws.getColumn(i+1).width=w);
+      let r=banner(ws,cols,L2("입사 월별 잔존율 (코호트)","Retención por mes de ingreso"),L2("채용 품질 추적 · 잔존율 = 기간이 지난 인원 중 그 시점까지 재직한 비율 · 이탤릭 = 진행중","Calidad de contratación · cursiva = en curso"));
+      const heat=v=>v==null?null:(v>=.95?C.goodL:v>=.85?"FFEFF7F1":v>=.75?C.warnL:C.badL);
+      const msI=[1,2,3,4,5,6];
+      PL.forEach(p=>{ const pc=p==="1공장"?C.p1:C.p2; r=section(ws,r,cols,PN(p),pc);
+        const CO=empCohort(p); if(!CO.length){ ws.mergeCells(r,1,r,cols); put(ws,r,1,L2("입사일 데이터 없음 — 퇴사율 분석 「데이터 입력」에서 입사일 붙여넣기","Sin fechas de ingreso"),{h:"left",indent:1,color:C.muted,fill:C.ivory,italic:true}); r+=2; return; }
+        hdr(ws,r,[L2("입사월","Mes ingreso"),L2("입사인원","Ingresos"),...msI.map(i=>L2(COH_MS[i].ko,COH_MS[i].es))].concat([]),C.ink2); put(ws,r,8,L2("현재 재직","Activos hoy"),{bold:true,color:C.white,fill:C.ink2}); r++;
+        CO.slice().reverse().forEach((c,ri)=>{ const z=ri%2?C.white:C.ivory; put(ws,r,1,rateYmLabel(c.ym),{bold:true,fill:z}); put(ws,r,2,c.size,{fmt:"#,##0",fill:z});
+          msI.forEach((i,k)=>{ const m=c.ms[i]; const cell=put(ws,r,3+k,m.elig?m.rate:null,{fmt:"0.0%",fill:m.elig?(heat(m.rate)||z):z,bold:m.full,color:m.full?C.ink:C.muted}); if(m.elig&&!m.full) cell.font=F({italic:true,color:C.muted}); if(m.elig) cell.note=`${m.kept}/${m.elig}`; });
+          put(ws,r,8,c.curRate,{fmt:"0.0%",bold:true,fill:heat(c.curRate)||z}); ws.getCell(r,8).note=`${c.cur}/${c.size}`; ws.getRow(r).height=19; r++; });
+        put(ws,r,1,L2("가중평균","Promedio"),{bold:true,fill:C.goldL}); put(ws,r,2,null,{fill:C.goldL});
+        msI.forEach((i,k)=>{ const a=empRetention(p,COH_MS[i].n); put(ws,r,3+k,a?a.rate:null,{fmt:"0.0%",bold:true,fill:C.goldL,color:C.ink}); }); put(ws,r,8,null,{fill:C.goldL}); r+=2; });
+      ws.views=[{state:"frozen",ySplit:4,showGridLines:false}]; }
+
+    /* ── 4. 근속 구간 ── */
+    { const ws=wb.addWorksheet(L2("근속구간","Antigüedad"),{properties:{tabColor:{argb:C.warn}}}); const cols=TEN_B.length+5;
+      ws.getColumn(1).width=12; for(let i=2;i<=cols;i++) ws.getColumn(i).width=13;
+      const Y=meta.tY||new Date().getFullYear();
+      let r=banner(ws,cols,L2(`근속 구간별 퇴사자 — ${Y}년`,`Bajas por antigüedad — ${Y}`),L2("근속일수 = 퇴사일 − 입사일 (직원 마스터)","Antigüedad = baja − ingreso (maestro)"));
+      hdr(ws,r,[L2("공장","Planta"),...TEN_B.map(b=>L2(b.ko,b.es)),L2("합계","Total"),"≤1"+L2("주","sem"),"≤1"+L2("개월","mes"),"≤3"+L2("개월","meses")]); r++;
+      PL.forEach((p,pi)=>{ const t=empTenure(p,Y); const pl=p==="1공장"?C.p1L:C.p2L, pc=p==="1공장"?C.p1:C.p2;
+        put(ws,r,1,PN(p),{bold:true,color:C.white,fill:pc});
+        if(!t.n){ ws.mergeCells(r,2,r,cols); put(ws,r,2,L2("입사일 데이터 없음","Sin fechas de ingreso"),{italic:true,color:C.muted,fill:C.ivory}); ws.getRow(r).height=20; r++; return; }
+        TEN_B.forEach((b,i)=>put(ws,r,2+i,t.B[b.k],{fmt:"#,##0",fill:pl,bold:true}));
+        put(ws,r,2+TEN_B.length,t.n,{fmt:"#,##0",bold:true,fill:C.goldL});
+        [t.cum.w1,t.cum.m1,t.cum.m3].forEach((v,i)=>put(ws,r,3+TEN_B.length+i,v,{fmt:"#,##0",fill:[C.badL,C.warnL,C.goldL][i],color:[C.bad,C.warn,C.ink][i],bold:true})); ws.getRow(r).height=20; r++;
+        put(ws,r,1,L2("비율","%"),{color:C.muted,size:9,fill:C.white});
+        TEN_B.forEach((b,i)=>put(ws,r,2+i,t.B[b.k]/t.n,{fmt:"0.0%",color:C.muted,fill:C.white}));
+        put(ws,r,2+TEN_B.length,1,{fmt:"0%",color:C.muted,fill:C.white});
+        [t.cum.w1,t.cum.m1,t.cum.m3].forEach((v,i)=>put(ws,r,3+TEN_B.length+i,v/t.n,{fmt:"0.0%",bold:true,color:[C.bad,C.warn,C.ink][i],fill:C.white})); ws.getRow(r).height=18; r++; });
+      ws.views=[{state:"frozen",ySplit:6,showGridLines:false}]; }
+
+    /* ── 5. 일별 출근율 (당월, 주말 포함 표시) ── */
+    { const ws=wb.addWorksheet(L2("일별출근율","Diario"),{properties:{tabColor:{argb:C.p2}}}); const cols=9;
+      [10,7,11,11,11,11,11,11,12].forEach((w,i)=>ws.getColumn(i+1).width=w);
+      let r=banner(ws,cols,L2(`일별 출근율 — ${rateYmLabel(meta.ym)}`,`Asistencia diaria — ${rateYmLabel(meta.ym)}`),L2("주말(토·일)은 출근 인원만 표시 · 출근율 미반영","Fin de semana: solo asistentes (no cuenta)"));
+      put(ws,r,3,T.p1,{bold:true,color:C.white,fill:C.p1}); ws.mergeCells(r,3,r,5);
+      put(ws,r,6,T.p2,{bold:true,color:C.white,fill:C.p2}); ws.mergeCells(r,6,r,8); ws.getRow(r).height=20;
+      put(ws,r,1,"",{fill:C.ink2}); put(ws,r,2,"",{fill:C.ink2}); put(ws,r,9,"",{fill:C.ink2}); r++;
+      hdr(ws,r,[T.tDate,T.tWd,T.tHold,T.tPres,T.tRate,T.tHold,T.tPres,T.tRate,L2("차이(1−2)","Dif.")]); r++;
+      const m1=rateDayMap("1공장"), m2=rateDayMap("2공장"); const wk={}; rateWkRows.forEach(x=>{ if(rateYm(x.d)!==meta.ym) return; (wk[x.d]=wk[x.d]||{})[x.plant]=x; });
+      const ds=[...new Set(Object.keys(m1).concat(Object.keys(m2)).filter(d=>rateYm(d)===meta.ym).concat(Object.keys(wk).filter(d=>Object.values(wk[d]).some(x=>x.present>0))))].sort();
+      ds.forEach((d,ri)=>{ const w=rateWd(d), isWk=w===0||w===6; const z=isWk?"FFF1F1F1":(w===1?"FFFDF0EF":(ri%2?C.white:C.ivory));
+        put(ws,r,1,d.slice(5).replace("-","/"),{bold:true,fill:z,color:w===1?C.bad:C.ink}); put(ws,r,2,T.wd[w],{fill:z,color:w===1?C.bad:(isWk?C.muted:C.ink)});
+        const cellsFor=(m,pl,c0)=>{ if(isWk){ const x=(wk[d]||{})[pl]; put(ws,r,c0,x?x.hold:null,{fmt:"#,##0",fill:z,color:C.muted}); put(ws,r,c0+1,x&&x.present>0?x.present:null,{fmt:"#,##0",fill:z,bold:true}); put(ws,r,c0+2,L2("미반영","no cuenta"),{fill:z,color:C.muted,size:8.5}); return null; }
+          const x=m[d]; if(!x){ [0,1,2].forEach(k=>put(ws,r,c0+k,null,{fill:z})); return null; } const at=x.p/x.h;
+          put(ws,r,c0,x.h,{fmt:"#,##0",fill:z}); put(ws,r,c0+1,x.p,{fmt:"#,##0",fill:z}); put(ws,r,c0+2,at,{fmt:"0.0%",bold:true,fill:at<.9?C.badL:at<.93?C.warnL:z,color:at<.9?C.bad:C.ink}); return at; };
+        const a1=cellsFor(m1,"1공장",3), a2=cellsFor(m2,"2공장",6);
+        const dv=(a1!=null&&a2!=null)?+((a1-a2)*100).toFixed(2):null; put(ws,r,9,dv,{fmt:'+0.0"%p";-0.0"%p";0.0"%p"',fill:z,color:dv==null?C.muted:(dv>=0?C.good:C.bad)}); ws.getRow(r).height=18; r++; });
+      const ag1=rateAgg(m1,d=>rateYm(d)===meta.ym), ag2=rateAgg(m2,d=>rateYm(d)===meta.ym);
+      put(ws,r,1,L2("월 평균","Prom."),{bold:true,fill:C.goldL}); put(ws,r,2,"",{fill:C.goldL});
+      [[3,ag1],[6,ag2]].forEach(([c0,a])=>{ put(ws,r,c0,a.avgHold,{fmt:"#,##0",bold:true,fill:C.goldL}); put(ws,r,c0+1,a.avgPres,{fmt:"#,##0",bold:true,fill:C.goldL}); put(ws,r,c0+2,a.att,{fmt:"0.0%",bold:true,fill:C.goldL,color:C.ink}); });
+      put(ws,r,9,(ag1.att!=null&&ag2.att!=null)?+((ag1.att-ag2.att)*100).toFixed(2):null,{fmt:'+0.0"%p";-0.0"%p"',bold:true,fill:C.goldL});
+      ws.views=[{state:"frozen",ySplit:7,showGridLines:false}]; }
+
+    const buf=await wb.xlsx.writeBuffer();
+    const blob=new Blob([buf],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
+    const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=`${L2("분석리포트","Reporte_analisis")}_${todayDate()}.xlsx`; document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },1500);
+  }catch(e){ console.error(e); alert("Excel: "+String(e.message||e).slice(0,160)); }
+  finally{ btn.disabled=false; btn.textContent=o; }
+}
+
 function rptCopyText(){ const t=rptText||""; const done=()=>{ const b=$("rptCopy"); const o=b.textContent; b.textContent=L2("✓ 복사됨","✓ Copiado"); setTimeout(()=>b.textContent=o,1500); };
   if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(done,()=>{ const a=document.createElement("textarea"); a.value=t; document.body.appendChild(a); a.select(); document.execCommand("copy"); a.remove(); done(); });
   else { const a=document.createElement("textarea"); a.value=t; document.body.appendChild(a); a.select(); document.execCommand("copy"); a.remove(); done(); } }
 function rptCompose(ctx){
   const T=RATE_I18N[lang]||RATE_I18N.ko, TT=TURN_I18N[lang]||TURN_I18N.ko; const PL=["1공장","2공장"]; const PN=p=>p==="1공장"?T.p1:T.p2; const PC=p=>p==="1공장"?RATE_C.p1:RATE_C.p2;
   const txt=[]; const out=[];
-  const it=(lv,html)=>{ txt.push("· "+html.replace(/<[^>]+>/g,"")); return `<li class="rp-${lv}">${html}</li>`; };
+  rptData={meta:{lastD:ctx.lastD,ym:ctx.curYm},warn:[],att:{},turn:{},cmp:""}; rptCur=null;
+  const it=(lv,html)=>{ const t=html.replace(/<[^>]+>/g,""); txt.push("· "+t); if(rptCur) rptCur.push({lv,t}); return `<li class="rp-${lv}">${html}</li>`; };
   const pp=v=>rateFmtPp(v), P=v=>rateFmtP(v);
   /* 신규 데이터 */
   const allD=[...new Set(rateRows.map(r=>r.d))].sort(); const s=ctx.prevSeen;
@@ -4162,6 +4345,7 @@ function rptCompose(ctx){
   const head=[];
   head.push(`<span class="rp-chip">${L2("출근율 기준일","Asistencia al")} <b>${ctx.lastD}</b> (${T.wd[rateWd(ctx.lastD)]})</span>`);
   const ty=turnYears(); const tY=ty[ty.length-1]; const ent=tY?[...new Set([...turnMonthsEntered("1공장",tY),...turnMonthsEntered("2공장",tY)])].sort((a,b)=>a-b):[]; const tM=ent[ent.length-1];
+  rptData.meta.tY=tY||null; rptData.meta.turnTo=tY&&tM?`${tY}.${String(tM).padStart(2,"0")}`:"";
   if(tY&&tM) head.push(`<span class="rp-chip">${L2("퇴사 데이터","Bajas")} <b>${tY}.${String(tM).padStart(2,"0")}</b> ${L2("까지","")}</span>`);
   if(s){ head.push(newDays.length?`<span class="rp-chip new">NEW · ${L2("출근율","asistencia")} +${newDays.length}${L2("일","d")} (${newDays[0].slice(5)}${newDays.length>1?"~"+newDays[newDays.length-1].slice(5):""})</span>`:"");
     if(s.turnId!==rptSig.turnId) head.push(`<span class="rp-chip new">NEW · ${L2("퇴사 데이터 갱신","bajas actualizadas")}</span>`);
@@ -4177,7 +4361,7 @@ function rptCompose(ctx){
   for(const p of PL){ const m=rateDayMap(p); const days=Object.keys(m).sort(); if(!days.length) continue;
     const last=days[days.length-1], lr=m[last].p/m[last].h;
     const a=rateAgg(m,d=>rateYm(d)===ym), b=rateAgg(m,d=>rateYm(d)===pym);
-    const li=[]; txt.push(`[${PN(p)}]`);
+    const li=[]; txt.push(`[${PN(p)}]`); rptCur=(rptData.att[p]=[]);
     li.push(it(lr<.9?"bad":lr<.93?"warn":"good",L2(`최근 입력일 <b>${last.slice(5).replace("-","/")}(${T.wd[rateWd(last)]})</b> 출근율 <b>${P(lr)}</b> (${m[last].p}/${m[last].h}명) — 당월 평균 대비 <b>${pp(a.att!=null?lr-a.att:null)}</b>`,
       `Último día <b>${last.slice(5).replace("-","/")} (${T.wd[rateWd(last)]})</b>: asistencia <b>${P(lr)}</b> (${m[last].p}/${m[last].h}) — vs. promedio del mes <b>${pp(a.att!=null?lr-a.att:null)}</b>`)));
     if(a.days) li.push(it(a.att<.9?"bad":a.att<.93?"warn":"good",L2(`${rateYmLabel(ym)} 누적 출근율 <b>${P(a.att)}</b> (근무일 ${a.days}일)`+(b.days?` · 전월 ${P(b.att)} 대비 <b>${pp(a.att-b.att)}</b>`:""),
@@ -4205,13 +4389,14 @@ function rptCompose(ctx){
   /* 공장 비교 */
   { const a1=rateAgg(rateDayMap("1공장"),d=>rateYm(d)===ym), a2=rateAgg(rateDayMap("2공장"),d=>rateYm(d)===ym);
     if(a1.days&&a2.days){ const dv=a1.att-a2.att; txt.push(L2(`[비교] 당월 1공장 ${P(a1.att)} vs 2공장 ${P(a2.att)} (${pp(dv)})`,`[Comparación] P1 ${P(a1.att)} vs P2 ${P(a2.att)} (${pp(dv)})`));
+      rptData.cmp=L2(`당월 출근율  1공장 ${P(a1.att)}  vs  2공장 ${P(a2.att)}  →  격차 ${pp(dv)}`,`Asistencia del mes  P1 ${P(a1.att)} vs P2 ${P(a2.att)} → brecha ${pp(dv)}`);
       sec.push(`<div class="rp-cmp">${L2("당월 출근율","Asistencia del mes")} <b style="color:${RATE_C.p1}">${T.p1} ${P(a1.att)}</b> vs <b style="color:${RATE_C.p2}">${T.p2} ${P(a2.att)}</b> → ${L2("격차","brecha")} <b>${pp(dv)}</b></div>`); } }
   out.push(`<div class="rt-card"><div class="h"><h3>${L2("출근율 분석 결과","Resultado — asistencia")}</h3><span class="d">${rateYmLabel(ym)}</span></div><div class="rp-grid">${sec.join("")}</div></div>`);
 
   /* ── 퇴사율 ── */
   const tsec=[]; txt.push(""); txt.push(L2("■ 퇴사율","■ Rotación"));
   if(tY){
-    for(const p of PL){ const M=turnMonthly(p,tY); const li=[]; txt.push(`[${PN(p)}]`);
+    for(const p of PL){ const M=turnMonthly(p,tY); const li=[]; txt.push(`[${PN(p)}]`); rptCur=(rptData.turn[p]=[]);
       if(M.months.length){ const lm=M.months[M.months.length-1], i=lm-1; const h=turnHold(p,tY,lm); const r=h?M.tot[i]/h.v:null; const prev=M.months.includes(lm-1)?M.tot[i-1]:null;
         li.push(it(r==null?"info":r>.08?"bad":r>.05?"warn":"good",L2(`${lm}월 퇴사 <b>${M.tot[i]}명</b>`+(r!=null?` · 퇴사율 <b>${P(r)}</b>`:"")+(prev!=null?` · 전월 ${prev}명 대비 <b>${M.tot[i]-prev>0?"+":""}${M.tot[i]-prev}</b>`:""),
           `${TT.mo[i]}: <b>${M.tot[i]}</b> bajas`+(r!=null?` · rotación <b>${P(r)}</b>`:"")+(prev!=null?` · vs. mes anterior ${prev}: <b>${M.tot[i]-prev>0?"+":""}${M.tot[i]-prev}</b>`:""))));
@@ -4243,7 +4428,7 @@ function rptCompose(ctx){
   warn.forEach(w=>txt.push("· "+w.replace(/<[^>]+>/g,"")));
   out.splice(1,0,`<div class="rt-card rp-warn"><div class="h"><h3>${L2("주의 포인트","Puntos de atención")}</h3><span class="d">${warn.length} ${L2("건","alertas")}</span></div>${warn.length?`<ul>${warn.map(w=>`<li class="rp-bad">${w}</li>`).join("")}</ul>`:`<div class="rp-ok">✓ ${L2("기준(출근율 90%·월요일 +2%p·퇴사율 8%·조기퇴사 60%·1개월 잔존 75%)을 벗어난 항목이 없습니다.","Ningún indicador fuera de umbral (asistencia 90% · lunes +2pp · rotación 8% · tempranas 60% · retención 1 mes 75%).")}</div>`}</div>`);
   out.push(`<div class="rt-note">${L2("기준: 출근율은 평일(월~금)만, 주말은 별도 표시. 퇴사는 엑셀 「퇴사자 현황」 입력값, 근속구간·코호트는 직원 마스터 입사일·퇴사일 기준. 새 데이터(TRESS 붙여넣기·퇴사자 현황 저장)가 들어오면 헤더의 「분석 리포트」 버튼에 NEW가 표시됩니다.","Base: asistencia solo lun–vie (fin de semana aparte). Bajas: tabla «퇴사자 현황»; antigüedad y cohortes: fechas del maestro. Cuando entren datos nuevos el botón «Reporte» muestra NEW.")}</div>`);
-  rptText=txt.join("\n");
+  rptText=txt.join("\n"); rptCur=null; rptData.warn=warn.map(w=>String(w).replace(/<[^>]+>/g,""));
   return out.join("");
 }
 try{ const _setLang2=setLang; setLang=function(l){ _setLang2(l); try{ const b=$("bRpt"); if(b) b.firstChild.textContent=L2("분석 리포트","Reporte"); if($("rptModal").classList.contains("open")) openReport(); }catch(_){ } }; }catch(_){ }
