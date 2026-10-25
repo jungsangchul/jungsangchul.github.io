@@ -913,11 +913,70 @@ async function prodBom(key){
 }
 function stockCond(){return[SPROD?tr('품번 ','Parte ')+SPROD.replace('|','-'):'',$('sQ').value?tr('검색 ','Buscar ')+$('sQ').value:'',$('fCar').value?tr('차종 ','Modelo ')+$('fCar').value:'',$('fPn').value?tr('품명 ','Producto ')+$('fPn').value:'',
   tr('공정 ','Proceso ')+selProcs().join('·'),$('sShow').selectedOptions[0].textContent,thr()?tr('주의 기준 <','Alerta <')+thr():''].filter(Boolean).join(' / ')}
-function stockXlsx(){
-  const rows=sortRows('sTbl',stkCols(),stkFiltered());
-  const cols=stkCols().concat([{h:['자재유형','Tipo mat.'],k:'mat_type'},{h:['공급업체','Proveedor'],k:'vendor_name'}]);
-  xlsxDownload(`조립자재_재고현황_1공장_${stamp()}.xlsx`,[xsheet(tr('재고현황','Inventario'),xTitle(tr('재고현황','Inventario')),xSub(stockCond(),rows.length),cols,rows)]);
-}
+async function stockXlsx(){busy(true,tr('엑셀 생성 중…','Generando Excel…'));try{await stockXlsxBuild()}catch(e){alert(e.message||e)}busy(false)}
+async function stockXlsxBuild(){
+  const PL='1공장',C=stkCols(),rows=sortRows('sTbl',C,stkFiltered());
+  const XC=xcols(C.filter(c=>c.k!=='car'&&c.k!=='pname').concat([{h:['자재유형','Tipo mat.'],k:'mat_type'},{h:['공급업체','Proveedor'],k:'vendor_name'}])).filter(c=>c.h!=='check');
+  const pk=p=>p[0]+'|'+p[1];
+  const pairs=[...new Map(rows.flatMap(r=>r.pairs||[]).map(p=>[pk(p),p])).values()].sort((a,b)=>String(a[0]).localeCompare(b[0])||String(a[1]).localeCompare(b[1]));
+  const INK='FF161616',GOLD='FFC9A84C',LINE='FFE3E3E3',MUTE='FF7A7A7A',FONT='맑은 고딕';
+  const PAL=['FF1F4E79','FF6B3FA0','FF1E6B4F','FF9C4A1A','FF8A2346','FF3D5A73'];
+  const CC={};[...new Set(pairs.map(p=>p[0]))].forEach((c,i)=>CC[c]=PAL[i%PAL.length]);
+  const st=r=>r.stock<0?'short':isCare(r.stock)?'care':r.stock>0?'ok':'';
+  const lab={short:tr('부족','Faltante'),care:tr('주의','Alerta'),ok:'OK','':''};
+  const fill=c=>({type:'pattern',pattern:'solid',fgColor:{argb:c}});
+  const bd={bottom:{style:'thin',color:{argb:LINE}}};
+  const hb={top:{style:'thin',color:{argb:'FF3A3A3A'}},bottom:{style:'thin',color:{argb:'FF3A3A3A'}},left:{style:'thin',color:{argb:'FF3A3A3A'}},right:{style:'thin',color:{argb:'FF3A3A3A'}}};
+  const wb=new ExcelJS.Workbook();wb.creator='YURA HARNESS MÉXICO';wb.created=new Date();
+  const titleRows=(ws,n,title)=>{
+    ws.mergeCells(1,1,1,n);const t=ws.getCell(1,1);t.value=title;t.font={name:FONT,size:16,bold:true,color:{argb:INK}};t.alignment={vertical:'middle'};ws.getRow(1).height=30;
+    ws.mergeCells(2,1,2,n);const s=ws.getCell(2,1);s.value='YURA HARNESS MÉXICO · '+PL+'   |   '+stockCond()+'   |   '+tr('출력 ','Generado ')+new Date().toLocaleString();s.font={name:FONT,size:9,color:{argb:MUTE}};s.alignment={vertical:'middle'};ws.getRow(2).height=18;
+    for(let c=1;c<=n;c++)ws.getCell(3,c).border={top:{style:'medium',color:{argb:GOLD}}};ws.getRow(3).height=6};
+  const hcell=(cell,v,bg,fg,sz)=>{cell.value=v;cell.fill=fill(bg);cell.font={name:FONT,size:sz||10,bold:true,color:{argb:fg}};cell.alignment={horizontal:'center',vertical:'middle',wrapText:true};cell.border=hb};
+  /* ===== 시트1: 재고현황 + 차종·품명 매트릭스 ===== */
+  const ws=wb.addWorksheet(tr('재고현황','Inventario'),{views:[{state:'frozen',xSplit:3,ySplit:5,showGridLines:false}],properties:{tabColor:{argb:GOLD}}});
+  const ck=XC.length,nB=XC.length+1,nC=nB+pairs.length;
+  titleRows(ws,nC,tr(`조립생산팀 자재관리 · 재고현황 (${PL})`,`Materiales de ensamble · Inventario (${PL})`));
+  XC.forEach((c,i)=>{ws.mergeCells(4,i+1,5,i+1);hcell(ws.getCell(4,i+1),c.h,INK,GOLD)});
+  ws.mergeCells(4,nB,5,nB);hcell(ws.getCell(4,nB),'CHECK',INK,GOLD);
+  for(let i=0;i<pairs.length;){let j=i;while(j+1<pairs.length&&pairs[j+1][0]===pairs[i][0])j++;
+    if(j>i)ws.mergeCells(4,nB+i+1,4,nB+j+1);hcell(ws.getCell(4,nB+i+1),pairs[i][0]||'-',CC[pairs[i][0]],'FFFFFFFF',11);
+    for(let x=i;x<=j;x++)hcell(ws.getCell(5,nB+x+1),pairs[x][1]||'-','FF2B2B2B','FFFFFFFF',9);i=j+1}
+  ws.getRow(4).height=22;ws.getRow(5).height=30;
+  rows.forEach((r,ri)=>{const s=st(r),R=ws.getRow(6+ri);
+    const bg=s==='short'?'FFFDECEC':s==='care'?'FFFFF6E0':(ri%2?'FFF8F8F8':'FFFFFFFF'),has=new Set((r.pairs||[]).map(pk));
+    XC.forEach((col,i)=>{const c=R.getCell(i+1);c.fill=fill(bg);c.border=bd;c.font={name:FONT,size:10,color:{argb:INK}};c.alignment={vertical:'middle'};
+      let v=col.get(r);
+      if(col.t==='n'){v=v==null||v===''?null:Number(v);if(v!=null&&!isFinite(v))v=null;c.value=v;c.numFmt=(v!=null&&!Number.isInteger(v))?'#,##0.00;[Red]-#,##0.00;"-"':'#,##0;[Red]-#,##0;"-"';c.alignment={horizontal:'right',vertical:'middle'};
+        if(col.h===tr('현재고','Stock actual'))c.font={name:FONT,size:10,bold:true,color:{argb:INK}}}
+      else{c.value=v==null?'':String(v);if(i===1)c.font={name:FONT,size:10,bold:true,color:{argb:INK}};if(i===0||col.h===tr('단위','Unidad'))c.alignment={horizontal:'center',vertical:'middle'}}});
+    const c=R.getCell(nB);c.value=lab[s];c.border=bd;c.alignment={horizontal:'center',vertical:'middle'};c.fill=fill(bg);
+    if(s==='short'){c.fill=fill('FFC0392B');c.font={name:FONT,size:10,bold:true,color:{argb:'FFFFFFFF'}}}
+    else if(s==='care'){c.fill=fill('FFE0A526');c.font={name:FONT,size:10,bold:true,color:{argb:'FFFFFFFF'}}}
+    else c.font={name:FONT,size:10,bold:true,color:{argb:'FF1E8449'}};
+    pairs.forEach((p,x)=>{const c=R.getCell(nB+x+1);c.fill=fill(bg);c.border=bd;c.alignment={horizontal:'center',vertical:'middle'};
+      if(has.has(pk(p))){c.value='●';c.font={name:FONT,size:11,color:{argb:CC[p[0]]}}}});
+    R.height=19});
+  ws.columns.forEach((col,i)=>{col.width=i<ck?Math.max(7,Math.min(32,XC[i].w||12)):i===ck?9:Math.max(8,String(pairs[i-nB][1]||'').length+3)});
+  if(rows.length)ws.autoFilter={from:{row:5,column:1},to:{row:5+rows.length,column:nC}};
+  ws.pageSetup={orientation:'landscape',fitToPage:true,fitToWidth:1,fitToHeight:0,paperSize:9,printTitlesRow:'4:5',margins:{left:.3,right:.3,top:.4,bottom:.4,header:.2,footer:.2}};
+  /* ===== 시트2: 차종·품명별 요약 ===== */
+  const w2=wb.addWorksheet(tr('차종·품명 요약','Resumen modelo'),{views:[{state:'frozen',ySplit:4,showGridLines:false}],properties:{tabColor:{argb:'FF1F4E79'}}});
+  const H2=[tr('차종','Modelo'),tr('품명','Producto'),tr('자재 수','Materiales'),tr('부족','Faltante'),tr('주의','Alerta'),'OK',tr('부족 자재코드','Códigos faltantes')];
+  titleRows(w2,H2.length,tr(`적용차종 · 품명별 재고 현황 (${PL})`,`Inventario por modelo · producto (${PL})`));
+  H2.forEach((h,i)=>hcell(w2.getCell(4,i+1),h,INK,GOLD));w2.getRow(4).height=24;
+  let rr=5;[...pairs,['','']].forEach(p=>{const L=p[0]||p[1]?rows.filter(r=>(r.pairs||[]).some(q=>pk(q)===pk(p))):rows.filter(r=>!(r.pairs||[]).length);if(!L.length)return;
+    const S=L.map(st),sh=L.filter(r=>st(r)==='short').map(r=>r.code);
+    const vals=[p[0]||p[1]?(p[0]||'-'):tr('(미등록)','(sin registro)'),p[1],L.length,S.filter(x=>x==='short').length,S.filter(x=>x==='care').length,S.filter(x=>x==='ok').length,sh.join(', ')];
+    const R=w2.getRow(rr),bg=(rr%2)?'FFFFFFFF':'FFF8F8F8';
+    vals.forEach((v,i)=>{const c=R.getCell(i+1);c.value=v;c.fill=fill(bg);c.border=bd;c.font={name:FONT,size:10,color:{argb:INK}};c.alignment={vertical:'middle',horizontal:i>=2&&i<=5?'center':'left',wrapText:i===6}});
+    R.getCell(1).font={name:FONT,size:10,bold:true,color:{argb:CC[p[0]]||MUTE}};
+    if(vals[3])R.getCell(4).font={name:FONT,size:10,bold:true,color:{argb:'FFC0392B'}};if(vals[4])R.getCell(5).font={name:FONT,size:10,bold:true,color:{argb:'FFB7791F'}};
+    rr++});
+  [10,16,10,9,9,9,70].forEach((w,i)=>w2.getColumn(i+1).width=w);
+  const buf=await wb.xlsx.writeBuffer(),a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));
+  a.download=`조립자재_재고현황_${PL}_${stamp()}.xlsx`;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1500)}
 function stockCopy(){const C=stkCols(),cols=xcols(C),rows=sortRows('sTbl',C,stkFiltered());
   copyText([cols.map(c=>c.h).join('\t')].concat(rows.map(r=>cols.map(c=>{const v=c.get(r);return v==null?'':(c.t==='n'?r3(v):String(v).replace(/[\t\n]/g,' '))}).join('\t'))).join('\n'))}
 function goAdj(code){showTab('adj');$('aCode').value=code;$('aQty').value='';renderAdjBox();setTimeout(()=>$('aQty').focus(),50)}
