@@ -108,6 +108,8 @@ td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
 td.b{font-weight:700;color:#fff}
 td.mute{color:var(--mute)}
 td.empty{text-align:center;color:var(--mute);padding:24px}
+td.gp{max-width:230px;overflow:hidden;text-overflow:ellipsis;font-size:12.5px;color:#e6dcc0}td.gp.car{color:var(--ac2);font-weight:700}
+table.gtbl td{padding:5px 10px}table.gtbl input{height:32px;width:100%;min-width:120px}table.gtbl tr.dirty td{background:rgba(201,168,76,.08)}table.gtbl tr.miss td:first-child b{color:var(--amb)}
 tr.click{cursor:pointer}
 tr.short td{background:var(--redbg)}tr.care td{background:var(--ambbg)}tr.ex td{color:var(--dim);text-decoration:line-through}
 tr.mutedr td{color:var(--dim)}
@@ -496,6 +498,14 @@ table.cfg input{width:17px;height:17px}
   </div>
   <div class="card">
     <div class="row hd">
+      <h3><span data-t="grp_h">차종·품명 마스터 (품번 구분자)</span> <span class="hint" id="gInfo"></span></h3>
+      <div class="row"><input id="gNew" data-tp="grp_new" placeholder="91500-FC" style="width:130px" autocomplete="off"><button class="btn sec" id="gAdd" data-t="grp_add">+ 구분자 추가</button><button class="btn" id="gSave" data-t="grp_save">차종·품명 저장</button></div>
+    </div>
+    <div class="hint" style="margin-bottom:8px" data-t="grp_hint">완제품 품번 앞부분(예: 91500-FC, 91100-GG)별로 차종·품명을 입력하고 저장하세요. 재고현황 check 옆에 그 자재가 쓰이는 완제품의 차종·품명이 표시됩니다. 가공 회로조회의 차종·품명 마스터와 같은 데이터(2공장 공유)라 어느 쪽에서 고쳐도 함께 바뀝니다.</div>
+    <div class="tw m"><table id="gTbl" class="gtbl"></table></div>
+  </div>
+  <div class="card">
+    <div class="row hd">
       <h3><span data-t="prod_h">완제품 목록</span> <span class="hint" id="bInfo2"></span></h3>
       <div class="row"><input id="bQ" data-tp="search_p" placeholder="품번/품명 검색" style="width:170px"><button class="btn sec" id="bXAll" data-t="xlsx_bom_all">전체 BOM 엑셀</button></div>
     </div>
@@ -580,6 +590,8 @@ sel_all:'Seleccionar todo',del_sel:'Eliminar seleccionados',log_hint:'Historial 
 p_search:'Código/nombre/proveedor',p_search2:'Código/nombre/nota',p_search3:'LOT / No. parte',p_search_p:'Buscar parte/producto',p_search_c:'Buscar componente',p_adj_memo:'Ej.: medición en piso'};
 let LANG='ko';try{LANG=localStorage.getItem('binv2_lang')||'ko'}catch(e){}
 const KO={};
+Object.assign(ES,{grp_h:'Modelo / producto (prefijo de No. parte)',grp_add:'+ Agregar prefijo',grp_save:'Guardar modelo/producto',p_grp_new:'91500-FC',
+  grp_hint:'Ingrese modelo y producto por prefijo del No. de parte terminado (ej.: 91500-FC, 91100-GG) y guarde. En Inventario se muestran junto a check el modelo y producto donde se usa cada material. Es el mismo maestro que la consulta de circuitos de maquinado; se actualiza en ambos.'});
 function applyLang(){
   document.querySelectorAll('[data-t]').forEach(e=>{const k=e.dataset.t;if(!(k in KO))KO[k]=e.innerHTML;e.innerHTML=LANG==='es'&&ES[k]?ES[k]:KO[k]});
   document.querySelectorAll('[data-tp]').forEach(e=>{const k='p_'+e.dataset.tp;if(!(k in KO))KO[k]=e.placeholder;e.placeholder=LANG==='es'&&ES[k]?ES[k]:KO[k]});
@@ -795,11 +807,45 @@ function renderDates(k){const el=$(DATE_EL[k]);if(!el)return;const list=DATES[k]
 
 /* ================= 로딩 ================= */
 async function loadSettings(){const r=await sel('binv2_setting?select=key,value');SET={};r.forEach(x=>SET[x.key]=x.value);$('sThr').value=SET.threshold||'';renderCfg()}
-async function loadItems(){ITEMS=await sel('binv2_stock_v?select=*&order=code');ITEMS.forEach(it=>{['stock','q_init','q_in','q_sub','q_assy','q_adj'].forEach(k=>it[k]=Number(it[k])||0)});
+async function loadItems(){ITEMS=await sel('binv2_stock_v?select=*&order=code');ITEMS.forEach(it=>{['stock','q_init','q_in','q_sub','q_assy','q_adj'].forEach(k=>it[k]=Number(it[k])||0);applyGrp(it)});
   buildIndex();renderStock();renderAdjBox();renderBomKpi()}
-async function loadProducts(){PRODS=await rpc('binv2_bom_products',{});buildProdIdx();renderProdSel();renderPlanProdSel();renderBomKpi();renderProds()}
+async function loadProducts(){PRODS=await rpc('binv2_bom_products',{});buildProdIdx();renderProdSel();renderPlanProdSel();renderBomKpi();renderProds();await loadGroups()}
 async function loadLast(){try{const r=await sel('binv2_batch?select=id,kind,work_date,created_at,status&order=id.desc&limit=1');LAST=r[0]||null}catch(e){LAST=null}renderLast()}
 function renderLast(){$('kLast').innerHTML=LAST?`${kindTag(LAST.kind)} ${esc(dt(LAST.created_at))}`:'-'}
+/* ================= 차종·품명 마스터 (circuit_pn_group_2 · 가공 회로조회와 공유) ================= */
+const GRP_T='circuit_pn_group_2';
+let GRP={},GRP_SAVED=new Set(),GRP_DEL=new Set(),GRP_DIRTY=new Set(),CGRP={};
+const pnKey=pn=>{const m=String(pn||'').trim().toUpperCase().match(/^([^-\s]+)-([A-Z0-9]{2})/);return m?m[1]+'-'+m[2]:''};
+function applyGrp(it){const cars=new Set(),pns=new Set(),miss=[];(CGRP[it.code]||[]).forEach(p=>{const g=GRP[p];if(g&&(g.car||g.pname)){if(g.car)cars.add(g.car);if(g.pname)pns.add(g.pname)}else miss.push(p)});
+  it.car=[...cars].sort().join(', ');it.pname=[...pns].sort().join(', ');it.gmiss=miss}
+async function loadGroups(){
+  try{const [g,c]=await Promise.all([sel(GRP_T+'?select=prefix,car,pname&order=prefix'),rpc('binv2_comp_groups',{})]);
+    GRP={};GRP_SAVED=new Set();GRP_DEL.clear();GRP_DIRTY.clear();(g||[]).forEach(x=>{GRP[x.prefix]={car:x.car||'',pname:x.pname||''};GRP_SAVED.add(x.prefix)});CGRP=c||{}}
+  catch(e){console.warn('groups',e)}
+  ITEMS.forEach(applyGrp);renderGroups();if(ITEMS.length)renderStock()}
+function renderGroups(){const el=$('gTbl');if(!el)return;const cnt={};PRODS.forEach(p=>{const k=pnKey(p.top_code);if(k)cnt[k]=(cnt[k]||0)+1});
+  const keys=[...new Set([...Object.keys(cnt),...Object.keys(GRP)])].sort();const has=k=>GRP[k]&&(GRP[k].car||GRP[k].pname);
+  el.innerHTML=`<thead><tr><th>${tr('구분자','Prefijo')}</th><th class="n">${tr('완제품 수','Productos')}</th><th>${tr('차종','Modelo')}</th><th>${tr('품명','Producto')}</th><th></th></tr></thead><tbody>`+
+    (keys.length?keys.map(k=>{const g=GRP[k]||{car:'',pname:''};return `<tr data-g="${esc(k)}" class="${GRP_DIRTY.has(k)?'dirty':''}${has(k)?'':' miss'}"><td><b>${esc(k)}</b></td><td class="n">${cnt[k]||'<span class="hint">0</span>'}</td>`+
+      `<td><input data-f="car" value="${esc(g.car)}" autocomplete="off"></td><td><input data-f="pname" value="${esc(g.pname)}" autocomplete="off"></td>`+
+      `<td>${cnt[k]?'':`<button class="btn sec gx" style="height:28px;padding:0 10px" title="${tr('삭제','Eliminar')}">✕</button>`}</td></tr>`}).join('')
+     :`<tr><td colspan="5" class="empty">${tr('데이터가 없습니다','Sin datos')}</td></tr>`)+'</tbody>';
+  const miss=keys.filter(k=>!has(k)).length;
+  $('gInfo').textContent=tr(`${keys.length}개 · 미등록 ${miss}`,`${keys.length} · sin registrar ${miss}`)+(GRP_DIRTY.size||GRP_DEL.size?tr(' · 저장 안 됨',' · sin guardar'):'')}
+function grpInput(e){const t=e.target.closest('input[data-f]');if(!t)return;const row=t.closest('tr');const k=row.dataset.g;GRP[k]=GRP[k]||{car:'',pname:''};GRP[k][t.dataset.f]=t.value;GRP_DIRTY.add(k);row.classList.add('dirty')}
+function grpClick(e){const b=e.target.closest('.gx');if(!b)return;const k=b.closest('tr').dataset.g;if(!confirm(tr('이 구분자를 삭제할까요?','¿Eliminar este prefijo?')+'\n'+k))return;
+  delete GRP[k];GRP_DIRTY.delete(k);if(GRP_SAVED.has(k))GRP_DEL.add(k);renderGroups()}
+function grpAdd(){const v=$('gNew').value.trim().toUpperCase();const k=pnKey(v);if(!k||k!==v){toast(tr('구분자 형식: 91500-FC','Formato de prefijo: 91500-FC'),1);return}
+  if(!GRP[k])GRP[k]={car:'',pname:''};GRP_DEL.delete(k);GRP_DIRTY.add(k);$('gNew').value='';renderGroups();const i=document.querySelector(`#gTbl tr[data-g="${k}"] input`);if(i)i.focus()}
+async function grpSave(){busy(true,tr('저장 중…','Guardando…'));
+  try{const up=[],now=new Date().toISOString();
+    [...GRP_DIRTY].forEach(k=>{const g=GRP[k];if(!g)return;g.car=String(g.car||'').trim();g.pname=String(g.pname||'').trim();
+      if(!g.car&&!g.pname){delete GRP[k];if(GRP_SAVED.has(k))GRP_DEL.add(k)}else up.push({prefix:k,car:g.car,pname:g.pname,updated_at:now})});
+    if(up.length)await ins(GRP_T,up,'prefix');
+    if(GRP_DEL.size)await del(GRP_T,'prefix=in.('+[...GRP_DEL].map(k=>'"'+k.replace(/"/g,'')+'"').join(',')+')');
+    const n=up.length+GRP_DEL.size;GRP_DIRTY.clear();GRP_DEL.clear();GRP_SAVED=new Set(Object.keys(GRP));
+    ITEMS.forEach(applyGrp);renderGroups();renderStock();toast(n?tr(`차종·품명 ${n}건 저장 완료`,`Modelo/producto guardado (${n})`):tr('변경 내용이 없습니다','Sin cambios'))}
+  catch(e){toast(errMsg(e),1)}finally{busy(false)}}
 async function refreshAll(){await Promise.all([loadItems(),loadLast()])}
 
 /* ================= 재고현황 ================= */
@@ -819,7 +865,9 @@ function stkCols(){const a=[
     {h:['현재고','Stock actual'],k:'stock',t:'n',neg:1,sum:1,w:12,cls:'adjc',tdAttr:r=>`data-adj="${esc(r.code)}" title="${tr('눌러서 재고조정','Toque para ajustar')}"`},
     {h:['최근 처리','Último mov.'],v:r=>dt(r.last_at),w:17,cls:'mute'},
     {h:['check','check'],v:r=>r.stock<0?tr('부족','Faltante'):isCare(r.stock)?tr('주의','Alerta'):(r.stock>0?'OK':''),w:8,
-      html:r=>r.stock<0?`<span class="tag short">${tr('부족','Faltante')}</span>`:isCare(r.stock)?`<span class="tag care">${tr('주의','Alerta')}</span>`:(r.stock>0?'<span class="tag ok">OK</span>':'')});
+      html:r=>r.stock<0?`<span class="tag short">${tr('부족','Faltante')}</span>`:isCare(r.stock)?`<span class="tag care">${tr('주의','Alerta')}</span>`:(r.stock>0?'<span class="tag ok">OK</span>':'')},
+    {h:['차종','Modelo'],k:'car',w:12,cls:'gp car',html:r=>r.car?esc(r.car):(r.gmiss&&r.gmiss.length?`<span class="hint" title="${tr('차종·품명 미등록 구분자','Prefijo sin modelo/producto')}">${esc(r.gmiss.join(', '))}</span>`:'')},
+    {h:['품명','Producto'],k:'pname',w:28,cls:'gp',tdAttr:r=>r.pname?`title="${esc(r.pname)}"`:''});
   return a}
 const selProcs=()=>[...document.querySelectorAll('#sProc input:checked')].map(x=>x.value);
 const procOk=(it,procs)=>procs.length===3||String(it.procs||'').split(',').some(p=>procs.includes(p));
@@ -827,7 +875,7 @@ const thr=()=>Number(SET.threshold)||0;
 const isCare=v=>thr()>0&&v>=0&&v<thr();
 function showOk(it,show){return show==='pos'?it.stock>0:show==='zero'?it.stock===0:show==='neg'?it.stock<0:show==='care'?isCare(it.stock):show==='chk'?(it.stock<0||isCare(it.stock)):show==='moved'?!!it.last_at:true}
 function stkBase(){const q=nz($('sQ').value),set=SPROD&&PRODBOM[SPROD]?PRODBOM[SPROD]:null;
-  return ITEMS.filter(it=>(!set||set.has(it.code))&&(!q||nz(it.code+' '+(it.name||'')+' '+(it.vendor_part||'')).includes(q)))}
+  return ITEMS.filter(it=>(!set||set.has(it.code))&&(!q||nz(it.code+' '+(it.name||'')+' '+(it.vendor_part||'')+' '+(it.car||'')+' '+(it.pname||'')).includes(q)))}
 function stkFiltered(){const procs=selProcs(),show=$('sShow').value;return stkBase().filter(it=>procOk(it,procs)&&showOk(it,show))}
 function renderStock(){
   const base=stkBase(),procs=selProcs(),show=$('sShow').value;
@@ -1452,7 +1500,7 @@ const TABLOAD={plan:()=>{if(!REQ)Promise.all([planDates(),planLoad()])},init:()=
   sub:()=>{loadDates('SUB');if(!RES.SUB.hist)resHistLoad('SUB')},assy:()=>{loadDates('ASSY');if(!RES.ASSY.hist)resHistLoad('ASSY')},log:()=>logLoad()};
 function showTab(t){document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.tab===t));
   document.querySelectorAll('.tab').forEach(s=>s.classList.toggle('on',s.id==='t-'+t));try{localStorage.setItem('binv2_tab',t)}catch(e){}if(TABLOAD[t])TABLOAD[t]()}
-function rerenderAll(){renderStock();renderProdSel();renderPlanProdSel();planRender();planListRender();reqRender();renderProds();renderBomKpi();renderCfg();renderAdjBox();initRender();inRender();abRender();bomInfo();renderLast();
+function rerenderAll(){renderStock();renderGroups();renderProdSel();renderPlanProdSel();planRender();planListRender();reqRender();renderProds();renderBomKpi();renderCfg();renderAdjBox();initRender();inRender();abRender();bomInfo();renderLast();
   ['INIT','IN','ADJ'].forEach(k=>{if(HIST[k])histRender(k)});['SUB','ASSY'].forEach(k=>{if(RES[k].res)resRender(k);if(RES[k].hist)resHistRender(k)});if(LOG.length)logRender();
   Object.keys(DATE_EL).forEach(k=>{if(DATES[k])renderDates(k)});if(BDET)renderProdDet()}
 async function boot(){
@@ -1496,6 +1544,7 @@ async function boot(){
   // BOM
   bindPaste('bPaste',bomParse);$('bClear').onclick=()=>{clearPaste('bPaste');BOMP=null;bomInfo()};$('bUpload').onclick=bomUpload;$('bQ').addEventListener('input',renderProds);
   $('bDetProc').onchange=renderProdDet;$('bDetQ').addEventListener('input',renderProdDet);$('bDetX').onclick=prodDetXlsx;$('bXAll').onclick=bomAllXlsx;$('cfgSave').onclick=cfgSave;$('recalc').onclick=recalc;
+  $('gTbl').addEventListener('input',grpInput);$('gTbl').addEventListener('click',grpClick);$('gAdd').onclick=grpAdd;$('gNew').addEventListener('keydown',e=>{if(e.key==='Enter')grpAdd()});$('gSave').onclick=grpSave;
   // 처리이력
   $('lGo').onclick=logLoad;$('lK').onchange=logLoad;$('lS').onchange=logLoad;$('lTbl').addEventListener('click',logAct);$('lTbl').addEventListener('change',e=>{const c=e.target.closest('.lsel');if(!c)return;const id=+c.dataset.id;c.checked?LSEL.add(id):LSEL.delete(id);logInfo()});
   $('lAll').onclick=()=>{if(LSEL.size===LOG.length)LSEL.clear();else LOG.forEach(r=>LSEL.add(r.id));logRender()};$('lDel').onclick=()=>purgeOpen([...LSEL]);$('lX').onclick=logXlsx;
