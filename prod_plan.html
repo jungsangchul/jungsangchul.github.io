@@ -221,6 +221,16 @@ select.lnk:has(option:checked:not([value=""])){color:var(--grn);border-color:rgb
 .chk input{margin:0}
 #inDaily:disabled{opacity:.4}
 body.nodaily .legend>span:nth-child(2){display:none}
+.modebar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 12px}
+.mlabel{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute)}
+.fs-seg.mode{display:inline-flex;border:1px solid var(--line2);border-radius:999px;overflow:hidden;background:rgba(255,255,255,.03)}
+.fs-seg.mode button{background:none;border:none;color:var(--ink2);padding:8px 16px;font-size:13.5px;font-weight:600;cursor:pointer;height:38px}
+.fs-seg.mode button:hover{color:var(--ink)}
+.fs-seg.mode button.on{background:var(--ac);color:#0a0a0a;font-weight:700}
+.card.addf{border-color:rgba(201,168,76,.25)}
+.card.addf .row{align-items:flex-end}
+input.pcell,input.mcell{width:72px;height:30px;padding:0 6px;text-align:right;font-size:13.5px;background:rgba(201,168,76,.08);border-color:rgba(201,168,76,.3);color:#fff;font-variant-numeric:tabular-nums}
+input.mcell{width:80px}
 @media(max-width:760px){.chart{height:150px}.bars{height:90px}.cv{font-size:11px}}
 </style>
 
@@ -388,6 +398,18 @@ body.nodaily .legend>span:nth-child(2){display:none}
 
   <!-- ① 사업계획수량 -->
   <div class="sub" id="s-plan">
+    <div class="modebar"><span class="mlabel" data-t="m_label">입력 방식</span><div class="fs-seg mode" data-sec="plan"><button type="button" data-mode="edit" class="on"><span data-t="m_edit">✎ 직접 입력</span></button><button type="button" data-mode="paste"><span data-t="m_paste">⎘ 엑셀 붙여넣기</span></button></div><span class="hint" data-t="m_hint">직접 입력: 표의 노란 칸을 바로 고치거나 아래 양식으로 행을 추가 · 엑셀 붙여넣기: 시트에서 복사해 한 번에 입력</span></div>
+    <div class="card addf" id="addPlanCard">
+      <div class="row hd"><h3><span data-t="a_plan_h">사업계획수량 행 추가</span></h3></div>
+      <div class="row">
+        <label class="f"><span data-t="f_site2">사업장</span><select id="apSite" style="width:130px"><option value="Planta 1">Planta 1</option><option value="Planta 2">Planta 2</option></select></label>
+        <label class="f"><span data-t="f_model">차종</span><input id="apModel" style="width:110px" placeholder="AC28" list="dlModel"></label>
+        <label class="f"><span data-t="f_name">품명</span><input id="apName" style="width:150px" placeholder="MAIN"></label>
+        <label class="f"><span data-t="f_fill">월별 수량 (일괄)</span><input id="apQty" type="number" style="width:120px" placeholder="0" title="12개월에 같은 값을 넣고 표에서 월별로 수정"></label>
+        <label class="f"><span data-t="f_from">적용 시작월</span><select id="apFrom" style="width:90px"><option value="0">1월</option><option value="1">2월</option><option value="2">3월</option><option value="3">4월</option><option value="4">5월</option><option value="5">6월</option><option value="6">7월</option><option value="7">8월</option><option value="8">9월</option><option value="9">10월</option><option value="10">11월</option><option value="11">12월</option></select></label>
+        <button class="btn" id="apAdd">＋ <span data-t="b_add">추가</span></button>
+      </div>
+    </div>
     <div class="card paste">
       <div class="row hd"><h3><span data-t="p_plan_h">사업계획수량 붙여넣기</span></h3><button class="btn sm sec tgl" data-for="pastePlan">▾</button></div>
       <div class="hint" data-t="p_plan_hint">엑셀 「사업계획수량」 시트에서 <b>사업장 · 차종 · 품명 · 1월~12월</b> 열(A~O)을 행 단위로 복사해 붙여넣으세요. 제목·헤더 행이 섞여 있어도 자동으로 건너뜁니다. 같은 차종·품명이 있으면 새 값으로 바꿉니다.</div>
@@ -397,10 +419,27 @@ body.nodaily .legend>span:nth-child(2){display:none}
       </div>
     </div>
     <div class="card"><div class="row hd"><h3><span data-t="h_plan_t">사업계획수량 (판매계획)</span></h3><span class="hint" id="planInfo"></span></div><div class="tw" id="tblPlan"></div></div>
+    <datalist id="dlModel"></datalist><datalist id="dlName"></datalist>
   </div>
 
   <!-- ② 품번 마스터 -->
   <div class="sub" id="s-master">
+    <div class="modebar"><span class="mlabel" data-t="m_label">입력 방식</span><div class="fs-seg mode" data-sec="master"><button type="button" data-mode="edit" class="on"><span data-t="m_edit">✎ 직접 입력</span></button><button type="button" data-mode="paste"><span data-t="m_paste">⎘ 엑셀 붙여넣기</span></button></div><span class="hint" data-t="m_hint2">직접 입력: 단가·회로수·포장단위·구성비를 표에서 바로 수정, 새 품번은 아래 양식으로 추가</span></div>
+    <div class="card addf" id="addMasterCard">
+      <div class="row hd"><h3><span data-t="a_master_h">품번 추가</span></h3></div>
+      <div class="row">
+        <label class="f"><span data-t="f_site2">사업장</span><select id="amSite" style="width:120px"><option value="Planta 1">Planta 1</option><option value="Planta 2">Planta 2</option></select></label>
+        <label class="f"><span data-t="f_model">차종</span><input id="amModel" style="width:95px" placeholder="AC28" list="dlModel"></label>
+        <label class="f"><span>CODE</span><input id="amCode" style="width:90px" placeholder="YH100"></label>
+        <label class="f"><span data-t="f_name">품명</span><input id="amName" style="width:130px" placeholder="MAIN" list="dlName"></label>
+        <label class="f"><span data-t="f_pn">품번</span><input id="amPn" style="width:140px" placeholder="91100-FC010"></label>
+        <label class="f"><span data-t="f_price">판매단가</span><input id="amPrice" type="number" step="0.01" style="width:100px" placeholder="0.00"></label>
+        <label class="f"><span data-t="f_circ">회로수</span><input id="amCirc" type="number" style="width:85px" placeholder="0"></label>
+        <label class="f"><span data-t="f_pack">포장단위</span><input id="amPack" type="number" style="width:90px" placeholder="0"></label>
+        <label class="f"><span data-t="f_ratio">구성비 %</span><input id="amRatio" type="number" step="0.1" style="width:90px" placeholder="100"></label>
+        <button class="btn" id="amAdd">＋ <span data-t="b_add">추가</span></button>
+      </div>
+    </div>
     <div class="card paste">
       <div class="row hd"><h3><span data-t="p_master_h">품번 마스터 붙여넣기</span></h3><button class="btn sm sec tgl" data-for="pasteMaster">▾</button></div>
       <div class="hint" data-t="p_master_hint">엑셀 「월매출 및 절단 본수」 시트에서 <b>구분 · 차종 · 품명CODE · 품명 · 품번 · 판매단가 · 회로수 · 포장단위</b> 열(C~J)을 복사해 붙여넣으세요. 월별 계획수량 열(K~V)까지 같이 복사하면 품번별 <b>구성비</b>를 자동 산출하고, 9번째 열에 구성비(%)를 직접 넣어도 됩니다. 구성비가 없으면 같은 차종·품명 안에서 균등 배분합니다.</div>
@@ -443,6 +482,7 @@ const PLANT=Q.get('plant')==='2'?2:Q.get('plant')==='1'?1:0;
 const MONTHS=[1,2,3,4,5,6,7,8,9,10,11,12];
 const $=id=>document.getElementById(id);
 let LANG='ko';try{LANG=localStorage.getItem('pplan_lang')||'ko'}catch(e){}
+const MODE0={};try{['plan','master'].forEach(k=>{MODE0[k]=localStorage.getItem('pplan_mode_'+k)})}catch(e){}
 const L=(ko,es)=>LANG==='es'?es:ko;
 const MN=i=>L((i+1)+'월',['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'][i]);
 const esc=v=>String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -456,7 +496,7 @@ const sundays=(y,m)=>{let c=0;const d=new Date(y,m,1);while(d.getMonth()===m){if
 const dim=(y,m)=>new Date(y,m+1,0).getDate();
 
 /* ═══════════════ 상태 ═══════════════ */
-const S={year:2027,site:'',dailySales:37000,useDaily:true,boxPer:84,plan:[],master:[],days:null,sub:'sum'};
+const S={mode:{plan:MODE0.plan||'edit',master:MODE0.master||'edit'},year:2027,site:'',dailySales:37000,useDaily:true,boxPer:84,plan:[],master:[],days:null,sub:'sum'};
 function defaultDays(y){return{days:MONTHS.map((_,i)=>dim(y,i)),sun:MONTHS.map((_,i)=>sundays(y,i)),hol:MONTHS.map(()=>0),hA:7.75,dA:MONTHS.map(()=>0),hB:9.75,dB:MONTHS.map(()=>0),stdH:10}}
 const stdH=()=>Number(S.days&&S.days.stdH)||10;
 
@@ -573,7 +613,7 @@ function calc(){
 
 /* ═══════════════ 렌더 ═══════════════ */
 function render(){
-  const R=calc();const UD=S.useDaily;$('inDaily').disabled=!UD;document.body.classList.toggle('nodaily',!UD);
+  const R=calc();applyMode();const UD=S.useDaily;$('inDaily').disabled=!UD;document.body.classList.toggle('nodaily',!UD);
   $('cntPlan').textContent=S.plan.length;$('cntMaster').textContent=S.master.length;
   $('plantTag').textContent=S.site?L(`멕시코 ${S.site==='Planta 1'?'1공장 · Monclova':'2공장 · Torreón'}`,`México ${S.site} · ${S.site==='Planta 1'?'Monclova':'Torreón'}`):L('멕시코 1·2공장','México Planta 1 · 2');
   document.title=L('생산계획 대비 실적','Plan vs Real')+(S.site?' · '+S.site:'');
@@ -588,6 +628,17 @@ function render(){
   ].map(([k,v,c,d])=>`<div class="kpi ${c}"><span>${k}</span><b>${v}</b><small>${d}</small></div>`).join('');
   renderChart(R);renderSum(R);renderModel(R);renderPlan(R);renderMaster(R);renderDays(R);
 }
+function applyMode(){
+  ['plan','master'].forEach(sec=>{const m=S.mode[sec];const root=$('s-'+sec);
+    root.querySelectorAll('.mode button').forEach(b=>b.classList.toggle('on',b.dataset.mode===m));
+    root.querySelector('.card.paste').style.display=m==='paste'?'':'none';
+    root.querySelector('.card.addf').style.display=m==='edit'?'':'none'});
+  $('dlModel').innerHTML=[...new Set([...S.plan.map(p=>p.model),...S.master.map(r=>r.model)])].map(v=>`<option value="${esc(v)}">`).join('');
+  $('dlName').innerHTML=[...new Set(S.plan.map(p=>p.name))].map(v=>`<option value="${esc(v)}">`).join('');
+}
+/* 입력 후 다시 그려도 포커스(탭 이동 포함)를 유지 */
+function rerender(){const a=document.activeElement;const key=a&&a.dataset?JSON.stringify([a.className,a.dataset.k,a.dataset.i,a.dataset.key,a.dataset.pn,a.dataset.f]):null;render();
+  if(key){const el=[...document.querySelectorAll('input,select')].find(x=>JSON.stringify([x.className,x.dataset.k,x.dataset.i,x.dataset.key,x.dataset.pn,x.dataset.f])===key);if(el){el.focus();if(el.select)try{el.select()}catch(e){}}}}
 function renderChart(R){
   const UD=S.useDaily;const max=Math.max(1,...R.sales,...(UD?R.exp:[]));
   document.querySelector('[data-t=h_chart]').textContent=UD?L('월별 매출 — 계획 vs 생산일수 기준 예상','Ventas mensuales — plan vs esperado'):L('월별 매출 (계획)','Ventas mensuales (plan)');
@@ -625,10 +676,12 @@ function renderModel(R){
 function renderPlan(R){
   const rows=S.site?S.plan.filter(p=>p.site===S.site):S.plan;
   $('planInfo').textContent=L(`${rows.length}행 · 차종·품명 기준 (품번 마스터와 연결)`,`${rows.length} filas · por modelo·producto`);
-  if(!rows.length){$('tblPlan').innerHTML=`<table><tr><td class="empty">${L('데이터 없음 — 위에 붙여넣기 후 적용','Sin datos')}</td></tr></table>`;return}
+  if(!rows.length){$('tblPlan').innerHTML=`<table><tr><td class="empty">${L('데이터 없음 — 위 양식으로 행을 추가하거나 엑셀 붙여넣기','Sin datos')}</td></tr></table>`;return}
   const cnt={};S.master.forEach(r=>{const k=r.model+'|'+(r.link||r.name);cnt[k]=(cnt[k]||0)+1});
+  const ED=S.mode.plan==='edit';
+  const cell=(p,v,i)=>ED?`<td class="n"><input class="pcell" data-key="${esc(planKey(p))}" data-i="${i}" value="${v||0}"></td>`:tdn(v);
   $('tblPlan').innerHTML=`<table><thead><tr>${th('#')}${th(L('사업장','Planta'))}${th(L('차종','Modelo'))}${th(L('품명','Producto'))}${MONTHS.map((_,i)=>th(MN(i),'n')).join('')}${th(L('합계','Total'),'n')}${th(L('품번','N° parte'),'n')}${th('')}</tr></thead><tbody>${
-    rows.map((p,i)=>{const k=p.model+'|'+p.name;const c=cnt[k]||0;return`<tr><td class="mute">${i+1}</td><td>${esc(p.site)}</td><td>${esc(p.model)}</td><td class="b">${esc(p.name)}</td>${p.m.map(v=>tdn(v)).join('')}${tdn(p.m.reduce((a,b)=>a+b,0),0,'b')}<td class="n">${c?`<span class="tag ok">${c}</span>`:`<span class="tag care" title="${L('품번 마스터에 없음','No está en el maestro')}">0</span>`}</td><td><button class="xbtn" data-del-plan="${esc(p.site)}|${esc(p.model)}|${esc(p.name)}" title="${L('삭제','Eliminar')}">×</button></td></tr>`}).join('')}</tbody></table>`;
+    rows.map((p,i)=>{const k=p.model+'|'+p.name;const c=cnt[k]||0;return`<tr><td class="mute">${i+1}</td><td>${esc(p.site)}</td><td>${esc(p.model)}</td><td class="b">${esc(p.name)}</td>${p.m.map((v,j)=>cell(p,v,j)).join('')}${tdn(p.m.reduce((a,b)=>a+b,0),0,'b')}<td class="n">${c?`<span class="tag ok">${c}</span>`:`<span class="tag care" title="${L('품번 마스터에 없음','No está en el maestro')}">0</span>`}</td><td><button class="xbtn" data-del-plan="${esc(p.site)}|${esc(p.model)}|${esc(p.name)}" title="${L('삭제','Eliminar')}">×</button></td></tr>`}).join('')}</tbody></table>`;
 }
 function linkSel(r){
   if(r.matched&&!r.link)return'';
@@ -638,12 +691,13 @@ function linkSel(r){
 function renderMaster(R){
   const rows=R.master;
   $('masterInfo').textContent=L(`${rows.length}개 품번 · 구성비 합계가 100%가 아닌 차종·품명은 주황색 표시`,`${rows.length} números de parte`)+(R.unmatched?L(` · ⚠ 사업계획수량과 품명이 다른 품번 ${R.unmatched}개 — 품명 옆에서 연결하세요`,` · ⚠ ${R.unmatched} sin plan — vincule junto al producto`):'');
-  if(!rows.length){$('tblMaster').innerHTML=`<table><tr><td class="empty">${L('데이터 없음 — 위에 붙여넣기 후 적용','Sin datos')}</td></tr></table>`;return}
-  const sum=a=>a.reduce((x,y)=>x+y,0);
+  if(!rows.length){$('tblMaster').innerHTML=`<table><tr><td class="empty">${L('데이터 없음 — 위 양식으로 품번을 추가하거나 엑셀 붙여넣기','Sin datos')}</td></tr></table>`;return}
+  const sum=a=>a.reduce((x,y)=>x+y,0);const ED=S.mode.master==='edit';
+  const mc=(r,f,v,d)=>ED?`<td class="n"><input class="mcell" data-pn="${esc(r.pn)}" data-f="${f}" value="${+(Number(v)||0).toFixed(4)}"></td>`:`<td class="n">${fmt(v,d)}</td>`;
   $('tblMaster').innerHTML=`<table><thead><tr>${th('#')}${th(L('사업장','Planta'))}${th(L('차종','Modelo'))}${th('CODE')}${th(L('품명','Producto'))}${th(L('품번','N° parte'))}${th(L('판매단가','Precio'),'n')}${th(L('회로수','Circuitos'),'n')}${th(L('포장단위','Empaque'),'n')}${th(L('구성비','Proporción'),'n')}${th(L('연간수량','Cant. anual'),'n')}${th(L('연간매출 ($)','Ventas ($)'),'n')}${th(L('연간절단','Cortes'),'n')}${th(L('연간BOX','Cajas'),'n')}${th('')}</tr></thead><tbody>${
     rows.map((r,i)=>{const gr=R.groupRatio[r.model+'|'+r.name];const bad=Math.abs(gr-1)>0.005;
       return`<tr class="${r.matched?'':'mutedr'}"><td class="mute">${i+1}</td><td>${esc(r.site)}</td><td>${esc(r.model)}</td><td class="mute">${esc(r.code)}</td><td class="b">${esc(r.name)}${linkSel(r)}</td><td class="b">${esc(r.pn)}</td>
-      <td class="n">${fmt(r.price,2)}</td><td class="n">${fmt(r.circ)}</td><td class="n">${fmt(r.pack)}</td>
+      ${mc(r,'price',r.price,2)}${mc(r,'circ',r.circ,0)}${mc(r,'pack',r.pack,0)}
       <td class="n"><input class="ratio${bad?' bad':''}${r.auto?' auto':''}" data-pn="${esc(r.pn)}" value="${(r.ratio*100).toFixed(2).replace(/\.?0+$/,'')}" title="${bad?L(`같은 차종·품명 합계 ${pct(gr)}`,`suma del grupo ${pct(gr)}`):''}${r.auto?' · '+L('자동(균등)','auto'):''}">%</td>
       ${tdn(sum(r.qty),0,'b')}${tdn(sum(r.sales))}${tdn(sum(r.cut))}${tdn(sum(r.box))}<td><button class="xbtn" data-del-pn="${esc(r.pn)}" title="${L('삭제','Eliminar')}">×</button></td></tr>`}).join('')}
     <tr class="tot"><td colspan="10">${L('합계','Total')}</td>${tdn(R.tot.qty,0,'b')}${tdn(R.tot.sales,0,'b')}${tdn(R.tot.cut,0,'b')}${tdn(R.tot.box,0,'b')}<td></td></tr></tbody></table>`;
@@ -685,18 +739,31 @@ $('applyMaster').onclick=()=>{const a=parseMaster($('txMaster').value);if(!a.len
 $('replaceMaster').onclick=()=>{const a=parseMaster($('txMaster').value);if(!a.length)return toast(L('인식된 행이 없습니다','No se reconocieron filas'),1);if(!confirm(L('기존 품번 마스터를 모두 지우고 교체할까요?','¿Reemplazar todo?')))return;
   fixRatios(a);S.master=a;saveMaster();$('txMaster').value='';render();toast(L(`${a.length}개 품번으로 교체`,`Reemplazado: ${a.length}`))};
 $('clearMaster').onclick=()=>{if(!confirm(L('품번 마스터를 모두 삭제할까요?','¿Eliminar todo?')))return;S.master=[];saveMaster();render()};
+$('apAdd').onclick=()=>{const site=$('apSite').value,model=$('apModel').value.trim().toUpperCase(),name=$('apName').value.trim().toUpperCase();
+  if(!model||!name)return toast(L('차종·품명을 입력하세요','Ingrese modelo y producto'),1);
+  const q=num($('apQty').value),from=+$('apFrom').value;const key=site+'|'+model+'|'+name;
+  if(S.plan.some(p=>planKey(p)===key))return toast(L('이미 있는 차종·품명입니다 — 표에서 수정하세요','Ya existe'),1);
+  S.plan.push({site,model,name,m:MONTHS.map((_,i)=>i>=from?q:0)});savePlan();$('apName').value='';$('apQty').value='';render();toast(L(`${model} ${name} 추가`,`${model} ${name} agregado`))};
+$('amAdd').onclick=()=>{const g=id=>$(id).value.trim();const r={site:$('amSite').value,model:g('amModel').toUpperCase(),code:g('amCode').toUpperCase(),name:g('amName').toUpperCase(),pn:g('amPn').toUpperCase(),price:num(g('amPrice')),circ:num(g('amCirc')),pack:num(g('amPack')),ratio:null,auto:false};
+  if(!r.model||!r.name||!r.pn)return toast(L('차종·품명·품번을 입력하세요','Ingrese modelo, producto y N° parte'),1);
+  if(S.master.some(x=>x.pn===r.pn))return toast(L('이미 있는 품번입니다 — 표에서 수정하세요','Ya existe'),1);
+  const rv=g('amRatio');if(rv!==''){let v=num(rv);if(v>1)v=v/100;r.ratio=v}
+  const list=[...S.master,r];fixRatios(list);S.master=list;saveMaster();['amCode','amPn','amPrice','amCirc','amPack','amRatio'].forEach(id=>$(id).value='');render();toast(L(`${r.pn} 추가`,`${r.pn} agregado`))};
 $('applyDays').onclick=()=>{S.days=parseDays($('txDays').value);saveDays();$('txDays').value='';render();toast(L('생산일수 적용','Días aplicados'))};
 $('autoSun').onclick=()=>{const d=S.days||defaultDays(S.year);d.days=MONTHS.map((_,i)=>dim(S.year,i));d.sun=MONTHS.map((_,i)=>sundays(S.year,i));S.days=d;saveDays();render();toast(L(`${S.year}년 달력 기준 일수·일요일 입력`,`Calendario ${S.year} aplicado`))};
 document.addEventListener('click',e=>{
   const b=e.target.closest('[data-del-plan]');if(b){const k=b.dataset.delPlan;S.plan=S.plan.filter(p=>planKey(p)!==k);savePlan();render();return}
   const c=e.target.closest('[data-del-pn]');if(c){S.master=S.master.filter(r=>r.pn!==c.dataset.delPn);saveMaster();render();return}
+  const mb=e.target.closest('.mode button');if(mb){const sec=mb.closest('.mode').dataset.sec;S.mode[sec]=mb.dataset.mode;try{localStorage.setItem('pplan_mode_'+sec,S.mode[sec])}catch(e){}render();return}
   const t=e.target.closest('.tgl');if(t){const el=$(t.dataset.for);el.classList.toggle('closed');t.textContent=el.classList.contains('closed')?'▸':'▾'}
 });
 document.addEventListener('change',e=>{
+  const pc=e.target.closest('input.pcell');if(pc){const p=S.plan.find(x=>planKey(x)===pc.dataset.key);if(p){p.m[+pc.dataset.i]=num(pc.value);savePlan();rerender()}return}
+  const mcl=e.target.closest('input.mcell');if(mcl){const r=S.master.find(x=>x.pn===mcl.dataset.pn);if(r){r[mcl.dataset.f]=num(mcl.value);saveMaster();rerender()}return}
   /* 구성비 입력: "11" → 11%, "0.11" → 11%, "11%" → 11% */
   const r=e.target.closest('input.ratio');if(r){const row=S.master.find(x=>x.pn===r.dataset.pn);if(row){let v=num(r.value);if(v>1)v=v/100;row.ratio=v;row.auto=false;saveMaster();render()}return}
   const l=e.target.closest('select.lnk');if(l){const row=S.master.find(x=>x.pn===l.dataset.pn);if(row){const v=l.value||null;S.master.forEach(x=>{if(x.model===row.model&&x.name===row.name)x.link=v});saveMaster();render()}return}
-  const d=e.target.closest('input.dcell');if(d){const k=d.dataset.k;if(d.dataset.i!=null)S.days[k][+d.dataset.i]=num(d.value);else S.days[k]=(k==='stdH'?(num(d.value)||10):num(d.value));saveDays();render();return}
+  const d=e.target.closest('input.dcell');if(d){const k=d.dataset.k;if(d.dataset.i!=null)S.days[k][+d.dataset.i]=num(d.value);else S.days[k]=(k==='stdH'?(num(d.value)||10):num(d.value));saveDays();rerender();return}
 });
 ['inYear','inDaily','inBox','inUseDaily'].forEach(id=>$(id).onchange=()=>{S.year=+$('inYear').value||2027;S.dailySales=num($('inDaily').value);S.useDaily=$('inUseDaily').checked;S.boxPer=num($('inBox').value)||84;saveSettings();render()});
 $('inSite').onchange=()=>{S.site=$('inSite').value;render()};
@@ -711,6 +778,7 @@ const I18N={
   s_sum:['월별 요약','Resumen mensual'],s_plan:['① 사업계획수량','① Plan de negocio'],s_master:['② 품번 마스터 (단가·회로수·포장)','② Maestro de partes'],s_days:['③ 월별 생산일수','③ Días de producción'],
   h_chart:['월별 매출 — 계획 vs 생산일수 기준 예상','Ventas mensuales — plan vs esperado'],lg_plan:['계획 매출 (사계)','Ventas plan'],lg_exp:['생산일수 기준 예상 매출','Ventas esperadas por días'],h_sum:['월별 생산·매출 요약','Resumen mensual'],h_model:['차종·품명별 월별 계획수량 (사업계획)','Cantidad mensual por modelo·producto'],
   p_plan_h:['사업계획수량 붙여넣기','Pegar plan de negocio'],p_plan_hint:['엑셀 「사업계획수량」 시트에서 <b>사업장 · 차종 · 품명 · 1월~12월</b> 열(A~O)을 행 단위로 복사해 붙여넣으세요. 제목·헤더 행이 섞여 있어도 자동으로 건너뜁니다. 같은 차종·품명이 있으면 새 값으로 바꿉니다.','Copie de la hoja «사업계획수량» las columnas <b>Planta · Modelo · Producto · Ene~Dic</b> (A~O) y péguelas aquí. Las filas de título se omiten automáticamente.'],
+  m_label:['입력 방식','Modo de captura'],m_edit:['✎ 직접 입력','✎ Captura directa'],m_paste:['⎘ 엑셀 붙여넣기','⎘ Pegar desde Excel'],m_hint:['직접 입력: 표의 노란 칸을 바로 고치거나 아래 양식으로 행을 추가 · 엑셀 붙여넣기: 시트에서 복사해 한 번에 입력','Directa: edite las celdas amarillas o agregue filas · Excel: pegue desde la hoja'],m_hint2:['직접 입력: 단가·회로수·포장단위·구성비를 표에서 바로 수정, 새 품번은 아래 양식으로 추가','Directa: edite precio, circuitos, empaque y proporción en la tabla; agregue partes con el formulario'],a_plan_h:['사업계획수량 행 추가','Agregar fila al plan'],a_master_h:['품번 추가','Agregar número de parte'],f_site2:['사업장','Planta'],f_model:['차종','Modelo'],f_name:['품명','Producto'],f_fill:['월별 수량 (일괄)','Cantidad mensual'],f_from:['적용 시작월','Desde mes'],f_pn:['품번','N° parte'],f_price:['판매단가','Precio'],f_circ:['회로수','Circuitos'],f_pack:['포장단위','Empaque'],f_ratio:['구성비 %','Proporción %'],b_add:['추가','Agregar'],
   b_apply:['적용','Aplicar'],b_replace:['전체 교체','Reemplazar todo'],b_clear:['전체 삭제','Eliminar todo'],h_plan_t:['사업계획수량 (판매계획)','Plan de negocio (ventas)'],
   p_master_h:['품번 마스터 붙여넣기','Pegar maestro de partes'],p_master_hint:['엑셀 「월매출 및 절단 본수」 시트에서 <b>구분 · 차종 · 품명CODE · 품명 · 품번 · 판매단가 · 회로수 · 포장단위</b> 열(C~J)을 복사해 붙여넣으세요. 월별 계획수량 열(K~V)까지 같이 복사하면 품번별 <b>구성비</b>를 자동 산출하고, 9번째 열에 구성비(%)를 직접 넣어도 됩니다. 구성비가 없으면 같은 차종·품명 안에서 균등 배분합니다.','Copie de la hoja «월매출 및 절단 본수» las columnas <b>Planta · Modelo · CODE · Producto · N° parte · Precio · Circuitos · Empaque</b> (C~J). Si incluye las cantidades mensuales (K~V) se calcula la <b>proporción</b> por número de parte; también puede poner la proporción (%) en la 9ª columna.'],
   h_master_t:['품번 마스터 · 구성비 · 연간 계획','Maestro · proporción · plan anual'],
@@ -785,6 +853,8 @@ async function buildXlsx(){
   s2.mergeCells(6,1,6,9);s2.getCell(6,1).value=L('근무일수 (③ 월별 생산일수 시트)','Días laborales (hoja ③)');s2.getCell(6,1).fill=fill(GOLD_L);s2.getCell(6,1).font={name:FONT,size:9,bold:true,color:{argb:INK}};s2.getCell(6,1).alignment={horizontal:'right'};
   MONTHS.forEach((_,i)=>{F(s2.getCell(6,cQ+i),`'월별 생산일수'!${COL(3+i)}9`,{bg:GOLD_L,f:NUM,fg:MUTE})});F(s2.getCell(6,cQT),`SUM(${COL(cQ)}6:${COL(cQT-1)}6)`,{bg:GOLD_L,f:NUM,fg:MUTE});
   const m0=7;
+  if(!M.length){for(let c=1;c<=NC;c++)if(![24,38,52].includes(c))D(s2.getCell(m0,c),'')}
+  const m1=m0+Math.max(1,M.length),mL=m1-1;
   M.forEach((r,k)=>{const row=m0+k,bg=k%2?SOFT:'FFFFFFFF';
     D(s2.getCell(row,1),r.site,{bg});D(s2.getCell(row,2),r.model,{bg});D(s2.getCell(row,3),r.code,{bg,fg:MUTE});D(s2.getCell(row,4),r.name,{bg,b:1});D(s2.getCell(row,5),r.pn,{bg,b:1});
     D(s2.getCell(row,6),r.price,{bg,f:NUM2});D(s2.getCell(row,7),r.circ,{bg,f:NUM});D(s2.getCell(row,8),r.pack,{bg,f:NUM});D(s2.getCell(row,9),r.ratio,{bg:INPUT,f:'0.0%'});if(r.link)D(s2.getCell(row,10),r.model+r.link,{bg,fg:MUTE});else F(s2.getCell(row,10),`B${row}&D${row}`,{bg,fg:MUTE});
@@ -797,8 +867,6 @@ async function buildXlsx(){
     F(s2.getCell(row,cQT),`SUM(${COL(cQ)}${row}:${COL(cQT-1)}${row})`,{bg,f:NUM,b:1});F(s2.getCell(row,cST),`SUM(${COL(cS)}${row}:${COL(cST-1)}${row})`,{bg,f:USD,b:1});
     F(s2.getCell(row,cCT),`SUM(${COL(cC)}${row}:${COL(cCT-1)}${row})`,{bg,f:NUM,b:1});F(s2.getCell(row,cBT),`SUM(${COL(cB)}${row}:${COL(cBT-1)}${row})`,{bg,f:NUM1,b:1});
   });
-  if(!M.length){for(let c=1;c<=NC;c++)if(![24,38,52].includes(c))D(s2.getCell(m0,c),'')}
-  const m1=m0+Math.max(1,M.length),mL=m1-1;
   const totRow=m1,salesRow=m1+1,cutRow=m1+2,boxRow=m1+3,ftRow=m1+4;
   const lab=(row,t)=>{s2.mergeCells(row,1,row,10);D(s2.getCell(row,1),t,{bg:GOLD_L,b:1,h:'right'})};
   lab(totRow,L('수량 합계','Total cantidad'));for(let c=cQ;c<=cBT;c++){if([24,38,52].includes(c))continue;F(s2.getCell(totRow,c),`SUM(${COL(c)}${m0}:${COL(c)}${mL})`,{bg:GOLD_L,b:1,f:c>=cS&&c<=cST?USD:c>=cB?NUM1:NUM})}
