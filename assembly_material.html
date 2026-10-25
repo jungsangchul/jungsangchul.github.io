@@ -349,7 +349,7 @@ table.cfg input{width:17px;height:17px}
       <label class="f"><span data-t="product">완제품 (품번)</span><select id="sProd" style="max-width:300px"></select></label>
       <button class="btn" id="sReload" data-t="run">조회</button>
       <span class="sp"></span>
-      <label class="f"><span data-t="search">검색</span><input id="sQ" data-tp="search" placeholder="코드/자재명/업체품명" style="width:190px"></label>
+      <label class="f"><span data-t="search">검색</span><input id="sQ" data-tp="search" placeholder="코드/자재명/업체품명" style="width:190px"></label><label class="f"><span id="fCarL">차종</span><select id="fCar" style="width:110px"></select></label><label class="f"><span id="fPnL">품명</span><select id="fPn" style="width:130px"></select></label>
       <label class="f"><span data-t="show">표시</span><select id="sShow">
         <option value="all" data-t="o_all">전체</option><option value="neg" data-t="o_neg">부족 (마이너스)</option><option value="pos" data-t="o_pos">재고 있음</option>
         <option value="care" data-t="o_care">주의 (기준 미만)</option><option value="chk" data-t="o_chk2">부족+주의</option><option value="zero" data-t="o_zero">재고 0</option><option value="moved" data-t="o_moved">입출 이력 있음</option></select></label>
@@ -870,15 +870,25 @@ function stkCols(){const a=[
     {h:['차종','Modelo'],k:'car',w:12,cls:'gp car',html:r=>(r.pairs||[]).map(x=>`<div>${esc(x[0]||'-')}</div>`).join('')+(r.gmiss&&r.gmiss.length?`<div class="hint" title="${tr('차종·품명 미등록 구분자','Prefijo sin modelo/producto')}">${esc(r.gmiss.join(', '))}</div>`:'')},
     {h:['품명','Producto'],k:'pname',w:28,cls:'gp',html:r=>(r.pairs||[]).map(x=>`<div>${esc(x[1]||'-')}</div>`).join('')});
   return a}
+
+/* ---------- 차종·품명 필터 ---------- */
+function cfOpts(pairs){const sc=$('fCar'),sp=$('fPn');if(!sc||!sp)return;const vc=sc.value,vp=sp.value,all=tr('전체','Todo');
+  $('fCarL').textContent=tr('차종','Modelo');$('fPnL').textContent=tr('품명','Producto');
+  const cars=[...new Set(pairs.map(p=>p[0]).filter(Boolean))].sort();const c=cars.includes(vc)?vc:'';
+  sc.innerHTML=`<option value="">${all}</option>`+cars.map(x=>`<option value="${esc(x)}"${x===c?' selected':''}>${esc(x)}</option>`).join('');
+  const pns=[...new Set(pairs.filter(p=>!c||p[0]===c).map(p=>p[1]).filter(Boolean))].sort();const p=pns.includes(vp)?vp:'';
+  sp.innerHTML=`<option value="">${all}</option>`+pns.map(x=>`<option value="${esc(x)}"${x===p?' selected':''}>${esc(x)}</option>`).join('')}
+function cfOk(pairs){const c=$('fCar')?$('fCar').value:'',p=$('fPn')?$('fPn').value:'';if(!c&&!p)return true;return(pairs||[]).some(x=>(!c||x[0]===c)&&(!p||x[1]===p))}
 const selProcs=()=>[...document.querySelectorAll('#sProc input:checked')].map(x=>x.value);
 const procOk=(it,procs)=>procs.length===3||String(it.procs||'').split(',').some(p=>procs.includes(p));
 const thr=()=>Number(SET.threshold)||0;
 const isCare=v=>thr()>0&&v>=0&&v<thr();
 function showOk(it,show){return show==='pos'?it.stock>0:show==='zero'?it.stock===0:show==='neg'?it.stock<0:show==='care'?isCare(it.stock):show==='chk'?(it.stock<0||isCare(it.stock)):show==='moved'?!!it.last_at:true}
 function stkBase(){const q=nz($('sQ').value),set=SPROD&&PRODBOM[SPROD]?PRODBOM[SPROD]:null;
-  return ITEMS.filter(it=>(!set||set.has(it.code))&&(!q||nz(it.code+' '+(it.name||'')+' '+(it.vendor_part||'')+' '+(it.car||'')+' '+(it.pname||'')).includes(q)))}
+  return ITEMS.filter(it=>(!set||set.has(it.code))&&cfOk(it.pairs)&&(!q||nz(it.code+' '+(it.name||'')+' '+(it.vendor_part||'')+' '+(it.car||'')+' '+(it.pname||'')).includes(q)))}
 function stkFiltered(){const procs=selProcs(),show=$('sShow').value;return stkBase().filter(it=>procOk(it,procs)&&showOk(it,show))}
 function renderStock(){
+  cfOpts(ITEMS.flatMap(it=>it.pairs||[]));
   const base=stkBase(),procs=selProcs(),show=$('sShow').value;
   ['A','B','C'].forEach(p=>{const e=document.querySelector(`#sProc b[data-pc="${p}"]`);if(e)e.textContent=base.filter(it=>String(it.procs||'').split(',').includes(p)&&showOk(it,show)).length});
   const pb=base.filter(it=>procOk(it,procs));
@@ -901,7 +911,7 @@ async function prodBom(key){
   const m=new Map();rows.forEach(r=>{if(skip.includes(r.mat_type||''))return;m.set(r.comp_code,(m.get(r.comp_code)||0)+Number(r.unit_qty??r.req_qty??0))});
   PRODBOM[key]=m;return m;
 }
-function stockCond(){return[SPROD?tr('품번 ','Parte ')+SPROD.replace('|','-'):'',$('sQ').value?tr('검색 ','Buscar ')+$('sQ').value:'',
+function stockCond(){return[SPROD?tr('품번 ','Parte ')+SPROD.replace('|','-'):'',$('sQ').value?tr('검색 ','Buscar ')+$('sQ').value:'',$('fCar').value?tr('차종 ','Modelo ')+$('fCar').value:'',$('fPn').value?tr('품명 ','Producto ')+$('fPn').value:'',
   tr('공정 ','Proceso ')+selProcs().join('·'),$('sShow').selectedOptions[0].textContent,thr()?tr('주의 기준 <','Alerta <')+thr():''].filter(Boolean).join(' / ')}
 function stockXlsx(){
   const rows=sortRows('sTbl',stkCols(),stkFiltered());
@@ -1517,7 +1527,7 @@ async function boot(){
   document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>showTab(b.dataset.tab));
   $('mClose').onclick=closeModal;$('mClose2').onclick=closeModal;$('mdl').addEventListener('click',e=>{if(e.target.id==='mdl')closeModal()});document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});
   // 재고현황
-  $('sQ').addEventListener('input',renderStock);document.querySelectorAll('#sProc input').forEach(x=>x.addEventListener('change',renderStock));$('sShow').onchange=renderStock;
+  $('sQ').addEventListener('input',renderStock);$('fCar').onchange=renderStock;$('fPn').onchange=renderStock;document.querySelectorAll('#sProc input').forEach(x=>x.addEventListener('change',renderStock));$('sShow').onchange=renderStock;
   $('sProd').onchange=async()=>{const v=$('sProd').value;if(v){busy(true);try{await prodBom(v)}catch(e){toast(errMsg(e),1)}finally{busy(false)}}SPROD=v;SORT.sTbl={i:1,d:1};renderStock()};
   document.querySelectorAll('#t-stk .kpi[data-f]').forEach(k=>k.onclick=()=>{$('sShow').value=k.dataset.f;renderStock()});
   $('sReload').onclick=async()=>{busy(true,tr('조회 중…','Consultando…'));try{await Promise.all([loadSettings(),loadProducts(),refreshAll()]);if(REQ){await planCalc();reqRender()}}catch(e){toast(errMsg(e),1)}finally{busy(false)}};

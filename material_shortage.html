@@ -308,7 +308,7 @@ table.cfg input{width:17px;height:17px}
       <label class="f"><span data-t="thr">주의 기준(부족예상 &lt;)</span><input type="number" id="sThr" style="width:110px"></label>
       <button class="btn" id="sRun" data-t="run">조회</button>
       <span class="sp" style="flex:1"></span>
-      <label class="f"><span data-t="search">검색</span><input id="sQ" placeholder="코드/자재명" style="width:170px"></label>
+      <label class="f"><span data-t="search">검색</span><input id="sQ" placeholder="코드/자재명" style="width:170px"></label><label class="f"><span id="fCarL">차종</span><select id="fCar" style="width:110px"></select></label><label class="f"><span id="fPnL">품명</span><select id="fPn" style="width:130px"></select></label>
       <label class="f"><span data-t="filter">표시</span><select id="sF">
         <option value="all" data-t="f_all">전체</option><option value="short" data-t="f_short">부족</option>
         <option value="care" data-t="f_care">주의</option><option value="chk" data-t="f_chk">부족+주의</option><option value="need" data-t="f_need">17000 자재만</option><option value="extra" data-t="f_extra">17000 외 현장보유</option></select></label>
@@ -868,15 +868,24 @@ async function calc(fresh=true){
   }catch(e){alert(e.message)}
   busy(0);renderSum();
 }
+
+/* ---------- 차종·품명 필터 ---------- */
+function cfOpts(pairs){const sc=$('fCar'),sp=$('fPn');if(!sc||!sp)return;const vc=sc.value,vp=sp.value,all=tr('전체','Todo');
+  $('fCarL').textContent=tr('차종','Modelo');$('fPnL').textContent=tr('품명','Producto');
+  const cars=[...new Set(pairs.map(p=>p[0]).filter(Boolean))].sort();const c=cars.includes(vc)?vc:'';
+  sc.innerHTML=`<option value="">${all}</option>`+cars.map(x=>`<option value="${esc(x)}"${x===c?' selected':''}>${esc(x)}</option>`).join('');
+  const pns=[...new Set(pairs.filter(p=>!c||p[0]===c).map(p=>p[1]).filter(Boolean))].sort();const p=pns.includes(vp)?vp:'';
+  sp.innerHTML=`<option value="">${all}</option>`+pns.map(x=>`<option value="${esc(x)}"${x===p?' selected':''}>${esc(x)}</option>`).join('')}
+function cfOk(pairs){const c=$('fCar')?$('fCar').value:'',p=$('fPn')?$('fPn').value:'';if(!c&&!p)return true;return(pairs||[]).some(x=>(!c||x[0]===c)&&(!p||x[1]===p))}
 const TYPES=['Terminal','Wire','Seal','Other'];const mtype=c=>{const h=String(c||'').trim().toUpperCase()[0];return h==='T'?'Terminal':h==='W'?'Wire':h==='J'?'Seal':'Other'};
 function selTypes(){return new Set([...document.querySelectorAll('#sType input:checked')].map(i=>i.value))}
 function status(r){const th=Number(CFG.threshold)||0;return r.short<0?'short':r.short<th?'care':'ok'}
 function viewList(){
   if(!SUM)return[];
   const q=$('sQ').value.trim().toUpperCase(),f=$('sF').value,ty=selTypes();
-  SUM.list.forEach(r=>{r.type=mtype(r.code);r.car=CARS[String(r.code).toUpperCase()]||CARS[r.code]||''});
+  SUM.list.forEach(r=>{r.type=mtype(r.code);r.car=CARS[String(r.code).toUpperCase()]||CARS[r.code]||'';r.cpairs=r.car?r.car.split(', ').flatMap(x=>{const i=x.indexOf(' '),c=i<0?x:x.slice(0,i);return(i<0?['']:x.slice(i+1).split('·')).map(p=>[c,p])}):[]});
   let l=SUM.list.filter(r=>{if(!ty.has(r.type))return false;const s=status(r);if(f==='short'&&s!=='short')return false;if(f==='care'&&s!=='care')return false;if(f==='chk'&&s==='ok')return false;if(f==='need'&&r.extra)return false;if(f==='extra'&&!r.extra)return false;
-    return!q||(r.code+' '+r.name+' '+r.type+' '+(r.car||'')).toUpperCase().includes(q)});
+    if(!cfOk(r.cpairs))return false;return!q||(r.code+' '+r.name+' '+r.type+' '+(r.car||'')).toUpperCase().includes(q)});
   if(sortK)l=[...l].sort((a,b)=>{const x=a[sortK],y=b[sortK];return(typeof x==='string'?x.localeCompare(y):x-y)*sortD});
   return l;
 }
@@ -889,9 +898,10 @@ function cols(){
 function renderSum(){
   $('sThr').value=CFG.threshold;
   if(!SUM){$('sTbl').innerHTML=`<tr><td class="hint" style="padding:20px">${tr('조회 버튼을 누르세요','Presione Consultar')}</td></tr>`;return}
-  SUM.list.forEach(r=>{r.type=mtype(r.code);r.car=CARS[String(r.code).toUpperCase()]||CARS[r.code]||''});
-  {const f=$('sF').value,q=$('sQ').value.trim().toUpperCase();TYPES.forEach(t=>{const e=document.querySelector(`#sType b[data-tc="${t}"]`);if(e)e.textContent=SUM.list.filter(r=>{if(r.type!==t)return false;const s=status(r);if(f==='short'&&s!=='short')return false;if(f==='care'&&s!=='care')return false;if(f==='chk'&&s==='ok')return false;if(f==='need'&&r.extra)return false;if(f==='extra'&&!r.extra)return false;return!q||(r.code+' '+r.name+' '+r.type+' '+(r.car||'')).toUpperCase().includes(q)}).length})}
-  const all=SUM.list.filter(r=>selTypes().has(r.type)),st=all.map(status);
+  SUM.list.forEach(r=>{r.type=mtype(r.code);r.car=CARS[String(r.code).toUpperCase()]||CARS[r.code]||'';r.cpairs=r.car?r.car.split(', ').flatMap(x=>{const i=x.indexOf(' '),c=i<0?x:x.slice(0,i);return(i<0?['']:x.slice(i+1).split('·')).map(p=>[c,p])}):[]});
+  {const f=$('sF').value,q=$('sQ').value.trim().toUpperCase();TYPES.forEach(t=>{const e=document.querySelector(`#sType b[data-tc="${t}"]`);if(e)e.textContent=SUM.list.filter(r=>{if(r.type!==t)return false;const s=status(r);if(f==='short'&&s!=='short')return false;if(f==='care'&&s!=='care')return false;if(f==='chk'&&s==='ok')return false;if(f==='need'&&r.extra)return false;if(f==='extra'&&!r.extra)return false;if(!cfOk(r.cpairs))return false;return!q||(r.code+' '+r.name+' '+r.type+' '+(r.car||'')).toUpperCase().includes(q)}).length})}
+  cfOpts(SUM.list.flatMap(r=>r.cpairs||[]));
+  const all=SUM.list.filter(r=>selTypes().has(r.type)&&cfOk(r.cpairs)),st=all.map(status);
   $('kAll').textContent=all.length;$('kAll').title=tr(`17000 ${all.filter(r=>!r.extra).length} + 현장보유 ${all.filter(r=>r.extra).length}`,'');$('kShort').textContent=st.filter(s=>s==='short').length;
   $('kCare').textContent=st.filter(s=>s==='care').length;$('kEx').textContent=SUM.exRows;
   $('sInfo').textContent=tr(`실사 ${SUM.cd||'-'} · 사용/입고 ${SUM.f||'-'} ~ ${SUM.t||'-'} · 제외 LOT: ${EX.map(e=>e.lotno).join(', ')||'없음'}`,
@@ -915,7 +925,7 @@ function renderSum(){
   $('sTbl').querySelectorAll('th').forEach(th=>th.onclick=()=>{const k=th.dataset.k==='chk'?'short':th.dataset.k;
     if(sortK===k)sortD=-sortD;else{sortK=k;sortD=1}renderSum()});
 }
-['sQ','sF'].forEach(i=>$(i).addEventListener(i==='sQ'?'input':'change',renderSum));
+['sQ','sF'].forEach(i=>$(i).addEventListener(i==='sQ'?'input':'change',renderSum));$('fCar').onchange=renderSum;$('fPn').onchange=renderSum;
 document.querySelectorAll('#sType input').forEach(i=>i.addEventListener('change',renderSum));
 document.querySelectorAll('.kpi').forEach(k=>k.onclick=()=>{$('sF').value=k.dataset.f;renderSum()});
 function exportRows(){const C=cols().map(([k,h,n])=>[k,String(h).replace(/<br><small>/,'(').replace(/<\/small>/,')').replace(/<[^>]+>/g,''),n]);const lab={short:tr('부족','Faltante'),care:'carefull',ok:''};
