@@ -215,6 +215,12 @@ nav.tabs button .wt{font-size:11px;font-weight:700;padding:1px 7px;border-radius
 .wait-box p{margin:0;color:var(--mute);font-size:13.5px}
 select.lnk{height:28px;padding:0 6px;font-size:12px;margin-left:6px;color:var(--amb);border-color:rgba(224,168,74,.5);background:var(--ambbg)}
 select.lnk:has(option:checked:not([value=""])){color:var(--grn);border-color:rgba(76,175,125,.5);background:var(--grnbg)}
+.dailyrow{display:flex;gap:8px;align-items:center}
+.chk{display:inline-flex;align-items:center;gap:5px;height:40px;padding:0 11px;border:1px solid var(--line2);border-radius:999px;font-family:var(--body);font-size:13px;letter-spacing:0;text-transform:none;cursor:pointer;user-select:none;color:var(--ink2);font-weight:600}
+.chk:has(input:checked){background:rgba(201,168,76,.12);border-color:rgba(201,168,76,.35);color:var(--ac)}
+.chk input{margin:0}
+#inDaily:disabled{opacity:.4}
+body.nodaily .legend>span:nth-child(2){display:none}
 @media(max-width:760px){.chart{height:150px}.bars{height:90px}.cv{font-size:11px}}
 </style>
 
@@ -345,7 +351,7 @@ select.lnk:has(option:checked:not([value=""])){color:var(--grn);border-color:rgb
     <div class="row">
       <label class="f"><span data-t="f_year">계획 연도</span><input type="number" id="inYear" style="width:140px" min="2024" max="2040"></label>
       <label class="f"><span data-t="f_site">사업장</span><select id="inSite" style="width:250px"><option value="" data-t="o_all">전체 (1·2공장)</option><option value="Planta 1">Planta 1 · Monclova</option><option value="Planta 2">Planta 2 · Torreón</option></select></label>
-      <label class="f"><span data-t="f_daily">일 매출 기준 ($)</span><input type="number" id="inDaily" style="width:170px" step="100"></label>
+      <label class="f"><span data-t="f_daily">일 매출 기준 ($)</span><span class="dailyrow"><label class="chk"><input type="checkbox" id="inUseDaily"> <span data-t="f_use">적용</span></label><input type="number" id="inDaily" style="width:150px" step="100"></span></label>
       <label class="f"><span data-t="f_box">53FT 적재 BOX</span><input type="number" id="inBox" style="width:140px" step="1"></label>
       <span class="sp"></span>
       <span class="hint" id="saveState"></span>
@@ -450,7 +456,7 @@ const sundays=(y,m)=>{let c=0;const d=new Date(y,m,1);while(d.getMonth()===m){if
 const dim=(y,m)=>new Date(y,m+1,0).getDate();
 
 /* ═══════════════ 상태 ═══════════════ */
-const S={year:2027,site:'',dailySales:37000,boxPer:84,plan:[],master:[],days:null,sub:'sum'};
+const S={year:2027,site:'',dailySales:37000,useDaily:true,boxPer:84,plan:[],master:[],days:null,sub:'sum'};
 function defaultDays(y){return{days:MONTHS.map((_,i)=>dim(y,i)),sun:MONTHS.map((_,i)=>sundays(y,i)),hol:MONTHS.map(()=>0),hA:7.75,dA:MONTHS.map(()=>0),hB:9.75,dB:MONTHS.map(()=>0)}}
 
 /* ═══════════════ 저장 (Supabase → 실패 시 로컬) ═══════════════ */
@@ -566,7 +572,7 @@ function calc(){
 
 /* ═══════════════ 렌더 ═══════════════ */
 function render(){
-  const R=calc();
+  const R=calc();const UD=S.useDaily;$('inDaily').disabled=!UD;document.body.classList.toggle('nodaily',!UD);
   $('cntPlan').textContent=S.plan.length;$('cntMaster').textContent=S.master.length;
   $('plantTag').textContent=S.site?L(`멕시코 ${S.site==='Planta 1'?'1공장 · Monclova':'2공장 · Torreón'}`,`México ${S.site} · ${S.site==='Planta 1'?'Monclova':'Torreón'}`):L('멕시코 1·2공장','México Planta 1 · 2');
   document.title=L('생산계획 대비 실적','Plan vs Real')+(S.site?' · '+S.site:'');
@@ -577,13 +583,14 @@ function render(){
     [L('연간 절단본수','Cortes anuales'),fmt(R.tot.cut),'',L('회로수 × 계획수량','circuitos × cantidad')],
     [L('연간 BOX / 53FT','Cajas / 53FT'),fmt(R.tot.box)+' <small>/ '+fmt(R.tot.ft,1)+'</small>','',L('포장단위 기준','por unidad de empaque')],
     [L('연간 근무일수 / 10HR 생산일','Días laborales / días 10h'),fmt(R.tot.work)+' <small>/ '+fmt(R.tot.d10,1)+'</small>','',L('공수 ÷ 10','horas ÷ 10')],
-    [L('생산일수 기준 예상매출 달성률','Logro vs ventas esperadas'),pct(R.tot.ratio),R.tot.ratio>=1?'g':R.tot.ratio>=.9?'a':'r',L(`예상 ${fmtS(R.tot.exp)} · 차이 ${fmtS(R.tot.diff)}`,`esperado ${fmtS(R.tot.exp)} · dif. ${fmtS(R.tot.diff)}`)]
+    ...(UD?[[L('생산일수 기준 예상매출 달성률','Logro vs ventas esperadas'),pct(R.tot.ratio),R.tot.ratio>=1?'g':R.tot.ratio>=.9?'a':'r',L(`예상 ${fmtS(R.tot.exp)} · 차이 ${fmtS(R.tot.diff)}`,`esperado ${fmtS(R.tot.exp)} · dif. ${fmtS(R.tot.diff)}`)]]:[])
   ].map(([k,v,c,d])=>`<div class="kpi ${c}"><span>${k}</span><b>${v}</b><small>${d}</small></div>`).join('');
   renderChart(R);renderSum(R);renderModel(R);renderPlan(R);renderMaster(R);renderDays(R);
 }
 function renderChart(R){
-  const max=Math.max(1,...R.sales,...R.exp);
-  $('chart').innerHTML=MONTHS.map((_,i)=>`<div class="cm"><div class="bars"><div class="cbar a" style="height:${R.sales[i]/max*100}%" title="${L('계획','Plan')} ${fmtS(R.sales[i])}"></div><div class="cbar b" style="height:${R.exp[i]/max*100}%" title="${L('예상','Esperado')} ${fmtS(R.exp[i])}"></div></div><div class="cv">${R.sales[i]?'$'+fmt(R.sales[i]/1000)+'K':'-'}</div><div class="cl">${MN(i)}</div></div>`).join('');
+  const UD=S.useDaily;const max=Math.max(1,...R.sales,...(UD?R.exp:[]));
+  document.querySelector('[data-t=h_chart]').textContent=UD?L('월별 매출 — 계획 vs 생산일수 기준 예상','Ventas mensuales — plan vs esperado'):L('월별 매출 (계획)','Ventas mensuales (plan)');
+  $('chart').innerHTML=MONTHS.map((_,i)=>`<div class="cm"><div class="bars"><div class="cbar a" style="height:${R.sales[i]/max*100}%" title="${L('계획','Plan')} ${fmtS(R.sales[i])}"></div>${UD?`<div class="cbar b" style="height:${R.exp[i]/max*100}%" title="${L('예상','Esperado')} ${fmtS(R.exp[i])}"></div>`:''}</div><div class="cv">${R.sales[i]?'$'+fmt(R.sales[i]/1000)+'K':'-'}</div><div class="cl">${MN(i)}</div></div>`).join('');
 }
 const th=(t,cls='')=>`<th class="${cls}">${t}</th>`;
 const tdn=(v,d=0,cls='')=>`<td class="n ${cls}${(Number(v)||0)<0?' neg':''}">${Number(v)?fmt(v,d):'<span class="mute">-</span>'}</td>`;
@@ -599,9 +606,9 @@ function renderSum(R){
     [L('일 매출 ($)','Ventas diarias ($)'),R.ds,R.tot.work?R.tot.sales/R.tot.work:0,0,''],
     [L('공수 (시간)','Horas-hombre'),R.mh,R.tot.mh,2,'sep'],
     [L('10HR 생산일수','Días 10h'),R.d10,R.tot.d10,2,''],
-    [L(`생산일수 기준 예상매출 ($${fmt(S.dailySales)}/일)`,`Ventas esperadas ($${fmt(S.dailySales)}/día)`),R.exp,R.tot.exp,0,''],
+    ...(S.useDaily?[[L(`생산일수 기준 예상매출 ($${fmt(S.dailySales)}/일)`,`Ventas esperadas ($${fmt(S.dailySales)}/día)`),R.exp,R.tot.exp,0,''],
     [L('달성비율 (계획 ÷ 예상)','Logro (plan ÷ esperado)'),R.ratio,R.tot.ratio,'p',''],
-    [L('차이 (계획 − 예상)','Diferencia (plan − esperado)'),R.diff,R.tot.diff,0,'']
+    [L('차이 (계획 − 예상)','Diferencia (plan − esperado)'),R.diff,R.tot.diff,0,'']]:[])
   ];
   $('tblSum').innerHTML=`<table><thead><tr>${th(L('구분','Concepto'))}${MONTHS.map((_,i)=>th(MN(i),'n')).join('')}${th(L('합계','Total'),'n')}</tr></thead><tbody>${
     rows.map(([k,a,t,d,c])=>`<tr class="${c}"><td class="lb">${k}</td>${a.map(v=>d==='p'?`<td class="n">${v?pct(v):'<span class="mute">-</span>'}</td>`:tdn(v,d)).join('')}${d==='p'?`<td class="n b">${t?pct(t):'-'}</td>`:tdn(t,d,'b')}</tr>`).join('')}</tbody></table>`;
@@ -653,17 +660,17 @@ function renderDays(R){
     ${rowI(L('생산시간 ② 일수','Turno ② días'),'dB',`<input class="dcell h" data-k="hB" value="${d.hB}">h`)}
     ${rowC(L('공수 (시간)','Horas-hombre'),R.mh,R.tot.mh,2,'b')}
     ${rowC(L('일 10HR 생산일수','Días 10h'),R.d10,R.tot.d10,2,'')}
-    ${rowC(L(`생산일수대비 예상매출 ($${fmt(S.dailySales)}/일)`,`Ventas esperadas ($${fmt(S.dailySales)}/día)`),R.exp,R.tot.exp,0,'sep')}
-    ${rowC(L('계획 매출 (사계)','Ventas plan'),R.sales,R.tot.sales,0,'gold')}
-    <tr><td class="lb">${L('비율 (계획 ÷ 예상)','Proporción')}</td><td></td>${R.ratio.map(v=>`<td class="n">${v?pct(v):'-'}</td>`).join('')}<td class="n b">${R.tot.ratio?pct(R.tot.ratio):'-'}</td><td></td></tr>
-    ${rowC(L('차이 (계획 − 예상)','Diferencia'),R.diff,R.tot.diff,0,'',false)}
+    ${S.useDaily?rowC(L(`생산일수대비 예상매출 ($${fmt(S.dailySales)}/일)`,`Ventas esperadas ($${fmt(S.dailySales)}/día)`),R.exp,R.tot.exp,0,'sep'):''}
+    ${rowC(L('계획 매출 (사계)','Ventas plan'),R.sales,R.tot.sales,0,'gold'+(S.useDaily?'':' sep'))}
+    ${S.useDaily?`<tr><td class="lb">${L('비율 (계획 ÷ 예상)','Proporción')}</td><td></td>${R.ratio.map(v=>`<td class="n">${v?pct(v):'-'}</td>`).join('')}<td class="n b">${R.tot.ratio?pct(R.tot.ratio):'-'}</td><td></td></tr>`:''}
+    ${S.useDaily?rowC(L('차이 (계획 − 예상)','Diferencia'),R.diff,R.tot.diff,0,'',false):''}
   </tbody></table>`;
 }
 
 /* ═══════════════ 이벤트 ═══════════════ */
 function toast(m,err){const t=$('toast');t.textContent=m;t.className='toast'+(err?' err':'');t.style.display='block';clearTimeout(toast._t);toast._t=setTimeout(()=>t.style.display='none',2600)}
 function savePlan(){dbSet('plan',S.plan)}function saveMaster(){dbSet('master',S.master)}function saveDays(){dbSet('days',S.days)}
-function saveSettings(){dbSet('settings',{year:S.year,dailySales:S.dailySales,boxPer:S.boxPer})}
+function saveSettings(){dbSet('settings',{year:S.year,dailySales:S.dailySales,useDaily:S.useDaily,boxPer:S.boxPer})}
 function mergeBy(list,add,keyF){const m=new Map(list.map(x=>[keyF(x),x]));add.forEach(x=>m.set(keyF(x),x));return[...m.values()]}
 const planKey=p=>p.site+'|'+p.model+'|'+p.name, pnKey=r=>r.pn;
 
@@ -690,7 +697,7 @@ document.addEventListener('change',e=>{
   const l=e.target.closest('select.lnk');if(l){const row=S.master.find(x=>x.pn===l.dataset.pn);if(row){const v=l.value||null;S.master.forEach(x=>{if(x.model===row.model&&x.name===row.name)x.link=v});saveMaster();render()}return}
   const d=e.target.closest('input.dcell');if(d){const k=d.dataset.k;if(d.dataset.i!=null)S.days[k][+d.dataset.i]=num(d.value);else S.days[k]=num(d.value);saveDays();render();return}
 });
-['inYear','inDaily','inBox'].forEach(id=>$(id).onchange=()=>{S.year=+$('inYear').value||2027;S.dailySales=num($('inDaily').value);S.boxPer=num($('inBox').value)||84;saveSettings();render()});
+['inYear','inDaily','inBox','inUseDaily'].forEach(id=>$(id).onchange=()=>{S.year=+$('inYear').value||2027;S.dailySales=num($('inDaily').value);S.useDaily=$('inUseDaily').checked;S.boxPer=num($('inBox').value)||84;saveSettings();render()});
 $('inSite').onchange=()=>{S.site=$('inSite').value;render()};
 $('btnReload').onclick=()=>load(true);
 $('subs').addEventListener('click',e=>{const b=e.target.closest('button[data-sub]');if(!b)return;S.sub=b.dataset.sub;document.querySelectorAll('#subs button').forEach(x=>x.classList.toggle('on',x===b));document.querySelectorAll('.sub').forEach(x=>x.classList.toggle('on',x.id==='s-'+S.sub))});
@@ -699,7 +706,7 @@ $('nav').addEventListener('click',e=>{const b=e.target.closest('button[data-tab]
 /* ═══════════════ 언어 ═══════════════ */
 const I18N={
   title:['생산계획 대비 실적','Plan vs Real de producción'],tab_plan:['생산·매출계획','Plan de producción y ventas'],tab_w1:['생산실적','Producción real'],tab_w2:['계획대비 실적 분석','Análisis plan vs real'],tab_w3:['인원·근무시간','Personal y horas'],wait_tag:['준비중','Próximamente'],
-  f_year:['계획 연도','Año'],f_site:['사업장','Planta'],o_all:['전체 (1·2공장)','Todas (1·2)'],f_daily:['일 매출 기준 ($)','Ventas diarias base ($)'],f_box:['53FT 적재 BOX','Cajas por 53FT'],b_reload:['새로고침','Actualizar'],b_xlsx:['엑셀 다운로드','Descargar Excel'],
+  f_year:['계획 연도','Año'],f_site:['사업장','Planta'],o_all:['전체 (1·2공장)','Todas (1·2)'],f_daily:['일 매출 기준 ($)','Ventas diarias base ($)'],f_use:['적용','Aplicar'],f_box:['53FT 적재 BOX','Cajas por 53FT'],b_reload:['새로고침','Actualizar'],b_xlsx:['엑셀 다운로드','Descargar Excel'],
   s_sum:['월별 요약','Resumen mensual'],s_plan:['① 사업계획수량','① Plan de negocio'],s_master:['② 품번 마스터 (단가·회로수·포장)','② Maestro de partes'],s_days:['③ 월별 생산일수','③ Días de producción'],
   h_chart:['월별 매출 — 계획 vs 생산일수 기준 예상','Ventas mensuales — plan vs esperado'],lg_plan:['계획 매출 (사계)','Ventas plan'],lg_exp:['생산일수 기준 예상 매출','Ventas esperadas por días'],h_sum:['월별 생산·매출 요약','Resumen mensual'],h_model:['차종·품명별 월별 계획수량 (사업계획)','Cantidad mensual por modelo·producto'],
   p_plan_h:['사업계획수량 붙여넣기','Pegar plan de negocio'],p_plan_hint:['엑셀 「사업계획수량」 시트에서 <b>사업장 · 차종 · 품명 · 1월~12월</b> 열(A~O)을 행 단위로 복사해 붙여넣으세요. 제목·헤더 행이 섞여 있어도 자동으로 건너뜁니다. 같은 차종·품명이 있으면 새 값으로 바꿉니다.','Copie de la hoja «사업계획수량» las columnas <b>Planta · Modelo · Producto · Ene~Dic</b> (A~O) y péguelas aquí. Las filas de título se omiten automáticamente.'],
@@ -764,14 +771,14 @@ async function buildXlsx(){
   const M=R.master;
   // 열 배치: A~I 기본, J KEY, K~V 수량, W 합계, X 공백, Y~AJ 매출, AK 합계, AL 공백, AM~AX 절단, AY 합계, AZ 공백, BA~BL BOX, BM 합계
   const cQ=11,cQT=23,cS=25,cST=37,cC=39,cCT=51,cB=53,cBT=65,NC=65;
-  title(s2,L(`□ ${Y}년 연간 생산계획 및 월별 매출·절단본수·포장`,`□ Plan anual ${Y}: ventas, cortes y cajas mensuales`),L('월별 계획수량 = 사업계획수량(차종·품명) × 품번 구성비','Cantidad mensual = plan (modelo·producto) × proporción'),NC);
+  title(s2,L(`□ ${Y}년 연간 생산계획 및 월별 매출·절단본수·포장`,`□ Plan anual ${Y}: ventas, cortes y cajas mensuales`),L('월별 계획수량 = 사업계획수량(차종·품명) × 품번 구성비  ·  매출·절단·BOX 월별 열은 상단 [+] 로 펼치기 / [−] 로 접기','Cantidad mensual = plan × proporción · columnas mensuales: [+] expandir / [−] contraer'),NC);
   const grp=(c1,c2,t,bg)=>{s2.mergeCells(4,c1,4,c2);H(s2.getCell(4,c1),t,{bg,fg:'FFFFFFFF'})};
   grp(1,10,L('기본 정보','Datos básicos'),'FF2B2B2B');grp(cQ,cQT,L(`${Y}년 월별 계획 수량 (EA)`,`Cantidad mensual ${Y} (EA)`),'FF8A6D1F');grp(cS,cST,L(`${Y}년 월별 매출 금액 ($ · 멕시코 판매단가)`,`Ventas mensuales ${Y} ($)`),'FF2F6E8F');grp(cC,cCT,L(`${Y}년 절단 계획 (본수)`,`Plan de corte ${Y} (circuitos)`),'FF3C7A55');grp(cB,cBT,L(`${Y}년 월별 포장 BOX 수량`,`Cajas mensuales ${Y}`),'FF6B4FA0');
   const base=[L('구분','Planta'),L('차종','Modelo'),L('품명 CODE','CODE'),L('품명','Producto'),L('품번','N° parte'),L('판매단가\n(평균)','Precio\n(prom.)'),L('회로수\n(최대)','Circuitos\n(máx.)'),L('포장\n단위','Empaque'),L('구성비','Proporción'),'KEY'];
   base.forEach((t,i)=>H(s2.getCell(5,i+1),t));
-  [[cQ,'FFB08A2E'],[cS,'FF3F86A8'],[cC,'FF4E9468'],[cB,'FF8468B8']].forEach(([c,bg])=>{months.forEach((t,i)=>H(s2.getCell(5,c+i),t,{bg,fg:'FFFFFFFF'}));H(s2.getCell(5,c+12),L('합계','Total'),{bg,fg:'FFFFFFFF'})});
+  [[cQ,'FFB08A2E',L('수량 합계','Total cant.')],[cS,'FF3F86A8',L('매출 합계 ($)','Total ventas')],[cC,'FF4E9468',L('절단 합계','Total cortes')],[cB,'FF8468B8',L('BOX 합계','Total cajas')]].forEach(([c,bg,t2])=>{months.forEach((t,i)=>H(s2.getCell(5,c+i),t,{bg,fg:'FFFFFFFF'}));H(s2.getCell(5,c+12),t2,{bg,fg:'FFFFFFFF'})});
   [11,8,9,14,14,10,8,7,9,16].forEach((w,i)=>s2.getColumn(i+1).width=w);
-  for(let c=cQ;c<=NC;c++)s2.getColumn(c).width=c>=cS&&c<=cST?13:11;[cQT,cST,cCT,cBT].forEach(c=>s2.getColumn(c).width=15);[24,38,52].forEach(c=>s2.getColumn(c).width=2);
+  for(let c=cQ;c<=NC;c++)s2.getColumn(c).width=c>=cS&&c<=cST?13:11;[cQT,cST,cCT,cBT].forEach(c=>s2.getColumn(c).width=17);[24,38,52].forEach(c=>s2.getColumn(c).width=2);
   s2.getRow(4).height=20;s2.getRow(5).height=30;
   // 6행: 근무일수 (생산일수 시트 참조)
   s2.mergeCells(6,1,6,9);s2.getCell(6,1).value=L('근무일수 (③ 월별 생산일수 시트)','Días laborales (hoja ③)');s2.getCell(6,1).fill=fill(GOLD_L);s2.getCell(6,1).font={name:FONT,size:9,bold:true,color:{argb:INK}};s2.getCell(6,1).alignment={horizontal:'right'};
@@ -799,6 +806,12 @@ async function buildXlsx(){
   lab(boxRow,L('단프라 BOX — 월별 BOX 수량','Cajas mensuales'));MONTHS.forEach((_,i)=>F(s2.getCell(boxRow,cQ+i),`${COL(cB+i)}${totRow}`,{bg:SOFT,f:NUM1,b:1}));F(s2.getCell(boxRow,cQT),`SUM(${COL(cQ)}${boxRow}:${COL(cQT-1)}${boxRow})`,{bg:SOFT,f:NUM1,b:1});
   lab(ftRow,L(`53FT 기준 (${S.boxPer}BOX) 컨테이너 수`,`Contenedores 53FT (${S.boxPer} cajas)`));MONTHS.forEach((_,i)=>F(s2.getCell(ftRow,cQ+i),`${COL(cQ+i)}${boxRow}/${S.boxPer}`,{bg:SOFT,f:NUM1,b:1}));F(s2.getCell(ftRow,cQT),`SUM(${COL(cQ)}${ftRow}:${COL(cQT-1)}${ftRow})`,{bg:SOFT,f:NUM1,b:1});
   s2.autoFilter={from:{row:5,column:1},to:{row:mL,column:10}};
+  /* 열 그룹(아웃라인): 매출·절단·BOX 월별 열은 접힌 상태(합계만 표시), 수량 월별 열은 펼친 상태 — 시트 상단 +/− 로 펼치기·접기 */
+  s2.properties.outlineProperties={summaryBelow:false,summaryRight:true};s2.properties.outlineLevelCol=1;
+  const grp1=(from,to,hide)=>{for(let c=from;c<=to;c++){const col=s2.getColumn(c);col.outlineLevel=1;if(hide)col.hidden=true}};
+  grp1(3,3,true);grp1(10,10,true);                 /* CODE · KEY */
+  grp1(cQ,cQT-1,false);                            /* 계획수량 월별 (펼침) */
+  grp1(cS,cST-1,true);grp1(cC,cCT-1,true);grp1(cB,cBT-1,true);   /* 매출·절단·BOX 월별 (접힘) */
   s2.pageSetup={orientation:'landscape',fitToPage:true,fitToWidth:1,fitToHeight:0,paperSize:8,printTitlesRow:'4:5'};
 
   /* ── Sheet3 월별 생산일수 ── */
@@ -818,11 +831,13 @@ async function buildXlsx(){
   rowV(11,L('생산시간 ② (시간 × 일수)','Turno ② (h × días)'),d.dB,{b2:d.hB,b2bg:INPUT,b2f:NUM2});
   rowF(12,L('공수 (시간)','Horas-hombre'),c=>`${c}10*$B$10+${c}11*$B$11`,{f:NUM2,b:1});
   rowF(13,L('일 10HR 생산일수','Días 10h'),c=>`${c}12/10`,{f:NUM2});
+  if(S.useDaily){
   D(s3.getCell(14,1),L('일 매출 기준 ($/10HR 일)','Ventas base ($/día 10h)'),{bg:SOFT,b:1});D(s3.getCell(14,2),S.dailySales,{bg:INPUT,f:USD});for(let c=3;c<=16;c++)D(s3.getCell(14,c),'',{bg:SOFT});
   rowF(15,L('생산일수대비 예상 매출','Ventas esperadas por días'),c=>`${c}13*$B$14`,{f:USD,b:1,af:USD});
   rowF(16,L('계획 매출 (사계 · ② 시트)','Ventas plan (hoja ②)'),(c,i)=>`'월매출 및 절단본수'!${COL(cQ+i)}${salesRow}`,{f:USD,b:1,bg:BLUE_L,af:USD});
   rowF(17,L('비율 (계획 ÷ 예상)','Proporción'),c=>`IFERROR(${c}16/${c}15,0)`,{f:PCT,tot:()=>`IFERROR(O16/O15,0)`,avg:()=>`IFERROR(P16/P15,0)`,af:PCT});
   rowF(18,L('차이 (계획 − 예상)','Diferencia'),c=>`${c}16-${c}15`,{f:USD,af:USD});
+  }else{rowF(14,L('계획 매출 (사계 · ② 시트)','Ventas plan (hoja ②)'),(c,i)=>`'월매출 및 절단본수'!${COL(cQ+i)}${salesRow}`,{f:USD,b:1,bg:BLUE_L,af:USD})}
   s3.getRow(4).height=20;s3.getRow(5).height=20;
   s3.pageSetup={orientation:'landscape',fitToPage:true,fitToWidth:1,fitToHeight:1,paperSize:9};
 
@@ -843,9 +858,9 @@ async function buildXlsx(){
     [L('일 매출 ($)','Ventas diarias ($)'),i=>`IFERROR(${COL(2+i)}6/${COL(2+i)}10,0)`,USD],
     [L('공수 (시간)','Horas-hombre'),i=>`${S3}!${COL(3+i)}12`,NUM2],
     [L('10HR 생산일수','Días 10h'),i=>`${S3}!${COL(3+i)}13`,NUM2],
-    [L('생산일수 기준 예상매출','Ventas esperadas'),i=>`${S3}!${COL(3+i)}15`,USD],
+    ...(S.useDaily?[[L('생산일수 기준 예상매출','Ventas esperadas'),i=>`${S3}!${COL(3+i)}15`,USD],
     [L('달성비율 (계획 ÷ 예상)','Logro'),i=>`IFERROR(${COL(2+i)}6/${COL(2+i)}15,0)`,PCT,0,'r'],
-    [L('차이 (계획 − 예상)','Diferencia'),i=>`${COL(2+i)}6-${COL(2+i)}15`,USD]
+    [L('차이 (계획 − 예상)','Diferencia'),i=>`${COL(2+i)}6-${COL(2+i)}15`,USD]]:[])
   ];
   rows4.forEach(([lb,fn,f,b,kind],k)=>{const r=5+k;D(s4.getCell(r,1),lb,{bg:SOFT,b:1});MONTHS.forEach((_,i)=>F(s4.getCell(r,2+i),fn(i),{f,b,bg:k%2?SOFT:'FFFFFFFF'}));
     if(kind==='r')F(s4.getCell(r,14),`IFERROR(N6/N15,0)`,{f,b:1,bg:GOLD_L});
@@ -868,13 +883,13 @@ async function load(reload){
   $('load').style.display='flex';
   try{
     const [plan,master,days,st]=await Promise.all([dbGet('plan'),dbGet('master'),dbGet('days'),dbGet('settings')]);
-    if(st){S.year=st.year||S.year;S.dailySales=st.dailySales??S.dailySales;S.boxPer=st.boxPer||S.boxPer}
+    if(st){S.year=st.year||S.year;S.dailySales=st.dailySales??S.dailySales;S.useDaily=st.useDaily!==false;S.boxPer=st.boxPer||S.boxPer}
     const empty=!(Array.isArray(plan)&&plan.length)&&!(Array.isArray(master)&&master.length);
     S.plan=Array.isArray(plan)&&plan.length?plan:JSON.parse(JSON.stringify(SEED.plan));
     S.master=Array.isArray(master)&&master.length?master:JSON.parse(JSON.stringify(SEED.master));
     S.days=days&&days.days?days:JSON.parse(JSON.stringify(SEED.days));
     if(empty){savePlan();saveMaster();saveDays()}
-    $('inYear').value=S.year;$('inDaily').value=S.dailySales;$('inBox').value=S.boxPer;$('inSite').value=S.site;
+    $('inYear').value=S.year;$('inDaily').value=S.dailySales;$('inUseDaily').checked=S.useDaily;$('inBox').value=S.boxPer;$('inSite').value=S.site;
     setSave(DB.off?'local':'');if(reload)toast(L('다시 불러왔습니다','Actualizado'));
   }catch(e){console.error(e);toast(String(e),1)}
   finally{$('load').style.display='none';applyLang()}
