@@ -336,6 +336,62 @@
   @media(max-width:760px){ .btn-lang:not(.login-lang){order:2;flex:1 1 28%;min-width:0;height:38px;font-size:12px;padding:0 6px;} }
   /* QR 있는 카드: 새창 뱃지를 왼쪽 상단으로 이동해 QR과 겹치지 않게 */
   .card:has(.qr-wrap)[target="_blank"]::after{right:auto;left:auto;top:auto;bottom:10px;right:10px;}
+  /* ── 현장재고 받기 (자재무역 전용) ── */
+  .fs-btn{display:none;margin-left:auto;align-items:center;gap:7px;background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.55);color:var(--accent-gold);
+    border-radius:999px;padding:7px 15px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;transition:background .15s,transform .15s;white-space:nowrap}
+  .fs-btn:hover{background:rgba(201,168,76,0.2);transform:translateY(-1px)}
+  .fs-btn small{font-weight:400;font-size:12px;color:#b9a46a}
+  body[data-tab="matl"] .plant-header .fs-btn{display:inline-flex}
+  .mobile-plant-hdr .fs-btn{display:inline-flex;padding:5px 11px;font-size:12px}
+  #fs-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.82);z-index:8100;align-items:center;justify-content:center;padding:16px}
+  #fs-overlay.open{display:flex}
+  .fs-modal{background:var(--surface);border:1px solid var(--border);border-radius:10px;width:1180px;max-width:100%;max-height:92vh;display:flex;flex-direction:column;overflow:hidden}
+  .fs-head{padding:16px 20px 12px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:12px}
+  .fs-head h3{font-family:'IBM Plex Sans KR','Noto Sans KR',sans-serif;font-size:18px;font-weight:700;color:var(--text-primary)}
+  .fs-head .fs-sub{font-family:'Space Mono',Consolas,monospace;font-size:12px;letter-spacing:.12em;color:var(--text-muted);margin-top:3px;text-transform:uppercase}
+  .fs-head .fs-pl{display:inline-block;margin-left:8px;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:700;vertical-align:middle}
+  .fs-pl.p1{background:rgba(212,101,26,.15);color:#f08a45;border:1px solid rgba(212,101,26,.5)}
+  .fs-pl.p2{background:rgba(124,92,191,.15);color:#a98af0;border:1px solid rgba(124,92,191,.5)}
+  .fs-x{margin-left:auto;background:none;border:1px solid var(--border);border-radius:6px;color:var(--text-secondary);cursor:pointer;font-size:13px;padding:6px 12px;font-family:inherit}
+  .fs-x:hover{color:var(--text-primary);border-color:#555}
+  .fs-body{padding:14px 20px 18px;overflow:auto;display:flex;flex-direction:column;gap:12px;min-height:0}
+  .fs-src{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .fs-card{background:#0d0d0d;border:1px solid var(--border);border-radius:8px;padding:11px 14px}
+  .fs-card .k{font-family:'Space Mono',Consolas,monospace;font-size:12px;letter-spacing:.14em;color:var(--text-muted)}
+  .fs-card .v{font-size:22px;font-weight:700;color:var(--text-primary);margin-top:2px}
+  .fs-card .v small{font-size:12px;color:var(--text-secondary);font-weight:400;margin-left:6px}
+  .fs-card .d{font-size:12px;color:var(--text-secondary);margin-top:3px;line-height:1.45}
+  .fs-card.err .d{color:#e07a7a}
+  .fs-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+  .fs-seg{display:inline-flex;border:1px solid var(--border);border-radius:999px;overflow:hidden}
+  .fs-seg button{background:none;border:none;color:var(--text-secondary);padding:7px 14px;font-family:inherit;font-size:13px;cursor:pointer}
+  .fs-seg button.on{background:var(--accent-gold);color:#0a0a0a;font-weight:700}
+  .fs-bar input[type=text]{background:#0d0d0d;border:1px solid var(--border);border-radius:6px;color:var(--text-primary);padding:7px 10px;font-family:inherit;font-size:13px;width:200px}
+  .fs-bar label{font-size:13px;color:var(--text-secondary);display:inline-flex;gap:5px;align-items:center;cursor:pointer}
+  .fs-bar label input{accent-color:var(--accent-gold)}
+  .fs-dl{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+  .fs-dl button{border-radius:6px;padding:8px 14px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;border:1px solid var(--accent-gold)}
+  .fs-dl .a{background:var(--accent-gold);color:#0a0a0a}
+  .fs-dl .b{background:rgba(201,168,76,.1);color:var(--accent-gold)}
+  .fs-dl .r{background:none;border-color:var(--border);color:var(--text-secondary);font-weight:400}
+  .fs-dl button:disabled{opacity:.4;cursor:not-allowed}
+  .fs-tw{border:1px solid var(--border);border-radius:8px;overflow:auto;max-height:52vh;min-height:160px}
+  .fs-tw table{width:100%;border-collapse:collapse;font-size:13px}
+  .fs-tw th{position:sticky;top:0;background:#1a1a1a;color:var(--accent-gold);font-weight:700;text-align:left;padding:8px 10px;border-bottom:1px solid #333;white-space:nowrap;z-index:1}
+  .fs-tw td{padding:6px 10px;border-bottom:1px solid #1d1d1d;color:var(--text-primary);white-space:nowrap}
+  .fs-tw tr:hover td{background:#151515}
+  .fs-tw .n{text-align:right;font-family:'Space Mono',Consolas,monospace}
+  .fs-tw .neg{color:#e86a6a}
+  .fs-tw .mu{color:var(--text-muted)}
+  .fs-tag{display:inline-block;padding:1px 7px;border-radius:4px;font-size:12px;font-weight:700}
+  .fs-tag.m{background:rgba(74,158,201,.15);color:#6fb6dd}
+  .fs-tag.a{background:rgba(76,175,125,.15);color:#5cc28d}
+  .fs-tag.c{background:rgba(201,168,76,.15);color:var(--accent-gold)}
+  .fs-empty{padding:30px;text-align:center;color:var(--text-muted);font-size:13px}
+  .fs-note{font-size:12px;color:var(--text-muted);line-height:1.5}
+  .fs-spin{display:inline-block;width:12px;height:12px;border:2px solid #444;border-top-color:var(--accent-gold);border-radius:50%;animation:fsr .8s linear infinite;vertical-align:-1px;margin-right:6px}
+  @keyframes fsr{to{transform:rotate(360deg)}}
+  @media(max-width:760px){.fs-src{grid-template-columns:1fr}.fs-dl{margin-left:0;width:100%}.fs-dl button{flex:1}.fs-bar input[type=text]{width:100%}.fs-btn small{display:none}}
 </style>
 </head>
 <body>
@@ -493,11 +549,11 @@
 <div class="grid-wrapper">
   <!-- PLANT 헤더 행 -->
   <div class="plant-col">
-    <div class="plant-header"><span class="plant-dot"></span><span class="plant-label">PLANT 1<span class="plant-label-sub">(몽클로바)</span></span></div>
+    <div class="plant-header"><span class="plant-dot"></span><span class="plant-label">PLANT 1<span class="plant-label-sub">(몽클로바)</span></span><button class="fs-btn" type="button" onclick="event.stopPropagation();fsOpen(1)" title="가공+조립 현장재고 조회·엑셀 다운로드">📥 현장재고 받기 <small>(자재무역 전용)</small></button></div>
   </div>
   <div class="divider-v"></div>
   <div class="plant-col">
-    <div class="plant-header"><span class="plant-dot"></span><span class="plant-label">PLANT 2<span class="plant-label-sub">(라하트)</span></span></div>
+    <div class="plant-header"><span class="plant-dot"></span><span class="plant-label">PLANT 2<span class="plant-label-sub">(라하트)</span></span><button class="fs-btn" type="button" onclick="event.stopPropagation();fsOpen(2)" title="가공+조립 현장재고 조회·엑셀 다운로드">📥 현장재고 받기 <small>(자재무역 전용)</small></button></div>
   </div>
 </div>
 
@@ -940,8 +996,8 @@
 
 <!-- ═══ 탭: 자재관리 ═══ -->
 <div class="row-grid tab-panel" data-cat="matl">
-  <div class="mobile-plant-hdr hdr-p1"><span class="mp-dot mp-dot1"></span>PLANT 1 · 몽클로바</div>
-  <div class="mobile-plant-hdr hdr-p2"><span class="mp-dot mp-dot2"></span>PLANT 2 · 라하트</div>
+  <div class="mobile-plant-hdr hdr-p1"><span class="mp-dot mp-dot1"></span>PLANT 1 · 몽클로바<span style="margin-left:auto"></span><button class="fs-btn" style="margin-left:0" type="button" onclick="event.stopPropagation();fsOpen(1)" title="가공+조립 현장재고 조회·엑셀 다운로드">📥 현장재고 받기 <small>(자재무역 전용)</small></button></div>
+  <div class="mobile-plant-hdr hdr-p2"><span class="mp-dot mp-dot2"></span>PLANT 2 · 라하트<span style="margin-left:auto"></span><button class="fs-btn" style="margin-left:0" type="button" onclick="event.stopPropagation();fsOpen(2)" title="가공+조립 현장재고 조회·엑셀 다운로드">📥 현장재고 받기 <small>(자재무역 전용)</small></button></div>
 
   <div class="card-cell p1">
     <a class="card inv" href="material_shortage.html" target="_blank" rel="noopener">
@@ -1193,6 +1249,9 @@ const I18N_ES = {
   '(라하트)':'(Torreón)',
   'PLANT 1 · 몽클로바':'PLANT 1 · Monclova',
   'PLANT 2 · 라하트':'PLANT 2 · Torreón',
+  '📥 현장재고 받기 ':'📥 Stock en piso ',
+  '(자재무역 전용)':'(solo Materiales y Comercio)',
+  '가공+조립 현장재고 조회·엑셀 다운로드':'Consultar stock en piso (corte + ensamble) y descargar Excel',
   // 팀 뱃지
   '가공생산팀':'Producción Corte',
   '조립생산팀':'Producción Ensamble',
@@ -1328,6 +1387,7 @@ function setLang(lang) {
   if (typeof tick === 'function') tick();
   if (document.getElementById('admin-overlay').classList.contains('open') && window._lastUsers) renderUserTable(window._lastUsers, getMe().id);
   if (document.getElementById('admin-overlay').classList.contains('open') && window._lastAccess) renderAccessStats(window._lastAccess);
+  if (typeof fsRender === 'function' && document.getElementById('fs-overlay') && document.getElementById('fs-overlay').classList.contains('open')) fsRender();
 }
 function toggleLang() { setLang(curLang === 'es' ? 'ko' : 'es'); }
 
@@ -1466,6 +1526,7 @@ async function callGAS(payload) {
 function switchTab(cat, save = true) {
   document.querySelectorAll('.cat-tab').forEach(b => b.classList.toggle('active', b.dataset.cat === cat));
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.dataset.cat === cat));
+  document.body.dataset.tab = cat;
   if (save) { try { localStorage.setItem('yura_index_tab', cat); } catch(e){} }
 }
 
@@ -1820,6 +1881,206 @@ document.addEventListener('keydown', function(e){ if(e.key === 'Escape') closeQr
   });
   if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(function(){});
 })();
+</script>
+
+<!-- ═══ 현장재고 받기 (자재무역 전용) ═══ -->
+<div id="fs-overlay" onclick="if(event.target===this)fsClose()">
+  <div class="fs-modal" role="dialog" aria-modal="true">
+    <div class="fs-head">
+      <div><h3 id="fs-title"></h3><div class="fs-sub">Field stock · machining + assembly</div></div>
+      <button class="fs-x" type="button" onclick="fsClose()" id="fs-xbtn">✕ 닫기</button>
+    </div>
+    <div class="fs-body" id="fs-body"></div>
+  </div>
+</div>
+<div id="fs-frames" style="position:fixed;left:-10000px;top:0;width:1400px;height:900px;overflow:hidden;visibility:hidden" aria-hidden="true"></div>
+<script>
+/* ══════════════════════════════════════════════════════
+   현장재고 받기 (자재무역 전용) — 가공(material_shortage) + 조립(assembly_material)
+   · 가공 현재고: 가공생산팀 자재관리 앱을 숨은 프레임에서 그대로 계산(앱 기본 조건: 최근 실사일 ~ 오늘) → 앱 화면과 동일한 값
+   · 조립 현재고: binv_stock_v / binv2_stock_v (공정구분 A·B = 조립자재)
+   ══════════════════════════════════════════════════════ */
+const FS_CFG={
+  1:{mach:'material_shortage.html',assy:'binv_stock_v',pl:'1공장',ples:'Planta 1',city:'몽클로바',cityes:'Monclova'},
+  2:{mach:'material_shortage_2.html',assy:'binv2_stock_v',pl:'2공장',ples:'Planta 2',city:'라하트',cityes:'Torreón'}
+};
+const FS={plant:1,view:'cls',q:'',nz:true,data:{}};
+const fsL=(ko,es)=>curLang==='es'?es:ko;
+const fsEsc=v=>String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fsNum=v=>{const n=Number(v)||0;return n.toLocaleString('en-US',{maximumFractionDigits:3})};
+const fsType=c=>{const h=String(c||'').trim().toUpperCase()[0];return h==='T'?'Terminal':h==='W'?'Wire':h==='J'?'Seal':'Other'};
+const fsToday=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+
+function fsOpen(pl){FS.plant=pl;document.getElementById('fs-overlay').classList.add('open');document.body.style.overflow='hidden';
+  if(!FS.data[pl])fsLoad(pl);else fsRender()}
+function fsClose(){document.getElementById('fs-overlay').classList.remove('open');document.body.style.overflow=''}
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.getElementById('fs-overlay').classList.contains('open'))fsClose()});
+
+/* ── 조립: 재고 뷰 (페이지 단위로 전부) ── */
+async function fsAssy(view){
+  const out=[],step=1000;
+  for(let from=0;;from+=step){
+    const r=await fetch(SUPABASE_URL+'/rest/v1/'+view+'?select=code,name,vendor_part,unit,procs,mat_type,vendor_name,stock&order=code',
+      {headers:{apikey:SUPABASE_ANON,Authorization:'Bearer '+SUPABASE_ANON,Range:from+'-'+(from+step-1),'Range-Unit':'items'}});
+    if(!r.ok)throw new Error(await r.text());const j=await r.json();out.push(...j);if(j.length<step)break}
+  return out.filter(x=>String(x.procs||'').split(',').map(s=>s.trim()).some(p=>p==='A'||p==='B'))
+    .map(x=>({code:String(x.code||'').toUpperCase(),name:x.name||'',vpart:x.vendor_part||'',unit:x.unit||'',procs:x.procs||'',mtype:x.mat_type||'',vendor:x.vendor_name||'',stock:Number(x.stock)||0}));
+}
+
+/* ── 가공: 앱을 숨은 프레임에서 실행해 계산 결과(SUM) 회수 ── */
+async function fsMach(file){
+  const html=await (await fetch(file+'?v='+Date.now(),{cache:'no-store'})).text();
+  const inj='<script>window.__fsErr=[];window.alert=function(m){window.__fsErr.push(String(m))};window.confirm=function(){return false};<\/script>';
+  const src=html.replace(/<head[^>]*>/i,m=>m+inj);
+  const box=document.getElementById('fs-frames');
+  const fr=document.createElement('iframe');fr.setAttribute('sandbox','allow-scripts allow-same-origin');fr.style.cssText='width:1400px;height:900px;border:0';
+  box.appendChild(fr);
+  try{
+    await new Promise((ok,ng)=>{fr.onload=ok;fr.onerror=()=>ng(new Error('frame'));fr.srcdoc=src});
+    const w=fr.contentWindow,t0=Date.now();
+    const st=()=>{try{const ld=w.document.getElementById('load');const ready=w.eval('typeof calc')==='function';
+      return{ready,busy:ld&&ld.style.display!=='none'}}catch(e){return{ready:false,busy:true}}};
+    let idle=0;
+    while(true){
+      await new Promise(r=>setTimeout(r,300));
+      const s=st();
+      if(s.ready&&!s.busy){idle++;if(idle>=3)break}else idle=0;
+      if(Date.now()-t0>120000)throw new Error(fsL('가공 자재관리 계산 시간 초과','Tiempo agotado (corte)'));
+    }
+    const err=(w.__fsErr||[]).filter(Boolean);
+    const S=w.eval('typeof SUM!=="undefined"?SUM:null');
+    if(!S){if(err.length)throw new Error(err[0]);return{list:[],cd:'',f:'',t:'',none:true}}
+    const list=(S.list||[]).map(r=>({code:String(r.code||'').toUpperCase(),name:r.name||'',unit:r.unit||'',type:fsType(r.code),
+      cur:Number(r.cur)||0,roll:Number(r.roll)||0,need:Number(r.need)||0,extra:!!r.extra}));
+    return{list:JSON.parse(JSON.stringify(list)),cd:S.cd||'',f:S.f||'',t:S.t||''};
+  }finally{fr.remove()}
+}
+
+async function fsLoad(pl){
+  const C=FS_CFG[pl];const D=FS.data[pl]={mach:null,assy:null,me:'',ae:'',loading:true,at:''};fsRender();
+  await Promise.all([
+    fsMach(C.mach).then(r=>D.mach=r).catch(e=>D.me=e.message||String(e)),
+    fsAssy(C.assy).then(r=>D.assy=r).catch(e=>D.ae=e.message||String(e))
+  ]);
+  D.loading=false;const n=new Date();D.at=fsToday()+' '+String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');
+  if(FS.plant===pl)fsRender();
+}
+
+/* ── 행 만들기 ── */
+function fsRows(pl){
+  const D=FS.data[pl]||{},nz=FS.nz,q=FS.q.trim().toUpperCase();
+  const hit=s=>!q||s.toUpperCase().includes(q);
+  const m=(D.mach&&D.mach.list||[]).filter(r=>(!nz||Math.abs(r.cur)>1e-9||r.roll)&&hit(r.code+' '+r.name+' '+r.type));
+  const a=(D.assy||[]).filter(r=>(!nz||Math.abs(r.stock)>1e-9)&&hit(r.code+' '+r.name+' '+r.vpart+' '+r.vendor));
+  /* 통합: 자재코드 기준 합산 */
+  const map=new Map();
+  (D.mach&&D.mach.list||[]).forEach(r=>{const o=map.get(r.code)||{code:r.code,name:'',unit:'',mq:0,aq:0,m:0,a:0};o.name=o.name||r.name;o.unit=o.unit||r.unit;o.mq+=r.cur;o.roll=(o.roll||0)+r.roll;o.m=1;map.set(r.code,o)});
+  (D.assy||[]).forEach(r=>{const o=map.get(r.code)||{code:r.code,name:'',unit:'',mq:0,aq:0,m:0,a:0};o.name=o.name||r.name;o.unit=o.unit||r.unit;o.vpart=r.vpart;o.aq+=r.stock;o.a=1;map.set(r.code,o)});
+  const u=[...map.values()].map(o=>({...o,tot:o.mq+o.aq,src:o.m&&o.a?'both':o.m?'m':'a'}))
+    .filter(o=>(!nz||Math.abs(o.mq)>1e-9||Math.abs(o.aq)>1e-9||o.roll)&&hit(o.code+' '+o.name+' '+(o.vpart||'')))
+    .sort((x,y)=>x.code.localeCompare(y.code));
+  return{m,a,u};
+}
+const fsSrcTag=s=>s==='both'?`<span class="fs-tag c">${fsL('가공+조립','Corte+Ens.')}</span>`:s==='m'?`<span class="fs-tag m">${fsL('가공','Corte')}</span>`:`<span class="fs-tag a">${fsL('조립','Ensamble')}</span>`;
+const fsN=v=>`<td class="n${v<0?' neg':''}">${v?fsNum(v):'<span class="mu">0</span>'}</td>`;
+
+function fsRender(){
+  const pl=FS.plant,C=FS_CFG[pl],D=FS.data[pl]||{loading:true};
+  document.getElementById('fs-title').innerHTML=fsL('현장재고 받기','Stock en piso')+` <span class="fs-pl p${pl}">PLANT ${pl} · ${fsL(C.city,C.cityes)}</span> <span style="font-size:13px;font-weight:400;color:var(--text-muted)">${fsL('자재무역 전용','Solo Materiales y Comercio')}</span>`;
+  document.getElementById('fs-xbtn').textContent=fsL('✕ 닫기','✕ Cerrar');
+  const R=fsRows(pl);
+  const md=D.mach,mc=md&&md.list?md.list.filter(r=>Math.abs(r.cur)>1e-9||r.roll).length:0;
+  const mCard=D.me?`<div class="fs-card err"><div class="k">MACHINING · ${fsL('가공자재','Mat. corte')}</div><div class="v">—</div><div class="d">${fsEsc(D.me)}</div></div>`
+    :!md?`<div class="fs-card"><div class="k">MACHINING · ${fsL('가공자재','Mat. corte')}</div><div class="v"><span class="fs-spin"></span><small>${fsL('가공생산팀 자재관리 계산 중…','Calculando…')}</small></div></div>`
+    :`<div class="fs-card"><div class="k">MACHINING · ${fsL('가공자재','Mat. corte')}</div><div class="v">${mc.toLocaleString()}<small>${fsL('품목 (재고 있음)','materiales con stock')} / ${fsL('전체','total')} ${md.list.length.toLocaleString()}</small></div>
+      <div class="d">${md.none?fsL('실사 데이터가 없습니다 — 가공생산팀 자재관리에서 실사를 먼저 등록하세요','Sin inventario físico registrado'):fsL(`실사 ${md.cd||'-'} · 사용/입고 ${md.f||'-'} ~ ${md.t||'-'} 기준 현재고 (가공생산팀 자재관리와 동일)`,`Inventario ${md.cd||'-'} · ${md.f||'-'} ~ ${md.t||'-'} (igual que Gestión de materiales · Corte)`)}</div></div>`;
+  const ad=D.assy,ac=ad?ad.filter(r=>Math.abs(r.stock)>1e-9).length:0;
+  const aCard=D.ae?`<div class="fs-card err"><div class="k">ASSEMBLY · ${fsL('조립자재','Mat. ensamble')}</div><div class="v">—</div><div class="d">${fsEsc(D.ae)}</div></div>`
+    :!ad?`<div class="fs-card"><div class="k">ASSEMBLY · ${fsL('조립자재','Mat. ensamble')}</div><div class="v"><span class="fs-spin"></span><small>${fsL('불러오는 중…','Cargando…')}</small></div></div>`
+    :`<div class="fs-card"><div class="k">ASSEMBLY · ${fsL('조립자재','Mat. ensamble')}</div><div class="v">${ac.toLocaleString()}<small>${fsL('품목 (재고 있음)','materiales con stock')} / ${fsL('전체','total')} ${ad.length.toLocaleString()}</small></div>
+      <div class="d">${ad.length?fsL('조립생산팀 자재관리 현재고 · 공정구분 A·B (조립자재)','Stock actual de Ensamble · proceso A·B'):fsL('등록된 조립자재가 없습니다','Sin materiales de ensamble')}</div></div>`;
+  const busy=D.loading,ok=!busy&&(md||ad);
+  const V=FS.view,seg=[['cls',fsL('분류 (가공·조립)','Por tipo')],['m',fsL('가공','Corte')+` ${R.m.length}`],['a',fsL('조립','Ensamble')+` ${R.a.length}`],['u',fsL('통합 (한 시트)','Unificado')+` ${R.u.length}`]];
+  let tbl='';
+  const mT=()=>`<tr><th>#</th><th>${fsL('구분','Tipo')}</th><th>${fsL('자재코드','Código')}</th><th>${fsL('자재명','Nombre')}</th><th>${fsL('단위','Unid.')}</th><th class="n">${fsL('현장재고','Stock piso')}</th><th class="n">${fsL('현장롤수','Rollos piso')}</th></tr>`+
+    R.m.map((r,i)=>`<tr><td class="mu">${i+1}</td><td>${r.type}</td><td><b>${fsEsc(r.code)}</b></td><td>${fsEsc(r.name)}</td><td>${fsEsc(r.unit)}</td>${fsN(r.cur)}${fsN(r.roll)}</tr>`).join('');
+  const aT=()=>`<tr><th>#</th><th>${fsL('자재코드','Código')}</th><th>${fsL('자재명','Nombre')}</th><th>${fsL('업체품명','Parte proveedor')}</th><th>${fsL('단위','Unid.')}</th><th>${fsL('공정','Proc.')}</th><th>${fsL('자재유형','Tipo mat.')}</th><th class="n">${fsL('현장재고','Stock piso')}</th></tr>`+
+    R.a.map((r,i)=>`<tr><td class="mu">${i+1}</td><td><b>${fsEsc(r.code)}</b></td><td>${fsEsc(r.name)}</td><td>${fsEsc(r.vpart)}</td><td>${fsEsc(r.unit)}</td><td>${fsEsc(r.procs)}</td><td>${fsEsc(r.mtype)}</td>${fsN(r.stock)}</tr>`).join('');
+  const uT=()=>`<tr><th>#</th><th>${fsL('구분','Origen')}</th><th>${fsL('자재코드','Código')}</th><th>${fsL('자재명','Nombre')}</th><th>${fsL('단위','Unid.')}</th><th class="n">${fsL('가공 현장재고','Stock corte')}</th><th class="n">${fsL('조립 현장재고','Stock ensamble')}</th><th class="n">${fsL('합계','Total')}</th></tr>`+
+    R.u.map((r,i)=>`<tr><td class="mu">${i+1}</td><td>${fsSrcTag(r.src)}</td><td><b>${fsEsc(r.code)}</b></td><td>${fsEsc(r.name)}</td><td>${fsEsc(r.unit)}</td>${fsN(r.mq)}${fsN(r.aq)}<td class="n${r.tot<0?' neg':''}"><b>${fsNum(r.tot)}</b></td></tr>`).join('');
+  const empty=`<tr><td class="fs-empty" colspan="9">${busy?'<span class="fs-spin"></span>'+fsL('불러오는 중…','Cargando…'):fsL('표시할 자재가 없습니다','Sin datos')}</td></tr>`;
+  if(V==='m')tbl=`<div class="fs-tw"><table>${R.m.length?mT():empty}</table></div>`;
+  else if(V==='a')tbl=`<div class="fs-tw"><table>${R.a.length?aT():empty}</table></div>`;
+  else if(V==='u')tbl=`<div class="fs-tw"><table>${R.u.length?uT():empty}</table></div>`;
+  else tbl=`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(420px,1fr));gap:10px">
+      <div><div class="fs-note" style="margin-bottom:5px"><span class="fs-tag m">${fsL('가공','Corte')}</span> ${R.m.length.toLocaleString()} ${fsL('품목','mat.')}</div><div class="fs-tw" style="max-height:46vh"><table>${R.m.length?mT():empty}</table></div></div>
+      <div><div class="fs-note" style="margin-bottom:5px"><span class="fs-tag a">${fsL('조립','Ensamble')}</span> ${R.a.length.toLocaleString()} ${fsL('품목','mat.')}</div><div class="fs-tw" style="max-height:46vh"><table>${R.a.length?aT():empty}</table></div></div></div>`;
+  const qv=fsEsc(FS.q);
+  document.getElementById('fs-body').innerHTML=`
+    <div class="fs-src">${mCard}${aCard}</div>
+    <div class="fs-bar">
+      <div class="fs-seg">${seg.map(([k,h])=>`<button type="button" class="${V===k?'on':''}" onclick="FS.view='${k}';fsRender()">${h}</button>`).join('')}</div>
+      <input type="text" id="fs-q" placeholder="${fsL('자재코드·자재명 검색','Buscar código·nombre')}" value="${qv}">
+      <label><input type="checkbox" id="fs-nz" ${FS.nz?'checked':''}> ${fsL('재고 0 제외','Excluir stock 0')}</label>
+      <div class="fs-dl">
+        <button type="button" class="r" onclick="fsReload()" ${busy?'disabled':''}>↻ ${fsL('새로고침','Actualizar')}</button>
+        <button type="button" class="b" onclick="fsXlsx('cls')" ${ok?'':'disabled'} title="${fsL('가공 시트 + 조립 시트','Hoja corte + hoja ensamble')}">⬇ ${fsL('분류형 엑셀 (가공·조립 시트)','Excel por tipo (2 hojas)')}</button>
+        <button type="button" class="a" onclick="fsXlsx('u')" ${ok?'':'disabled'} title="${fsL('가공+조립을 한 시트로','Corte + ensamble en una hoja')}">⬇ ${fsL('통합형 엑셀 (한 시트)','Excel unificado (1 hoja)')}</button>
+      </div>
+    </div>
+    ${tbl}
+    <div class="fs-note">${fsL('· 가공 현장재고 = 실사 − 사용량 + 현장입고 − 반품 + 조정 (가공생산팀 자재관리 현재고와 동일) · 조립 현장재고 = 조립생산팀 자재관리 현재고 (공정구분 A·B) · 통합 시트는 같은 자재코드를 한 행으로 합산 · 마이너스는 빨간색',
+      '· Corte = inventario − consumo + entrada − devoluciones + ajuste · Ensamble = stock actual (proceso A·B) · Unificado: un renglón por código')}${D.at?` · ${fsL('조회','Consulta')} ${D.at}`:''}</div>`;
+  const qi=document.getElementById('fs-q');qi.oninput=()=>{FS.q=qi.value;clearTimeout(fsRender._t);fsRender._t=setTimeout(()=>{fsRender();const n=document.getElementById('fs-q');n.focus();n.setSelectionRange(n.value.length,n.value.length)},250)};
+  document.getElementById('fs-nz').onchange=e=>{FS.nz=e.target.checked;fsRender()};
+}
+function fsReload(){FS.data[FS.plant]=null;fsLoad(FS.plant)}
+
+/* ── 엑셀 ── */
+function fsExcelJS(){if(window.ExcelJS)return Promise.resolve();return new Promise((ok,ng)=>{const s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js';s.onload=ok;s.onerror=()=>ng(new Error(fsL('엑셀 모듈을 불러오지 못했습니다','No se pudo cargar Excel')));document.head.appendChild(s)})}
+async function fsXlsx(mode){
+  const pl=FS.plant,C=FS_CFG[pl],D=FS.data[pl];if(!D)return;
+  try{await fsExcelJS()}catch(e){alert(e.message);return}
+  const R=fsRows(pl),INK='FF161616',GOLD='FFC9A84C',LINE='FFE3E3E3',MUTE='FF7A7A7A',FONT='맑은 고딕';
+  const fill=c=>({type:'pattern',pattern:'solid',fgColor:{argb:c}});
+  const hb={top:{style:'thin',color:{argb:'FF3A3A3A'}},bottom:{style:'thin',color:{argb:'FF3A3A3A'}},left:{style:'thin',color:{argb:'FF3A3A3A'}},right:{style:'thin',color:{argb:'FF3A3A3A'}}};
+  const md=D.mach||{};
+  const info=fsL(`가공: 실사 ${md.cd||'-'} · 사용/입고 ${md.f||'-'} ~ ${md.t||'-'}   |   조립: 조립생산팀 자재관리 현재고 (공정 A·B)   |   조회 ${D.at}`,
+    `Corte: inventario ${md.cd||'-'} · ${md.f||'-'} ~ ${md.t||'-'}   |   Ensamble: stock actual (A·B)   |   ${D.at}`)+(FS.nz?fsL('   |   재고 0 제외','   |   sin stock 0'):'')+(FS.q?fsL('   |   검색 ','   |   buscar ')+FS.q:'');
+  const wb=new ExcelJS.Workbook();wb.creator='YURA HARNESS MÉXICO';wb.created=new Date();
+  function sheet(name,title,tab,cols,rows){
+    const ws=wb.addWorksheet(name,{views:[{state:'frozen',ySplit:4,xSplit:0,showGridLines:false}],properties:{tabColor:{argb:tab}}});
+    const n=cols.length;
+    ws.mergeCells(1,1,1,n);const t=ws.getCell(1,1);t.value=title;t.font={name:FONT,size:16,bold:true,color:{argb:INK}};t.alignment={vertical:'middle'};ws.getRow(1).height=30;
+    ws.mergeCells(2,1,2,n);const s=ws.getCell(2,1);s.value='YURA HARNESS MÉXICO · '+fsL(C.pl,C.ples)+'   |   '+info;s.font={name:FONT,size:9,color:{argb:MUTE}};ws.getRow(2).height=18;
+    for(let c=1;c<=n;c++)ws.getCell(3,c).border={top:{style:'medium',color:{argb:GOLD}}};ws.getRow(3).height=6;
+    cols.forEach((c,i)=>{const h=ws.getCell(4,i+1);h.value=c.h;h.fill=fill(INK);h.font={name:FONT,size:10,bold:true,color:{argb:GOLD}};h.alignment={horizontal:'center',vertical:'middle',wrapText:true};h.border=hb;ws.getColumn(i+1).width=c.w});
+    ws.getRow(4).height=24;
+    rows.forEach((r,ri)=>{const row=ws.getRow(5+ri),bg=ri%2?'FFF8F8F8':'FFFFFFFF';
+      cols.forEach((c,i)=>{const cell=row.getCell(i+1),v=c.v(r,ri);cell.fill=fill(bg);cell.border={bottom:{style:'thin',color:{argb:LINE}}};cell.font={name:FONT,size:10,bold:!!c.b,color:{argb:INK}};cell.alignment={vertical:'middle',horizontal:c.n?'right':c.c?'center':'left'};
+        if(c.n){cell.value=Number(v)||0;cell.numFmt='#,##0.###;[Red]-#,##0.###;"-"'}else cell.value=v==null?'':String(v)});
+      row.height=18});
+    if(rows.length){ws.autoFilter={from:{row:4,column:1},to:{row:4+rows.length,column:n}};
+      const tr_=ws.getRow(5+rows.length);cols.forEach((c,i)=>{const cell=tr_.getCell(i+1);cell.border={top:{style:'medium',color:{argb:GOLD}}};cell.font={name:FONT,size:10,bold:true,color:{argb:INK}};
+        if(i===0){cell.value=fsL('합계','Total')+` (${rows.length.toLocaleString()})`}
+        else if(c.n&&c.sum){cell.value={formula:`SUBTOTAL(9,${ws.getColumn(i+1).letter}5:${ws.getColumn(i+1).letter}${4+rows.length})`};cell.numFmt='#,##0.###;[Red]-#,##0.###;"-"';cell.alignment={horizontal:'right'}}})}
+    ws.pageSetup={orientation:'portrait',fitToPage:true,fitToWidth:1,fitToHeight:0,paperSize:9,printTitlesRow:'4:4',margins:{left:.3,right:.3,top:.4,bottom:.4,header:.2,footer:.2}};
+    return ws}
+  const no={h:'No.',w:6,c:1,v:(r,i)=>i+1};
+  const mCols=[no,{h:fsL('구분','Tipo'),w:10,c:1,v:r=>r.type},{h:fsL('자재코드','Código'),w:18,b:1,v:r=>r.code},{h:fsL('자재명','Nombre'),w:34,v:r=>r.name},{h:fsL('단위','Unid.'),w:7,c:1,v:r=>r.unit},
+    {h:fsL('현장재고','Stock piso'),w:14,n:1,b:1,sum:0,v:r=>r.cur},{h:fsL('현장롤수','Rollos piso'),w:11,n:1,sum:1,v:r=>r.roll}];
+  const aCols=[no,{h:fsL('자재코드','Código'),w:18,b:1,v:r=>r.code},{h:fsL('자재명','Nombre'),w:30,v:r=>r.name},{h:fsL('업체품명','Parte proveedor'),w:22,v:r=>r.vpart},{h:fsL('단위','Unid.'),w:7,c:1,v:r=>r.unit},
+    {h:fsL('공정','Proc.'),w:8,c:1,v:r=>r.procs},{h:fsL('자재유형','Tipo mat.'),w:12,c:1,v:r=>r.mtype},{h:fsL('공급업체','Proveedor'),w:18,v:r=>r.vendor},{h:fsL('현장재고','Stock piso'),w:14,n:1,b:1,v:r=>r.stock}];
+  const uCols=[no,{h:fsL('구분','Origen'),w:11,c:1,v:r=>r.src==='both'?fsL('가공+조립','Corte+Ens.'):r.src==='m'?fsL('가공','Corte'):fsL('조립','Ensamble')},{h:fsL('자재코드','Código'),w:18,b:1,v:r=>r.code},{h:fsL('자재명','Nombre'),w:34,v:r=>r.name},{h:fsL('단위','Unid.'),w:7,c:1,v:r=>r.unit},
+    {h:fsL('가공 현장재고','Stock corte'),w:14,n:1,v:r=>r.mq},{h:fsL('조립 현장재고','Stock ensamble'),w:14,n:1,v:r=>r.aq},{h:fsL('합계 현장재고','Total'),w:15,n:1,b:1,v:r=>r.tot},{h:fsL('가공 롤수','Rollos'),w:10,n:1,v:r=>r.roll||0}];
+  let fn;
+  if(mode==='u'){sheet(fsL('현장재고 통합','Stock unificado'),fsL(`현장재고 통합 (가공+조립) · ${C.pl}`,`Stock en piso unificado · ${C.ples}`),GOLD,uCols,R.u);fn=fsL('현장재고_통합_','StockPiso_Unificado_')}
+  else{sheet(fsL('가공자재','Corte'),fsL(`가공자재 현장재고 · ${C.pl}`,`Stock en piso · Corte · ${C.ples}`),'FF4A9EC9',mCols,R.m);
+    sheet(fsL('조립자재','Ensamble'),fsL(`조립자재 현장재고 · ${C.pl}`,`Stock en piso · Ensamble · ${C.ples}`),'FF4CAF7D',aCols,R.a);fn=fsL('현장재고_분류_','StockPiso_PorTipo_')}
+  const buf=await wb.xlsx.writeBuffer(),a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));
+  a.download=`${fn}${C.pl}_${fsToday()}.xlsx`;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1500);
+}
 </script>
 </body>
 </html>
