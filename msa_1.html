@@ -488,6 +488,14 @@ hr{border-top-color:#2a2a2a}
   <!-- ══════════ 계수형 ══════════ -->
   <section class="panel on" id="p-att">
     <div class="retest-bar" id="aRetest"></div>
+    <div class="card rtq-card">
+      <div class="row" style="justify-content:space-between;align-items:center">
+        <h2 style="margin:0">재평가 대상 (불합격자) <small>Pendientes de reevaluación</small><span class="pill p-mut cnt" id="rtqaCnt">—</span></h2>
+        <button class="btn-line btn-sm" onclick="loadAttRetestQueue()">새로고침</button>
+      </div>
+      <div class="scroll" id="rtqaList" style="margin-top:10px"><div class="empty">불러오는 중…</div></div>
+      <p class="note">최근 1년 동안 계수형 평가에서 <b>불합격</b>하고 아직 합격하지 못한 인원입니다(같은 평가명으로 이후 평가에서 합격했으면 제외). 「재평가」를 누르면 원평가의 시료 참값·기준을 그대로 불러오고 <b>남은 불합격자만</b> 선택합니다. 저장하면 이력에 재평가 차수로 기록되고 최종 결과에 반영됩니다.</p>
+    </div>
     <div class="card">
       <h2>평가 조건 <small>Condiciones — Gage R&amp;R por Atributos</small></h2>
       <div class="grid g4">
@@ -831,6 +839,7 @@ document.querySelectorAll('nav.tabs button').forEach(b=>{
     $('mainWrap').classList.toggle('noside', b.dataset.t==='hist');
     if(b.dataset.t==='var'){ renderGTabs(); renderVarInput(); loadRetestQueue(); }
     if(b.dataset.t==='admin') admRender();
+    if(b.dataset.t==='att') loadAttRetestQueue();
   };
 });
 
@@ -905,7 +914,7 @@ function updCnt(){
 function selAll(on){ if(!on){ SEL=[]; VD={}; }
   renderEmp(); renderAttInput(); renderGTabs(); renderVarInput(); }
 $('fFactory').onchange=loadEmployees;
-$('fTeam').onchange=()=>{ renderEmp(); loadRetestQueue(); };
+$('fTeam').onchange=()=>{ renderEmp(); loadRetestQueue(); loadAttRetestQueue(); };
 $('fSearch').oninput=renderEmp;
 
 /* ══════════════════════════════════════════
@@ -1057,6 +1066,7 @@ async function saveAtt(){
     if(recs.length) await sb('msa_evaluations',{method:'POST',body:JSON.stringify(recs)});
     toast((RETEST&&RETEST.kind==='att'?retestLabel(RETEST.no)+' 저장 완료 · ':'계수형 저장 완료 · ')+recs.length+'건'+(existing?' (같은 날 기록 덮어씀)':''));
     if(RETEST&&RETEST.kind==='att'){ RETEST=null; renderRetestBar(); }
+    loadAttRetestQueue();
   }catch(e){ toast('저장 실패: '+e.message); }
   finally{ SAVING=false; }
 }
@@ -1719,7 +1729,7 @@ async function startVarRetest(id){
   }catch(e){ toast('재평가 준비 실패: '+e.message); }
 }
 /* 계수형 재평가 시작 — 불합격자만 선택 */
-async function startAttRetest(id){
+async function startAttRetest(id, only){
   try{
     const rs=await sb('msa_sessions?id=eq.'+encodeURIComponent(id)+'&select=*,msa_evaluations(*)');
     if(!rs||!rs.length) return toast('기록을 찾을 수 없습니다');
@@ -1735,7 +1745,9 @@ async function startAttRetest(id){
     const all=Object.values(byOp);
     const failed=all.filter(o=>{ const E=o.tot?o.hit/o.tot:null, Pfa=okN?o.fa/okN:0, Pms=ngN?o.ms/ngN:0;
       return !(E!==null && E>=cE && Pfa<=cFa && Pms<=cMs); });
-    const target=failed.length?failed:all;
+    let target=failed.length?failed:all;
+    if(only&&only.length){ const want=new Set(only);
+      const t=all.filter(o=>want.has(o.id||o.name)); if(t.length) target=t; }
     goTab('att');
     setTitle('a', r.title||''); $('aProc').value=r.process_name||''; $('aDate').value=today();
     setPeriodSel('aYear','aQtr',r.period);
@@ -1745,10 +1757,10 @@ async function startAttRetest(id){
     SEL=target.map(o=>empFromRecord(o.id,o.name,r.team)); ANS={}; VD={};
     if(r.team && [...$('fTeam').options].some(o=>o.value===r.team)) $('fTeam').value=r.team;
     RETEST={kind:'att', of:r.retest_of||r.id, no:(r.retest_no||0)+1, group_name:null,
-      label:periodLabel(r.period)+' · '+r.eval_date+' · '+(r.title||''), faults:failed.map(o=>opTag({name:o.name,employee_id:o.id}))};
+      label:periodLabel(r.period)+' · '+r.eval_date+' · '+(r.title||''), faults:(failed.length?target:[]).map(o=>opTag({name:o.name,employee_id:o.id}))};
     closeModal();
     renderEmp(); renderAttInput(); renderGTabs(); renderVarInput(); renderRetestBar();
-    toast(retestLabel(RETEST.no)+' 준비 완료'+(failed.length?' · 재평가: '+RETEST.faults.join(', '):''));
+    toast(retestLabel(RETEST.no)+' 준비 완료'+(RETEST.faults.length?' · 재평가: '+RETEST.faults.join(', '):''));
   }catch(e){ toast('재평가 준비 실패: '+e.message); }
 }
 
@@ -2159,8 +2171,76 @@ async function loadRetestQueue(){
   }catch(e){ box.innerHTML='<div class="empty">'+esc(e.message)+'</div>'; }
 }
 
+/* 계수형 — 작업자별 합격/불합격 계산 (원 판정 기준과 동일) */
+function attOps(r){
+  const refs=r.refs||[];
+  const okN=refs.filter(v=>v==='OK').length, ngN=refs.filter(v=>v==='NG').length;
+  const cE=+r.crit_e, cFa=+r.crit_pfa, cMs=+r.crit_pmiss;
+  const byOp={};
+  (r.msa_evaluations||[]).forEach(e=>{ const k=e.employee_id||e.employee_name;
+    byOp[k]=byOp[k]||{key:k,id:e.employee_id,name:e.employee_name,hit:0,tot:0,fa:0,ms:0};
+    (e.answers||[]).forEach((v,i)=>{ if(!v) return; byOp[k].tot++;
+      if(v===refs[i]) byOp[k].hit++; else if(refs[i]==='OK') byOp[k].fa++; else byOp[k].ms++; });
+  });
+  const all=Object.values(byOp);
+  all.forEach(o=>{ const E=o.tot?o.hit/o.tot:null, Pfa=okN?o.fa/okN:0, Pms=ngN?o.ms/ngN:0;
+    o.pass=(E!==null && E>=cE && Pfa<=cFa && Pms<=cMs); });
+  return {all, failed:all.filter(o=>!o.pass)};
+}
+const attTag = o => opTag({name:o.name, employee_id:o.id});
+/* 원평가 + 재평가 기록 → 남은 불합격자 */
+function attChain(root, rows){
+  const chain=rows.filter(x=>x.retest_of===root.id).sort((a,b)=>(a.retest_no||0)-(b.retest_no||0));
+  const F0=attOps(root).failed, F=new Map(F0.map(o=>[o.key,o]));
+  chain.forEach(x=>attOps(x).all.forEach(o=>{ if(o.pass) F.delete(o.key); else if(F.has(o.key)) F.set(o.key,o); }));
+  const latest=chain.length?chain[chain.length-1]:root;
+  return {F0, F:[...F.values()], latest, chain};
+}
+/* 계수형 탭 — 재평가 대상(불합격자) */
+async function loadAttRetestQueue(){
+  const box=$('rtqaList'); if(!box) return;
+  const fac=$('fFactory').value, tm=$('fTeam').value;
+  const d=new Date(); d.setFullYear(d.getFullYear()-1);
+  try{
+    const rows=await sb('msa_sessions?select=id,eval_date,period,title,process_name,team,retest_of,retest_no,refs,crit_e,crit_pfa,crit_pmiss,msa_evaluations(employee_id,employee_name,answers)'+
+      '&factory=eq.'+fac+(tm?'&team=eq.'+encodeURIComponent(tm):'')+'&eval_date=gte.'+d.toISOString().slice(0,10)+
+      '&order=eval_date.desc&limit=500')||[];
+    /* 이후 같은 평가명 평가에서 합격한 사람 */
+    const passDates={};
+    rows.forEach(x=>attOps(x).all.forEach(o=>{ if(!o.pass){ return; }
+      const k=(x.title||'')+'§'+o.key; if(!passDates[k]||x.eval_date>passDates[k]) passDates[k]=x.eval_date; }));
+    const list=[];
+    rows.filter(x=>!(x.retest_no>0)).forEach(root=>{
+      const c=attChain(root,rows);
+      const left=c.F.filter(o=>{ const pd=passDates[(root.title||'')+'§'+o.key]; return !(pd && pd>c.latest.eval_date); });
+      if(left.length) list.push({root, latest:c.latest, left});
+    });
+    const nP=list.reduce((a,x)=>a+x.left.length,0);
+    $('rtqaCnt').textContent=nP+'명';
+    $('rtqaCnt').className='pill cnt '+(nP?'p-ng':'p-ok');
+    if(!list.length){ box.innerHTML='<div class="rtq-empty">✓ 재평가할 불합격자가 없습니다</div>'; return; }
+    window._rtqa=list;
+    let h='<table><thead><tr><th>평가주기</th><th>평가일</th><th>평가명</th><th>공정</th>'+
+      '<th>불합격자</th><th>인원</th><th>진행</th><th>재평가</th></tr></thead><tbody>';
+    list.forEach((x,i)=>{
+      const r=x.root, nx=(x.latest.retest_no||0)+1;
+      h+='<tr><td>'+esc(periodLabel(r.period))+'</td><td>'+esc(r.eval_date)+'</td>'+
+        '<td style="text-align:left">'+esc(r.title||'')+'</td><td>'+esc(r.process_name||'')+'</td>'+
+        '<td class="names"><span class="pill p-ng">⚠ '+esc(x.left.map(attTag).join(', '))+'</span></td>'+
+        '<td>'+x.left.length+'명</td>'+
+        '<td>'+(x.latest.retest_no>0?'<span class="pill p-gold">'+retestLabel(x.latest.retest_no)+' 불합격</span>':'<span class="pill p-mut">원평가</span>')+'</td>'+
+        '<td><button class="btn-gold btn-sm" onclick="startAttRetestQ('+i+')">🔁 '+retestLabel(nx)+'</button></td></tr>';
+    });
+    box.innerHTML=h+'</tbody></table>';
+  }catch(e){ box.innerHTML='<div class="empty">'+esc(e.message)+'</div>'; }
+}
+function startAttRetestQ(i){
+  const x=(window._rtqa||[])[i]; if(!x) return;
+  startAttRetest(x.latest.id, x.left.map(o=>o.key));
+}
+
 /* ══════════ 이력 ══════════ */
-let HV=[], HA=[], HVF={};
+let HV=[], HA=[], HVF={}, HAF={};
 /* 세션에 딸린 측정 기록에서 측정자 이름을 op_index 순으로 중복 없이 추출 */
 function measurerNames(r){
   const m=r.msa_var_measures||[], seen={}, out=[];
@@ -2243,15 +2323,45 @@ async function loadHist(){
 
   $('histAtt').innerHTML='<div class="empty">불러오는 중…</div>';
   try{
-    const s=await sb('msa_sessions?select=*,msa_evaluations(employee_name)&factory=eq.'+fac+tq+
+    const s=await sb('msa_sessions?select=*,msa_evaluations(employee_id,employee_name,answers)&factory=eq.'+fac+tq+
       '&eval_date=gte.'+f+'&eval_date=lte.'+t+'&order=eval_date.desc&limit=300')||[];
     HA=s;
+    HAF={};
     if(!s.length){ $('histAtt').innerHTML='<div class="empty">데이터가 없습니다</div>'; return; }
-    const retestedA=new Set(s.map(r=>r.retest_of).filter(Boolean));
-    let h='<table><thead><tr><th>평가주기</th><th>평가일</th><th>평가명</th><th>구분</th><th>공정</th><th>팀</th>'+
+    const rootsA=[...new Set(s.map(r=>r.retest_of||r.id))];
+    let extraA=[];
+    try{ extraA=await sb('msa_sessions?select=id,retest_of,retest_no,eval_date,refs,crit_e,crit_pfa,crit_pmiss,msa_evaluations(employee_id,employee_name,answers)'+
+      '&retest_of=in.('+rootsA.join(',')+')')||[]; }catch(_){ }
+    const allA=s.concat(extraA.filter(x=>!s.some(y=>y.id===x.id)));
+    const retestedA=new Set(allA.map(r=>r.retest_of).filter(Boolean));
+    let tP=0,tOk=0,tRe=0,tNg=0;
+    s.filter(r=>!(r.retest_no>0)).forEach(r=>{ const c=attChain(r,allA); HAF[r.id]=c;
+      const n=attOps(r).all.length; tP+=n; tNg+=c.F.length; tRe+=c.F0.length-c.F.length; tOk+=n-c.F.length; });
+    let h='<div class="hsum"><div>평가 인원 <b>'+tP+'</b></div>'+
+      '<div class="ok">최종 합격 <b>'+tOk+'</b></div>'+
+      '<div class="gd">재평가로 합격 <b>'+tRe+'</b></div>'+
+      '<div class="ng">최종 불합격 <b>'+tNg+'</b></div></div>';
+    h+='<table><thead><tr><th>평가주기</th><th>평가일</th><th>평가명</th><th>구분</th><th>공정</th><th>팀</th>'+
       '<th>평가자<br><small>Operadores</small></th><th>시료/반복</th><th>평가인원</th>'+
-      '<th>기준 E</th><th>삭제</th></tr></thead><tbody>';
+      '<th>기준 E</th><th>결과<br><small>재평가 반영</small></th><th>삭제</th></tr></thead><tbody>';
     s.forEach(r=>{
+      const ops=attOps(r), fl=ops.failed, c=HAF[r.id];
+      let resHtml;
+      if(c && c.chain.length){
+        const before = c.F0.length ? '불합격 '+c.F0.length+'명' : '전원 합격';
+        const after  = c.F.length ? '<b style="color:#ef9a9a">불합격 '+c.F.length+'명</b>' : '<b style="color:#4caf7d">전원 합격</b>';
+        resHtml='<span class="fin-old">'+before+'</span><span class="fin-arrow">→</span>'+after+
+          '<span class="fin-sub">'+retestLabel(c.latest.retest_no)+' ('+esc(c.latest.eval_date)+') 반영</span>';
+      } else if(r.retest_no>0){
+        resHtml = fl.length ? '<b style="color:#ef9a9a">불합격 '+fl.length+'명</b>' : '<b style="color:#4caf7d">전원 합격</b>';
+      } else {
+        resHtml = fl.length ? '<span style="color:#ef9a9a">불합격 '+fl.length+'명</span>' : '<span style="color:#4caf7d">전원 합격</span>';
+      }
+      const failHtml = !fl.length ? ''
+        : (c && c.chain.length)
+          ? '<br><span class="pill p-ng fin-old" style="font-size:11px">⚠ '+esc(fl.map(attTag).join(', '))+'</span>'+
+            (c.F.length?'<br><span class="pill p-ng" style="font-size:11px">남음: '+esc(c.F.map(attTag).join(', '))+'</span>':'')
+          : '<br><span class="pill p-ng" style="font-size:11px">⚠ '+esc(fl.map(attTag).join(', '))+'</span>';
       const nm=[...new Set((r.msa_evaluations||[]).map(e=>shortName(e.employee_name)).filter(Boolean))];
       const rt = r.retest_no>0 ? '<span class="pill p-gold">'+retestLabel(r.retest_no)+'</span>'
                : retestedA.has(r.id) ? '<span class="pill p-mut">재평가됨</span>' : '<span class="pill p-mut">정기</span>';
@@ -2260,10 +2370,9 @@ async function loadHist(){
         '<td>'+esc(r.eval_date)+'</td><td style="text-align:left">'+esc(r.title)+'</td>'+
         '<td>'+rt+'</td>'+
         '<td>'+esc(r.process_name)+'</td><td style="text-align:left">'+esc(r.team)+'</td>'+
-        '<td style="text-align:left">'+esc(nm.join(', '))+
-          ((r.fault_ops||[]).length?'<br><span class="pill p-ng" style="font-size:11px">⚠ '+esc(r.fault_ops.join(', '))+'</span>':'')+'</td>'+
+        '<td style="text-align:left">'+esc(nm.join(', '))+failHtml+'</td>'+
         '<td>'+r.sample_count+' / '+r.trial_count+'</td><td>'+nm.length+'명</td>'+
-        '<td>'+r.crit_e+'</td>'+
+        '<td>'+r.crit_e+'</td><td>'+resHtml+'</td>'+
         '<td><button class="delbtn" data-del="'+esc(r.id)+'" data-lab="'+
           esc(periodLabel(r.period)+' · '+(r.title||r.eval_date))+'">삭제</button></td></tr>';
     });
@@ -2543,12 +2652,16 @@ function exportHistXlsx(){
   }
   if(HA.length){
     const a=[['계수형 Gage R&R 이력 · Atributos'],[],
-      ['평가주기','평가일','평가명','구분','불합격자','공정','팀','평가자','시료수','반복수','평가인원','기준E','기준PFA','기준PMISS']];
+      ['평가주기','평가일','평가명','구분','불합격자','공정','팀','평가자','시료수','반복수','평가인원','기준E','기준PFA','기준PMISS','최종 불합격자(재평가 반영)','최종결과']];
     HA.forEach(r=>{
       const nm=[...new Set((r.msa_evaluations||[]).map(e=>shortName(e.employee_name)).filter(Boolean))];
-      a.push([periodLabel(r.period),r.eval_date,r.title,r.retest_no>0?retestLabel(r.retest_no):'정기',(r.fault_ops||[]).join(', '),
+      const fl=attOps(r).failed, c=HAF[r.id];
+      const fin = c ? c.F : fl;
+      a.push([periodLabel(r.period),r.eval_date,r.title,r.retest_no>0?retestLabel(r.retest_no):'정기',fl.map(attTag).join(', '),
         r.process_name,r.team,nm.join(' / '),
-        r.sample_count,r.trial_count,nm.length,r.crit_e,r.crit_pfa,r.crit_pmiss]);
+        r.sample_count,r.trial_count,nm.length,r.crit_e,r.crit_pfa,r.crit_pmiss,
+        fin.map(attTag).join(', '),
+        (fin.length?'불합격 '+fin.length+'명':'전원 합격')+(c&&c.chain.length?' ('+retestLabel(c.latest.retest_no)+' 반영)':'')]);
     });
     sheets.push({name:'계수형이력',aoa:a,
       cols:[{wch:12},{wch:20},{wch:16},{wch:26},{wch:38}].concat(Array(6).fill({wch:10}))});
@@ -2815,9 +2928,16 @@ const SUB={
 '원평가 조건을 그대로 불러왔습니다. 측정값을 새로 입력하고 저장하세요.':'Se cargaron las condiciones originales. Capture las mediciones y guarde.',
 '재평가 모드를 해제했습니다':'Modo reevaluación cancelado','준비 완료':'listo','재측정':'Remedir',
 '재평가 준비 실패':'Error al preparar la reevaluación','전원 합격':'todos aprobados',
-'재평가 대상 (불합격 조)':'Grupos rechazados por reevaluar','새로고침':'Actualizar','개 조':' grupos',
+'재평가 대상 (불합격 조)':'Grupos rechazados por reevaluar','재평가 대상 (불합격자)':'Operadores rechazados por reevaluar',
+'재평가할 불합격자가 없습니다':'No hay operadores rechazados pendientes','평가 인원':'Personas evaluadas',
+'결과':'Resultado','남음: ':'Pendientes: ','불합격 ':'Rechazados ',
+'최근 1년 동안 계수형 평가에서 ':'Personas de los últimos 12 meses ','불합격':'rechazadas',
+'하고 아직 합격하지 못한 인원입니다(같은 평가명으로 이후 평가에서 합격했으면 제외). 「재평가」를 누르면 원평가의 시료 참값·기준을 그대로 불러오고 ':
+ ' que aún no aprueban (se excluyen si aprobaron después la misma evaluación). «Reevaluación» carga los valores de referencia y criterios originales y selecciona ',
+'남은 불합격자만':'solo a los rechazados pendientes',
+' 선택합니다. 저장하면 이력에 재평가 차수로 기록되고 최종 결과에 반영됩니다.':'. Al guardar se registra como reevaluación y se aplica al resultado final.','새로고침':'Actualizar','개 조':' grupos',
 '재평가할 불합격 조가 없습니다':'No hay grupos rechazados pendientes','조 전체':'Todo el grupo','진행':'Estado',
-'불합격':'Rechazado','재평가 반영':'con reevaluación','반영':'aplicada','평가 조':'Grupos evaluados',
+'재평가 반영':'con reevaluación','반영':'aplicada','평가 조':'Grupos evaluados',
 '최종 합격':'Aprobados (final)','재평가로 합격':'Aprobados por reevaluación','최종 불합격':'Rechazados (final)',
 '주의: ':'Atención: ','재측정: ':'Remedición: ',
 '최근 1년 동안 ':'Grupos de los últimos 12 meses con resultado ','부족(불합격)':'Insuficiente (rechazado)',
@@ -2952,7 +3072,7 @@ async function delRecord(kind,id,label){
   try{
     await sb(tbl+'?id=eq.'+encodeURIComponent(id),{method:'DELETE'});
     toast('삭제했습니다');
-    closeModal(); loadHist(); loadRetestQueue();
+    closeModal(); loadHist(); loadRetestQueue(); loadAttRetestQueue();
   }catch(e){ toast('삭제 실패: '+e.message); }
 }
 async function admCount(){
@@ -3049,7 +3169,7 @@ window.addEventListener('resize',syncTopH);
   $('hFrom').value=d.toISOString().slice(0,10); $('hTo').value=today();
   $('vTitle').value=TITLE_DEF.v[0]; $('aTitle').value=TITLE_DEF.a[0];
   renderTitleChips('v'); renderTitleChips('a'); loadTitles(); syncTopH();
-  initRefs(); renderGTabs(); loadEmployees(); loadRetestQueue();
+  initRefs(); renderGTabs(); loadEmployees(); loadRetestQueue(); loadAttRetestQueue();
   let rt; window.addEventListener('resize',()=>{ clearTimeout(rt); rt=setTimeout(drawAll,150); });
 })();
 </script>
