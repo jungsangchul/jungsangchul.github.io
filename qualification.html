@@ -469,6 +469,8 @@ function _csItemIdx(){
 //  · evalRounds: [{id,name,type:'new'|'regular'|'re'|'etc',cohort:'YYYY-MM'}]  (exam_config.evalRounds)
 //  · activeRound: 현재 평가구분 id ('' = 미지정: 먼저 평가하고 나중에 일괄 지정)  (exam_config.activeRound — 모든 PC·모바일 응시 공통)
 var evalRounds=[], activeRound='', _hasRoundCol=true;
+// MSA 불러오기 기준 (평가구분별): {mode:'auto'|'range'|'pick', from, to, var:[id], att:[id]}  (exam_config.msaSource)
+var msaSource={};
 const ROUND_TYPES={new:'신입사원평가',regular:'정기평가',re:'재평가',etc:'기타'};
 function _roundById(id){return evalRounds.find(x=>x.id===id)||null;}
 function roundName(id){if(!id)return'미지정';const r=_roundById(id);return r?r.name:id;}
@@ -510,6 +512,7 @@ function roundBarHtml(){
 function renderRoundBars(){document.querySelectorAll('.round-bar-slot').forEach(el=>{el.innerHTML=roundBarHtml();});}
 function _roundRefreshAll(){
   renderRoundBars();
+  try{renderMsaSrcInfo();}catch(e){}
   try{if(document.getElementById('practicalCardList'))renderPracticalCardList();}catch(e){}
   try{renderResults();}catch(e){}
   try{if(_perfCtx&&_perfCtx.evalMode){_perfCtx.eid=null;_perfCtx.scores=null;_perfCtx.prev=null;renderPerfSheet();}}catch(e){}
@@ -591,6 +594,7 @@ async function deleteRound(id){
 function _applyRoundCfg(cfgObj){
   try{const a=JSON.parse(cfgObj.evalRounds||'[]');if(Array.isArray(a))evalRounds=a;}catch(e){}
   if(cfgObj.activeRound!=null)activeRound=cfgObj.activeRound||'';
+  try{const m=JSON.parse(cfgObj.msaSource||'{}');if(m&&typeof m==='object')msaSource=m;}catch(e){}
   try{renderRoundBars();}catch(e){}
 }
 
@@ -1009,6 +1013,23 @@ label{font-size:0.78rem;color:var(--text2);margin-bottom:0.3rem;display:block;}
 .score-tab{padding:0.95rem 1rem;border-radius:10px;border:1.5px solid var(--border);background:var(--surface);color:var(--text2);font-family:inherit;font-size:0.98rem;font-weight:800;cursor:pointer;transition:all .15s;text-align:left;display:flex;align-items:center;gap:0.45rem}
 .score-tab small{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:0.8rem;font-weight:700;opacity:.8}
 .score-tab:hover{border-color:var(--sky)}
+/* MSA 평가내역 선택 */
+.msa-src-modes{display:flex;gap:1rem;flex-wrap:wrap;align-items:center;background:var(--bg,#0a0a0a);border:1px solid var(--border,#2a2a2a);border-radius:8px;padding:.55rem .75rem;margin-bottom:.6rem;font-size:.82rem}
+.msa-src-modes label{margin:0;display:inline-flex;align-items:center;gap:.35rem;flex-wrap:wrap}
+.msa-src-modes small{color:var(--text2);font-size:.7rem}
+.msa-src-modes input[type=date]{width:auto;padding:.2rem .35rem}
+.msa-src-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(380px,1fr));gap:.6rem}
+.msa-src-ttl{font-weight:700;font-size:.82rem;margin-bottom:.35rem}
+.msa-src-ttl a{color:var(--accent,#c9a84c);font-weight:400;font-size:.74rem}
+.msa-src-list{max-height:46vh;overflow:auto;border:1px solid var(--border,#2a2a2a);border-radius:8px}
+.msa-src-row{display:grid;grid-template-columns:22px 86px 1fr auto auto;gap:.45rem;align-items:center;padding:.4rem .55rem;border-bottom:1px solid var(--border,#2a2a2a);font-size:.78rem;margin:0;cursor:pointer;opacity:.55}
+.msa-src-row.on{opacity:1;background:rgba(155,126,232,.08)}
+.msa-src-row .d{font-family:'JetBrains Mono',monospace;color:var(--text2);font-size:.74rem}
+.msa-src-row .n small{color:var(--text2);font-size:.68rem}
+.msa-src-row .c{font-size:.72rem;color:var(--text2);white-space:nowrap}
+.msa-src-row .r{font-size:.72rem;white-space:nowrap}
+.msa-src-foot{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;margin-top:.7rem;font-size:.8rem}
+.msa-src-foot small{color:var(--text2)}
 /* 평가구분 (2026-10-27) */
 .round-bar{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;background:rgba(201,168,76,.07);border:1px solid rgba(201,168,76,.35);border-radius:8px;padding:.55rem .75rem;margin-bottom:.7rem}
 .round-bar-lbl{font-weight:800;font-size:.86rem;color:var(--accent,#c9a84c);white-space:nowrap}
@@ -4819,14 +4840,15 @@ document.addEventListener('DOMContentLoaded', renderExamQr);
       <div class="card-title purple">👥 <span data-kr="작업자별 점수 입력" data-es="Puntaje por Operador">작업자별 점수 입력</span></div>
       <div class="info-box" data-cstab="theory">📝 모바일 응시·JSON 결과는 자동 표시됩니다. 종이시험은 카드에 이론점수(가중점수)를 직접 입력 후 저장하세요.</div>
       <div class="info-box" data-cstab="perf" style="display:none">📋 카드의 <b>체크시트</b> 버튼으로 공정별(M-039-R4) 평가 → 환산점수가 자동 입력됩니다. 점수를 직접 입력해도 됩니다.</div>
-      <div class="info-box" data-cstab="msa" style="display:none">📏 탭을 열면 MSA 최신 이력(계량형=압착고, 계수형=불량판별) 점수가 자동으로 반영됩니다. 직접 입력·수정도 가능합니다.</div>
+      <div class="info-box" data-cstab="msa" style="display:none">📏 <b>📥 MSA 평가내역 선택</b>에서 이 평가구분에 가져올 MSA(계량형=압착고, 계수형=불량판별)를 정하면 탭을 열 때 자동 반영됩니다. 직접 입력·수정도 가능합니다.</div>
       <div class="cs-toolbar">
         <input type="text" id="csSearch" placeholder="🔍 이름 / 사번" oninput="renderPracticalCardList()" style="max-width:200px">
         <select id="csProc" onchange="renderPracticalCardList()" style="max-width:200px"><option value="">전체 공정</option></select>
         <label style="margin:0;display:flex;align-items:center;gap:0.3rem;font-size:0.8rem;white-space:nowrap"><input type="checkbox" id="csOnlyEmpty" onchange="renderPracticalCardList()" style="width:auto"> 미입력만</label>
         <span id="csCount" style="font-size:0.78rem;color:var(--text2)"></span>
         <span style="flex:1"></span>
-        <span data-cstab="msa" style="display:none;gap:0.4rem;flex-wrap:wrap">
+        <span data-cstab="msa" style="display:none;gap:0.4rem;flex-wrap:wrap;align-items:center">
+          <span id="msaSrcInfo" style="display:inline-flex;gap:.4rem;align-items:center"></span>
           <span id="msaStatus" style="font-size:0.76rem;color:var(--teal)"></span>
         </span>
         <input type="file" id="practicalExcelInput" accept=".xlsx,.xls" style="display:none" onchange="loadPracticalExcel(event)">
@@ -8269,10 +8291,12 @@ async function loadPracticalFromMSA(silent){
   const cfg=getConfig();
   let attS,varS;
   try{
-    attS=await sbFetch('msa_sessions?select=id,eval_date,refs,crit_e,crit_pfa,crit_pmiss,msa_evaluations(employee_id,answers)&order=eval_date.desc&limit=300');
-    varS=await sbFetch('msa_var_sessions?select=id,eval_date,result,grade,msa_var_measures(employee_id)&order=eval_date.desc&limit=500');
+    attS=await sbFetch('msa_sessions?select=id,eval_date,refs,crit_e,crit_pfa,crit_pmiss,msa_evaluations(employee_id,answers)&factory=eq.1&order=eval_date.desc,created_at.desc&limit=300');
+    varS=await sbFetch('msa_var_sessions?select=id,eval_date,result,grade,msa_var_measures(employee_id)&factory=eq.1&order=eval_date.desc,created_at.desc&limit=500');
   }catch(e){ if(btn)btn.disabled=false; _say('MSA 데이터 조회 실패: '+e.message); return; }
   if(!Array.isArray(attS)||!Array.isArray(varS)){ if(btn)btn.disabled=false; _say('MSA 데이터 조회 실패 (응답 형식 오류)'); return; }
+  // ✅ 평가구분별 MSA 불러오기 기준 적용 (최신 자동 / 기간 / 직접 선택)
+  {const src=_msaSrc();attS=attS.filter(x=>_msaSessOk('att',x,src));varS=varS.filter(x=>_msaSessOk('var',x,src));}
   // ── 계수형: 사번별 최신 세션 기준 E/합격 판정 (msa.html calcAtt 로직 재현) ──
   const attBy={};
   attS.forEach(s=>{
@@ -8336,8 +8360,112 @@ async function loadPracticalFromMSA(silent){
   _say(silent?`MSA 반영 완료 · 갱신 ${saved}명 · 이력 없음 ${none}명 (${new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})})`:`🔄 MSA 실습평가 점수 불러오기 완료\n\n· 두 항목 모두 반영: ${both}명\n· 일부 항목만 반영: ${part}명\n· MSA 이력 없음: ${none}명\n· 저장된 결과에 합산 반영: ${saved}명`);
 }
 function _msaStatus(m){const e=document.getElementById('msaStatus');if(e)e.textContent=m;}
+
+// ════ MSA 평가내역 불러오기 기준 선택 (2026-10-27) ════
+//  자격인증 평가구분과 MSA 세션 이름이 달라서, 어느 MSA 평가를 가져올지 평가구분별로 지정
+var _msaPickerShown={}, _msaPick=null;
+function _msaKey(){return activeRound||'__none__';}
+function _msaSrc(){return msaSource[_msaKey()]||{mode:'auto'};}
+function _msaSessOk(kind,x,src){
+  src=src||{mode:'auto'};
+  if(src.mode==='range'){const d=String(x.eval_date||'');return (!src.from||d>=src.from)&&(!src.to||d<=src.to);}
+  if(src.mode==='pick')return (src[kind]||[]).includes(x.id);
+  return true;
+}
+function _msaSrcLabel(src){
+  src=src||_msaSrc();
+  if(src.mode==='range')return `기간 ${src.from||'처음'} ~ ${src.to||'현재'}`;
+  if(src.mode==='pick')return `직접 선택 (압착고 ${(src.var||[]).length} · 불량판별 ${(src.att||[]).length}개 세션)`;
+  return '최신 MSA 자동';
+}
+function renderMsaSrcInfo(){
+  const el=document.getElementById('msaSrcInfo');if(!el)return;
+  const set=!!msaSource[_msaKey()];
+  el.innerHTML=`<span style="font-size:.76rem;color:var(--text2)">MSA 불러오기 기준 <b style="color:${set?'var(--purple)':'var(--orange,#e6a23c)'}">${set?_perfEsc(_msaSrcLabel()):'미선택'}</b></span>
+    <button type="button" class="btn btn-secondary btn-sm" style="border-color:var(--purple);color:var(--purple)" onclick="openMsaSourcePicker()">📥 MSA 평가내역 선택</button>`;
+}
+function _msaTargets(){
+  const coh=_activeCohort(),seen={};
+  return students.filter(st=>st.empId&&!seen[st.empId]&&(seen[st.empId]=1)).filter(st=>!coh||_empCohort(st.empId)===coh);
+}
+async function openMsaSourcePicker(){
+  let m=document.getElementById('msaSrcModal');
+  if(!m){m=document.createElement('div');m.id='msaSrcModal';m.className='rnd-modal';m.addEventListener('click',e=>{if(e.target===m)m.style.display='none';});document.body.appendChild(m);}
+  m.innerHTML=`<div class="rnd-box" style="width:min(1100px,100%)"><div style="padding:2rem;text-align:center;color:var(--text2)">🔄 MSA 평가내역 불러오는 중…</div></div>`;
+  m.style.display='flex';
+  let vs,as;
+  try{
+    [vs,as]=await Promise.all([
+      sbFetch('msa_var_sessions?select=id,eval_date,title,group_name,period,result,grade,note,pct_study,msa_var_measures(employee_id)&factory=eq.1&order=eval_date.desc,created_at.desc&limit=500'),
+      sbFetch('msa_sessions?select=id,eval_date,title,process_name,period,note,msa_evaluations(employee_id)&factory=eq.1&order=eval_date.desc,created_at.desc&limit=300')]);
+  }catch(e){m.innerHTML=`<div class="rnd-box"><div class="rnd-head"><b>MSA 조회 실패</b><button class="btn btn-secondary btn-sm" onclick="document.getElementById('msaSrcModal').style.display='none'">✕</button></div>${_perfEsc(e.message)}</div>`;return;}
+  const tgt=new Set(_msaTargets().map(x=>String(x.empId)));
+  const norm=(arr,k)=>(arr||[]).map(x=>{const emps=[...new Set((x[k]||[]).map(y=>y.employee_id).filter(Boolean))];return Object.assign(x,{emps,hit:emps.filter(e=>tgt.has(String(e))).length});});
+  const coh=_activeCohort();
+  const cur=JSON.parse(JSON.stringify(msaSource[_msaKey()]||{mode:coh?'range':'auto',from:coh?coh+'-01':'',to:''}));
+  _msaPick={vs:norm(vs,'msa_var_measures'),as:norm(as,'msa_evaluations'),tgt,src:Object.assign({var:[],att:[]},cur),onlyHit:true};
+  // 직접 선택 기본값: 대상자가 포함된 세션
+  if(cur.mode!=='pick'){_msaPick.src.var=_msaPick.vs.filter(x=>x.hit&&_msaSessOk('var',x,cur)).map(x=>x.id);_msaPick.src.att=_msaPick.as.filter(x=>x.hit&&_msaSessOk('att',x,cur)).map(x=>x.id);}
+  renderMsaSourcePicker();
+}
+function _msaPickSet(k,v){_msaPick.src[k]=v;renderMsaSourcePicker();}
+function _msaPickToggle(kind,id,on){const a=_msaPick.src[kind];const i=a.indexOf(id);if(on&&i<0)a.push(id);if(!on&&i>=0)a.splice(i,1);_msaPick.src.mode='pick';renderMsaSourcePicker();}
+function _msaPickAll(kind,on){const list=kind==='var'?_msaPick.vs:_msaPick.as;_msaPick.src[kind]=on?list.filter(x=>!_msaPick.onlyHit||x.hit).map(x=>x.id):[];_msaPick.src.mode='pick';renderMsaSourcePicker();}
+function renderMsaSourcePicker(){
+  const m=document.getElementById('msaSrcModal');if(!m||!_msaPick)return;
+  const P=_msaPick,src=P.src,mode=src.mode||'auto';
+  const ok=(kind,x)=>_msaSessOk(kind,x,src);
+  // 미리보기: 대상자별 적용 세션 (최신 1건)
+  const pv=(list,kind)=>{const by={};list.forEach(x=>{if(!ok(kind,x))return;x.emps.forEach(e=>{if(P.tgt.has(String(e))&&!by[e])by[e]=x;});});return by;};
+  const pvV=pv(P.vs,'var'),pvA=pv(P.as,'att');
+  const tbl=(list,kind,ttl,col)=>{
+    const rows=list.filter(x=>!P.onlyHit||x.hit);
+    return `<div class="msa-src-col"><div class="msa-src-ttl" style="color:${col}">${ttl} <span style="font-weight:400;color:var(--text2)">· ${rows.length}개 세션</span>
+      ${mode==='pick'?`<span style="float:right"><a href="#" onclick="_msaPickAll('${kind}',true);return false">전체</a> · <a href="#" onclick="_msaPickAll('${kind}',false);return false">해제</a></span>`:''}</div>
+      <div class="msa-src-list">${rows.length?rows.map(x=>{const on=ok(kind,x);
+        const nm=kind==='var'?[x.title,x.group_name].filter(Boolean).join(' · '):[x.title,x.process_name].filter(Boolean).join(' · ');
+        const res=kind==='var'?(x.result==='Aprobado'?`<span style="color:var(--green)">✅ ${_perfEsc(x.grade||'합격')}</span>`:x.result?`<span style="color:var(--red)">❌ ${_perfEsc(x.grade||x.result)}</span>`:''):'';
+        return `<label class="msa-src-row ${on?'on':''}">
+          <input type="checkbox" ${on?'checked':''} onchange="_msaPickToggle('${kind}','${x.id}',this.checked)" style="width:auto">
+          <span class="d">${_perfEsc(x.eval_date||'')}</span>
+          <span class="n">${_perfEsc(nm||'(이름 없음)')}${x.period?` <small>${_perfEsc(x.period)}</small>`:''}${x.note?` <small style="color:var(--gold,#e2c46a)">${_perfEsc(String(x.note).slice(0,20))}</small>`:''}</span>
+          <span class="r">${res}</span>
+          <span class="c" title="${_perfEsc(x.emps.join(', '))}">대상 <b>${x.hit}</b>/${x.emps.length}명</span></label>`;}).join(''):'<div style="color:var(--text2);font-size:.8rem;padding:.5rem">세션 없음</div>'}</div></div>`;
+  };
+  m.innerHTML=`<div class="rnd-box" style="width:min(1150px,100%)">
+    <div class="rnd-head"><b>📥 MSA 평가내역 선택 — 압착고(계량형) · 불량판별(계수형)</b><button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('msaSrcModal').style.display='none'">✕ 닫기</button></div>
+    <div style="font-size:.8rem;color:var(--text2);margin-bottom:.6rem">현재 평가구분 <b style="color:var(--accent,#c9a84c)">${_perfEsc(roundName(activeRound))}</b> · 대상 <b style="color:var(--text)">${P.tgt.size}명</b> — 이 평가구분에 어느 MSA 평가를 가져올지 정합니다. (MSA 저장 시 자동 반영에도 같은 기준 적용)</div>
+    <div class="msa-src-modes">
+      <label><input type="radio" name="msaMode" ${mode==='auto'?'checked':''} onchange="_msaPickSet('mode','auto')" style="width:auto"> 최신 자동 <small>사람별 가장 최근 MSA</small></label>
+      <label><input type="radio" name="msaMode" ${mode==='range'?'checked':''} onchange="_msaPickSet('mode','range')" style="width:auto"> 기간 지정
+        <input type="date" value="${src.from||''}" onchange="_msaPick.src.mode='range';_msaPickSet('from',this.value)"> ~ <input type="date" value="${src.to||''}" onchange="_msaPick.src.mode='range';_msaPickSet('to',this.value)"></label>
+      <label><input type="radio" name="msaMode" ${mode==='pick'?'checked':''} onchange="_msaPickSet('mode','pick')" style="width:auto"> 세션 직접 선택 <small>체크한 MSA만</small></label>
+      <label style="margin-left:auto"><input type="checkbox" ${P.onlyHit?'checked':''} onchange="_msaPick.onlyHit=this.checked;renderMsaSourcePicker()" style="width:auto"> 대상자 포함 세션만</label>
+    </div>
+    <div class="msa-src-grid">${tbl(P.vs,'var','📏 압착고측정 (계량형)','var(--purple)')}${tbl(P.as,'att','🔍 불량판별 (계수형)','var(--teal)')}</div>
+    <div class="msa-src-foot">
+      <span>적용 미리보기 — 압착고 <b>${Object.keys(pvV).length}</b>명 · 불량판별 <b>${Object.keys(pvA).length}</b>명 / 대상 ${P.tgt.size}명 <small>(한 사람이 여러 세션에 있으면 가장 최근 세션 사용)</small></span>
+      <span style="flex:1"></span>
+      <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('msaSrcModal').style.display='none'">취소</button>
+      <button type="button" class="btn btn-primary btn-sm" onclick="saveMsaSource()">💾 이 기준으로 저장 후 불러오기</button>
+    </div></div>`;
+}
+async function saveMsaSource(){
+  const src=_msaPick.src,o={mode:src.mode||'auto'};
+  if(o.mode==='range'){o.from=src.from||'';o.to=src.to||'';}
+  if(o.mode==='pick'){o.var=src.var.slice();o.att=src.att.slice();}
+  msaSource[_msaKey()]=o;
+  try{await sbSaveConfig({msaSource:JSON.stringify(msaSource)});}catch(e){alert('⚠️ 기준 저장 실패: '+e.message);return;}
+  document.getElementById('msaSrcModal').style.display='none';
+  renderMsaSrcInfo();
+  _msaAutoAt=0;_msaStatus('🔄 선택한 MSA 평가내역 불러오는 중…');
+  try{await loadPracticalFromMSA(true);_msaAutoAt=Date.now();}catch(e){_msaStatus('MSA 불러오기 실패: '+e.message);}
+  _sbCacheTime=0;sbLoadAllCached(true).then(()=>{try{renderPracticalCardList();}catch(e){}}).catch(()=>{});
+}
 var _msaAutoAt=0,_msaAutoBusy=false;
 async function autoLoadMSA(){
+  renderMsaSrcInfo();
+  if(!msaSource[_msaKey()]){if(!_msaPickerShown[_msaKey()]){_msaPickerShown[_msaKey()]=1;openMsaSourcePicker();}return;}
   if(_msaAutoBusy||Date.now()-_msaAutoAt<60000)return;
   _msaAutoBusy=true;_msaStatus('🔄 MSA 점수 불러오는 중…');
   try{await loadPracticalFromMSA(true);_msaAutoAt=Date.now();}catch(e){_msaStatus('MSA 불러오기 실패: '+e.message);}
