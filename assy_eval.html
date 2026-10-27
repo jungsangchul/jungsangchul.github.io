@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>조립 작업자 정기 평가</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;700&family=Space+Mono:wght@400;700&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0a0a; --panel:#141414; --surface:#111; --ink:#f0f0f0; --ink2:#c8c8c8; --mute:#8f8f8f; --dim:#5a5a5a;
+  --line:#1e1e1e; --line2:#2a2a2a; --ac:#c9a84c; --ac2:#e2c46a; --ac-soft:rgba(201,168,76,.14); --ac-glow:rgba(201,168,76,.28);
+  --orange:#d4651a; --purple:#7c5cbf; --blue:#6fb8dd; --red:#e05c5c; --amb:#e0a84a; --grn:#4caf7d;
+  --code:'Barlow Condensed','Arial Narrow','Malgun Gothic',sans-serif; --mono:'Space Mono',Consolas,monospace;
+  --body:'Noto Sans KR','Malgun Gothic','Apple SD Gothic Neo',sans-serif; --r:8px; --sh2:0 8px 20px rgba(0,0,0,.35);
+  --L1:#4caf7d; --L2:#6fb8dd; --L3:#c9a84c; --L4:#e0a84a; --L5:#d4651a; --LN:#e05c5c;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased}
+button,input,textarea,select{font:inherit;color:inherit}
+button{cursor:pointer}
+::placeholder{color:var(--dim)}
+input,select,textarea{color-scheme:dark}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+.top{position:sticky;top:0;z-index:100}
+header{background:linear-gradient(180deg,#141414 0%,#0e0e0e 100%);border-bottom:1px solid var(--line2);box-shadow:0 8px 24px rgba(0,0,0,.35)}
+header::before{content:'';display:block;height:2px;background:linear-gradient(90deg,var(--ac) 0%,var(--orange) 45%,var(--purple) 100%)}
+.bar{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 32px}
+.brand-text{display:flex;flex-direction:column;gap:4px;min-width:0}
+.bar h1{margin:0;line-height:1;white-space:nowrap;background:linear-gradient(90deg,#fafafa 0%,#d9d0b4 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.brand-sub{font-size:12px;color:#a8a8a8;letter-spacing:.26em;text-transform:uppercase;display:flex;align-items:center;gap:8px;white-space:nowrap}
+.brand-sub::before{content:'';width:14px;height:1px;background:var(--ac)}
+.hdr-right{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.lang{display:flex;gap:6px}
+.lang button{background:none;border:1px solid var(--line2);border-radius:999px;color:var(--mute);height:40px;padding:0 15px;font-size:12.5px;font-weight:700}
+.lang button.on{background:rgba(74,158,201,.10);border-color:rgba(74,158,201,.32);color:var(--blue)}
+.lang button#lg-ko.on{background:rgba(201,168,76,.10);border-color:rgba(201,168,76,.32);color:var(--ac)}
+.dbtag{font-family:var(--mono);font-size:12px;color:var(--mute);border:1px solid var(--line2);border-radius:999px;padding:6px 12px;white-space:nowrap}
+.dbtag.ok{color:var(--grn);border-color:rgba(76,175,125,.35)}.dbtag.err{color:var(--red);border-color:rgba(224,92,92,.4)}
+.system-bar{padding:7px 32px;background:#0b0b0b;border-bottom:1px solid var(--line);font-family:var(--mono);font-size:12.5px;color:#b0b0b0;letter-spacing:.16em;text-transform:uppercase;display:flex;justify-content:space-between;gap:12px}
+.system-bar>span:first-child{display:flex;align-items:center;gap:8px}
+.system-bar>span:first-child::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--ac);box-shadow:0 0 6px var(--ac);animation:pulse 2.4s infinite}
+.system-bar .plant{color:var(--ac2);font-weight:700}
+nav.tabs{display:flex;gap:6px;padding:12px 32px;background:var(--surface);border-bottom:1px solid var(--line2);overflow-x:auto;scrollbar-width:none}
+nav.tabs button{flex-shrink:0;display:inline-flex;align-items:center;gap:7px;background:none;border:1px solid transparent;border-radius:999px;color:var(--mute);font-size:13.5px;font-weight:600;padding:8px 16px;white-space:nowrap}
+nav.tabs button svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+nav.tabs button:hover{color:var(--ink);background:rgba(255,255,255,.04)}
+nav.tabs button.on{color:var(--ac);background:rgba(201,168,76,.12);border-color:rgba(201,168,76,.35)}
+@media(max-width:760px){.bar,.system-bar,nav.tabs{padding-left:16px;padding-right:16px}.bar{flex-wrap:wrap}.hdr-right{width:100%;justify-content:flex-end}.brand-sub,.system-bar>span:first-child{display:none}}
+main{padding:22px 24px 90px;max-width:1500px;margin:0 auto}
+.tab{display:none}.tab.on{display:block}
+.card{background:linear-gradient(180deg,#181818,#141414);border:1px solid var(--line2);border-radius:var(--r);padding:16px 18px;margin-bottom:14px;box-shadow:var(--sh2)}
+.card h3{margin:0 0 12px;font-family:var(--mono);font-size:14px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--ac);display:flex;align-items:center;gap:10px}
+.card h3::after{content:'';flex:1;height:1px;background:var(--line)}
+.card h3 .no{color:var(--mute)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+.sp{flex:1}
+.f{display:flex;flex-direction:column;gap:5px;font-family:var(--mono);font-size:12.5px;letter-spacing:.06em;color:var(--ink2);font-weight:700;min-width:0}
+input,select,textarea{font-family:var(--body);font-size:14px;border:1px solid var(--line2);border-radius:6px;padding:0 11px;height:40px;background:#0d0d0d;color:#fff}
+input[type=checkbox]{height:auto;accent-color:var(--ac);width:18px;height:18px}
+input:focus,select:focus,textarea:focus{border-color:var(--ac);box-shadow:0 0 0 4px var(--ac-soft);outline:none}
+input[readonly]{background:#121212;color:var(--ac2);border-style:dashed}
+textarea{width:100%;min-height:90px;padding:10px 12px;line-height:1.5;resize:vertical}
+.btn{height:40px;border:0;border-radius:6px;background:linear-gradient(180deg,#d9b85c 0%,#c9a84c 100%);color:#0a0a0a;padding:0 16px;font-weight:700;white-space:nowrap;box-shadow:0 4px 16px var(--ac-glow);font-size:14px}
+.btn:hover{filter:brightness(1.07)}
+.btn.sec{background:rgba(255,255,255,.03);color:var(--ink2);border:1px solid var(--line2);box-shadow:none}
+.btn.sec:hover{background:rgba(255,255,255,.07);color:var(--ink)}
+.btn.red{background:rgba(224,92,92,.10);color:var(--red);border:1px solid rgba(224,92,92,.4);box-shadow:none}
+.btn.sm{height:30px;padding:0 10px;font-size:13px}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.hint{color:var(--mute);font-size:13px;line-height:1.6}
+.hint b{color:var(--ink2)}
+.g4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.g6{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px}
+@media(max-width:1000px){.g4,.g6{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.sub-h{font-size:13px;font-weight:700;color:var(--ink2);margin:4px 0 8px;display:flex;align-items:center;gap:8px}
+.sub-h::before{content:'';width:3px;height:13px;background:var(--ac);border-radius:2px}
+/* 공정 선택 */
+.procs{display:flex;gap:8px;flex-wrap:wrap}
+.pbtn{height:44px;min-width:92px;padding:0 16px;border-radius:999px;border:1px solid var(--line2);background:rgba(255,255,255,.02);color:var(--ink2);font-weight:700;font-size:15px}
+.pbtn:hover{border-color:#555;color:#fff}
+.pbtn.on{background:rgba(201,168,76,.14);border-color:rgba(201,168,76,.55);color:var(--ac2);box-shadow:0 0 0 1px rgba(201,168,76,.12)}
+.pbtn small{display:block;font-size:11px;font-weight:500;color:var(--mute);line-height:1}
+.toggle{display:inline-flex;align-items:center;gap:8px;height:44px;padding:0 16px;border-radius:999px;border:1px solid var(--line2);color:var(--ink2);font-weight:700;cursor:pointer;user-select:none}
+.toggle.on{border-color:rgba(124,92,191,.6);background:rgba(124,92,191,.14);color:#c3aef0}
+.toggle.dis{opacity:.35;pointer-events:none}
+/* 기준표 / 결과표 */
+table{border-collapse:separate;border-spacing:0;width:100%;font-size:14px}
+th,td{padding:8px;border-bottom:1px solid var(--line);color:var(--ink2);vertical-align:middle}
+th{background:#101010;font-weight:700;color:#e8e8e8;font-size:13px;white-space:nowrap;position:sticky;top:0;z-index:1}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+td.c,th.c{text-align:center}
+.std th.lvh,.std td{text-align:center}
+.std th small{display:block;font-weight:500;color:var(--mute);font-size:11.5px;margin-top:2px}
+.std td.cap{color:var(--mute);font-weight:700;text-align:center;background:#111}
+.std td.grp{font-weight:700;color:var(--ac2);text-align:center;background:#121212;white-space:pre-line}
+.std td.hit{background:rgba(201,168,76,.16);color:#fff;font-weight:700;box-shadow:inset 0 0 0 1px rgba(201,168,76,.55)}
+.tw{overflow:auto;border:1px solid var(--line2);border-radius:var(--r);background:var(--panel)}
+.tw.h{max-height:62vh}
+.lv{display:inline-flex;align-items:center;justify-content:center;min-width:46px;height:28px;padding:0 10px;border-radius:999px;font-family:var(--code);font-size:17px;font-weight:700;letter-spacing:.04em;border:1px solid var(--line2);color:var(--mute)}
+.lv.L1{color:var(--L1);border-color:rgba(76,175,125,.5);background:rgba(76,175,125,.12)}
+.lv.L2{color:var(--L2);border-color:rgba(111,184,221,.5);background:rgba(111,184,221,.12)}
+.lv.L3{color:var(--L3);border-color:rgba(201,168,76,.5);background:rgba(201,168,76,.12)}
+.lv.L4{color:var(--L4);border-color:rgba(224,168,74,.5);background:rgba(224,168,74,.12)}
+.lv.L5{color:var(--L5);border-color:rgba(212,101,26,.5);background:rgba(212,101,26,.12)}
+.lv.LN{color:var(--LN);border-color:rgba(224,92,92,.5);background:rgba(224,92,92,.12);font-family:var(--body);font-size:13px}
+.lv.big{height:40px;min-width:70px;font-size:24px}
+.tm{width:110px;text-align:right;font-family:var(--code);font-size:18px;font-weight:700}
+.trend{font-weight:700;font-size:13px}
+.trend.up{color:var(--grn)}.trend.dn{color:var(--red)}.trend.eq{color:var(--mute)}
+.chk{display:flex;gap:10px;align-items:center;padding:10px 14px;border:1px solid var(--line2);border-radius:8px;cursor:pointer;user-select:none;color:var(--ink2);font-weight:600}
+.chk.on{border-color:rgba(224,92,92,.6);background:rgba(224,92,92,.10);color:#f2b0b0}
+.rule{margin-top:10px;padding:10px 14px;border-left:3px solid var(--red);background:rgba(224,92,92,.06);color:#e9b4b4;font-size:13px;border-radius:0 6px 6px 0}
+.verdict{display:flex;gap:14px;align-items:center;flex-wrap:wrap;padding:14px 16px;border-radius:8px;border:1px solid var(--line2);background:#101010}
+.verdict .big{font-size:22px;font-weight:700}
+.verdict.ok .big{color:var(--grn)}.verdict.ng .big{color:var(--red)}
+.savebar{position:sticky;bottom:0;z-index:50;display:flex;gap:10px;justify-content:flex-end;align-items:center;padding:12px 18px;margin:0 -24px;background:linear-gradient(180deg,rgba(10,10,10,0),rgba(10,10,10,.96) 35%);}
+.editing{color:var(--amb);font-weight:700;font-size:13px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:14px}
+.kpi{background:linear-gradient(180deg,#181818,#141414);border:1px solid var(--line2);border-radius:var(--r);padding:12px 14px}
+.kpi>span{font-family:var(--mono);font-size:12.5px;font-weight:700;color:var(--ink2);letter-spacing:.1em}
+.kpi b{display:block;font-family:var(--code);font-size:30px;line-height:1;color:#fff;margin-top:8px}
+tr.click{cursor:pointer}
+tbody tr:hover td{background:rgba(255,255,255,.025)}
+.empty{text-align:center;color:var(--mute);padding:28px}
+.toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(20px);opacity:0;transition:.25s;background:#1d1d1d;border:1px solid var(--line2);border-left:3px solid var(--ac);padding:12px 18px;border-radius:8px;z-index:9999;box-shadow:0 10px 30px rgba(0,0,0,.5);font-weight:600}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.err{border-left-color:var(--red)}
+.pill{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:700;border:1px solid var(--line2);color:var(--mute);white-space:nowrap}
+.pill.m{color:#c3aef0;border-color:rgba(124,92,191,.5);background:rgba(124,92,191,.12)}
+.pill.ng{color:var(--red);border-color:rgba(224,92,92,.5);background:rgba(224,92,92,.10)}
+.pill.ok{color:var(--grn);border-color:rgba(76,175,125,.5);background:rgba(76,175,125,.10)}
+.matrix td,.matrix th{text-align:center}
+.matrix td:first-child,.matrix th:first-child,.matrix td:nth-child(2),.matrix th:nth-child(2){text-align:left}
+.lvdist{display:flex;height:12px;border-radius:999px;overflow:hidden;background:#0e0e0e;border:1px solid var(--line2);min-width:160px}
+.lvdist i{display:block;height:100%}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12.5px;color:var(--mute)}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.legend i{width:10px;height:10px;border-radius:3px;display:inline-block}
+.print-only{display:none}
+/* ── 인쇄: 엑셀 체크시트 양식 ── */
+@media print{
+  @page{size:A4 portrait;margin:12mm}
+  body{background:#fff!important}
+  .top,main,.toast,.savebar{display:none!important}
+  .print-only{display:block!important;color:#000;font-family:'Malgun Gothic','Noto Sans KR',sans-serif}
+  .ps{page-break-after:always}
+  .ps:last-child{page-break-after:auto}
+  .ps h2{text-align:center;font-size:17pt;margin:0 0 4mm;padding:3mm;border:1.5px solid #000}
+  .ps .meta{display:flex;justify-content:flex-end;gap:6mm;font-size:9.5pt;margin-bottom:3mm}
+  .ps .sec{font-weight:700;font-size:10.5pt;margin:4mm 0 2mm}
+  .ps .info{font-size:9.5pt;line-height:1.9;padding-left:3mm}
+  .ps .info u{text-decoration:none;border-bottom:1px solid #000;padding:0 3mm;display:inline-block;min-width:16mm}
+  .ps table{border-collapse:collapse;width:100%;font-size:9pt;margin-bottom:2.5mm}
+  .ps th,.ps td{border:1px solid #000;padding:1.6mm 1mm;text-align:center;color:#000;background:#fff!important;position:static;white-space:pre-line}
+  .ps th{background:#f0f0f0!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .ps td.hit{background:#fff3c4!important;font-weight:700;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .ps .rule{border:1px solid #000;border-left:1px solid #000;color:#000;background:#fff;font-size:9pt;margin:2mm 0;padding:2mm;border-radius:0}
+  .ps .op{border:1px solid #000;min-height:22mm;padding:2mm;font-size:9.5pt;white-space:pre-wrap}
+  .ps .sign{display:flex;justify-content:flex-end;gap:10mm;margin-top:5mm;font-size:9.5pt}
+  .ps .sign span{border-bottom:1px solid #000;min-width:30mm;display:inline-block}
+}
+</style>
+<!-- ═══ 포털 공통 (yh-common-v2): 제목 서체 · 닫기 버튼 · 최소 글자 크기 ═══ -->
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@500;700&display=swap" rel="stylesheet">
+<style id="yh-common-v2">
+  /* ① 제목 서체 */
+  header h1{font-family:'IBM Plex Sans KR','Noto Sans KR','Malgun Gothic',sans-serif!important;font-weight:700!important;letter-spacing:-.01em!important;font-size:20px!important;line-height:1.2!important}
+  @media (max-width:820px){ header h1{font-size:16px!important} }
+  /* ② 닫기 버튼 */
+  .yh-close-wrap{display:inline-flex;flex-direction:column;align-items:center;gap:3px;flex-shrink:0;margin-left:8px}
+  header > .yh-close-wrap{margin-left:auto}
+  .yh-close-wrap.yh-fixed{position:fixed;top:12px;right:14px;z-index:99999;margin:0}
+  .yh-close{height:34px;padding:0 15px;border-radius:999px;background:rgba(10,10,10,.65);border:1px solid rgba(224,92,92,.55);color:#ef9a9a;font-weight:700;font-size:13px;cursor:pointer;font-family:'IBM Plex Sans KR','Noto Sans KR','Malgun Gothic',sans-serif;transition:.15s;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;line-height:1;letter-spacing:0}
+  .yh-close:hover{background:rgba(224,92,92,.14);border-color:#e05c5c;color:#fff}
+  .yh-close-cap{font-family:'Space Mono',ui-monospace,Consolas,monospace;font-size:12px;letter-spacing:.06em;color:#7a7a7a;white-space:nowrap;line-height:1}
+  .yh-close .es,.yh-close-cap .es{display:none}
+  html[lang="es"] .yh-close .ko,html[lang="es"] .yh-close-cap .ko{display:none}
+  html[lang="es"] .yh-close .es,html[lang="es"] .yh-close-cap .es{display:inline}
+  @media print{.yh-close-wrap{display:none!important}}
+  @media (max-width:820px){.yh-close-cap{display:none} .yh-close{height:30px;padding:0 12px;font-size:12px}}
+  /* ③ 최소 글자 크기 (화면에서만) */
+  @media screen{.yh-fs12{font-size:12px!important}}
+</style>
+<script>
+(function(){
+  /* ── 닫기 버튼 ── */
+  function mkClose(){
+    if(document.querySelector('.yh-close-wrap'))return;
+    var w=document.createElement('span');w.className='yh-close-wrap';
+    w.innerHTML='<button type="button" class="yh-close" title="창 닫기 / Cerrar ventana (ESC)"><span>✕</span><span class="ko">닫기</span><span class="es">Cerrar</span></button>'
+      +'<small class="yh-close-cap"><span class="ko">창 닫기 (ESC)</span><span class="es">Cerrar ventana (ESC)</span></small>';
+    var sel='.hdr-right',t=null;
+    try{
+      if(sel.indexOf('parent:')===0){var e=document.querySelector(sel.slice(7));t=e&&e.parentElement;}
+      else t=document.querySelector(sel);
+    }catch(e){}
+    if(t)t.appendChild(w);else{w.classList.add('yh-fixed');document.body.appendChild(w);}
+    w.querySelector('.yh-close').addEventListener('click',doClose);
+    window.addEventListener('keydown',function(ev){
+      if(ev.key!=='Escape')return;
+      var a=document.activeElement;
+      if(a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))return;
+      var openUI=[].slice.call(document.querySelectorAll('dialog,[role="dialog"],[class*="modal"],[class*="overlay"],[class*="drawer"],[class*="popup"],[class*="dialog"],[class*="lightbox"]')).some(function(e){if(e.classList.contains('yh-close-wrap'))return false;var cs=getComputedStyle(e);return cs.display!=='none'&&cs.visibility!=='hidden'&&cs.opacity!=='0'&&e.getBoundingClientRect().width>0;});
+      if(openUI)return;
+      doClose();
+    },true);
+  }
+  function doClose(){
+    var top=window.top||window;
+    try{top.close();}catch(e){}
+    try{window.close();}catch(e){}
+    setTimeout(function(){
+      try{if(top.closed||window.closed)return;}catch(e){}
+      try{top.location.href='./';}catch(e){location.href='./';}
+    },250);
+  }
+  /* ── 최소 글자 크기 12px ── */
+  var SKIP=/^(SCRIPT|STYLE|CANVAS|SVG|svg|path|g|text|tspan|circle|rect|line|polyline|polygon|BR|HR|IMG|VIDEO)$/;
+  function bump(root){
+    var list=root.querySelectorAll?root.querySelectorAll('*'):[];
+    var i=0,n=list.length;
+    (function chunk(){
+      var end=Math.min(n,i+1500);
+      for(;i<end;i++){
+        var el=list[i];
+        if(SKIP.test(el.tagName)||el.classList.contains('yh-fs12'))continue;
+        if(el.namespaceURI&&el.namespaceURI.indexOf('svg')>-1)continue;
+        if(el.closest&&el.closest('.pcell,.plabel,.print-only,.sheet-flow'))continue;
+        var st=el.style&&el.style.fontSize;
+        if(st&&/(pt|mm|cm|in)\s*$/.test(st))continue;
+        var fs=parseFloat(getComputedStyle(el).fontSize);
+        if(fs>=6&&fs<12)el.classList.add('yh-fs12');
+      }
+      if(i<n)setTimeout(chunk,0);
+    })();
+  }
+  var pend=null,queue=[];
+  function schedule(nodes){
+    for(var k=0;k<nodes.length;k++)if(nodes[k].nodeType===1)queue.push(nodes[k]);
+    if(pend)return;
+    pend=setTimeout(function(){pend=null;var q=queue;queue=[];q.forEach(bump);},120);
+  }
+  function init(){
+    mkClose();
+    if(!true)return;
+    bump(document.body);
+    new MutationObserver(function(ms){
+      var add=[];
+      ms.forEach(function(m){
+        if(m.type==='childList'){for(var j=0;j<m.addedNodes.length;j++)add.push(m.addedNodes[j]);}
+        else if(m.type==='attributes'&&m.target.nodeType===1&&!m.target.classList.contains('yh-fs12'))add.push(m.target);
+      });
+      if(add.length)schedule(add);
+    }).observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['style','class']});
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
+</script>
+
+</head>
+<body>
+<div class="top">
+<header>
+  <div class="bar">
+    <div class="brand-text">
+      <h1 data-t="title">조립 작업자 정기 평가</h1>
+      <div class="brand-sub">Yura Harness México · Evaluación práctica de ensamble</div>
+    </div>
+    <div class="hdr-right">
+      <span class="dbtag" id="dbtag">…</span>
+      <div class="lang"><button id="lg-ko" class="on">한국어</button><button id="lg-es">Español</button></div>
+    </div>
+  </div>
+  <div class="system-bar"><span data-t="sysbar">자격인증 · 실습평가 (작업자 정기 평가 체크시트 V7-1)</span><span class="plant" id="plantTag"></span></div>
+</header>
+<nav class="tabs" id="nav">
+  <button data-tab="eval" class="on"><svg viewBox="0 0 24 24"><path d="M9 4h6l1 2h3v15H5V6h3z"/><path d="M9 13l2 2 4-4"/></svg><span data-t="tab_eval">평가 입력</span></button>
+  <button data-tab="hist"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg><span data-t="tab_hist">평가 이력</span></button>
+  <button data-tab="stat"><svg viewBox="0 0 24 24"><path d="M4 20h16"/><path d="M7 16v-5M12 16V7M17 16v-8"/></svg><span data-t="tab_stat">레벨 현황</span></button>
+  <button data-tab="std"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg><span data-t="tab_std">기준 설정</span></button>
+</nav>
+</div>
+
+<main>
+<!-- ═══ 평가 입력 ═══ -->
+<section class="tab on" id="t-eval">
+  <div class="card">
+    <h3><span class="no">1)</span> <span data-t="s1">인적사항</span></h3>
+    <div class="sub-h" data-t="evaluator">평가자 정보</div>
+    <div class="g4">
+      <label class="f"><span data-t="dept">부서</span><input id="evDept" list="dlDept"></label>
+      <label class="f"><span data-t="evName">성명</span><input id="evName"></label>
+      <label class="f"><span data-t="evDate">평가 날짜</span><input id="evDate" type="date"></label>
+      <div></div>
+    </div>
+    <div class="sub-h" style="margin-top:14px" data-t="worker">작업자 정보</div>
+    <div class="g4">
+      <label class="f" style="grid-column:span 2"><span data-t="search">작업자 검색 (이름 또는 사번)</span><input id="wkSearch" list="dlWk" autocomplete="off" data-ph="ph_search" placeholder="이름·사번 입력 후 목록에서 선택"></label>
+      <label class="f"><span data-t="name">성명</span><input id="wkName"></label>
+      <label class="f"><span data-t="emp">사번</span><input id="wkEmp"></label>
+      <label class="f"><span data-t="career">경력</span><input id="wkCareer"></label>
+      <label class="f"><span data-t="factory">법인/공장</span><input id="wkFactory"></label>
+      <label class="f"><span data-t="car">차종</span><input id="wkCar" list="dlCar"></label>
+      <label class="f"><span data-t="item">아이템</span><input id="wkItem" list="dlItem"></label>
+      <label class="f"><span data-t="line">라인명</span><input id="wkLine" list="dlLine"></label>
+      <label class="f"><span data-t="shift">교대</span><select id="wkShift"><option value="">-</option><option value="주간" data-t="day">주간</option><option value="야간" data-t="night">야간</option></select></label>
+    </div>
+    <datalist id="dlWk"></datalist><datalist id="dlDept"></datalist><datalist id="dlCar"></datalist><datalist id="dlItem"></datalist><datalist id="dlLine"></datalist>
+  </div>
+
+  <div class="card">
+    <h3><span class="no">2)</span> <span data-t="s2">평가 내역</span></h3>
+    <div class="row" style="margin-bottom:12px">
+      <div class="procs" id="procs"></div>
+      <div class="sp"></div>
+      <div class="toggle" id="multiTg"><input type="checkbox" id="multiCk" style="pointer-events:none"><span data-t="multi">다기능공 적용 기준</span></div>
+    </div>
+    <div class="row" style="margin-bottom:14px">
+      <label class="f"><span>UPH</span><input id="uph" type="number" min="1" step="any" style="width:110px"></label>
+      <label class="f"><span data-t="ct">C/T(초)</span><input id="ct" readonly style="width:110px"></label>
+      <label class="f" id="ttWrap"><span data-t="tt">T/T(초)</span><input id="tt" type="number" step="any" style="width:110px"></label>
+      <div class="sp"></div>
+      <div class="hint" id="stdHint"></div>
+    </div>
+    <div class="tw"><table class="std" id="stdTbl"></table></div>
+  </div>
+
+  <div class="card">
+    <h3><span class="no">3)</span> <span data-t="s3">평가 결과</span></h3>
+    <div class="tw"><table id="resTbl"></table></div>
+    <div class="hint" style="margin-top:8px" data-t="res_hint">작업시간(초)을 입력하면 레벨이 자동 판정됩니다. 이전 점수는 같은 작업자·공정의 직전 평가에서 자동으로 불러오며 수정할 수 있습니다.</div>
+  </div>
+
+  <div class="card">
+    <h3><span class="no">4)</span> <span data-t="s4">실행항목 누락 / 부적합 발생 유무</span></h3>
+    <div class="row">
+      <div class="chk" id="ckDefect"><input type="checkbox" style="pointer-events:none"><span data-t="defect">부적합품 발생</span></div>
+      <div class="chk" id="ckOmit"><input type="checkbox" style="pointer-events:none"><span data-t="omit">수행항목 누락</span></div>
+    </div>
+    <div class="rule" data-t="rule">① 부적합품 1개 발생 시 - 과락으로 재 평가 할 것 &nbsp;&nbsp; ② 수행항목 1개 누락 시 - 과락으로 재 평가 할 것</div>
+  </div>
+
+  <div class="card">
+    <h3><span class="no">5)</span> <span data-t="s5">평가 의견</span></h3>
+    <textarea id="opinion"></textarea>
+    <div class="verdict" id="verdict" style="margin-top:12px"></div>
+  </div>
+
+  <div class="savebar">
+    <span class="editing" id="editing"></span>
+    <div class="sp"></div>
+    <button class="btn sec" id="btnNew" data-t="new">새 평가</button>
+    <button class="btn sec" id="btnBlank" data-t="blank">빈 양식 출력</button>
+    <button class="btn sec" id="btnPrint" data-t="print">체크시트 출력</button>
+    <button class="btn" id="btnSave" data-t="save">💾 평가 저장</button>
+  </div>
+</section>
+
+<!-- ═══ 평가 이력 ═══ -->
+<section class="tab" id="t-hist">
+  <div class="kpis" id="hKpi"></div>
+  <div class="card">
+    <div class="row" style="margin-bottom:12px">
+      <label class="f"><span data-t="from">시작일</span><input type="date" id="hFrom"></label>
+      <label class="f"><span data-t="to">종료일</span><input type="date" id="hTo"></label>
+      <label class="f"><span data-t="proc">공정</span><select id="hProc"></select></label>
+      <label class="f"><span data-t="lvl">레벨</span><select id="hLv"></select></label>
+      <label class="f" style="flex:1;min-width:180px"><span data-t="q">검색</span><input id="hQ" data-ph="ph_q" placeholder="이름·사번·라인·평가자"></label>
+      <button class="btn sec" id="hXls" data-t="xls">엑셀 다운로드</button>
+    </div>
+    <div class="tw h"><table id="hTbl"></table></div>
+    <div class="hint" style="margin-top:8px" data-t="hist_hint">행을 누르면 평가 입력 화면으로 불러와 수정·재출력할 수 있습니다.</div>
+  </div>
+</section>
+
+<!-- ═══ 레벨 현황 ═══ -->
+<section class="tab" id="t-stat">
+  <div class="card">
+    <div class="row" style="margin-bottom:10px">
+      <h3 style="flex:1;margin:0" data-t="stat_title">작업자별 최신 레벨</h3>
+      <div class="legend" id="legend"></div>
+    </div>
+    <div class="tw" style="margin-bottom:14px"><table class="matrix" id="distTbl"></table></div>
+    <div class="row" style="margin-bottom:10px"><label class="f" style="flex:1"><span data-t="q">검색</span><input id="sQ" data-ph="ph_q2" placeholder="이름·사번"></label></div>
+    <div class="tw h"><table class="matrix" id="mxTbl"></table></div>
+  </div>
+</section>
+
+<!-- ═══ 기준 설정 ═══ -->
+<section class="tab" id="t-std">
+  <div class="card">
+    <h3 data-t="std_title">공정별 기준 UPH</h3>
+    <div class="hint" style="margin-bottom:12px" data-t="std_hint">평가 입력 시 공정을 고르면 여기 UPH가 기본값으로 들어갑니다 (C/T = 3600 ÷ UPH). 평가 화면에서 그때그때 바꿀 수도 있습니다.</div>
+    <div class="tw"><table id="stdSet"></table></div>
+    <div class="row" style="margin-top:12px"><div class="sp"></div><button class="btn" id="stdSave" data-t="save_std">기준 저장</button></div>
+  </div>
+  <div class="card">
+    <h3 data-t="rule_title">레벨 판정 기준</h3>
+    <div class="hint" id="ruleText"></div>
+  </div>
+</section>
+</main>
+
+<div class="print-only" id="printArea"></div>
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js" defer></script>
+<script>
+'use strict';
+const SB_URL='https://lrjurjhavlalhlwaplxd.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxyanVyamhhdmxhbGhsd2FwbHhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNzUxNDAsImV4cCI6MjA5NTY1MTE0MH0.DVFmZaT37R9CXSMHdnLx4YAVNTnlBGijkOIaoUo7Qsk';
+const PLANT=(new URLSearchParams(location.search).get('plant')==='2')?2:1;
+const ROSTER=PLANT===2?'exam_students_a2':'exam_students_a1';
+const PROCS=['서브','포선','테이핑','클립','후취'];
+const MULTI_OK=['서브','포선','테이핑'];
+const PROC_ES={'서브':'Sub','포선':'Ruteo','테이핑':'Encintado','클립':'Clip','후취':'Post-proceso'};
+const GROUPS_M=['1G','2G','3G','4G','5G'];
+const LVS=['L1','L2','L3','L4','L5','신입'];
+const LV_RANK={'L1':6,'L2':5,'L3':4,'L4':3,'L5':2,'신입':1,'기준외':0,'-':-1,'':-2};
+const LV_COLOR={'L1':'#4caf7d','L2':'#6fb8dd','L3':'#c9a84c','L4':'#e0a84a','L5':'#d4651a','신입':'#e05c5c','기준외':'#7a2f2f'};
+
+/* ── i18n ── */
+let LANG='ko'; try{LANG=localStorage.getItem('assy_eval_lang')||'ko';}catch(e){}
+const T={
+ title:['조립 작업자 정기 평가','Evaluación Periódica de Operadores – Ensamble'],
+ sysbar:['자격인증 · 실습평가 (작업자 정기 평가 체크시트 V7-1)','Certificación · Evaluación práctica (Hoja de evaluación V7-1)'],
+ tab_eval:['평가 입력','Evaluar'],tab_hist:['평가 이력','Historial'],tab_stat:['레벨 현황','Niveles'],tab_std:['기준 설정','Estándares'],
+ s1:['인적사항','Datos personales'],s2:['평가 내역','Criterios de evaluación'],s3:['평가 결과','Resultado'],s4:['실행항목 누락 / 부적합 발생 유무','Omisión de pasos / No conformidad'],s5:['평가 의견','Comentarios'],
+ evaluator:['평가자 정보','Evaluador'],worker:['작업자 정보','Operador'],dept:['부서','Depto.'],evName:['성명','Nombre'],evDate:['평가 날짜','Fecha'],
+ search:['작업자 검색 (이름 또는 사번)','Buscar operador (nombre o N° emp.)'],ph_search:['이름·사번 입력 후 목록에서 선택','Escriba nombre o N° y elija'],
+ name:['성명','Nombre'],emp:['사번','N° Emp.'],career:['경력','Antigüedad'],factory:['법인/공장','Planta'],car:['차종','Vehículo'],item:['아이템','Artículo'],line:['라인명','Línea'],shift:['교대','Turno'],day:['주간','Día'],night:['야간','Noche'],
+ multi:['다기능공 적용 기준','Multihabilidad'],ct:['C/T(초)','C/T (s)'],tt:['T/T(초)','T/T (s)'],
+ res_hint:['작업시간(초)을 입력하면 레벨이 자동 판정됩니다. 이전 점수는 같은 작업자·공정의 직전 평가에서 자동으로 불러오며 수정할 수 있습니다.','Al capturar el tiempo (s) el nivel se calcula automáticamente. El puntaje anterior se toma de la última evaluación del mismo operador y proceso (editable).'],
+ defect:['부적합품 발생','Pieza no conforme'],omit:['수행항목 누락','Paso omitido'],
+ rule:['① 부적합품 1개 발생 시 - 과락으로 재 평가 할 것   ② 수행항목 1개 누락 시 - 과락으로 재 평가 할 것','① 1 pieza no conforme → reprobado, reevaluar   ② 1 paso omitido → reprobado, reevaluar'],
+ new:['새 평가','Nueva'],blank:['빈 양식 출력','Imprimir formato vacío'],print:['체크시트 출력','Imprimir hoja'],save:['💾 평가 저장','💾 Guardar'],
+ from:['시작일','Desde'],to:['종료일','Hasta'],proc:['공정','Proceso'],lvl:['레벨','Nivel'],q:['검색','Buscar'],ph_q:['이름·사번·라인·평가자','Nombre, N°, línea, evaluador'],ph_q2:['이름·사번','Nombre o N°'],
+ xls:['엑셀 다운로드','Descargar Excel'],hist_hint:['행을 누르면 평가 입력 화면으로 불러와 수정·재출력할 수 있습니다.','Haga clic en una fila para abrirla, editarla o reimprimirla.'],
+ stat_title:['작업자별 최신 레벨','Último nivel por operador'],std_title:['공정별 기준 UPH','UPH estándar por proceso'],
+ std_hint:['평가 입력 시 공정을 고르면 여기 UPH가 기본값으로 들어갑니다 (C/T = 3600 ÷ UPH). 평가 화면에서 그때그때 바꿀 수도 있습니다.','Al elegir el proceso se usa esta UPH por defecto (C/T = 3600 ÷ UPH). Puede cambiarse en cada evaluación.'],
+ save_std:['기준 저장','Guardar'],rule_title:['레벨 판정 기준','Criterio de nivel'],
+ lvbase:['레벨 기준','Criterio'],over:['이상','≥'],under:['미만','<'],newbie:['신입사원\n배치 가능기준','Nuevo\n(asignable)'],
+ prev:['이전 점수 (평가전)','Anterior'],after:['평가후','Después'],wtime:['작업시간(초)','Tiempo (s)'],level:['레벨','Nivel'],change:['평가결과','Cambio'],
+ up:['▲ 향상','▲ Mejoró'],dn:['▼ 하락','▼ Bajó'],eq:['― 유지','― Igual'],first:['첫 평가','Primera'],
+ pass:['평가 완료','Evaluado'],fail:['과락 · 재평가 필요','Reprobado · Reevaluar'],rep:['대표 레벨','Nivel'],need:['작업자·작업시간을 입력하세요','Capture operador y tiempo'],
+ saved:['저장했습니다','Guardado'],updated:['수정 저장했습니다','Actualizado'],deleted:['삭제했습니다','Eliminado'],editing:['✎ 저장된 평가 수정 중','✎ Editando evaluación guardada'],
+ del:['삭제','Eliminar'],confirm_del:['이 평가 기록을 삭제할까요?','¿Eliminar esta evaluación?'],
+ date:['평가일','Fecha'],evaluatorCol:['평가자','Evaluador'],result:['결과','Resultado'],cnt:['평가 건수','Evaluaciones'],ppl:['평가 인원','Operadores'],failc:['재평가 대상','A reevaluar'],
+ all:['전체','Todos'],none:['기록이 없습니다','Sin registros'],plant:['공장','Planta'],
+ db_ok:['☁️ 서버 연결','☁️ Conectado'],db_err:['⚠️ 서버 연결 실패','⚠️ Sin conexión'],db_tbl:['⚠️ 평가 테이블 없음 — SQL 먼저 실행','⚠️ Falta tabla — ejecute SQL'],
+ latest:['최근 평가일','Última'],dist:['레벨 분포','Distribución'],people:['인원','Personas'],multiShort:['다기능','Multi'],
+ sheetTitle:['작업자 정기 평가 체크시트','Hoja de evaluación periódica de operadores'],multiTitle:['(다기능공 적용 기준)','(Multihabilidad)'],
+ evInfo:['평가자 정보','Evaluador'],wkInfo:['작업자 정보','Operador'],sigEv:['평가자 서명','Firma evaluador'],sigWk:['작업자 서명','Firma operador'],
+ std_saved:['기준을 저장했습니다','Estándares guardados'],enterUph:['UPH를 입력하세요','Capture UPH'],outside:['기준외','Fuera'],
+ xls_name:['조립_작업자정기평가','Evaluacion_Ensamble']
+};
+const t=k=>(T[k]?T[k][LANG==='es'?1:0]:k);
+const lvName=l=>l==='신입'?(LANG==='es'?'Nuevo':'신입'):l==='기준외'?t('outside'):l;
+const procName=p=>LANG==='es'?(PROC_ES[p]||p):p;
+
+/* ── util ── */
+const $=id=>document.getElementById(id);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const today=()=>{const d=new Date(new Date().toLocaleString('en-US',{timeZone:'America/Monterrey'}));return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');};
+const r1=v=>(v==null||v===''||isNaN(v))?'':(Math.round(v*10)/10).toLocaleString('en-US',{maximumFractionDigits:1});
+const num=v=>{const n=parseFloat(String(v).replace(',','.'));return isFinite(n)?n:null;};
+const normName=s=>{try{s=String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'');}catch(e){s=String(s||'');}return s.replace(/\s+/g,' ').trim().toLowerCase();};
+function toast(msg,err){const el=$('toast');el.textContent=msg;el.classList.toggle('err',!!err);el.classList.add('show');clearTimeout(toast._t);toast._t=setTimeout(()=>el.classList.remove('show'),2600);}
+async function sb(path,opts={}){
+  const res=await fetch(`${SB_URL}/rest/v1/${path}`,{...opts,headers:{apikey:SB_KEY,Authorization:`Bearer ${SB_KEY}`,'Content-Type':'application/json',Prefer:'return=representation',...(opts.headers||{})}});
+  const tx=await res.text();
+  if(!res.ok){let m=tx;try{const j=JSON.parse(tx);m=j.message||j.hint||tx;}catch(e){}const er=new Error(`HTTP ${res.status}: ${m}`);er.status=res.status;er.body=m;throw er;}
+  return tx?JSON.parse(tx):[];
+}
+function career(hd,ref){
+  if(!hd)return '';const a=new Date(hd+'T00:00:00'),b=new Date((ref||today())+'T00:00:00');if(isNaN(a)||b<a)return '';
+  let m=(b.getFullYear()-a.getFullYear())*12+(b.getMonth()-a.getMonth());if(b.getDate()<a.getDate())m--;
+  const y=Math.floor(m/12),mm=m%12;return LANG==='es'?`${y}a ${mm}m`:`${y}년 ${mm}개월`;
+}
+
+/* ── 레벨 판정 (엑셀 체크시트 수식 그대로) ── */
+// 일반 시트: L1 = C/T÷0.115×0.100, L2 = C/T, L3 = C/T÷0.115×0.129, L4 = C/T÷0.115×0.143, L5 = C/T÷0.115×0.158, 신입 = L5×5
+//   (원본 P5 셀이 O5를 참조해 L4 상한이 L5보다 커지는 오류 → C/T(N5) 기준으로 바로잡음)
+// 다기능공 시트: 하한 = ROUNDUP(C/T×0.85), L1~신입 상한 = ROUNDUP(C/T×0.90/0.95/1.05/1.10/1.15/1.25)
+const rup=x=>Math.ceil(x-1e-9);
+function bounds(ct,multi){
+  if(!(ct>0))return null;
+  if(multi){const lo=rup(ct*0.85),u=[0.9,0.95,1.05,1.1,1.15,1.25].map(k=>rup(ct*k));return{lo,u};}
+  const u=[ct/0.115*0.1,ct,ct/0.115*0.129,ct/0.115*0.143,ct/0.115*0.158];u.push(u[4]*5);return{lo:1,u};
+}
+function judge(time,b){
+  if(time==null||time===''||!b)return '';
+  const x=num(time);if(x==null)return '';
+  if(x<b.lo)return '-';
+  for(let i=0;i<6;i++)if(x<b.u[i])return LVS[i];
+  return '기준외';
+}
+const lvTag=(l,big)=>l?`<span class="lv ${l==='신입'||l==='기준외'?'LN':l==='-'?'':l}${big?' big':''}">${esc(lvName(l))}</span>`:'<span class="lv">·</span>';
+function trend(prev,cur){
+  if(!cur||cur==='-')return '';
+  if(!prev||prev==='-')return `<span class="trend eq">${t('first')}</span>`;
+  const d=(LV_RANK[cur]||0)-(LV_RANK[prev]||0);
+  return d>0?`<span class="trend up">${t('up')}</span>`:d<0?`<span class="trend dn">${t('dn')}</span>`:`<span class="trend eq">${t('eq')}</span>`;
+}
+function worst(list){let w='';list.forEach(l=>{if(!l||l==='-')return;if(!w||LV_RANK[l]<LV_RANK[w])w=l;});return w;}
+
+/* ── 상태 ── */
+let roster=[],history=[],stdMap={},TBL_OK=true;
+let S=null; // 현재 평가
+function blankState(){
+  return{id:null,process:'서브',multi:false,uph:null,tt:null,groups:[{g:'',prev_time:'',prev_level:'',time:'',level:''}],defect:false,omission:false,prevAuto:true};
+}
+
+/* ── 로드 ── */
+async function loadAll(){
+  const tag=$('dbtag');
+  try{
+    const [ro,st]=await Promise.all([
+      sb(`${ROSTER}?select=emp_id,name,process,hire_date&order=name.asc`).catch(()=>[]),
+      sb(`assy_eval_std?select=process,multi,uph,tt&plant=eq.${PLANT}`).catch(e=>{if(e.status===404||/relation|schema cache/i.test(e.body||''))TBL_OK=false;return [];})
+    ]);
+    roster=ro.filter(r=>r.name);
+    stdMap={};st.forEach(s=>stdMap[s.process+'|'+(s.multi?1:0)]={uph:Number(s.uph),tt:s.tt!=null?Number(s.tt):null});
+    if(TBL_OK)await loadHistory();
+    tag.className='dbtag '+(TBL_OK?'ok':'err');tag.textContent=TBL_OK?t('db_ok'):t('db_tbl');
+  }catch(e){console.warn(e);tag.className='dbtag err';tag.textContent=t('db_err');}
+  fillDatalists();
+}
+async function loadHistory(){
+  try{history=await sb(`assy_eval?select=*&plant=eq.${PLANT}&order=eval_date.desc,created_at.desc&limit=5000`);}
+  catch(e){if(/relation|schema cache|404/i.test(e.message))TBL_OK=false;history=[];}
+}
+function fillDatalists(){
+  $('dlWk').innerHTML=roster.map(r=>`<option value="${esc(r.name)} · ${esc(r.emp_id||'')}">`).join('');
+  const uniq=k=>[...new Set(history.map(h=>h[k]).filter(Boolean))].slice(0,80).map(v=>`<option value="${esc(v)}">`).join('');
+  $('dlDept').innerHTML=uniq('evaluator_dept');$('dlCar').innerHTML=uniq('car');$('dlItem').innerHTML=uniq('item');$('dlLine').innerHTML=uniq('line');
+}
+
+/* ── 평가 입력 렌더 ── */
+function stdFor(p,m){return stdMap[p+'|'+(m?1:0)]||{uph:(m||p==='후취')?40:12,tt:null};}
+function setProcess(p,m){
+  S.process=p;S.multi=!!m&&MULTI_OK.includes(p);
+  const sd=stdFor(S.process,S.multi);S.uph=sd.uph;S.tt=sd.tt;
+  const old=S.groups;
+  S.groups=S.multi?GROUPS_M.map((g,i)=>({g,prev_time:'',prev_level:'',time:(old[i]&&old[i].time)||'',level:''})):[{g:'',prev_time:'',prev_level:'',time:(old[0]&&old[0].time)||'',level:''}];
+  S.prevAuto=true;fillPrev();renderEval();
+}
+function renderProcs(){
+  $('procs').innerHTML=PROCS.map(p=>`<button class="pbtn${S.process===p?' on':''}" data-p="${p}">${esc(p)}${LANG==='es'?`<small>${PROC_ES[p]}</small>`:''}</button>`).join('');
+  const tg=$('multiTg');tg.classList.toggle('on',S.multi);tg.classList.toggle('dis',!MULTI_OK.includes(S.process));$('multiCk').checked=S.multi;
+}
+function ctVal(){return S.uph>0?3600/S.uph:null;}
+function renderStd(){
+  const ct=ctVal(),b=bounds(ct,S.multi);
+  $('uph').value=S.uph??'';$('ct').value=ct?r1(ct):'';$('tt').value=S.tt??'';$('ttWrap').style.display=S.multi?'':'none';
+  const pct=['115%','100%','89%','80%','72%'];
+  const head=`<thead><tr><th class="c">${esc(t('proc'))}</th><th class="c">${t('lvbase')}</th>${LVS.slice(0,5).map((l,i)=>`<th class="lvh">${l}<small>(${pct[i]}${LANG==='es'?'+':' 이상'})</small></th>`).join('')}<th class="lvh" style="white-space:pre-line">${t('newbie')}<small>(${S.multi?'75%':'72%'} ${LANG==='es'?'-':'미만'})</small></th></tr></thead>`;
+  if(!b){$('stdTbl').innerHTML=head+`<tbody><tr><td colspan="8" class="empty">${t('enterUph')}</td></tr></tbody>`;$('stdHint').textContent='';return;}
+  const lows=[b.lo,...b.u.slice(0,5)];
+  const body=S.groups.map(gr=>{
+    const hit=LVS.indexOf(gr.level);
+    const lab=procName(S.process)+(gr.g?'\n('+gr.g+')':'');
+    return `<tr><td class="grp" rowspan="2">${esc(lab)}</td><td class="cap">${t('over')}</td>${lows.map((v,i)=>`<td class="${hit===i?'hit':''}">${r1(v)}</td>`).join('')}</tr>
+            <tr><td class="cap">${t('under')}</td>${b.u.map((v,i)=>`<td class="${hit===i?'hit':''}">${r1(v)}</td>`).join('')}</tr>`;
+  }).join('');
+  $('stdTbl').innerHTML=head+'<tbody>'+(S.multi?body.split('</tr>').slice(0,2).join('</tr>')+'</tr>':body)+'</tbody>';
+  if(S.multi){ // 다기능공: 모든 G가 같은 C/T 기준 → 기준표는 한 번, 대신 판정 칸 표시
+    const hits=S.groups.map(g=>g.level).filter(l=>LVS.includes(l));
+    $('stdTbl').querySelector('.grp').textContent=procName(S.process)+'\n(1G~5G)';
+    $('stdTbl').querySelectorAll('tbody td:not(.grp):not(.cap)').forEach((td,i)=>{td.classList.toggle('hit',hits.includes(LVS[i%6]));});
+  }
+  $('stdHint').innerHTML=S.multi?(LANG==='es'?'Multihabilidad: C/T ±%, redondeo hacia arriba':'다기능공: C/T 기준 ±% (올림) 구간'):(LANG==='es'?'Tiempo de trabajo (s) por nivel':'레벨별 작업시간(초) 구간');
+}
+function renderRes(){
+  const ct=ctVal(),b=bounds(ct,S.multi);
+  S.groups.forEach(g=>{g.level=judge(g.time,b);});
+  const head=`<thead><tr>${S.multi?`<th class="c">${t('proc')}</th>`:''}<th class="c" colspan="2">${t('prev')}</th><th class="c">${t('change')}</th><th class="c" colspan="2">${t('after')}</th></tr>
+    <tr>${S.multi?'<th></th>':''}<th class="c">${t('wtime')}</th><th class="c">${t('level')}</th><th></th><th class="c">${t('wtime')}</th><th class="c">${t('level')}</th></tr></thead>`;
+  const body=S.groups.map((g,i)=>`<tr>${S.multi?`<td class="c"><b style="color:var(--ac2)">${esc(procName(S.process))} ${g.g}</b></td>`:''}
+    <td class="c"><input class="tm" type="number" step="any" data-i="${i}" data-k="prev_time" value="${esc(g.prev_time)}" style="width:96px;font-size:15px"></td>
+    <td class="c">${lvTag(g.prev_level||judge(g.prev_time,b))}</td>
+    <td class="c">${trend(g.prev_level||judge(g.prev_time,b),g.level)}</td>
+    <td class="c"><input class="tm" type="number" step="any" data-i="${i}" data-k="time" value="${esc(g.time)}" placeholder="0"></td>
+    <td class="c" id="lvc${i}">${lvTag(g.level,true)}</td></tr>`).join('');
+  $('resTbl').innerHTML=head+'<tbody>'+body+'</tbody>';
+}
+function renderVerdict(){
+  const fail=S.defect||S.omission;
+  const rep=worst(S.groups.map(g=>g.level));
+  const v=$('verdict');v.className='verdict '+(fail?'ng':(rep?'ok':''));
+  v.innerHTML=`<span class="big">${fail?'❌ '+t('fail'):rep?'✅ '+t('pass'):esc(t('need'))}</span><span class="sp"></span>`+
+    (rep?`<span class="hint">${S.multi?t('rep')+' ('+(LANG==='es'?'mínimo':'최저')+')':t('rep')}</span>${lvTag(rep,true)}`:'');
+  $('ckDefect').classList.toggle('on',S.defect);$('ckDefect').querySelector('input').checked=S.defect;
+  $('ckOmit').classList.toggle('on',S.omission);$('ckOmit').querySelector('input').checked=S.omission;
+  $('editing').textContent=S.id?t('editing'):'';
+}
+function renderEval(){renderProcs();renderRes();renderStd();renderVerdict();}
+
+/* ── 이전 점수 자동 ── */
+function fillPrev(){
+  if(!S.prevAuto)return;
+  const emp=$('wkEmp').value.trim().toUpperCase(),nm=normName($('wkName').value),d=$('evDate').value||today();
+  if(!emp&&!nm){S.groups.forEach(g=>{g.prev_time='';g.prev_level='';});return;}
+  const h=history.find(x=>x.id!==S.id&&x.process===S.process&&!!x.multi===S.multi&&(emp?String(x.emp_id||'').toUpperCase()===emp:normName(x.name)===nm)&&String(x.eval_date)<=d);
+  const hs=h?(h.groups||[]):[];
+  S.groups.forEach((g,i)=>{const p=hs.find(z=>(z.g||'')===g.g)||hs[i];g.prev_time=p&&p.time!=null?p.time:'';g.prev_level=p?p.level||'':'';});
+}
+
+/* ── 작업자 선택 ── */
+function pickWorker(v){
+  const m=String(v||'').split(' · ');let r=null;
+  if(m.length>1)r=roster.find(x=>String(x.emp_id||'')===m[m.length-1].trim());
+  if(!r){const q=normName(v);r=roster.find(x=>String(x.emp_id||'').toUpperCase()===String(v).trim().toUpperCase())||roster.find(x=>normName(x.name)===q);}
+  if(!r)return false;
+  $('wkName').value=r.name;$('wkEmp').value=r.emp_id||'';$('wkCareer').value=career(r.hire_date,$('evDate').value);$('wkSearch').value='';
+  if(!$('wkFactory').value)$('wkFactory').value=`YURA HARNESS MÉXICO ${PLANT}${LANG==='es'?' Planta':'공장'}`;
+  const last=history.find(x=>String(x.emp_id||'')===String(r.emp_id||''));
+  if(last){['car','item','line','shift'].forEach(k=>{const el=$('wk'+k[0].toUpperCase()+k.slice(1));if(el&&!el.value)el.value=last[k]||'';});
+           if(PROCS.includes(last.process)&&!S.id){setProcess(last.process,last.multi);}}
+  S.prevAuto=true;fillPrev();renderEval();return true;
+}
+
+/* ── 저장 ── */
+function collect(){
+  const grp=S.groups.map(g=>({g:g.g,prev_time:num(g.prev_time),prev_level:g.prev_level||judge(g.prev_time,bounds(ctVal(),S.multi))||'',time:num(g.time),level:g.level||''}));
+  const rep=worst(grp.map(g=>g.level));
+  return{plant:PLANT,eval_date:$('evDate').value||today(),emp_id:$('wkEmp').value.trim(),name:$('wkName').value.trim(),process:S.process,multi:S.multi,
+    uph:S.uph,ct:ctVal()?Math.round(ctVal()*100)/100:null,tt:S.multi?num($('tt').value):null,groups:grp,level:rep,defect:S.defect,omission:S.omission,
+    result:(S.defect||S.omission)?'재평가':(rep?'합격':''),evaluator_dept:$('evDept').value.trim(),evaluator_name:$('evName').value.trim(),
+    career:$('wkCareer').value.trim(),factory:$('wkFactory').value.trim(),car:$('wkCar').value.trim(),item:$('wkItem').value.trim(),line:$('wkLine').value.trim(),
+    shift:$('wkShift').value,opinion:$('opinion').value.trim(),updated_at:new Date().toISOString()};
+}
+async function save(){
+  const d=collect();
+  if(!d.name||!d.groups.some(g=>g.time!=null)){toast(t('need'),true);return;}
+  if(!TBL_OK){toast(t('db_tbl'),true);return;}
+  const btn=$('btnSave');btn.disabled=true;
+  try{
+    if(S.id){await sb(`assy_eval?id=eq.${S.id}`,{method:'PATCH',body:JSON.stringify(d)});toast(t('updated'));}
+    else{const r=await sb('assy_eval',{method:'POST',body:JSON.stringify(d)});S.id=r[0]&&r[0].id;toast(t('saved'));}
+    try{localStorage.setItem('assy_eval_evaluator',JSON.stringify({dept:d.evaluator_dept,name:d.evaluator_name}));}catch(e){}
+    await loadHistory();fillDatalists();renderVerdict();
+  }catch(e){toast(e.message,true);}finally{btn.disabled=false;}
+}
+function newEval(keepEval=true){
+  S=blankState();
+  ['wkSearch','wkName','wkEmp','wkCareer','wkFactory','wkCar','wkItem','wkLine','opinion'].forEach(k=>$(k).value='');$('wkShift').value='';
+  if(!keepEval){$('evDept').value='';$('evName').value='';}
+  try{const e=JSON.parse(localStorage.getItem('assy_eval_evaluator')||'null');if(e){if(!$('evDept').value)$('evDept').value=e.dept||'';if(!$('evName').value)$('evName').value=e.name||'';}}catch(e){}
+  $('evDate').value=today();setProcess('서브',false);
+}
+function loadRecord(h){
+  S={id:h.id,process:h.process,multi:!!h.multi,uph:num(h.uph),tt:num(h.tt),defect:!!h.defect,omission:!!h.omission,prevAuto:false,
+     groups:(h.groups&&h.groups.length?h.groups:[{g:''}]).map(g=>({g:g.g||'',prev_time:g.prev_time??'',prev_level:g.prev_level||'',time:g.time??'',level:g.level||''}))};
+  $('evDate').value=h.eval_date;$('evDept').value=h.evaluator_dept||'';$('evName').value=h.evaluator_name||'';
+  $('wkName').value=h.name||'';$('wkEmp').value=h.emp_id||'';$('wkCareer').value=h.career||'';$('wkFactory').value=h.factory||'';
+  $('wkCar').value=h.car||'';$('wkItem').value=h.item||'';$('wkLine').value=h.line||'';$('wkShift').value=h.shift||'';$('opinion').value=h.opinion||'';
+  renderEval();showTab('eval');window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* ── 인쇄 (엑셀 체크시트 양식) ── */
+function sheetHTML(d,blank){
+  const ct=d.ct||(d.uph>0?3600/d.uph:null),b=bounds(ct,d.multi);
+  const pct=['115%','100%','89%','80%','72%'];
+  const P=d.process;
+  const lows=b?[b.lo,...b.u.slice(0,5)]:[];
+  const v=x=>blank?'':esc(x==null?'':x);
+  const stdBlock=(gname,g,mid)=>{
+    const hit=g?LVS.indexOf(g.level):-1;
+    return `<table><tr><th rowspan="3" style="width:15mm">${esc(P)}${gname?'<br>('+gname+')':''}</th><th>레벨 기준</th>${pct.map((p,i)=>`<th>L${i+1}<br>(${p}이상)</th>`).join('')}<th>신입사원<br>배치 가능기준(${d.multi?'75':'72'}%미만)</th></tr>
+      <tr><td>이상</td>${lows.map((x,i)=>`<td class="${hit===i?'hit':''}">${r1(x)}</td>`).join('')}</tr>
+      <tr><td>미만</td>${b?b.u.map((x,i)=>`<td class="${hit===i?'hit':''}">${r1(x)}</td>`).join(''):''}</tr></table>${mid||''}
+      <table><tr><th rowspan="2" style="width:15mm">이전<br>점수</th><th>평가전</th><th>작업시간</th><th>레벨</th><th rowspan="2" style="width:16mm">평가<br>결과</th><th>평가후</th><th>작업시간</th><th>레벨</th></tr>
+      <tr><td></td><td>${g?v(g.prev_time):''}</td><td>${g?v(g.prev_level):''}</td><td></td><td>${g?v(g.time):''}</td><td><b>${g?v(g.level):''}</b></td></tr></table>`;
+  };
+  const gs=d.groups&&d.groups.length?d.groups:(d.multi?GROUPS_M.map(g=>({g})):[{g:''}]);
+  return `<div class="ps">
+    <h2>(${esc(P==='서브'?'SUB':P)}) 작업자 정기 평가 체크시트${d.multi?' (다기능공 적용 기준)':''}</h2>
+    <div class="meta"><span>UPH: <b>${v(d.uph)}</b></span><span>C/T(초): <b>${ct?r1(ct):''}</b></span>${d.multi?`<span>T/T(초): <b>${v(d.tt)}</b></span>`:''}</div>
+    <div class="sec">1) 인적사항</div>
+    <div class="info">평가자 정보 : 부서(<u>${v(d.evaluator_dept)}</u>), 성명(<u>${v(d.evaluator_name)}</u>), 평가 날짜(<u>${v(d.eval_date)}</u>)<br>
+      작업자 정보 : 경력(<u>${v(d.career)}</u>), 법인/공장(<u>${v(d.factory)}</u>), 성명(<u>${v(d.name)}</u>), 사번(<u>${v(d.emp_id)}</u>)<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;차종(<u>${v(d.car)}</u>), 아이템(<u>${v(d.item)}</u>), 라인명(<u>${v(d.line)}</u>), 교대(<u>${v(d.shift)}</u>)</div>
+    <div class="sec">2) 평가 내역${d.multi?' / 결과':''}</div>
+    ${d.multi?gs.map(g=>stdBlock(g.g,blank?null:g)).join(''):stdBlock('',blank?null:gs[0],'<div class="sec">3) 평가 결과</div>')}
+    <div class="sec">${d.multi?'3) 평가 의견 (실행항목 누락 / 부적합 발생 유무)':'4) 실행항목 누락 / 부적합 발생 유무'}</div>
+    <table><tr><th>부적합품 발생</th><td>${blank?'□ 유 &nbsp; □ 무':d.defect?'■ 유':'■ 무'}</td><th>수행항목 누락</th><td>${blank?'□ 유 &nbsp; □ 무':d.omission?'■ 유':'■ 무'}</td><th>판정</th><td><b>${blank?'':d.result==='재평가'?'과락 (재평가)':esc(d.level||'')}</b></td></tr></table>
+    <div class="rule">① 부적합품 1개 발생 시 - 과락으로 재 평가 할 것 &nbsp;&nbsp;&nbsp; ② 수행항목 1개 누락 시 - 과락으로 재 평가 할 것</div>
+    ${d.multi?'':'<div class="sec">5) 평가 의견</div>'}
+    <div class="op">${v(d.opinion)}</div>
+    <div class="sign"><div>평가자 : <span>${v(d.evaluator_name)}</span> (인)</div><div>작업자 : <span>${v(d.name)}</span> (인)</div></div>
+  </div>`;
+}
+function doPrint(blank){
+  const d=collect();
+  if(blank){d.groups=S.multi?GROUPS_M.map(g=>({g})):[{g:''}];}
+  $('printArea').innerHTML=sheetHTML(d,blank);
+  setTimeout(()=>window.print(),60);
+}
+
+/* ── 이력 ── */
+function histFiltered(){
+  const f=$('hFrom').value,to=$('hTo').value,p=$('hProc').value,l=$('hLv').value,q=normName($('hQ').value);
+  return history.filter(h=>{
+    if(f&&h.eval_date<f)return false;if(to&&h.eval_date>to)return false;
+    if(p){const [pp,mm]=p.split('|');if(h.process!==pp||(mm!==undefined&&String(!!h.multi?1:0)!==mm))return false;}
+    if(l){if(l==='재평가'){if(h.result!=='재평가')return false;}else if(h.level!==l)return false;}
+    if(q&&!normName([h.name,h.emp_id,h.line,h.evaluator_name,h.car,h.item].join(' ')).includes(q))return false;
+    return true;
+  });
+}
+function renderHist(){
+  const list=histFiltered();
+  const ppl=new Set(list.map(h=>h.emp_id||h.name)).size,fail=list.filter(h=>h.result==='재평가').length;
+  const cnt={};list.forEach(h=>{if(h.level)cnt[h.level]=(cnt[h.level]||0)+1;});
+  $('hKpi').innerHTML=`<div class="kpi"><span>${t('cnt')}</span><b>${list.length}</b></div><div class="kpi"><span>${t('ppl')}</span><b>${ppl}</b></div><div class="kpi"><span>${t('failc')}</span><b style="color:var(--red)">${fail}</b></div>`+
+    LVS.map(l=>`<div class="kpi"><span>${lvName(l)}</span><b style="color:${LV_COLOR[l]}">${cnt[l]||0}</b></div>`).join('');
+  if(!list.length){$('hTbl').innerHTML=`<tbody><tr><td class="empty">${TBL_OK?t('none'):t('db_tbl')}</td></tr></tbody>`;return;}
+  $('hTbl').innerHTML=`<thead><tr><th>${t('date')}</th><th>${t('name')}</th><th>${t('emp')}</th><th>${t('proc')}</th><th>${t('line')}</th><th class="n">UPH</th><th class="n">C/T</th><th>${t('after')} · ${t('wtime')}</th><th class="c">${t('level')}</th><th class="c">${t('result')}</th><th>${t('evaluatorCol')}</th><th></th></tr></thead><tbody>`+
+    list.map(h=>`<tr class="click" data-id="${h.id}"><td>${esc(h.eval_date)}</td><td style="color:#fff;font-weight:600">${esc(h.name)}</td><td>${esc(h.emp_id)}</td>
+      <td>${esc(procName(h.process))}${h.multi?` <span class="pill m">${t('multiShort')}</span>`:''}</td><td>${esc(h.line)}</td><td class="n">${esc(h.uph??'')}</td><td class="n">${r1(h.ct)}</td>
+      <td>${(h.groups||[]).map(g=>`${g.g?'<small style="color:var(--mute)">'+g.g+'</small> ':''}${g.time??'-'}<small style="color:var(--mute)">s</small>`).join(' · ')}</td>
+      <td class="c">${lvTag(h.level)}</td><td class="c">${h.result==='재평가'?`<span class="pill ng">${t('fail')}</span>`:h.result?`<span class="pill ok">${t('pass')}</span>`:''}</td>
+      <td>${esc(h.evaluator_name)}</td><td><button class="btn red sm" data-del="${h.id}">${t('del')}</button></td></tr>`).join('')+'</tbody>';
+}
+function fillHistFilters(){
+  $('hProc').innerHTML=`<option value="">${t('all')}</option>`+PROCS.map(p=>`<option value="${p}|0">${esc(procName(p))}</option>`).join('')+MULTI_OK.map(p=>`<option value="${p}|1">${esc(procName(p))} (${t('multiShort')})</option>`).join('');
+  $('hLv').innerHTML=`<option value="">${t('all')}</option>`+LVS.map(l=>`<option value="${l}">${lvName(l)}</option>`).join('')+`<option value="재평가">${t('fail')}</option>`;
+}
+function exportXls(){
+  if(!window.XLSX){toast('Excel library loading…',true);return;}
+  const list=histFiltered();
+  const H=['평가일','공장','성명','사번','경력','공정','다기능','그룹','UPH','C/T(초)','이전 작업시간','이전 레벨','작업시간(초)','레벨','평가결과','부적합품','수행항목 누락','판정','차종','아이템','라인명','교대','평가자 부서','평가자','평가 의견'];
+  const rows=[];
+  list.forEach(h=>(h.groups||[{}]).forEach(g=>rows.push([h.eval_date,PLANT+'공장',h.name,h.emp_id,h.career,h.process,h.multi?'Y':'',g.g||'',num(h.uph),num(h.ct),g.prev_time??'',g.prev_level||'',g.time??'',g.level||'',
+    (!g.prev_level||!g.level)?'':((LV_RANK[g.level]-LV_RANK[g.prev_level])>0?'향상':(LV_RANK[g.level]-LV_RANK[g.prev_level])<0?'하락':'유지'),
+    h.defect?'유':'무',h.omission?'유':'무',h.result==='재평가'?'과락(재평가)':h.level||'',h.car,h.item,h.line,h.shift,h.evaluator_dept,h.evaluator_name,h.opinion])));
+  const title=`조립 작업자 정기 평가 이력 (${PLANT}공장)`;
+  const ws=XLSX.utils.aoa_to_sheet([[title],[`출력일 ${today()} · ${list.length}건`],[],H,...rows]);
+  const thin={style:'thin',color:{rgb:'BFBFBF'}},B={top:thin,bottom:thin,left:thin,right:thin};
+  ws['!merges']=[{s:{r:0,c:0},e:{r:0,c:H.length-1}}];
+  ws['A1'].s={font:{bold:true,sz:16,color:{rgb:'1F1F1F'}},alignment:{vertical:'center'}};
+  ws['A2'].s={font:{sz:10,color:{rgb:'7F7F7F'}}};
+  H.forEach((_,c)=>{const a=XLSX.utils.encode_cell({r:3,c});ws[a].s={font:{bold:true,color:{rgb:'FFFFFF'}},fill:{fgColor:{rgb:'1F1F1F'}},alignment:{horizontal:'center',vertical:'center',wrapText:true},border:{...B,bottom:{style:'medium',color:{rgb:'C9A84C'}}}};});
+  const lvFill={'L1':'E2F3EA','L2':'E3F1F8','L3':'FBF3DC','L4':'FCEFDB','L5':'FBE5D6','신입':'FBE1E1','기준외':'F4CCCC'};
+  rows.forEach((r,i)=>r.forEach((v,c)=>{const a=XLSX.utils.encode_cell({r:i+4,c});if(!ws[a])ws[a]={t:'s',v:''};
+    const s={border:B,alignment:{vertical:'center',horizontal:[2,24].includes(c)?'left':'center',wrapText:c===24},font:{sz:10}};
+    if(i%2)s.fill={fgColor:{rgb:'F7F7F7'}};
+    if(c===13&&lvFill[v]){s.fill={fgColor:{rgb:lvFill[v]}};s.font={bold:true,sz:10};}
+    if(c===17&&String(v).startsWith('과락')){s.font={bold:true,sz:10,color:{rgb:'C00000'}};}
+    if(c===9&&typeof v==='number')ws[a].z='0.0';
+    ws[a].s=s;}));
+  ws['!cols']=[11,7,26,12,10,8,7,6,7,8,10,9,10,8,9,8,10,12,10,12,10,7,12,10,36].map(w=>({wch:w}));
+  ws['!rows']=[{hpt:28},{hpt:16},{hpt:6},{hpt:30}];
+  ws['!autofilter']={ref:XLSX.utils.encode_range({s:{r:3,c:0},e:{r:3+rows.length,c:H.length-1}})};
+  ws['!freeze']={xSplit:0,ySplit:4};ws['!views']=[{state:'frozen',ySplit:4}];
+  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'평가이력');
+  XLSX.writeFile(wb,`${t('xls_name')}_${PLANT}_${today()}.xlsx`);
+}
+
+/* ── 레벨 현황 ── */
+function renderStat(){
+  const cols=[...PROCS.map(p=>p+'|0'),...MULTI_OK.map(p=>p+'|1')];
+  const latest={};
+  history.forEach(h=>{const k=(h.emp_id||h.name)+'#'+h.process+'|'+(h.multi?1:0);if(!latest[k])latest[k]=h;}); // history 는 최신순
+  const ppl={};
+  Object.values(latest).forEach(h=>{const id=h.emp_id||h.name;(ppl[id]=ppl[id]||{name:h.name,emp:h.emp_id,cells:{},last:''});ppl[id].cells[h.process+'|'+(h.multi?1:0)]=h;if(h.eval_date>ppl[id].last)ppl[id].last=h.eval_date;});
+  $('legend').innerHTML=LVS.map(l=>`<span><i style="background:${LV_COLOR[l]}"></i>${lvName(l)}</span>`).join('');
+  const colName=c=>{const [p,m]=c.split('|');return procName(p)+(m==='1'?' ('+t('multiShort')+')':'');};
+  // 분포
+  $('distTbl').innerHTML=`<thead><tr><th>${t('proc')}</th><th class="n">${t('people')}</th>${LVS.map(l=>`<th>${lvName(l)}</th>`).join('')}<th>${t('failc')}</th><th style="text-align:left">${t('dist')}</th></tr></thead><tbody>`+
+    cols.map(c=>{const hs=Object.values(ppl).map(p=>p.cells[c]).filter(Boolean);const n=hs.length;const cnt={};let f=0;hs.forEach(h=>{if(h.level)cnt[h.level]=(cnt[h.level]||0)+1;if(h.result==='재평가')f++;});
+      return `<tr><td style="font-weight:700;color:#fff">${esc(colName(c))}</td><td class="n">${n}</td>${LVS.map(l=>`<td>${cnt[l]||'<span style="color:var(--dim)">0</span>'}</td>`).join('')}<td style="color:var(--red)">${f||''}</td>
+        <td><div class="lvdist">${n?LVS.map(l=>cnt[l]?`<i style="width:${cnt[l]/n*100}%;background:${LV_COLOR[l]}" title="${lvName(l)} ${cnt[l]}"></i>`:'').join(''):''}</div></td></tr>`;}).join('')+'</tbody>';
+  const q=normName($('sQ').value);
+  const list=Object.values(ppl).filter(p=>!q||normName(p.name+' '+p.emp).includes(q)).sort((a,b)=>b.last.localeCompare(a.last));
+  $('mxTbl').innerHTML=`<thead><tr><th>${t('name')}</th><th>${t('emp')}</th>${cols.map(c=>`<th>${esc(colName(c))}</th>`).join('')}<th>${t('latest')}</th></tr></thead><tbody>`+
+    (list.length?list.map(p=>`<tr><td style="color:#fff;font-weight:600">${esc(p.name)}</td><td>${esc(p.emp)}</td>${cols.map(c=>{const h=p.cells[c];return `<td title="${h?esc(h.eval_date):''}">${h?(h.result==='재평가'?`<span class="pill ng">${t('fail')}</span>`:lvTag(h.level)):''}</td>`;}).join('')}<td>${esc(p.last)}</td></tr>`).join('')
+      :`<tr><td colspan="${cols.length+3}" class="empty">${TBL_OK?t('none'):t('db_tbl')}</td></tr>`)+'</tbody>';
+}
+
+/* ── 기준 설정 ── */
+function renderStdSet(){
+  const rows=[...PROCS.map(p=>[p,0]),...MULTI_OK.map(p=>[p,1])];
+  $('stdSet').innerHTML=`<thead><tr><th>${t('proc')}</th><th>${t('multi')}</th><th class="n">UPH</th><th class="n">${t('ct')}</th><th class="n">L1 &lt;</th><th class="n">L2 &lt;</th><th class="n">L3 &lt;</th><th class="n">L4 &lt;</th><th class="n">L5 &lt;</th><th class="n">${lvName('신입')} &lt;</th></tr></thead><tbody>`+
+    rows.map(([p,m])=>{const s=stdFor(p,m),b=bounds(3600/s.uph,!!m);return `<tr><td style="font-weight:700;color:#fff">${esc(procName(p))}</td><td>${m?'<span class="pill m">'+t('multiShort')+'</span>':''}</td>
+      <td class="n"><input type="number" min="1" step="any" data-std="${p}|${m}" value="${s.uph}" style="width:90px;text-align:right;height:32px"></td><td class="n">${r1(3600/s.uph)}</td>${b.u.map(x=>`<td class="n">${r1(x)}</td>`).join('')}</tr>`;}).join('')+'</tbody>';
+  $('ruleText').innerHTML=LANG==='es'
+   ?`<b>Hoja normal</b> (Sub · Ruteo · Encintado · Clip · Post-proceso): C/T = 3600 ÷ UPH. L1 &lt; C/T÷0.115×0.100 · L2 &lt; C/T · L3 &lt; C/T÷0.115×0.129 · L4 &lt; C/T÷0.115×0.143 · L5 &lt; C/T÷0.115×0.158 · Nuevo &lt; L5×5.<br><b>Multihabilidad</b> (1G–5G): mínimo ROUNDUP(C/T×0.85); L1 &lt; ×0.90 · L2 &lt; ×0.95 · L3 &lt; ×1.05 · L4 &lt; ×1.10 · L5 &lt; ×1.15 · Nuevo &lt; ×1.25 (redondeo hacia arriba).<br>Menor al mínimo = «-»; 1 pieza no conforme o 1 paso omitido = reprobado (reevaluar).`
+   :`<b>일반 시트</b> (서브·포선·테이핑·클립·후취): C/T = 3600 ÷ UPH. L1 &lt; C/T÷0.115×0.100 · L2 &lt; C/T · L3 &lt; C/T÷0.115×0.129 · L4 &lt; C/T÷0.115×0.143 · L5 &lt; C/T÷0.115×0.158 · 신입 &lt; L5×5.<br><b>다기능공 시트</b> (1G~5G): 하한 ROUNDUP(C/T×0.85), L1 &lt; ×0.90 · L2 &lt; ×0.95 · L3 &lt; ×1.05 · L4 &lt; ×1.10 · L5 &lt; ×1.15 · 신입 &lt; ×1.25 (올림).<br>하한 미만은 「-」, 부적합품 1개 또는 수행항목 1개 누락 시 과락(재평가).<br><span style="color:var(--amb)">※ 원본 엑셀 일반 시트의 L4 상한(P5)이 L3 값을 참조해 L5 구간이 비어 있던 오류는 C/T 기준(÷0.115×0.143)으로 바로잡았습니다.</span>`;
+}
+async function saveStd(){
+  if(!TBL_OK){toast(t('db_tbl'),true);return;}
+  const rows=[...document.querySelectorAll('[data-std]')].map(el=>{const [p,m]=el.dataset.std.split('|');return{plant:PLANT,process:p,multi:m==='1',uph:num(el.value),updated_at:new Date().toISOString()};}).filter(r=>r.uph>0);
+  try{await sb('assy_eval_std?on_conflict=plant,process,multi',{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify(rows)});
+    rows.forEach(r=>{const k=r.process+'|'+(r.multi?1:0);stdMap[k]={...(stdMap[k]||{}),uph:r.uph};});renderStdSet();toast(t('std_saved'));}
+  catch(e){toast(e.message,true);}
+}
+
+/* ── 탭 / 언어 ── */
+function showTab(k){
+  document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.tab===k));
+  document.querySelectorAll('.tab').forEach(s=>s.classList.toggle('on',s.id==='t-'+k));
+  if(k==='hist')renderHist();if(k==='stat')renderStat();if(k==='std')renderStdSet();
+}
+function applyLang(){
+  document.documentElement.lang=LANG==='es'?'es':'ko';
+  document.querySelectorAll('[data-t]').forEach(el=>{el.textContent=t(el.dataset.t);});
+  document.querySelectorAll('[data-ph]').forEach(el=>{el.placeholder=t(el.dataset.ph);});
+  $('lg-ko').classList.toggle('on',LANG==='ko');$('lg-es').classList.toggle('on',LANG==='es');
+  $('plantTag').textContent=LANG==='es'?`PLANTA ${PLANT} · ENSAMBLE`:`${PLANT}공장 · 조립생산팀`;
+  document.title=t('title')+` (${PLANT}${LANG==='es'?'':'공장'})`;
+  const tag=$('dbtag');if(tag.classList.contains('ok'))tag.textContent=t('db_ok');else if(tag.classList.contains('err'))tag.textContent=TBL_OK?t('db_err'):t('db_tbl');
+  fillHistFilters();renderEval();
+  const on=document.querySelector('.tab.on');if(on)showTab(on.id.slice(2));
+}
+
+/* ── 이벤트 ── */
+document.addEventListener('DOMContentLoaded',async()=>{
+  S=blankState();$('evDate').value=today();
+  try{const e=JSON.parse(localStorage.getItem('assy_eval_evaluator')||'null');if(e){$('evDept').value=e.dept||'';$('evName').value=e.name||'';}}catch(e){}
+  applyLang();
+  $('nav').addEventListener('click',e=>{const b=e.target.closest('button[data-tab]');if(b)showTab(b.dataset.tab);});
+  $('lg-ko').onclick=()=>{LANG='ko';try{localStorage.setItem('assy_eval_lang','ko');}catch(e){}applyLang();};
+  $('lg-es').onclick=()=>{LANG='es';try{localStorage.setItem('assy_eval_lang','es');}catch(e){}applyLang();};
+  $('procs').addEventListener('click',e=>{const b=e.target.closest('.pbtn');if(b)setProcess(b.dataset.p,S.multi&&MULTI_OK.includes(b.dataset.p));});
+  $('multiTg').onclick=()=>setProcess(S.process,!S.multi);
+  $('uph').addEventListener('input',()=>{S.uph=num($('uph').value);renderRes();renderStd();renderVerdict();});
+  $('tt').addEventListener('input',()=>{S.tt=num($('tt').value);});
+  $('resTbl').addEventListener('input',e=>{
+    const el=e.target;if(!el.dataset.k)return;const g=S.groups[+el.dataset.i];g[el.dataset.k]=el.value;
+    if(el.dataset.k==='prev_time'){g.prev_level='';S.prevAuto=false;}
+    const b=bounds(ctVal(),S.multi);g.level=judge(g.time,b);
+    const tr=el.closest('tr'),cells=tr.querySelectorAll('td'),o=S.multi?1:0;
+    const pl=g.prev_level||judge(g.prev_time,b);
+    cells[o+1].innerHTML=lvTag(pl);cells[o+2].innerHTML=trend(pl,g.level);cells[o+4].innerHTML=lvTag(g.level,true);
+    renderStd();renderVerdict();
+  });
+  $('resTbl').addEventListener('keydown',e=>{if(e.key==='Enter'){const ins=[...$('resTbl').querySelectorAll('input[data-k="time"]')];const i=ins.indexOf(e.target);if(i>-1&&ins[i+1])ins[i+1].focus();else if(i>-1)$('opinion').focus();}});
+  $('wkSearch').addEventListener('change',e=>{if(!pickWorker(e.target.value)&&e.target.value)toast(LANG==='es'?'No está en la lista':'명단에 없는 작업자입니다 — 성명·사번을 직접 입력하세요',true);});
+  $('wkSearch').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();pickWorker(e.target.value);}});
+  ['wkEmp','wkName'].forEach(k=>$(k).addEventListener('change',()=>{S.prevAuto=true;fillPrev();renderRes();renderVerdict();}));
+  $('evDate').addEventListener('change',()=>{const r=roster.find(x=>String(x.emp_id||'')===$('wkEmp').value.trim());if(r)$('wkCareer').value=career(r.hire_date,$('evDate').value);if(S.prevAuto){fillPrev();renderRes();}});
+  $('ckDefect').onclick=()=>{S.defect=!S.defect;renderVerdict();};
+  $('ckOmit').onclick=()=>{S.omission=!S.omission;renderVerdict();};
+  $('btnSave').onclick=save;$('btnNew').onclick=()=>newEval(true);$('btnPrint').onclick=()=>doPrint(false);$('btnBlank').onclick=()=>doPrint(true);
+  ['hFrom','hTo','hProc','hLv'].forEach(k=>$(k).addEventListener('change',renderHist));$('hQ').addEventListener('input',renderHist);
+  $('hTbl').addEventListener('click',async e=>{
+    const d=e.target.closest('[data-del]');
+    if(d){e.stopPropagation();if(!confirm(t('confirm_del')))return;try{await sb(`assy_eval?id=eq.${d.dataset.del}`,{method:'DELETE'});if(S.id===d.dataset.del)S.id=null;await loadHistory();renderHist();toast(t('deleted'));}catch(er){toast(er.message,true);}return;}
+    const tr=e.target.closest('tr[data-id]');if(tr){const h=history.find(x=>x.id===tr.dataset.id);if(h)loadRecord(h);}
+  });
+  $('hXls').onclick=exportXls;$('sQ').addEventListener('input',renderStat);$('stdSave').onclick=saveStd;
+  await loadAll();
+  // 자격인증 앱에서 사번을 넘겨 열 때 (?emp=)
+  const qEmp=new URLSearchParams(location.search).get('emp');
+  if(qEmp)pickWorker(qEmp);
+  setProcess(S.process,S.multi);
+});
+</script>
+</body>
+</html>
