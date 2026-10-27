@@ -6505,6 +6505,26 @@ function buildOMRHTML(student){
 }
 function printSheets(){renderOMRPreview();setTimeout(()=>window.print(),400);}
 
+// ✅ 평가중 판정 (2026-10-27): 이론·작업수행능력·MSA(압착고+불량판별) 중 하나라도 평가이력이 없으면 평가중
+//    · 작업수행 항목이 없는 구 배점 기록, 최종합격·퇴사자는 제외
+function _evalMiss(r){
+  const its=r.practicalItemScores||[];
+  const pf=its.find(x=>/작업수행|desempe/i.test(x.name||''));
+  if(!pf)return null;
+  const cr=its.find(x=>/압착|altura/i.test(x.name||'')), df=its.find(x=>/불량|판별|defect/i.test(x.name||''));
+  const fs=(typeof finalStatusMap!=='undefined'&&finalStatusMap)?finalStatusMap[r._sbId]:null;
+  const miss=[];
+  if(!((parseFloat(r.theoryRawMax)||0)>0||(parseFloat(r.theoryWeighted)||0)>0||(r.details||[]).length>0))miss.push('이론');
+  if(pf.na)miss.push('작업수행');
+  if(!((cr&&!cr.na&&(parseFloat(cr.score)||0)>0)||(df&&!df.na)||(fs&&fs.msa_result)))miss.push('MSA');
+  return miss.length?miss:null;
+}
+function _isEvalIng(r){
+  const fs=(typeof finalStatusMap!=='undefined'&&finalStatusMap)?finalStatusMap[r._sbId]:null;
+  if(fs&&(fs.resigned||fs.final_status==='최종합격'))return false;
+  return !!_evalMiss(r);
+}
+const _EVALING_BADGE='<span style="color:var(--orange,#e6a23c);font-weight:700;font-size:0.76rem;white-space:nowrap">⏳ <span data-kr="평가중" data-es="En evaluación">평가중</span></span>';
 // =================== RESULTS ===================
 function renderResults(){
   const cfg=getConfig();
@@ -6528,20 +6548,6 @@ function renderResults(){
   // ✅ 사번순 정렬 (2026-10-27)
   const _empCmp=(a,b)=>String(a.empId||'').localeCompare(String(b.empId||''),undefined,{numeric:true})||(new Date(a.date||0)-new Date(b.date||0));
   // ✅ 최종합격한 사번의 불합격·판정대기 내역은 숨김 (2026-10-27)
-  // ✅ 평가중: 이론·작업수행능력·MSA(압착고+불량판별) 중 하나라도 평가이력이 없으면 (2026-10-27)
-  const _evalMiss=r=>{
-    const its=r.practicalItemScores||[];
-    const pf=its.find(x=>/작업수행|desempe/i.test(x.name||''));
-    if(!pf)return null; // 구 배점 체계 기록은 해당 없음
-    const cr=its.find(x=>/압착|altura/i.test(x.name||'')), df=its.find(x=>/불량|판별|defect/i.test(x.name||''));
-    const fs=getFS(r);
-    const miss=[];
-    if(!((parseFloat(r.theoryRawMax)||0)>0||(parseFloat(r.theoryWeighted)||0)>0||(r.details||[]).length>0))miss.push('이론');
-    if(pf.na)miss.push('작업수행');
-    if(!((cr&&!cr.na&&(parseFloat(cr.score)||0)>0)||(df&&!df.na)||(fs&&fs.msa_result)))miss.push('MSA');
-    return miss.length?miss:null;
-  };
-  const _isEvalIng=r=>{const fs=getFS(r);if(fs&&(fs.resigned||fs.final_status==='최종합격'))return false;return !!_evalMiss(r);};
   const _stOf=r=>{const fs=getFS(r);if(_isEvalIng(r))return'평가중';return fs?fs.final_status:(r.passed?'최종합격':'불합격');};
   const _finalEmp=new Set(results.filter(r=>r.empId&&_stOf(r)==='최종합격').map(r=>String(r.empId)));
   let sorted=results.filter(r=>!(r.empId&&_finalEmp.has(String(r.empId))&&_stOf(r)!=='최종합격'&&_stOf(r)!=='퇴사')).sort(_empCmp);
@@ -6611,7 +6617,7 @@ function renderResults(){
       const cls=r.totalScore>=80?'score-high':r.totalScore>=60?'score-mid':'score-low';
       const grade=calcGrade(r.totalScore,r.passed);
       const ing=_isEvalIng(r), miss=ing?_evalMiss(r):null;
-      const ingBadge='<span style="color:var(--orange,#e6a23c);font-weight:700;font-size:0.76rem;white-space:nowrap">⏳ <span data-kr="평가중" data-es="En evaluación">평가중</span></span>';
+      const ingBadge=_EVALING_BADGE;
       const missTxt=miss?`<br><span style="font-size:0.64rem;color:var(--text2);font-weight:400">미평가: ${miss.join('·')}</span>`:'';
       const dash='<span style="color:var(--text2)">-</span>';
       const hasTh=!(miss&&miss.includes('이론'));
@@ -7412,7 +7418,11 @@ function renderSkillGrades(){
       workerProcess[key].processes[p]=r;
   });
   // 검색 필터 적용
-  let workers=Object.values(workerProcess).sort((a,b)=>a.name.localeCompare(b.name,'ko'));
+  // ✅ 입사일순 정렬 (입사일 없으면 맨 뒤, 같으면 사번순) (2026-10-27)
+  const _hdOf=w=>String(w.hireDate||lookupHireDate(w.empId)||'');
+  let workers=Object.values(workerProcess).sort((a,b)=>{const ha=_hdOf(a),hb=_hdOf(b);
+    if(ha!==hb){if(!ha)return 1;if(!hb)return -1;return ha<hb?-1:1;}
+    return String(a.empId||'').localeCompare(String(b.empId||''),undefined,{numeric:true});});
   if(kw)workers=workers.filter(w=>(w.name||'').toLowerCase().includes(kw)||((w.empId||'').toLowerCase().includes(kw)));
   // Flatten to rows: one row per worker×process
   const rows=[];
@@ -7447,17 +7457,18 @@ function renderSkillGrades(){
     <tbody>${rows.map(({w,p,r,passedTotal})=>{
       const hd=w.hireDate||lookupHireDate(w.empId);
       const cls=r.totalScore>=80?'score-high':r.totalScore>=60?'score-mid':'score-low';
+      const ing=_isEvalIng(r), miss=ing?_evalMiss(r):null, dash='<span style="color:var(--text2)">-</span>';
       return`<tr>
         <td style="font-weight:600">${w.name}</td>
         <td style="font-family:'JetBrains Mono',monospace;font-size:0.73rem;color:var(--text2)">${w.empId||'-'}</td>
         <td style="font-size:0.76rem;color:var(--teal)">${calcTenure(hd)}</td>
         <td><span style="background:rgba(91,163,232,0.12);color:var(--sky);border:1px solid rgba(91,163,232,0.3);border-radius:4px;padding:0.12rem 0.5rem;font-size:0.78rem;font-weight:700">${p}</span></td>
         <td style="font-size:0.75rem;color:var(--text2)">${r.date}</td>
-        <td><span class="score-t">${r.theoryWeighted||0}점</span></td>
+        <td>${miss&&miss.includes('이론')?dash:`<span class="score-t">${r.theoryWeighted||0}점</span>`}</td>
         <td><span class="score-p">${r.practicalWeighted||0}점</span></td>
-        <td><span class="score-badge ${cls}">${r.totalScore}점</span></td>
-        <td>${r.passed?'<span style="color:var(--green)">✅ 합격</span>':'<span style="color:var(--red)">❌ 불합격</span>'}</td>
-        <td>${calcGrade(r.totalScore,r.passed)}</td>
+        <td>${ing?dash:`<span class="score-badge ${cls}">${r.totalScore}점</span>`}</td>
+        <td>${ing?_EVALING_BADGE+`<br><span style="font-size:0.64rem;color:var(--text2)">미평가: ${miss.join('·')}</span>`:(r.passed?'<span style="color:var(--green)">✅ 합격</span>':'<span style="color:var(--red)">❌ 불합격</span>')}</td>
+        <td>${ing?dash:calcGrade(r.totalScore,r.passed)}</td>
         <td style="text-align:center">${passedTotal>=2?`<span class="multi-badge">🔀 ${passedTotal}공정</span>`:'-'}</td>
       </tr>`;
     }).join('')}
