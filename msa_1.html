@@ -468,14 +468,15 @@ hr{border-top-color:#2a2a2a}
       <div class="row" style="justify-content:space-between;margin-bottom:6px">
         <label style="margin:0">선택 인원 <span id="selCnt" class="pill p-mut">0명</span>
           <span id="grpCnt" class="pill p-mut"></span></label>
-        <button class="btn-line btn-sm" onclick="selAll(false)">전체해제</button>
+        <span class="row" style="gap:6px"><button class="btn-line btn-sm" onclick="selAll(true)">전체선택</button>
+        <button class="btn-line btn-sm" onclick="selAll(false)">전체해제</button></span>
       </div>
       <div class="emplist" id="empList">
         <div class="emphd"><div class="c-ord">순번</div><div class="c-nm">이름 / Nombre</div>
           <div class="c-gr">조</div></div>
         <div class="empty">불러오는 중…</div>
       </div>
-      <p class="note">이름을 누르면 선택·해제됩니다. 계량형은 <b>선택 순서대로 3명씩 1개 조</b>가 자동 편성되며,
+      <p class="note">이름을 누르면 선택·해제됩니다. 「전체선택」은 현재 팀·검색 조건에 보이는 인원을 모두 선택합니다. 계량형은 <b>선택 순서대로 3명씩 1개 조</b>가 자동 편성되며,
         오른쪽 「조」 칸에 배정 결과가 표시됩니다. 계수형은 선택된 인원 전체가 평가 대상입니다.</p>
       <div class="selgrp" id="selGrp"></div>
     </div>
@@ -713,6 +714,31 @@ hr{border-top-color:#2a2a2a}
       </div>
 
       <div class="card">
+        <h2>계수형 시험데이터 생성 <small>Generador de datos — Atributos</small></h2>
+        <div class="grid g4" style="margin-top:12px">
+          <div><label>시료 참값 (Referencia)</label>
+            <select id="admARef"><option value="keep">현재 참값 유지</option>
+              <option value="half" selected>OK/NG 반반 무작위로 새로</option></select></div>
+          <div><label>전체 수준 일괄 (Nivel global)</label>
+            <select id="admAAll" onchange="admASetAll(this.value)"><option value="">— 선택 —</option>
+              <option value="rand">무작위 (합격 수준)</option></select></div>
+          <div style="grid-column:span 2"><label>현재 조건</label>
+            <div class="note" id="admAPT" style="margin:6px 0 0">—</div></div>
+        </div>
+        <h2 style="margin-top:16px">작업자별 생성 수준 <small>Nivel por operador</small></h2>
+        <div class="scroll" id="admAOps"><div class="empty">인원을 선택하면 작업자가 표시됩니다</div></div>
+        <div class="row" style="margin-top:12px">
+          <button class="btn" onclick="admAGenerate()">전체 작업자 데이터 생성</button>
+          <button class="btn-line" onclick="admARandom()">수준 무작위 재배정</button>
+          <button class="btn-line" onclick="admAClear()">생성 데이터 삭제</button>
+        </div>
+        <p class="note">시료수·반복수·E/PFA/PMISS 기준·분모 기준은 <b>계수형 탭의 평가 조건</b> 값을 사용하며,
+          각 수준은 그 기준으로 실제 판정했을 때 결과가 맞도록 오판 건수를 정합니다
+          (기준이 엄격하면 합격 수준은 오판 0건이 됩니다). 생성 후 계수형 탭에서 결과를 확인하고 저장하세요.</p>
+        <div class="scroll" id="admAPreview" style="margin-top:10px"></div>
+      </div>
+
+      <div class="card">
         <h2>평가주기별 기록 일괄 삭제 <small>Borrado por periodo</small></h2>
         <div class="grid g4">
           <div><label>평가주기 (Periodo)</label>
@@ -911,8 +937,14 @@ function updCnt(){
   if($('selGrp')) $('selGrp').innerHTML = gs.map((m,i)=>'<span'+(m.length<2?' class="short"':'')+'>'+(i+1)+'조 · '+
     esc(m.map(x=>shortName(x.name)).join(', '))+'</span>').join('');
 }
-function selAll(on){ if(!on){ SEL=[]; VD={}; }
-  renderEmp(); renderAttInput(); renderGTabs(); renderVarInput(); }
+function selAll(on){
+  if(on){
+    const add=filteredEmp().filter(e=>!SEL.some(s=>s.employee_id===e.employee_id));
+    if(!add.length){ toast('추가로 선택할 인원이 없습니다'); return; }
+    add.forEach(e=>SEL.push({employee_id:e.employee_id, name:empLabel(e), team:e.team}));
+    toast(add.length+'명 전체선택');
+  }else{ SEL=[]; VD={}; }
+  renderEmp(); renderAttInput(); renderGTabs(); renderVarInput(); admRender(); }
 $('fFactory').onchange=loadEmployees;
 $('fTeam').onchange=()=>{ renderEmp(); loadRetestQueue(); loadAttRetestQueue(); };
 $('fSearch').oninput=renderEmp;
@@ -1841,6 +1873,7 @@ function admSpec(){
 }
 function admRender(){
   if(!adminOK) return;
+  admARender();
   admSpec();
   $('admPT').textContent='시료 '+vParts()+' · 측정 '+vTrials()+'회';
   const gs=autoGroups();
@@ -2005,6 +2038,121 @@ function admPreview(out){
   $('admPreview').innerHTML=h+'</tbody></table>'+
     '<p class="note">계량형 탭에서 그래프와 상세 결과를 확인한 뒤 저장하세요.</p>';
 }
+/* ══════════ 관리자 — 계수형 데이터 생성 ══════════ */
+const ALEVELS={
+  '우수':  {f:[0,0],     desc:'Excelente — 오판 없음'},
+  '양호':  {f:[0.2,0.6], desc:'Bueno — 허용 오판의 일부'},
+  '경계':  {f:[0.8,1],   desc:'Bueno(하한) — 허용 한도 근처'},
+  '불합격':{f:null,      desc:'No aprobado — 기준 초과(테스트용)'}
+};
+const ALEVEL_PASS=['우수','양호','경계'];
+let ALV={};
+const pickPass=()=>ALEVEL_PASS[Math.floor(Math.random()*ALEVEL_PASS.length)];
+function admACrit(){
+  return {cE:num($('cE').value)??.9, cFa:num($('cFa').value)??.05, cMs:num($('cMs').value)??.02,
+          mode:$('aDenom').value};
+}
+function admARender(){
+  if(!adminOK || !$('admAOps')) return;
+  const C=admACrit();
+  $('admAPT').innerHTML='시료 <b>'+nSamp()+'</b> · 반복 <b>'+nTri()+'</b>회 · E ≥ '+C.cE+
+    ' · PFA ≤ '+C.cFa+' · PMISS ≤ '+C.cMs+' · 분모 '+(C.mode==='eval'?'시료×반복':'시료수');
+  const lvOpts=Object.keys(ALEVELS);
+  const sel=$('admAAll'); if(sel && sel.options.length<3)
+    lvOpts.forEach(k=>{ const o=document.createElement('option'); o.value=k; o.textContent=k; sel.appendChild(o); });
+  if(!SEL.length){ $('admAOps').innerHTML='<div class="empty">인원을 선택하면 작업자가 표시됩니다</div>'; return; }
+  let h='<table><thead><tr><th>NO</th><th>작업자</th><th>생성 수준</th></tr></thead><tbody>';
+  SEL.forEach((op,i)=>{
+    if(!ALV[op.employee_id]) ALV[op.employee_id]=pickPass();
+    h+='<tr><td>'+(i+1)+'</td><td style="text-align:left">'+esc(op.name)+
+      ' <small style="color:#888">'+esc(op.employee_id)+'</small></td>'+
+      '<td><select data-alv="'+esc(op.employee_id)+'">'+lvOpts.map(k=>
+        '<option value="'+k+'"'+(ALV[op.employee_id]===k?' selected':'')+'>'+k+' · '+ALEVELS[k].desc+'</option>').join('')+
+      '</select></td></tr>';
+  });
+  $('admAOps').innerHTML=h+'</tbody></table>';
+  $('admAOps').querySelectorAll('select[data-alv]').forEach(s=>{
+    s.onchange=()=>{ ALV[s.dataset.alv]=s.value; };
+  });
+}
+function admASetAll(v){
+  if(!v) return;
+  SEL.forEach(op=>{ ALV[op.employee_id]= v==='rand'?pickPass():v; });
+  $('admAAll').value=''; admARender();
+}
+function admARandom(){
+  SEL.forEach(op=>{ ALV[op.employee_id]=pickPass(); });
+  admARender(); toast('수준을 무작위로 재배정했습니다');
+}
+function shuf(a){ for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+/* 한 작업자 판정 생성 — 실제 판정식(calcAtt)과 같은 분모로 허용 오판 수를 계산 */
+function admAGenOp(lv,n,t,C){
+  const okIdx=[],ngIdx=[]; REFS.forEach((v,i)=>(v==='OK'?okIdx:ngIdx).push(i));
+  const dFa=C.mode==='eval'?okIdx.length*t:okIdx.length;
+  const dMs=C.mode==='eval'?ngIdx.length*t:ngIdx.length;
+  const tot=n*t, eps=1e-9;
+  const maxFa=dFa?Math.floor(C.cFa*dFa+eps):0, maxMs=dMs?Math.floor(C.cMs*dMs+eps):0;
+  const maxErr=Math.floor((1-C.cE)*tot+eps);
+  let nFa=0,nMs=0;
+  const L=ALEVELS[lv];
+  if(L.f){
+    const fr=L.f[0]+Math.random()*(L.f[1]-L.f[0]);
+    let budget=Math.min(maxErr, maxFa+maxMs), want=Math.round(budget*fr);
+    if(lv==='양호' && budget>=2) want=Math.max(1,Math.min(want,budget-1));
+    for(let k=0;k<want;k++){
+      const canF=nFa<maxFa, canM=nMs<maxMs;
+      if(canF&&canM) (Math.random()<0.6?nFa++:nMs++); else if(canF) nFa++; else if(canM) nMs++;
+    }
+  }else{
+    /* 불합격: 가능한 기준 하나를 확실히 넘김 */
+    const opts=[];
+    if(ngIdx.length && maxMs+1<=ngIdx.length*t) opts.push('m');
+    if(okIdx.length && maxFa+1<=okIdx.length*t) opts.push('f');
+    const o=opts[Math.floor(Math.random()*opts.length)];
+    if(o==='m') nMs=maxMs+1+Math.floor(Math.random()*2);
+    else if(o==='f') nFa=maxFa+1+Math.floor(Math.random()*2);
+    nMs=Math.min(nMs,ngIdx.length*t); nFa=Math.min(nFa,okIdx.length*t);
+  }
+  const res={}; for(let tr=1;tr<=t;tr++) res[tr]=REFS.slice();
+  const cells=idx=>{ const c=[]; for(let tr=1;tr<=t;tr++) idx.forEach(i=>c.push([tr,i])); return shuf(c); };
+  cells(okIdx).slice(0,nFa).forEach(([tr,i])=>res[tr][i]='NG');
+  cells(ngIdx).slice(0,nMs).forEach(([tr,i])=>res[tr][i]='OK');
+  const hit=tot-nFa-nMs, E=hit/tot, Pfa=dFa?nFa/dFa:0, Pms=dMs?nMs/dMs:0;
+  return {res, hit, tot, fa:nFa, ms:nMs, E, Pfa, Pms, pass:E>=C.cE&&Pfa<=C.cFa&&Pms<=C.cMs};
+}
+function admAGenerate(){
+  if(!SEL.length) return toast('먼저 인원을 선택하세요');
+  const n=nSamp(), t=nTri(), C=admACrit();
+  if($('admARef').value==='half' || REFS.length!==n){ if(REFS.length!==n) initRefs(); refHalf(); }
+  if(!REFS.some(v=>v==='OK') || !REFS.some(v=>v==='NG')) toast('참값에 OK·NG가 모두 있어야 오판 생성이 가능합니다');
+  const out=[];
+  SEL.forEach((op,i)=>{
+    const lv=ALV[op.employee_id]||pickPass();
+    const g=admAGenOp(lv,n,t,C);
+    ANS[op.employee_id]=g.res;
+    out.push({no:i+1,op,lv,g});
+  });
+  renderAttInput(); admAPreview(out);
+  toast(out.length+'명 계수형 데이터를 생성했습니다');
+}
+function admAPreview(out){
+  const box=$('admAPreview');
+  if(!out.length){ box.innerHTML=''; return; }
+  let h='<table><thead><tr><th>NO</th><th>작업자</th><th>생성 수준</th><th>일치수</th>'+
+    '<th>FALSE<br>(OK→NG)</th><th>MISS<br>(NG→OK)</th><th>E</th><th>PFA</th><th>PMISS</th><th>판정</th></tr></thead><tbody>';
+  out.forEach(o=>{ const g=o.g;
+    h+='<tr><td>'+o.no+'</td><td style="text-align:left">'+esc(o.op.name)+'</td><td>'+o.lv+'</td>'+
+      '<td><b>'+g.hit+'</b> / '+g.tot+'</td><td>'+g.fa+'</td><td>'+g.ms+'</td>'+
+      '<td>'+g.E.toFixed(3)+'</td><td>'+g.Pfa.toFixed(3)+'</td><td>'+g.Pms.toFixed(3)+'</td>'+
+      '<td>'+(g.pass?'<span class="pill p-ok">합격</span>':'<span class="pill p-ng">불합격</span>')+'</td></tr>';
+  });
+  box.innerHTML=h+'</tbody></table><p class="note">계수형 탭에서 평가명·공정·평가일을 확인한 뒤 저장하세요.</p>';
+}
+function admAClear(){
+  SEL.forEach(op=>{ delete ANS[op.employee_id]; });
+  renderAttInput(); admAPreview([]); toast('생성 데이터를 삭제했습니다');
+}
+
 function admClear(){
   autoGroups().forEach((mem,i)=>{
     mem.forEach(op=>{ delete VD[op.employee_id]; });
@@ -2847,7 +2995,20 @@ const SUB={
 '엑셀 모듈을 못 불러와 CSV로 저장했습니다':'Sin módulo Excel: se guardó como CSV',
 '붙여넣을 내용이 없습니다':'No hay contenido que pegar','줄 적용':' líneas aplicadas',
 '데이터를 지웠습니다':': datos borrados','비밀번호가 올바르지 않습니다':'Contraseña incorrecta',
-'관리자 모드':'Modo administrador','수준을 무작위로 재배정했습니다':'Niveles reasignados al azar',
+'관리자 모드':'Modo administrador',
+'계수형 시험데이터 생성':'Generador de datos Atributos','시료 참값 (Referencia)':'Referencia',
+'현재 참값 유지':'Mantener referencia actual','OK/NG 반반 무작위로 새로':'Nueva: mitad OK/NG al azar',
+'전체 수준 일괄 (Nivel global)':'Nivel global','무작위 (합격 수준)':'Al azar (niveles aprobados)',
+'현재 조건':'Condiciones actuales','작업자별 생성 수준':'Nivel por operador',
+'인원을 선택하면 작업자가 표시됩니다':'Seleccione personal para ver operadores',
+'전체 작업자 데이터 생성':'Generar datos de todos','오판 없음':'sin errores',
+'허용 오판의 일부':'parte de los errores permitidos','허용 한도 근처':'cerca del límite permitido',
+'기준 초과(테스트용)':'excede el criterio (prueba)','불합격':'Rechazado',
+'명 계수형 데이터를 생성했습니다':' operadores generados (Atributos)',
+'참값에 OK·NG가 모두 있어야 오판 생성이 가능합니다':'La referencia debe tener OK y NG para generar errores',
+'계수형 탭에서 평가명·공정·평가일을 확인한 뒤 저장하세요.':'Verifique título, proceso y fecha en la pestaña Atributos y guarde.',
+'전체선택':'Seleccionar todo','명 전체선택':' seleccionados',
+'추가로 선택할 인원이 없습니다':'No hay más personal para seleccionar','수준을 무작위로 재배정했습니다':'Niveles reasignados al azar',
 '개 조 데이터를 생성했습니다':' grupos generados','생성 데이터를 삭제했습니다':'Datos generados borrados',
 '먼저 인원을 선택하세요':'Seleccione personal primero',
 '기준값과 공차를 입력하세요':'Capture el valor nominal y la tolerancia',
