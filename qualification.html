@@ -556,6 +556,7 @@ function _csFiltered(){
   const only=document.getElementById('csOnlyEmpty')?.checked;
   const seen={};
   return students.filter(s=>(s.name||s.empId)).filter(s=>{const e=String(s.empId||s.name);if(seen[e])return false;seen[e]=1;return true;})
+    .sort((a,b)=>String(a.empId||'').localeCompare(String(b.empId||''),undefined,{numeric:true}))
     .filter(s=>!q||String(s.name||'').toLowerCase().includes(q)||String(s.empId||'').toLowerCase().includes(q))
     .filter(s=>!pr||(s.process||'')===pr)
     .filter(s=>{if(!only)return true;const c=_csScores(s.empId||s.name);
@@ -6524,7 +6525,12 @@ function renderResults(){
   document.getElementById('stat-rate').textContent=((passN/total)*100).toFixed(0)+'%';
   // ✅ 최종판정(퇴사·MSA 연계) 조회 헬퍼
   const getFS=r=>finalStatusMap[r._sbId]||null;
-  let sorted=[...results].sort((a,b)=>b.totalScore-a.totalScore);
+  // ✅ 사번순 정렬 (2026-10-27)
+  const _empCmp=(a,b)=>String(a.empId||'').localeCompare(String(b.empId||''),undefined,{numeric:true})||(new Date(a.date||0)-new Date(b.date||0));
+  // ✅ 최종합격한 사번의 불합격·판정대기 내역은 숨김 (2026-10-27)
+  const _stOf=r=>{const fs=getFS(r);return fs?fs.final_status:(r.passed?'최종합격':'불합격');};
+  const _finalEmp=new Set(results.filter(r=>r.empId&&_stOf(r)==='최종합격').map(r=>String(r.empId)));
+  let sorted=results.filter(r=>!(r.empId&&_finalEmp.has(String(r.empId))&&_stOf(r)!=='최종합격'&&_stOf(r)!=='퇴사')).sort(_empCmp);
   // ✅ 필터 적용: all(전체) | final(최종합격만) | fail(불합격만) | resigned(퇴사만)
   if(resultFilter!=='all'){
     sorted=sorted.filter(r=>{
@@ -6562,12 +6568,12 @@ function renderResults(){
         <option value="reeval" ${resultFilter==='reeval'?'selected':''}>🔄 MSA 재평가통과(개선) / Mejorados tras reeval</option>
         <option value="resigned" ${resultFilter==='resigned'?'selected':''}>🚪 퇴사자만 / Bajas</option>
       </select>
-      <span style="font-size:0.74rem;color:var(--text2)">${sorted.length}건 표시 / ${results.length}건 전체</span>
+      <span style="font-size:0.74rem;color:var(--text2)">${sorted.length}건 표시 / ${results.length}건 전체 · 사번순 (최종합격자의 불합격 내역 숨김)</span>
     </div>
     <table class="results-table">
     <thead><tr>
       <th><input type="checkbox" id="chkAll" onchange="toggleAllCheck(this)" style="width:auto;cursor:pointer"></th>
-      <th><span data-kr="순위" data-es="Rank">순위</span></th>
+      <th><span data-kr="No." data-es="No.">No.</span></th>
       <th><span data-kr="이름" data-es="Nombre"><span data-kr="이름" data-es="Nombre">이름</span></span></th>
       <th><span data-kr="사번" data-es="N°Emp">사번</span></th>
       <th><span data-kr="공정" data-es="Proceso">공정</span></th>
