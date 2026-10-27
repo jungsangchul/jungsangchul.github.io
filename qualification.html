@@ -321,12 +321,14 @@ function perfUpdateSum(){
   if(el)el.innerHTML=`<div style="display:flex;gap:1rem;flex-wrap:wrap;align-items:center">
     ${r.cat.map((c,ci)=>c.mx?`<span style="font-size:.78rem;color:var(--text2,#aaa)">${es?PERF_CATS[ci].es:PERF_CATS[ci].kr} <b style="color:var(--text,#eee)">${c.got}/${c.mx}</b></span>`:'').join('')}
     <span style="margin-left:auto;font-size:.85rem">${es?'Suma':'원점수'} <b>${r.sum}/${r.s.max}</b> → <b style="color:var(--purple,#9b7ee8);font-size:1.1rem">${r.conv}</b> / ${_perfCtx.itemMax}${es?' pts':'점'}</span>
-    <span style="font-size:.72rem;color:${r.filled===r.s.items.length?'var(--green,#2ecc7a)':'var(--gold,#e2c46a)'}">${es?'Evaluado':'입력'} ${r.filled}/${r.s.items.length}</span></div>`;
+    <span style="font-size:.72rem;color:${r.filled===r.s.items.length?'var(--green,#2ecc7a)':'var(--gold,#e2c46a)'}">${es?'Evaluado':'입력'} ${r.filled}/${r.s.items.length}</span></div>
+    ${_perfCtx.evalMode&&_perfCtx.eid&&_perfCtx.prev?`<div style="font-size:.74rem;color:var(--text2,#999);margin-top:.35rem;text-align:right">📌 ${es?'Anterior':'이전 평가'} ${_perfEsc(_perfCtx.prev.r.date||'')}: ${_perfCtx.prev.item.sheet?`${es?'puntaje':'원점수'} ${_perfCtx.prev.item.sheet.sum}/${_perfCtx.prev.item.sheet.max} → `:''}<b>${_perfCtx.prev.item.score}</b> / ${_perfCtx.prev.item.max||_perfCtx.itemMax}</div>`:''}`;
 }
 function renderPerfSheet(){
   const m=document.getElementById('perfSheetModal');if(!m||!_perfCtx)return;
   const es=_perfIsEs();const ctx=_perfCtx;const s=perfSheetByKey(ctx.key);
   const sc=ctx.scores||s.items.map(()=>null);
+  const _pvS=ctx.evalMode&&ctx.eid&&ctx.prev&&ctx.prev.item.sheet&&ctx.prev.item.sheet.key===s.key?ctx.prev.item.sheet:null;
   let lastC=-1;
   const rows=s.items.map((x,j)=>{
     const head=x.c!==lastC?`<tr><td colspan="4" style="background:rgba(201,168,76,.12);color:var(--sky,#c9a84c);font-weight:700;font-size:.8rem;padding:.45rem .6rem">${x.c+1}) ${es?PERF_CATS[x.c].es:PERF_CATS[x.c].kr}</td></tr>`:'';
@@ -338,7 +340,7 @@ function renderPerfSheet(){
       <td style="padding:.5rem .6rem;vertical-align:top;width:26%"><div style="font-weight:700;font-size:.85rem">${_perfEsc(es?x.es:x.kr)}</div><div style="font-size:.72rem;color:var(--text2,#999)">${_perfEsc(es?x.kr:x.es)}</div></td>
       <td style="padding:.5rem .6rem;font-size:.78rem;color:var(--text2,#bbb);line-height:1.45">${_perfEsc(es&&x.des?x.des:x.dkr)}</td>
       <td style="padding:.5rem .4rem;text-align:center;font-family:'JetBrains Mono',monospace;font-weight:700;white-space:nowrap">${x.pts}</td>
-      <td style="padding:.5rem .6rem;white-space:nowrap">${ctx.viewOnly?'':`<div style="display:flex;gap:.25rem;align-items:center">${btns}<input type="number" min="0" max="${x.pts}" step="0.5" value="${v==null?'':v}" oninput="perfSetScore(${j},this.value)" style="width:56px;text-align:center;padding:.25rem"></div>`}</td></tr>`;
+      <td style="padding:.5rem .6rem;white-space:nowrap">${ctx.viewOnly?'':`<div style="display:flex;gap:.25rem;align-items:center">${btns}<input type="number" min="0" max="${x.pts}" step="0.5" value="${v==null?'':v}" oninput="perfSetScore(${j},this.value)" style="width:56px;text-align:center;padding:.25rem"></div>`}${_pvS&&_pvS.scores&&_pvS.scores[j]!=null?`<div class="perf-prev-item">${es?'anterior':'이전'} ${_pvS.scores[j]}</div>`:''}</td></tr>`;
   }).join('');
   m.innerHTML=`<div style="background:var(--surface,#141414);border:1px solid var(--border,#2a2a2a);border-radius:10px;width:min(980px,100%);padding:1.1rem 1.2rem;color:var(--text,#eee)">
     <div style="display:flex;justify-content:space-between;align-items:center;gap:.6rem;flex-wrap:wrap;margin-bottom:.7rem">
@@ -383,19 +385,23 @@ function applyPerfSheet(){
 function printPerfSheet(){
   if(!_perfCtx)return;
   const r=perfCalc();const s=r.s;const filled=r.filled>0;
+  const _ctx=_perfCtx, _st=_ctx.evalMode&&_ctx.eid?_perfEvalList().find(x=>String(x.empId||x.name)===_ctx.eid):null;
+  const _pv=_ctx.evalMode&&_ctx.eid?_ctx.prev:null, _pvS=_pv&&_pv.item.sheet&&_pv.item.sheet.key===s.key?_pv.item.sheet:null;
+  const _ncol=_pvS?5:4;
   let lastC=-1;
   const rows=s.items.map((x,j)=>{
-    const h=x.c!==lastC?`<tr><td colspan="4" class="cat">${x.c+1}) ${PERF_CATS[x.c].kr} / ${PERF_CATS[x.c].es}</td></tr>`:'';lastC=x.c;
-    return h+`<tr><td><b>${_perfEsc(x.kr)}</b><br><small>${_perfEsc(x.es)}</small></td><td>${_perfEsc(x.dkr)}<br><small>${_perfEsc(x.des)}</small></td><td class="c">${x.pts}</td><td class="c">${filled&&r.sc[j]!=null?r.sc[j]:''}</td></tr>`;
+    const h=x.c!==lastC?`<tr><td colspan="${_ncol}" class="cat">${x.c+1}) ${PERF_CATS[x.c].kr} / ${PERF_CATS[x.c].es}</td></tr>`:'';lastC=x.c;
+    return h+`<tr><td><b>${_perfEsc(x.kr)}</b><br><small>${_perfEsc(x.es)}</small></td><td>${_perfEsc(x.dkr)}<br><small>${_perfEsc(x.des)}</small></td><td class="c">${x.pts}</td>${_pvS?`<td class="c" style="color:#666">${_pvS.scores&&_pvS.scores[j]!=null?_pvS.scores[j]:''}</td>`:''}<td class="c">${filled&&r.sc[j]!=null?r.sc[j]:''}</td></tr>`;
   }).join('');
   const w=window.open('','_blank');if(!w){alert('팝업 차단을 해제해주세요.');return;}
   w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>작업수행평가 체크시트 - ${_perfEsc(s.kr)}</title>
   <style>body{font-family:'Malgun Gothic',sans-serif;margin:16px;color:#111}h2{margin:0 0 4px;font-size:18px}table{width:100%;border-collapse:collapse;font-size:11.5px}td,th{border:1px solid #555;padding:5px 6px;vertical-align:top}th{background:#eee}.c{text-align:center;width:52px}.cat{background:#f3ead0;font-weight:700}small{color:#555}.info td{border:1px solid #555;height:22px}@media print{button{display:none}}</style></head><body>
   <h2>작업수행평가 체크시트 · Hoja de evaluación de desempeño — ${_perfEsc(s.kr)} / ${_perfEsc(s.es)}</h2>
   <div style="font-size:11px;margin-bottom:8px">YURA HARNESS MÉXICO · 가공생산팀 1공장 · M-039-R4 · 원점수 ${s.max}점 → ${_perfCtx.itemMax}점 환산</div>
-  <table class="info" style="margin-bottom:8px"><tr><td style="width:12%">성명/Nombre</td><td></td><td style="width:12%">사번/No.</td><td></td><td style="width:12%">평가일/Fecha</td><td></td><td style="width:12%">평가자/Evaluador</td><td></td></tr></table>
-  <table><thead><tr><th style="width:22%">항목 / Ítem</th><th>세부 평가 항목 / Detalle</th><th class="c">배점</th><th class="c">점수</th></tr></thead><tbody>${rows}
-  <tr><td colspan="2" style="text-align:right;font-weight:700">합계 / Total (원점수 → 환산)</td><td class="c">${s.max}</td><td class="c">${filled?r.sum+' → '+r.conv:''}</td></tr></tbody></table>
+  <table class="info" style="margin-bottom:8px"><tr><td style="width:12%">성명/Nombre</td><td>${_st?_perfEsc(_st.name||''):''}</td><td style="width:12%">사번/No.</td><td>${_st?_perfEsc(_st.empId||''):''}</td><td style="width:12%">평가일/Fecha</td><td>${_st?new Date().toISOString().slice(0,10):''}</td><td style="width:12%">평가자/Evaluador</td><td></td></tr>
+  ${_st?`<tr><td>평가구분</td><td colspan="3">${_perfEsc(roundName(_activeFor(_st.empId)))}</td><td>이전 평가</td><td colspan="3">${_pv?`${_perfEsc(_pv.r.date||'')} · ${_perfEsc(roundName(_pv.r.evalRound))} · 작업수행 <b>${_pv.item.score}</b>/${_pv.item.max||_ctx.itemMax}${_pv.item.sheet?` (원점수 ${_pv.item.sheet.sum}/${_pv.item.sheet.max})`:''}`:'없음'}</td></tr>`:''}</table>
+  <table><thead><tr><th style="width:22%">항목 / Ítem</th><th>세부 평가 항목 / Detalle</th><th class="c">배점</th>${_pvS?'<th class="c">이전</th>':''}<th class="c">점수</th></tr></thead><tbody>${rows}
+  <tr><td colspan="2" style="text-align:right;font-weight:700">합계 / Total (원점수 → 환산)</td><td class="c">${s.max}</td>${_pvS?`<td class="c" style="color:#666">${_pvS.sum}</td>`:''}<td class="c">${filled?r.sum+' → '+r.conv:''}</td></tr></tbody></table>
   <button onclick="print()" style="margin-top:10px;padding:6px 14px">인쇄 / Imprimir</button></body></html>`);
   w.document.close();
 }
@@ -459,15 +465,144 @@ function _csItemIdx(){
   const df=practicalItems.findIndex((it,i)=>i!==pf&&i!==cr&&/불량|판별|defect/i.test(it.name||''));
   return{pf,cr,df};
 }
+// ════ 평가구분(회차) (2026-10-27) ════
+//  · evalRounds: [{id,name,type:'new'|'regular'|'re'|'etc',cohort:'YYYY-MM'}]  (exam_config.evalRounds)
+//  · activeRound: 현재 평가구분 id ('' = 미지정: 먼저 평가하고 나중에 일괄 지정)  (exam_config.activeRound — 모든 PC·모바일 응시 공통)
+var evalRounds=[], activeRound='', _hasRoundCol=true;
+const ROUND_TYPES={new:'신입사원평가',regular:'정기평가',re:'재평가',etc:'기타'};
+function _roundById(id){return evalRounds.find(x=>x.id===id)||null;}
+function roundName(id){if(!id)return'미지정';const r=_roundById(id);return r?r.name:id;}
+function roundShort(id){if(!id)return'미지정';const r=_roundById(id);if(!r)return id;if(r.type==='new'&&r.cohort)return'신입 '+r.cohort.slice(2).replace('-','.')+'월';return r.name.length>14?r.name.slice(0,13)+'…':r.name;}
+function _sortedRounds(){
+  const ord={new:0,regular:1,re:2,etc:3};
+  return [...evalRounds].sort((a,b)=>(ord[a.type]??9)-(ord[b.type]??9)||String(b.cohort||b.id).localeCompare(String(a.cohort||a.id)));
+}
+function _empCohort(eid){
+  const m=/^M0(\d{2})(\d{2})/.exec(String(eid||''));if(m)return'20'+m[1]+'-'+m[2];
+  const st=(typeof students!=='undefined'?students:[]).find(x=>String(x.empId)===String(eid));
+  return st&&/^\d{4}-\d{2}/.test(st.hireDate||'')?st.hireDate.slice(0,7):'';
+}
+function _roundApplies(id,eid){const r=_roundById(id);if(!r||r.type!=='new'||!r.cohort)return true;return _empCohort(eid)===r.cohort;}
+function _activeFor(eid){return activeRound&&_roundApplies(activeRound,eid)?activeRound:'';}
+function _activeCohort(){const r=_roundById(activeRound);return r&&r.type==='new'&&r.cohort?r.cohort:'';}
+function _inScope(r){return (r.evalRound||'')===_activeFor(r.empId);}
+function _recSort(a,b){return (new Date(b.date||0)-new Date(a.date||0))||((b.timestamp||0)-(a.timestamp||0));}
+// 이전 평가: 현재 평가구분 밖의 기록 중 작업수행이 입력된 최신 기록
+function _prevPerf(eid){
+  const rs=results.filter(r=>String(r.empId)===String(eid)&&!_inScope(r)).sort(_recSort);
+  for(const r of rs){const it=(r.practicalItemScores||[]).find(x=>isPerfItem(x)&&!x.na);if(it)return{r,item:it};}
+  return null;
+}
+function roundBarHtml(){
+  const cnt={};results.forEach(r=>{const k=r.evalRound||'';cnt[k]=(cnt[k]||0)+1;});
+  const coh=_activeCohort();
+  const nTarget=coh?(typeof students!=='undefined'?students:[]).filter(st=>_empCohort(st.empId)===coh).length:null;
+  return `<div class="round-bar">
+    <span class="round-bar-lbl">🏷️ 평가구분</span>
+    <select onchange="setActiveRound(this.value)" title="지금 진행하는 평가 — 저장되는 모든 점수(이론 모바일 응시·작업수행·MSA)에 이 평가구분이 붙습니다">
+      <option value="" ${!activeRound?'selected':''}>미지정 — 먼저 평가 후 결과 이력에서 일괄 지정</option>
+      ${_sortedRounds().map(r=>`<option value="${_perfEsc(r.id)}" ${r.id===activeRound?'selected':''}>${_perfEsc(r.name)} (${cnt[r.id]||0}건)</option>`).join('')}
+    </select>
+    <button type="button" class="btn btn-secondary btn-sm" onclick="openRoundEditor()">＋ 새 평가구분</button>
+    <span class="round-bar-info">${activeRound?(coh?`대상: <b>${coh.replace('-','년 ')}월 입사자 ${nTarget}명</b> · `:'')+'이 평가구분 기록만 표시·저장':'평가구분 없이 저장 (미지정 '+(cnt['']||0)+'건)'}</span>
+  </div>`;
+}
+function renderRoundBars(){document.querySelectorAll('.round-bar-slot').forEach(el=>{el.innerHTML=roundBarHtml();});}
+function _roundRefreshAll(){
+  renderRoundBars();
+  try{if(document.getElementById('practicalCardList'))renderPracticalCardList();}catch(e){}
+  try{renderResults();}catch(e){}
+  try{if(_perfCtx&&_perfCtx.evalMode){_perfCtx.eid=null;_perfCtx.scores=null;_perfCtx.prev=null;renderPerfSheet();}}catch(e){}
+}
+async function setActiveRound(id){
+  if(id&&!_hasRoundCol){alert('먼저 Supabase에서 qualification_eval_round.sql 을 실행해주세요.');renderRoundBars();return;}
+  activeRound=id||'';
+  _roundRefreshAll();
+  try{await sbSaveConfig({activeRound});_showSaveToast('🏷️ 현재 평가구분: '+roundName(activeRound)+' (모든 PC·모바일 응시 공통)');}
+  catch(e){alert('⚠️ 평가구분 서버 저장 실패: '+e.message);}
+}
+async function _saveRounds(){await sbSaveConfig({evalRounds:JSON.stringify(evalRounds)});}
+function openRoundEditor(){
+  let m=document.getElementById('roundEditModal');
+  if(!m){m=document.createElement('div');m.id='roundEditModal';m.className='rnd-modal';m.addEventListener('click',e=>{if(e.target===m)m.style.display='none';});document.body.appendChild(m);}
+  const now=new Date();const ym=now.toISOString().slice(0,7);
+  const half=now.getMonth()<6?'상반기':'하반기';
+  const cnt={};results.forEach(r=>{const k=r.evalRound||'';cnt[k]=(cnt[k]||0)+1;});
+  m.innerHTML=`<div class="rnd-box">
+    <div class="rnd-head"><b>🏷️ 평가구분 관리</b><button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('roundEditModal').style.display='none'">✕ 닫기</button></div>
+    <div class="rnd-sec">
+      <div class="rnd-title">＋ 새 평가구분</div>
+      <div class="rnd-grid">
+        <label>종류</label>
+        <select id="rndType" onchange="_rndTypeChg()">
+          <option value="new">신입사원평가 (입사월 지정)</option>
+          <option value="regular">정기평가</option>
+          <option value="re">재평가</option>
+          <option value="etc">기타</option>
+        </select>
+        <label id="rndCohortLbl">입사월</label><input type="month" id="rndCohort" value="${ym}" oninput="_rndTypeChg(true)">
+        <label>이름</label><input type="text" id="rndName" placeholder="평가구분 이름">
+      </div>
+      <label style="display:flex;gap:.4rem;align-items:center;margin:.55rem 0 0;font-size:.8rem;color:var(--text2)"><input type="checkbox" id="rndActivate" checked style="width:auto"> 만든 뒤 현재 평가구분으로 설정</label>
+      <div style="text-align:right;margin-top:.6rem"><button type="button" class="btn btn-primary btn-sm" onclick="createRound()">＋ 만들기</button></div>
+      <div style="font-size:.72rem;color:var(--text2);margin-top:.3rem">신입사원평가는 선택한 입사월(사번 M0YYMM…) 인원만 평가 대상에 표시됩니다. 정기평가 예: 정기평가 ${now.getFullYear()}년 ${half}</div>
+    </div>
+    <div class="rnd-sec">
+      <div class="rnd-title">등록된 평가구분</div>
+      ${evalRounds.length?`<table class="results-table"><thead><tr><th>종류</th><th>이름</th><th>기록</th><th></th></tr></thead><tbody>
+      ${_sortedRounds().map(r=>`<tr><td style="font-size:.76rem;color:var(--text2)">${ROUND_TYPES[r.type]||r.type}${r.cohort?' · '+r.cohort:''}</td>
+        <td><input type="text" value="${_perfEsc(r.name)}" onchange="renameRound('${_perfEsc(r.id)}',this.value)" style="min-width:220px"></td>
+        <td style="font-family:'JetBrains Mono',monospace">${cnt[r.id]||0}건</td>
+        <td>${cnt[r.id]?'':`<button type="button" class="btn btn-danger btn-sm" onclick="deleteRound('${_perfEsc(r.id)}')">삭제</button>`}</td></tr>`).join('')}
+      </tbody></table>`:'<div style="color:var(--text2);font-size:.8rem">없음</div>'}
+    </div></div>`;
+  m.style.display='flex';
+  _rndTypeChg();
+}
+function _rndTypeChg(keepType){
+  const t=document.getElementById('rndType').value, c=document.getElementById('rndCohort'), n=document.getElementById('rndName');
+  const isNew=t==='new';c.style.display=isNew?'':'none';document.getElementById('rndCohortLbl').style.display=isNew?'':'none';
+  const now=new Date(),d=now.toISOString().slice(0,10);
+  if(isNew){const v=c.value||now.toISOString().slice(0,7);n.value=`신입사원평가 ${v.slice(0,4)}년 ${parseInt(v.slice(5,7),10)}월 입사자`;}
+  else if(!keepType)n.value=t==='regular'?`정기평가 ${now.getFullYear()}년 ${now.getMonth()<6?'상반기':'하반기'}`:t==='re'?`재평가 ${d}`:'';
+}
+async function createRound(){
+  if(!_hasRoundCol){alert('먼저 Supabase에서 qualification_eval_round.sql 을 실행해주세요.');return;}
+  const t=document.getElementById('rndType').value, coh=document.getElementById('rndCohort').value, name=document.getElementById('rndName').value.trim();
+  if(!name){alert('이름을 입력해주세요.');return;}
+  let id;
+  if(t==='new'){if(!/^\d{4}-\d{2}$/.test(coh)){alert('입사월을 선택해주세요.');return;}id='NEW-'+coh;}
+  else id=({regular:'REG',re:'RE',etc:'ETC'}[t])+'-'+new Date().toISOString().slice(0,10).replace(/-/g,'')+'-'+Math.random().toString(36).slice(2,6).toUpperCase();
+  if(_roundById(id)){alert('이미 있는 평가구분입니다: '+roundName(id));return;}
+  evalRounds.push(t==='new'?{id,name,type:t,cohort:coh}:{id,name,type:t});
+  try{await _saveRounds();}catch(e){alert('⚠️ 서버 저장 실패: '+e.message);return;}
+  if(document.getElementById('rndActivate').checked)await setActiveRound(id);else _roundRefreshAll();
+  openRoundEditor();
+  return id;
+}
+async function renameRound(id,name){const r=_roundById(id);if(!r||!name.trim())return;r.name=name.trim();try{await _saveRounds();_roundRefreshAll();}catch(e){alert('⚠️ 서버 저장 실패: '+e.message);}}
+async function deleteRound(id){
+  if(results.some(r=>r.evalRound===id)){alert('기록이 있는 평가구분은 삭제할 수 없습니다.');return;}
+  if(!confirm(roundName(id)+' 평가구분을 삭제할까요?'))return;
+  evalRounds=evalRounds.filter(r=>r.id!==id);if(activeRound===id)await setActiveRound('');
+  try{await _saveRounds();}catch(e){alert('⚠️ 서버 저장 실패: '+e.message);}
+  _roundRefreshAll();openRoundEditor();
+}
+function _applyRoundCfg(cfgObj){
+  try{const a=JSON.parse(cfgObj.evalRounds||'[]');if(Array.isArray(a))evalRounds=a;}catch(e){}
+  if(cfgObj.activeRound!=null)activeRound=cfgObj.activeRound||'';
+  try{renderRoundBars();}catch(e){}
+}
+
 // ✅ 작업수행능력평가까지 입력돼 합격한 기록 (2026-10-27)
 function _isDoneRec(r){const pf=(r.practicalItemScores||[]).find(x=>/작업수행|desempe/i.test(x.name||''));return !!(r.passed&&pf&&!pf.na);}
 function _latestResult(eid){
-  const rs=results.filter(r=>String(r.empId)===String(eid));
+  const rs=results.filter(r=>String(r.empId)===String(eid)&&_inScope(r));
   rs.sort((a,b)=>(new Date(b.date||0)-new Date(a.date||0))||((b.timestamp||0)-(a.timestamp||0)));
   // 작업수행까지 입력돼 합격한 기록이 있으면 그 기록 우선 (이후 이론만 있는 기록보다 우선)
   return rs.find(_isDoneRec)||rs[0]||null;
 }
-function _hasTheory(r){return !!r&&((parseFloat(r.theoryRawMax)||0)>0||(parseFloat(r.theoryWeighted)||0)>0||(r.details||[]).length>0);}
+function _hasTheory(r){if(!r)return false;const mx=r._thMax0!==undefined?r._thMax0:r.theoryRawMax;return (parseFloat(mx)||0)>0||(parseFloat(r.theoryWeighted)||0)>0||(r.details||[]).length>0;}
 function _findItem(r,item){if(!r||!item)return null;return (r.practicalItemScores||[]).find(x=>x.name===item.name)||null;}
 function _csScores(eid){
   const r=_latestResult(eid), pt=pendingTheory[eid], ix=_csItemIdx();
@@ -489,13 +624,13 @@ async function upsertScores(eid,patch){
       process:st.process||'',hireDate:st.hireDate||'',date:document.getElementById('examDate')?.value||new Date().toISOString().slice(0,10),
       theoryRaw:0,theoryRawMax:0,theoryWeighted:0,theoryPct:cfg.theoryPct,
       practicalRaw:0,practicalMax:cfg.practicalMax,practicalWeighted:0,practicalPct:cfg.practicalPct,
-      totalScore:0,correct:0,details:[],practicalItemScores:[],passed:false,timestamp:Date.now()};
+      totalScore:0,correct:0,details:[],practicalItemScores:[],passed:false,timestamp:Date.now(),evalRound:_activeFor(st.empId||String(eid)),_thMax0:0};
     results.push(r);
   }
   if(patch.theoryW!=null){
     const rawMax=(questions.length*cfg.pointsPerQ)||100;
     const w=Math.max(0,Math.min(cfg.theoryPct,parseFloat(patch.theoryW)||0));
-    r.theoryWeighted=_r1(w);r.theoryPct=cfg.theoryPct;r.theoryRawMax=rawMax;
+    r.theoryWeighted=_r1(w);r.theoryPct=cfg.theoryPct;r.theoryRawMax=rawMax;r._thMax0=rawMax;
     r.theoryRaw=_r1(w/cfg.theoryPct*rawMax);r.correct=Math.round(r.theoryRaw/cfg.pointsPerQ);
   }
   if(patch.items&&patch.items.length){
@@ -519,10 +654,10 @@ async function upsertScores(eid,patch){
 // 모바일 이론 결과(나중 생성)와 실습만 입력된 결과(먼저 생성)가 따로 있으면 하나로 합침
 function _csMergeSplit(){
   const by={};
-  results.forEach(r=>{(by[String(r.empId)]=by[String(r.empId)]||[]).push(r);});
-  Object.keys(by).forEach(eid=>{
-    const list=by[eid];if(list.length<2)return;
-    const th=_latestResult(eid);
+  results.forEach(r=>{const k=String(r.empId)+'|'+(r.evalRound||'');(by[k]=by[k]||[]).push(r);});
+  Object.keys(by).forEach(k=>{
+    const list=by[k];if(list.length<2)return;
+    const th=[...list].sort(_recSort)[0];
     if(!_hasTheory(th)||(th.practicalItemScores||[]).length)return;
     const po=list.find(x=>x!==th&&!_hasTheory(x)&&(x.practicalItemScores||[]).length);
     if(!po)return;
@@ -558,7 +693,9 @@ function _csFiltered(){
   const pr=document.getElementById('csProc')?.value||'';
   const only=document.getElementById('csOnlyEmpty')?.checked;
   const seen={};
+  const coh=_activeCohort();
   return students.filter(s=>(s.name||s.empId)).filter(s=>{const e=String(s.empId||s.name);if(seen[e])return false;seen[e]=1;return true;})
+    .filter(s=>!coh||_empCohort(s.empId)===coh)
     .sort((a,b)=>String(a.empId||'').localeCompare(String(b.empId||''),undefined,{numeric:true}))
     .filter(s=>!q||String(s.name||'').toLowerCase().includes(q)||String(s.empId||'').toLowerCase().includes(q))
     .filter(s=>!pr||(s.process||'')===pr)
@@ -607,7 +744,7 @@ function renderPracticalCardList(){
     return`<div class="cs-card${dirty?' dirty':''}" id="csc_${k}">
       <div class="cs-head"><div style="min-width:0"><div class="cs-name">${_perfEsc(s.name||eid)}</div>
         <div class="cs-sub"><span style="font-family:'JetBrains Mono',monospace">${_perfEsc(s.empId||'-')}</span> · <span class="cs-proc">${_perfEsc(s.process||'공정미입력')}</span></div></div>
-        ${c.total!=null?`<div class="cs-total" style="color:${c.passed?'var(--green)':'var(--red)'}">${c.total}<small>${c.passed?'합격':'불합격'}</small></div>`:''}</div>
+        ${c.total!=null?(c.r&&_isEvalIng(c.r)?`<div class="cs-total" style="color:var(--orange,#e6a23c)">${c.total}<small>평가중</small></div>`:`<div class="cs-total" style="color:${c.passed?'var(--green)':'var(--red)'}">${c.total}<small>${c.passed?'합격':'불합격'}</small></div>`):''}</div>
       <div class="cs-chips">${_csChip('이론',c.theory,cfg.theoryPct,'var(--blue)')}${_csChip('작업수행',c.perf,perfMax,'var(--teal)')}${_csChip('압착고+불량',(c.crimp==null&&c.defect==null)?null:_r1((c.crimp||0)+(c.defect||0)),crMax+dfMax,'var(--purple)')}</div>
       <div class="cs-body">${body}</div>
       <div class="cs-foot"><button type="button" class="btn btn-success btn-sm" onclick="csSaveCard('${eid}')" id="csb_${k}">💾 저장</button></div>
@@ -681,8 +818,10 @@ function openPerfEval(){
   setTimeout(()=>{const i=document.getElementById('perfEvalProc');if(i)i.focus();},50);
 }
 function _perfEvalList(){
-  const seen={};
-  return students.filter(s=>s.name||s.empId).filter(s=>{const e=String(s.empId||s.name);if(seen[e])return false;seen[e]=1;return true;});
+  const seen={},coh=_activeCohort();
+  return students.filter(s=>s.name||s.empId).filter(s=>{const e=String(s.empId||s.name);if(seen[e])return false;seen[e]=1;return true;})
+    .filter(s=>!coh||_empCohort(s.empId)===coh)
+    .sort((a,b)=>String(a.empId||'').localeCompare(String(b.empId||''),undefined,{numeric:true}));
 }
 function perfEvalHeaderHtml(){
   const ctx=_perfCtx,es=_perfIsEs();
@@ -694,7 +833,9 @@ function perfEvalHeaderHtml(){
   const cur=ctx.eid?_csScores(ctx.eid):null;
   const done=fl.filter(s=>_csScores(String(s.empId||s.name)).perf!=null).length;
   const selSt='font-size:.95rem;padding:.55rem .6rem;min-height:44px';
-  return `<div style="background:rgba(46,196,182,.08);border:1px solid rgba(46,196,182,.35);border-radius:8px;padding:.75rem .8rem;margin-bottom:.7rem">
+  const pv=ctx.eid?(ctx.prev||_prevPerf(ctx.eid)):null;
+  const pvSheet=pv&&pv.item.sheet;
+  return `${roundBarHtml()}<div style="background:rgba(46,196,182,.08);border:1px solid rgba(46,196,182,.35);border-radius:8px;padding:.75rem .8rem;margin-bottom:.7rem">
     <div style="display:grid;grid-template-columns:minmax(180px,1fr) minmax(260px,2fr);gap:.6rem">
       <div><label style="margin:0 0 .25rem;display:block;font-size:.78rem;font-weight:700;color:var(--teal)">① ${es?'Proceso':'공정 선택'}</label>
         <select id="perfEvalProc" onchange="perfEvalSetProc(this.value)" style="${selSt};width:100%">
@@ -706,7 +847,7 @@ function perfEvalHeaderHtml(){
           <button type="button" class="btn btn-secondary btn-sm" onclick="perfEvalStep(-1)" title="이전" style="min-width:40px">◀</button>
           <select id="perfEvalWho" onchange="perfEvalPick(this.value)" style="${selSt};flex:1;min-width:0">
             <option value="">-- ${es?'Seleccione':'작업자를 선택하세요'} --</option>
-            ${fl.map(s=>{const e=String(s.empId||s.name);const c=_csScores(e);return`<option value="${_perfEsc(e)}" ${e===ctx.eid?'selected':''}>${c.perf!=null?'✓ ':'○ '}${_perfEsc(s.name||e)} (${_perfEsc(s.empId||'-')})${ctx.evalProc?'':' · '+_perfEsc(s.process||'')}${c.perf!=null?' — '+c.perf+'점':''}</option>`;}).join('')}
+            ${fl.map(s=>{const e=String(s.empId||s.name);const c=_csScores(e);return`<option value="${_perfEsc(e)}" ${e===ctx.eid?'selected':''}>${c.perf!=null?'✓ ':'○ '}${_perfEsc(s.name||e)} (${_perfEsc(s.empId||'-')})${ctx.evalProc?'':' · '+_perfEsc(s.process||'')}</option>`;}).join('')}
           </select>
           <button type="button" class="btn btn-secondary btn-sm" onclick="perfEvalStep(1)" title="다음" style="min-width:40px">▶</button>
         </div></div>
@@ -715,9 +856,9 @@ function perfEvalHeaderHtml(){
       <span style="color:var(--text);font-weight:700">${_perfEsc(st.name||'')}</span>
       <span>${es?'No.':'사번'} <b style="color:var(--text);font-family:'JetBrains Mono',monospace">${_perfEsc(st.empId||'-')}</b></span>
       <span>${es?'Proceso':'공정'} <b style="color:var(--sky)">${_perfEsc(st.process||'-')}</b></span>
-      <span>${es?'Actual':'현재 작업수행'} <b style="color:var(--teal)">${cur&&cur.perf!=null?cur.perf+' / '+ctx.itemMax:'-'}</b></span>
-      ${cur&&cur.total!=null?`<span>${es?'Total':'총점'} <b style="color:${cur.passed?'var(--green)':'var(--red)'}">${cur.total}</b></span>`:''}
-    </div>`:''}
+      <span>${es?'Esta evaluación':'이번 평가'} <b style="color:var(--teal)">${_perfEsc(roundName(_activeFor(st.empId||ctx.eid)))}</b> · ${cur&&cur.perf!=null?`<b style="color:var(--green)">✓ ${es?'guardado':'저장됨'}</b>`:(es?'sin evaluar':'미평가')}</span>
+    </div>
+    <div class="perf-prev">${pv?`📌 ${es?'Evaluación anterior':'이전 평가'}: <b>${_perfEsc(pv.r.date||'-')}</b> · ${_perfEsc(roundName(pv.r.evalRound))} · ${es?'Desempeño':'작업수행'} <b>${pv.item.score}</b>/${pv.item.max||ctx.itemMax}${pvSheet?` (${es?'hoja':'체크시트'} ${_perfEsc(pvSheet.process||'')} ${es?'puntaje':'원점수'} ${pvSheet.sum}/${pvSheet.max})`:''}`:`📌 ${es?'Sin evaluación anterior':'이전 평가 없음'}`}</div>`:''}
     ${ctx.savedMsg?`<div style="font-size:.8rem;color:var(--green);margin-top:.45rem">${ctx.savedMsg}</div>`:''}
   </div>`;
 }
@@ -739,8 +880,9 @@ function perfEvalStep(d){
 function perfEvalPick(eid){
   const ctx=_perfCtx;if(!ctx)return;
   const st=eid?_perfEvalList().find(s=>String(s.empId||s.name)===String(eid)):null;
-  if(!st){ctx.eid=null;setTimeout(renderPerfSheet,0);return;}
+  if(!st){ctx.eid=null;ctx.prev=null;setTimeout(renderPerfSheet,0);return;}
   ctx.eid=String(st.empId||st.name);ctx.proc=st.process||'';
+  ctx.prev=_prevPerf(ctx.eid);
   const prev=_csScores(ctx.eid).perfItem;
   if(prev&&prev.sheet&&perfSheetByKey(prev.sheet.key)){ctx.key=prev.sheet.key;ctx.scores=(prev.sheet.scores||[]).slice();ctx.auto=false;}
   else{const ms=perfMatchProcess(ctx.proc);ctx.key=(ms||perfSheetByKey(ctx.key)||PERF_SHEETS[0]).key;ctx.scores=null;ctx.auto=!!ms;}
@@ -867,6 +1009,32 @@ label{font-size:0.78rem;color:var(--text2);margin-bottom:0.3rem;display:block;}
 .score-tab{padding:0.95rem 1rem;border-radius:10px;border:1.5px solid var(--border);background:var(--surface);color:var(--text2);font-family:inherit;font-size:0.98rem;font-weight:800;cursor:pointer;transition:all .15s;text-align:left;display:flex;align-items:center;gap:0.45rem}
 .score-tab small{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:0.8rem;font-weight:700;opacity:.8}
 .score-tab:hover{border-color:var(--sky)}
+/* 평가구분 (2026-10-27) */
+.round-bar{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;background:rgba(201,168,76,.07);border:1px solid rgba(201,168,76,.35);border-radius:8px;padding:.55rem .75rem;margin-bottom:.7rem}
+.round-bar-lbl{font-weight:800;font-size:.86rem;color:var(--accent,#c9a84c);white-space:nowrap}
+.round-bar select{min-width:260px;max-width:100%;flex:0 1 420px;font-size:.88rem;min-height:38px}
+.round-bar-info{font-size:.76rem;color:var(--text2)}
+.round-chip{display:inline-block;font-size:.68rem;font-weight:700;padding:.1rem .45rem;border-radius:999px;border:1px solid rgba(201,168,76,.45);color:var(--accent,#c9a84c);background:rgba(201,168,76,.08);white-space:nowrap;line-height:1.4}
+.round-chip.none{border-color:var(--border);color:var(--text2);background:transparent}
+.rnd-modal{position:fixed;inset:0;z-index:9500;background:rgba(0,0,0,.72);display:none;align-items:flex-start;justify-content:center;overflow-y:auto;padding:24px 12px}
+.rnd-box{background:var(--surface,#141414);border:1px solid var(--border,#2a2a2a);border-radius:10px;width:min(720px,100%);padding:1rem 1.1rem;color:var(--text,#eee)}
+.rnd-head{display:flex;justify-content:space-between;align-items:center;gap:.6rem;margin-bottom:.7rem;font-size:1rem}
+.rnd-sec{background:var(--bg,#0a0a0a);border:1px solid var(--border,#2a2a2a);border-radius:8px;padding:.7rem .8rem;margin-bottom:.7rem}
+.rnd-title{font-weight:700;font-size:.85rem;margin-bottom:.5rem;color:var(--accent,#c9a84c)}
+.rnd-grid{display:grid;grid-template-columns:80px 1fr;gap:.45rem .6rem;align-items:center}
+.rnd-grid label{margin:0;font-size:.8rem;color:var(--text2)}
+.agg-ctl{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:.6rem;margin-bottom:.5rem}
+.agg-blk{border:1px solid var(--border,#2a2a2a);border-radius:8px;padding:.55rem .7rem;background:var(--bg,#0a0a0a)}
+.agg-ttl{font-weight:700;font-size:.8rem;margin-bottom:.4rem}
+.agg-row{display:flex;align-items:center;gap:.4rem;margin-bottom:.35rem;font-size:.8rem;flex-wrap:wrap}
+.agg-row label{margin:0;min-width:56px;color:var(--text2);font-size:.76rem}
+.agg-row select,.agg-row input[type=text]{flex:1;min-width:0}
+.agg-row input[type=date]{width:auto}
+.agg-sum{display:flex;gap:1rem;flex-wrap:wrap;font-size:.82rem;margin-bottom:.45rem}
+.agg-d{font-size:.66rem;color:var(--text2);margin-left:.2rem}
+.agg-foot{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;margin-top:.7rem}
+.perf-prev{margin-top:.4rem;font-size:.8rem;color:var(--gold,#e2c46a);background:rgba(226,196,106,.08);border:1px dashed rgba(226,196,106,.4);border-radius:6px;padding:.35rem .55rem}
+.perf-prev-item{font-size:.66rem;color:var(--gold,#e2c46a);margin-top:.15rem;opacity:.85}
 #stab_theory.active{border-color:var(--blue);color:var(--blue);background:rgba(201,168,76,.10)}
 #stab_perf.active{border-color:var(--teal);color:var(--teal);background:rgba(46,196,182,.10)}
 #stab_msa.active{border-color:var(--purple);color:var(--purple);background:rgba(155,126,232,.10)}
@@ -1186,7 +1354,10 @@ async function sbLoadAll() {
   try {
     let [qs, res, stus, pitems, cfgs, grades, fstat] = await Promise.all([
       sbFetch('exam_questions?select=id,text,text_es,opts,opts_es,ans,sort_order,img&order=sort_order.asc,id.asc').catch(()=>null),  /* ✅ id 2차정렬: sort_order 동률이어도 순서가 흔들리지 않음 */
-      sbFetch('exam_results?select=id,name,emp_id,team,process,hire_date,date,theory_raw,theory_raw_max,theory_weighted,theory_pct,practical_raw,practical_max,practical_weighted,practical_pct,total_score,correct,passed,timestamp,details,practical_item_scores&order=created_at.asc').catch(()=>null),
+      (async()=>{const _c='id,name,emp_id,team,process,hire_date,date,theory_raw,theory_raw_max,theory_weighted,theory_pct,practical_raw,practical_max,practical_weighted,practical_pct,total_score,correct,passed,timestamp,details,practical_item_scores';
+        try{const x=await sbFetch('exam_results?select='+_c+',eval_round&order=created_at.asc');_hasRoundCol=true;return x;}
+        catch(e){if(!/eval_round/.test(e.message||''))return null;_hasRoundCol=false;console.warn('eval_round 컬럼 없음 — qualification_eval_round.sql 실행 필요');
+          return sbFetch('exam_results?select='+_c+'&order=created_at.asc').catch(()=>null);}})(),
       sbFetch('exam_students?select=id,emp_id,name,process,process_es,hire_date,sort_order&order=sort_order.asc,created_at.asc').catch(e=>{_sbStuErr=e;return null;}) /* ✅ FIX2: process_es,sort_order 추가 */,
       sbFetch('exam_practical_items?select=id,name,max_score,sort_order&order=sort_order.asc').catch(()=>null),
       sbFetch('exam_config?select=key,value').catch(()=>[]),
@@ -1244,7 +1415,8 @@ async function sbLoadAll() {
           practicalWeighted:r.practical_weighted, practicalPct:r.practical_pct,
           totalScore:r.total_score, correct:r.correct,
           details:r.details||[], practicalItemScores:r.practical_item_scores||[],
-          passed:r.passed, timestamp:r.timestamp, _sbId:r.id
+          passed:r.passed, timestamp:r.timestamp, _sbId:r.id,
+          evalRound:r.eval_round||'', _thMax0:parseFloat(r.theory_raw_max)||0
         };
         // ── 정규화 1: 모바일 온라인 응시 결과의 이론 가중점수 보정 ──
         // 일부 레코드는 theoryWeighted에 원점수 퍼센트(0~100)가 저장됨.
@@ -1354,6 +1526,7 @@ async function sbLoadAll() {
       cfgs.forEach(c=>cfgObj[c.key]=c.value);
       lsSet('exam_cfg', JSON.stringify(cfgObj));
       applyExamCfgToInputs(cfgObj); // ✅ 서버 설정을 입력칸에 반영
+      _applyRoundCfg(cfgObj);       // ✅ 평가구분 목록·현재 평가구분
     }
     // 등급설정
     if(grades.length && !_savingGrades) {
@@ -1396,6 +1569,7 @@ async function sbSaveResult(r) {
     details:r.details||[], practical_item_scores:r.practicalItemScores||[],
     passed:!!r.passed, timestamp:r.timestamp||0
   };
+  if(_hasRoundCol) data.eval_round = r.evalRound||null;
   if(r._sbId) {
     return sbFetch(`exam_results?id=eq.${r._sbId}`,{method:'PATCH',body:JSON.stringify(data)});
   } else {
@@ -4367,6 +4541,7 @@ document.addEventListener('DOMContentLoaded', renderExamQr);
 
 <!-- ===== PAGE 2: 답안지 출력 ===== -->
 <div id="page-sheet" class="page">
+  <div class="round-bar-slot"></div>
   <!-- 상단: 서브탭 -->
   <div class="subtab-nav">
     <button class="subtab-btn active" onclick="switchDistSubtab('roster',this)">👥 응시자 명단</button>
@@ -4590,6 +4765,7 @@ document.addEventListener('DOMContentLoaded', renderExamQr);
 
   <!-- JSON 채점 모드 -->
   <div id="jsonModeSection">
+    <div class="round-bar-slot"></div>
     <div class="score-tabbar">
       <button type="button" class="score-tab active" id="stab_theory" onclick="switchScoreTab('theory')">① <span data-kr="이론평가점수" data-es="Teórico">이론평가점수</span> <small id="stabw_theory">30%</small></button>
       <button type="button" class="score-tab" id="stab_perf" onclick="switchScoreTab('perf')">② <span data-kr="작업수행능력평가" data-es="Desempeño">작업수행능력평가</span> <small id="stabw_perf">40%</small></button>
@@ -4763,12 +4939,15 @@ document.addEventListener('DOMContentLoaded', renderExamQr);
   </div>
 
   <div id="result-sub-all">
+    <div class="round-bar-slot"></div>
     <div class="card">
       <div class="flex-between">
         <div class="card-title">📊 응시 결과 목록</div>
         <div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap">
           <span id="selectedCount" style="font-size:0.76rem;color:var(--text2);display:none">선택: <strong id="selectedCountNum" style="color:var(--accent)">0</strong>건</span>
+          <button class="btn btn-primary btn-sm" id="assignRoundBtn" style="display:none" onclick="openAssignRound()">🏷️ 평가구분 일괄 지정</button>
           <button class="btn btn-danger btn-sm" id="deleteSelectedBtn" style="display:none" onclick="deleteSelected()">🗑️ 선택 삭제</button>
+          <button class="btn btn-secondary btn-sm" onclick="openAggregate()" style="border-color:var(--teal);color:var(--teal)">📊 평가결과 집계</button>
           <button class="btn btn-secondary btn-sm" onclick="exportExcel()"><span data-kr="📊 엑셀 저장" data-es="📊 Exportar Excel">📊 엑셀 저장</span></button>
           <button class="btn btn-danger btn-sm" onclick="clearResults()">🗑️ 전체 초기화</button>
         </div>
@@ -5234,6 +5413,7 @@ document.addEventListener('DOMContentLoaded', renderExamQr);
 let questions=[], results=[], students=[], practicalItems=[], gradeConfig=[];
 let finalStatusMap={};   // exam_results.id → {resigned, msa_result, msa_grade, msa_grr, final_status} (v_qual_final_status 뷰)
 let resultFilter='all';  // 결과 이력 필터: all | final | fail | resigned
+let resultRoundFilter=(()=>{try{return localStorage.getItem('qual_result_round')||'__all__';}catch(e){return'__all__';}})(); // 평가구분 필터
 let currentLang='ko';
 let pendingTheory={}; // empId → {name,empId,process,hireDate,correct,rawScore,rawMax,details,date}
 let pendingPractical={}; // empId → {rawScore, itemScores:[{name,score,max}]}
@@ -6517,7 +6697,7 @@ function _evalMiss(r){
   const cr=its.find(x=>/압착|altura/i.test(x.name||'')), df=its.find(x=>/불량|판별|defect/i.test(x.name||''));
   const fs=(typeof finalStatusMap!=='undefined'&&finalStatusMap)?finalStatusMap[r._sbId]:null;
   const miss=[];
-  if(!((parseFloat(r.theoryRawMax)||0)>0||(parseFloat(r.theoryWeighted)||0)>0||(r.details||[]).length>0))miss.push('이론');
+  if(!_hasTheory(r))miss.push('이론');
   if(pf.na)miss.push('작업수행');
   if(!((cr&&!cr.na&&(parseFloat(cr.score)||0)>0)||(df&&!df.na)||(fs&&fs.msa_result)))miss.push('MSA');
   return miss.length?miss:null;
@@ -6530,6 +6710,7 @@ function _isEvalIng(r){
 const _EVALING_BADGE='<span style="color:var(--orange,#e6a23c);font-weight:700;font-size:0.76rem;white-space:nowrap">⏳ <span data-kr="평가중" data-es="En evaluación">평가중</span></span>';
 // =================== RESULTS ===================
 function renderResults(){
+  try{renderRoundBars();}catch(e){}
   const cfg=getConfig();
   const total=results.length;
   if(!total){
@@ -6552,8 +6733,11 @@ function renderResults(){
   const _empCmp=(a,b)=>String(a.empId||'').localeCompare(String(b.empId||''),undefined,{numeric:true})||(new Date(a.date||0)-new Date(b.date||0));
   // ✅ 최종합격한 사번의 불합격·판정대기 내역은 숨김 (2026-10-27)
   const _stOf=r=>{const fs=getFS(r);if(_isEvalIng(r))return'평가중';return fs?fs.final_status:(r.passed?'최종합격':'불합격');};
-  const _finalEmp=new Set(results.filter(r=>r.empId&&_stOf(r)==='최종합격').map(r=>String(r.empId)));
-  let sorted=results.filter(r=>!(r.empId&&_finalEmp.has(String(r.empId))&&_stOf(r)!=='최종합격'&&_stOf(r)!=='퇴사')).sort(_empCmp);
+  // 같은 평가구분 안에서만 숨김 (다른 평가의 결과는 그대로 표시)
+  const _rk=r=>String(r.empId)+'|'+(r.evalRound||'');
+  const _finalEmp=new Set(results.filter(r=>r.empId&&_stOf(r)==='최종합격').map(_rk));
+  let sorted=results.filter(r=>!(r.empId&&_finalEmp.has(_rk(r))&&_stOf(r)!=='최종합격'&&_stOf(r)!=='퇴사')).sort(_empCmp);
+  if(resultRoundFilter!=='__all__')sorted=sorted.filter(r=>(r.evalRound||'')===(resultRoundFilter==='__none__'?'':resultRoundFilter));
   // ✅ 필터 적용: all(전체) | final(최종합격만) | fail(불합격만) | resigned(퇴사만)
   if(resultFilter!=='all'){
     sorted=sorted.filter(r=>{
@@ -6593,6 +6777,12 @@ function renderResults(){
         <option value="reeval" ${resultFilter==='reeval'?'selected':''}>🔄 MSA 재평가통과(개선) / Mejorados tras reeval</option>
         <option value="resigned" ${resultFilter==='resigned'?'selected':''}>🚪 퇴사자만 / Bajas</option>
       </select>
+      <span style="font-size:0.78rem;color:var(--text2);margin-left:.4rem">평가구분:</span>
+      <select onchange="resultRoundFilter=this.value;try{localStorage.setItem('qual_result_round',this.value)}catch(e){};renderResults()" style="max-width:260px;font-size:0.8rem">
+        <option value="__all__" ${resultRoundFilter==='__all__'?'selected':''}>전체 평가구분</option>
+        <option value="__none__" ${resultRoundFilter==='__none__'?'selected':''}>미지정 (${results.filter(r=>!r.evalRound).length})</option>
+        ${_sortedRounds().map(rd=>`<option value="${_perfEsc(rd.id)}" ${resultRoundFilter===rd.id?'selected':''}>${_perfEsc(rd.name)} (${results.filter(r=>r.evalRound===rd.id).length})</option>`).join('')}
+      </select>
       <span style="font-size:0.74rem;color:var(--text2)">${sorted.length}건 표시 / ${results.length}건 전체 · 사번순 (최종합격자의 불합격 내역 숨김)</span>
     </div>
     <table class="results-table">
@@ -6603,6 +6793,7 @@ function renderResults(){
       <th><span data-kr="사번" data-es="N°Emp">사번</span></th>
       <th><span data-kr="공정" data-es="Proceso">공정</span></th>
       <th><span data-kr="날짜" data-es="Fecha">날짜</span></th>
+      <th><span data-kr="평가구분" data-es="Evaluación">평가구분</span></th>
       <th><span data-kr="근속" data-es="Antigüedad">근속</span></th>
       <th><span class="tag tag-t" data-kr="이론" data-es="Teórico">이론</span></th>
       <th><span class="tag tag-p" data-kr="실습" data-es="Práctico">실습</span></th>
@@ -6631,6 +6822,7 @@ function renderResults(){
         <td style="font-family:'JetBrains Mono',monospace;font-size:0.73rem;color:var(--text2)">${r.empId||'-'}</td>
         <td style="color:var(--text2);font-size:0.78rem">${r.process||'-'}</td>
         <td style="color:var(--text2);font-size:0.76rem">${r.date}</td>
+        <td><span class="round-chip ${r.evalRound?'':'none'}" title="${_perfEsc(roundName(r.evalRound))}">${_perfEsc(roundShort(r.evalRound))}</span></td>
         <td style="font-size:0.76rem;color:var(--teal)">${calcTenure(r.hireDate||lookupHireDate(r.empId))}</td>
         <td>${hasTh?`<span class="score-t">${r.theoryWeighted||0}점</span>`:dash}</td>
         <td><span class="score-p">${r.practicalWeighted||0}점</span></td>
@@ -6642,6 +6834,177 @@ function renderResults(){
         <td><button class="btn btn-outline btn-sm" onclick="showDetail(${oi})">보기</button></td>
       </tr>`;}).join('')}
     </tbody></table>`;
+}
+
+// ════ 평가구분 일괄 지정 (결과 이력에서 선택 → 지정) ════
+function openAssignRound(){
+  if(!_hasRoundCol){alert('먼저 Supabase에서 qualification_eval_round.sql 을 실행해주세요.');return;}
+  const ids=[...document.querySelectorAll('.row-chk:checked')].map(c=>parseInt(c.dataset.idx));
+  if(!ids.length)return;
+  let m=document.getElementById('assignRoundModal');
+  if(!m){m=document.createElement('div');m.id='assignRoundModal';m.className='rnd-modal';m.addEventListener('click',e=>{if(e.target===m)m.style.display='none';});document.body.appendChild(m);}
+  m.innerHTML=`<div class="rnd-box" style="width:min(520px,100%)">
+    <div class="rnd-head"><b>🏷️ 평가구분 일괄 지정 — ${ids.length}건</b><button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('assignRoundModal').style.display='none'">✕</button></div>
+    <div class="rnd-sec">
+      <select id="assignRoundSel" style="width:100%">
+        ${_sortedRounds().map(r=>`<option value="${_perfEsc(r.id)}" ${r.id===activeRound?'selected':''}>${_perfEsc(r.name)}</option>`).join('')}
+        <option value="">미지정으로 되돌리기</option>
+      </select>
+      <div style="font-size:.74rem;color:var(--text2);margin-top:.45rem">원하는 평가구분이 없으면 <a href="#" onclick="document.getElementById('assignRoundModal').style.display='none';openRoundEditor();return false" style="color:var(--accent)">＋ 새 평가구분</a>을 먼저 만드세요.</div>
+      <div style="text-align:right;margin-top:.7rem"><button type="button" class="btn btn-primary btn-sm" onclick="applyAssignRound()">지정</button></div>
+    </div></div>`;
+  m._ids=ids;m.style.display='flex';
+}
+async function applyAssignRound(){
+  const m=document.getElementById('assignRoundModal');const v=document.getElementById('assignRoundSel').value;
+  const recs=(m._ids||[]).map(i=>results[i]).filter(Boolean);
+  const sb=recs.filter(r=>r._sbId).map(r=>r._sbId);
+  try{
+    for(let k=0;k<sb.length;k+=80)await sbFetch(`exam_results?id=in.(${sb.slice(k,k+80).join(',')})`,{method:'PATCH',body:JSON.stringify({eval_round:v||null}),headers:{'Prefer':'return=minimal'}});
+  }catch(e){alert('⚠️ 서버 저장 실패: '+e.message);return;}
+  recs.forEach(r=>r.evalRound=v||'');
+  try{save();}catch(e){}
+  m.style.display='none';
+  _showSaveToast(`🏷️ ${recs.length}건 → ${roundName(v)}`);
+  _roundRefreshAll();updateSelectedCount();
+}
+
+// ════ 평가결과 집계: 이론은 어떤 평가에서, 실습은 언제 것을 가져올지 선택 ════
+let _aggOpt=(()=>{try{return JSON.parse(localStorage.getItem('qual_agg_opt')||'null')||{};}catch(e){return{};}})();
+let _aggRows=[];
+function _aggSelHtml(id,val){
+  return `<select id="${id}" onchange="runAggregate()">
+    <option value="__all__" ${val==='__all__'?'selected':''}>전체 평가구분</option>
+    <option value="__none__" ${val==='__none__'?'selected':''}>미지정</option>
+    ${_sortedRounds().map(r=>`<option value="${_perfEsc(r.id)}" ${val===r.id?'selected':''}>${_perfEsc(r.name)}</option>`).join('')}</select>`;
+}
+function openAggregate(){
+  let m=document.getElementById('aggModal');
+  if(!m){m=document.createElement('div');m.id='aggModal';m.className='rnd-modal';m.addEventListener('click',e=>{if(e.target===m)m.style.display='none';});document.body.appendChild(m);}
+  const o=Object.assign({tr:activeRound||'__all__',tf:'',tt:'',pr:activeRound||'__all__',pf:'',pt:'',save:activeRound||''},_aggOpt);
+  m.innerHTML=`<div class="rnd-box" style="width:min(1250px,100%)">
+    <div class="rnd-head"><b>📊 평가결과 집계</b><button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('aggModal').style.display='none'">✕ 닫기</button></div>
+    <div class="agg-ctl">
+      <div class="agg-blk" style="border-color:rgba(91,163,232,.45)">
+        <div class="agg-ttl" style="color:var(--blue,#5ba3e8)">① 이론평가 — 어떤 평가를 불러올지</div>
+        <div class="agg-row"><label>평가구분</label>${_aggSelHtml('aggTR',o.tr)}</div>
+        <div class="agg-row"><label>응시일</label><input type="date" id="aggTF" value="${o.tf}" onchange="runAggregate()"> ~ <input type="date" id="aggTT" value="${o.tt}" onchange="runAggregate()"></div>
+      </div>
+      <div class="agg-blk" style="border-color:rgba(46,196,182,.45)">
+        <div class="agg-ttl" style="color:var(--teal)">② 실습평가(작업수행·압착고·불량판별) — 언제 것을 가져올지</div>
+        <div class="agg-row"><label>평가구분</label>${_aggSelHtml('aggPR',o.pr)}</div>
+        <div class="agg-row"><label>평가일</label><input type="date" id="aggPF" value="${o.pf}" onchange="runAggregate()"> ~ <input type="date" id="aggPT" value="${o.pt}" onchange="runAggregate()"></div>
+      </div>
+      <div class="agg-blk">
+        <div class="agg-ttl">대상</div>
+        <div class="agg-row"><label>검색</label><input type="text" id="aggQ" placeholder="이름 / 사번" oninput="runAggregate()"></div>
+        <div class="agg-row"><label>입사월</label><input type="month" id="aggCoh" value="${o.coh||''}" onchange="runAggregate()"></div>
+      </div>
+    </div>
+    <div style="font-size:.72rem;color:var(--text2);margin:.1rem 0 .5rem">· 조건 안에서 사람별로 가장 최근 기록을 사용합니다 (실습은 항목별로 가장 최근 입력값). 하나라도 없으면 ⏳ 평가중.</div>
+    <div id="aggSummary"></div>
+    <div id="aggTable" style="max-height:52vh;overflow:auto"></div>
+    <div class="agg-foot">
+      <button type="button" class="btn btn-secondary btn-sm" onclick="exportAggregate()">📊 엑셀 다운로드</button>
+      <span style="flex:1"></span>
+      <span style="font-size:.78rem;color:var(--text2)">집계 결과를 평가구분으로 저장</span>
+      <select id="aggSave" style="max-width:260px" onchange="this.dataset.touched='1';_aggRead()">${_sortedRounds().map(r=>`<option value="${_perfEsc(r.id)}" ${o.save===r.id?'selected':''}>${_perfEsc(r.name)}</option>`).join('')}</select>
+      <button type="button" class="btn btn-primary btn-sm" onclick="saveAggregate()">💾 저장</button>
+    </div></div>`;
+  m.style.display='flex';
+  runAggregate();
+}
+function _aggRead(){
+  const g=id=>(document.getElementById(id)||{}).value||'';
+  _aggOpt={tr:g('aggTR')||'__all__',tf:g('aggTF'),tt:g('aggTT'),pr:g('aggPR')||'__all__',pf:g('aggPF'),pt:g('aggPT'),coh:g('aggCoh'),save:g('aggSave')};
+  try{localStorage.setItem('qual_agg_opt',JSON.stringify(_aggOpt));}catch(e){}
+  return Object.assign({q:g('aggQ').trim().toLowerCase()},_aggOpt);
+}
+function _aggIn(r,round,from,to){
+  if(round!=='__all__'&&(r.evalRound||'')!==(round==='__none__'?'':round))return false;
+  const d=String(r.date||'');if(from&&d<from)return false;if(to&&d>to)return false;return true;
+}
+function computeAggregate(o){
+  const cfg=getConfig();
+  const items=practicalItems.length?practicalItems:[];
+  const by={};results.forEach(r=>{if(!r.empId)return;(by[r.empId]=by[r.empId]||[]).push(r);});
+  const rows=[];
+  Object.keys(by).forEach(eid=>{
+    const recs=by[eid].slice().sort(_recSort), any=recs[0];
+    if(o.q&&!(String(any.name||'').toLowerCase().includes(o.q)||String(eid).toLowerCase().includes(o.q)))return;
+    if(o.coh&&_empCohort(eid)!==o.coh)return;
+    const th=recs.find(r=>_aggIn(r,o.tr,o.tf,o.tt)&&_hasTheory(r))||null;
+    const pRecs=recs.filter(r=>_aggIn(r,o.pr,o.pf,o.pt));
+    const its=items.map(it=>{for(const r of pRecs){const x=(r.practicalItemScores||[]).find(y=>y.name===it.name);if(x&&!x.na)return{name:it.name,max:it.max,score:parseFloat(x.score)||0,date:r.date,sheet:x.sheet||null,src:r};}return{name:it.name,max:it.max,score:null};});
+    if(!th&&its.every(x=>x.score==null))return;
+    const pf=its.find(x=>isPerfItem(x)), cr=its.find(x=>!isPerfItem(x)&&/압착|altura/i.test(x.name)), df=its.find(x=>!isPerfItem(x)&&/불량|판별|defect/i.test(x.name));
+    const tw=th?(parseFloat(th.theoryWeighted)||0):null;
+    const praw=its.reduce((a,x)=>a+(x.score||0),0);
+    const pw=_r1(praw/(cfg.practicalMax||1)*cfg.practicalPct);
+    const total=_r1((tw||0)+pw);
+    const miss=[];if(!th)miss.push('이론');if(pf&&pf.score==null)miss.push('작업수행');if((cr||df)&&!((cr&&cr.score>0)||(df&&df.score!=null)))miss.push('MSA');
+    const st=pRecs[0]||th||any;
+    rows.push({eid,name:any.name,process:(st&&st.process)||any.process||'',hireDate:any.hireDate||lookupHireDate(eid),th,tw,its,pf,cr,df,praw,pw,total,miss,
+      status:miss.length?'평가중':(total>=cfg.passingScore?'합격':'불합격')});
+  });
+  rows.sort((a,b)=>String(a.eid).localeCompare(String(b.eid),undefined,{numeric:true}));
+  return rows;
+}
+function runAggregate(){
+  {const sv=document.getElementById('aggSave'),pr=(document.getElementById('aggPR')||{}).value;
+   if(sv&&!sv.dataset.touched&&pr&&pr!=='__all__'&&pr!=='__none__'&&_roundById(pr))sv.value=pr;}
+  const o=_aggRead();_aggRows=computeAggregate(o);
+  const rows=_aggRows,cfg=getConfig();
+  const n=rows.length,pass=rows.filter(r=>r.status==='합격').length,fail=rows.filter(r=>r.status==='불합격').length,ing=n-pass-fail;
+  document.getElementById('aggSummary').innerHTML=`<div class="agg-sum"><span>대상 <b>${n}</b>명</span><span style="color:var(--green)">합격 <b>${pass}</b></span><span style="color:var(--red)">불합격 <b>${fail}</b></span><span style="color:var(--orange,#e6a23c)">평가중 <b>${ing}</b></span><span>합격 기준 ${cfg.passingScore}점</span></div>`;
+  const dash='<span style="color:var(--text2)">-</span>';
+  const cell=x=>x&&x.score!=null?`<b>${x.score}</b><span class="agg-d">/${x.max} · ${_perfEsc(x.date||'')}</span>`:dash;
+  document.getElementById('aggTable').innerHTML=n?`<table class="results-table"><thead><tr>
+    <th>No.</th><th>이름</th><th>사번</th><th>공정</th><th style="color:var(--blue,#5ba3e8)">이론 (응시일·평가구분)</th><th style="color:var(--teal)">작업수행</th><th>압착고</th><th>불량판별</th><th>실습계</th><th>총점</th><th>판정</th></tr></thead><tbody>
+    ${rows.map((r,i)=>`<tr><td style="color:var(--text2)">${i+1}</td><td style="font-weight:600">${_perfEsc(r.name||'')}</td>
+      <td style="font-family:'JetBrains Mono',monospace;font-size:.73rem;color:var(--text2)">${_perfEsc(r.eid)}</td>
+      <td style="font-size:.76rem;color:var(--text2)">${_perfEsc(r.process)}</td>
+      <td>${r.th?`<b>${r.tw}</b><span class="agg-d">/${cfg.theoryPct} · ${_perfEsc(r.th.date||'')}</span> <span class="round-chip ${r.th.evalRound?'':'none'}" title="${_perfEsc(roundName(r.th.evalRound))}">${_perfEsc(roundShort(r.th.evalRound))}</span>`:dash}</td>
+      <td>${cell(r.pf)}</td><td>${cell(r.cr)}</td><td>${cell(r.df)}</td>
+      <td>${r.pw}</td><td>${r.miss.length?dash:`<b>${r.total}</b>`}</td>
+      <td>${r.status==='평가중'?_EVALING_BADGE+`<br><span style="font-size:.64rem;color:var(--text2)">미평가: ${r.miss.join('·')}</span>`:r.status==='합격'?'<span style="color:var(--green)">✅ 합격</span>':'<span style="color:var(--red)">❌ 불합격</span>'}</td></tr>`).join('')}
+    </tbody></table>`:'<div class="empty-state"><div class="empty-icon">📊</div>조건에 맞는 기록이 없습니다</div>';
+}
+function exportAggregate(){
+  if(!_aggRows.length){alert('집계 결과가 없습니다.');return;}
+  const o=_aggOpt,lbl=(r,f,t)=>(r==='__all__'?'전체':r==='__none__'?'미지정':roundName(r))+(f||t?` (${f||'~'}~${t||''})`:'');
+  const aoa=[[`평가결과 집계 — 이론: ${lbl(o.tr,o.tf,o.tt)} / 실습: ${lbl(o.pr,o.pf,o.pt)}`],[],
+    ['No.','이름','사번','공정','입사일','이론','이론 응시일','이론 평가구분','작업수행','작업수행 평가일','압착고','불량판별','실습계','총점','판정','미평가']];
+  _aggRows.forEach((r,i)=>aoa.push([i+1,r.name,r.eid,r.process,r.hireDate||'',r.tw??'',r.th?r.th.date:'',r.th?roundName(r.th.evalRound):'',
+    r.pf&&r.pf.score!=null?r.pf.score:'',r.pf&&r.pf.date||'',r.cr&&r.cr.score!=null?r.cr.score:'',r.df&&r.df.score!=null?r.df.score:'',r.pw,r.miss.length?'':r.total,r.status,r.miss.join('·')]));
+  const ws=XLSX.utils.aoa_to_sheet(aoa);ws['!cols']=[{wch:5},{wch:28},{wch:13},{wch:16},{wch:11},{wch:7},{wch:11},{wch:26},{wch:8},{wch:12},{wch:7},{wch:8},{wch:7},{wch:7},{wch:8},{wch:14}];
+  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'집계');
+  XLSX.writeFile(wb,`평가결과집계_${new Date().toISOString().slice(0,10)}.xlsx`);
+}
+async function saveAggregate(){
+  const target=(document.getElementById('aggSave')||{}).value;
+  if(!_hasRoundCol){alert('먼저 Supabase에서 qualification_eval_round.sql 을 실행해주세요.');return;}
+  if(!target){alert('저장할 평가구분을 선택하거나 먼저 만들어주세요.');return;}
+  const rows=_aggRows.filter(r=>r.th||r.its.some(x=>x.score!=null));
+  if(!rows.length)return;
+  if(!confirm(`집계 결과 ${rows.length}명을 「${roundName(target)}」 평가구분 기록으로 저장할까요?\n(그 평가구분에 이미 기록이 있으면 이 집계값으로 덮어씁니다)`))return;
+  const cfg=getConfig();let ok=0,fail=0;
+  for(const a of rows){
+    let r=results.filter(x=>String(x.empId)===String(a.eid)&&(x.evalRound||'')===target).sort(_recSort)[0];
+    if(!r){const src=a.th||a.its.find(x=>x.src)?.src||{};
+      r={name:a.name,empId:a.eid,team:src.team||'',process:a.process,hireDate:a.hireDate||'',date:new Date().toISOString().slice(0,10),
+        theoryRaw:0,theoryRawMax:0,theoryWeighted:0,theoryPct:cfg.theoryPct,practicalRaw:0,practicalMax:cfg.practicalMax,practicalWeighted:0,practicalPct:cfg.practicalPct,
+        totalScore:0,correct:0,details:[],practicalItemScores:[],passed:false,timestamp:Date.now(),evalRound:target,_thMax0:0};
+      results.push(r);}
+    if(a.th){r.theoryRaw=a.th.theoryRaw;r.theoryRawMax=a.th.theoryRawMax;r._thMax0=a.th._thMax0;r.theoryWeighted=a.tw;r.theoryPct=cfg.theoryPct;r.correct=a.th.correct;r.details=a.th.details||[];}
+    r.practicalItemScores=a.its.map(x=>x.score==null?{name:x.name,score:0,max:x.max,na:true}:Object.assign({name:x.name,score:x.score,max:x.max},x.sheet?{sheet:x.sheet}:{}));
+    r.practicalRaw=_r1(a.praw);r.practicalMax=cfg.practicalMax;r.practicalPct=cfg.practicalPct;r.practicalWeighted=a.pw;
+    r.totalScore=_r1((parseFloat(r.theoryWeighted)||0)+a.pw);r.passed=r.totalScore>=cfg.passingScore;
+    try{const res=await sbSaveResult(r);if(!r._sbId&&Array.isArray(res)&&res[0]&&res[0].id)r._sbId=res[0].id;ok++;}catch(e){fail++;console.warn('집계 저장 실패',a.eid,e);}
+  }
+  try{save();}catch(e){}
+  alert(`💾 저장 완료 ${ok}명${fail?` · 실패 ${fail}명`:''} → ${roundName(target)}`);
+  _sbCacheTime=0;sbLoadAllCached(true).then(()=>{_roundRefreshAll();runAggregate();}).catch(()=>{});
 }
 
 function lookupHireDate(empId){
@@ -6660,6 +7023,7 @@ function updateSelectedCount(){
   const checked=document.querySelectorAll('.row-chk:checked');const n=checked.length;
   document.getElementById('selectedCount').style.display=n>0?'inline':'none';
   document.getElementById('deleteSelectedBtn').style.display=n>0?'inline-flex':'none';
+  {const b=document.getElementById('assignRoundBtn');if(b)b.style.display=n>0?'inline-flex':'none';}
   document.getElementById('selectedCountNum').textContent=n;
 }
 function deleteSelected(){
@@ -7897,7 +8261,8 @@ function savePracticalEntry(){
 async function loadPracticalFromMSA(silent){
   const _say=m=>{if(silent){_msaStatus(m);}else alert(m);};
   const seen={};
-  const list=students.filter(s=>s.empId&&!seen[s.empId]&&(seen[s.empId]=1));
+  const _coh=_activeCohort();
+  const list=students.filter(s=>s.empId&&!seen[s.empId]&&(seen[s.empId]=1)).filter(s=>!_coh||_empCohort(s.empId)===_coh);
   if(!list.length){_say('먼저 응시자 명단을 등록해주세요.');return;}
   if(typeof _isLocalFile!=='undefined'&&_isLocalFile){_say('로컬 파일 모드에서는 MSA 조회가 불가합니다 (웹에서 실행).');return;}
   const btn=document.getElementById('msaLoadBtn'); if(btn)btn.disabled=true;
@@ -7946,7 +8311,7 @@ async function loadPracticalFromMSA(silent){
     if(_csDirty[eid]&&(_csDirty[eid].crimp!=null||_csDirty[eid].defect!=null)){part++;continue;} // 입력 중인 카드는 건너뜀
     const itemScores=items.map(it=>({name:it.name,score:0,max:it.max}));
     // 작업수행평가(체크시트) 점수는 MSA와 무관 → 기존 입력값 유지
-    {const _rs0=results.filter(r=>r.empId===eid).sort((x,y)=>new Date(y.date)-new Date(x.date))[0];
+    {const _rs0=_latestResult(eid);
      const _prev=(pendingPractical[eid]?.itemScores?.length?pendingPractical[eid].itemScores:(_rs0?.practicalItemScores||[]));
      items.forEach((it,k)=>{if(isPerfItem(it)){const o=_prev.find(x=>x.name===it.name);if(o){itemScores[k].score=parseFloat(o.score)||0;if(o.sheet)itemScores[k].sheet=o.sheet;}}});}
     if(a)itemScores[iAtt].score=a.pass?items[iAtt].max:Math.round(a.E*items[iAtt].max*10)/10;
@@ -7955,7 +8320,7 @@ async function loadPracticalFromMSA(silent){
     pendingPractical[eid]={rawScore:total,itemScores};
     (a&&v)?both++:part++;
     // 이론 결과가 이미 저장돼 있으면 즉시 합산 후 Supabase 반영 (최신 결과 기준)
-    const rs=results.filter(r=>r.empId===eid).sort((x,y)=>new Date(y.date)-new Date(x.date));
+    const rs=results.filter(r=>r.empId===eid&&_inScope(r)).sort(_recSort);
     // MSA 이력이 있는 항목만 반영 (없는 항목은 기존 값 유지)
     const _send=[];
     if(a)_send.push({name:items[iAtt].name,score:itemScores[iAtt].score});
