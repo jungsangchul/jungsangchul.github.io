@@ -1,6 +1,774 @@
 <!DOCTYPE html>
 <html lang="ko"><head>
 <script>
+// ════ [작업수행평가 체크시트] 작업자 기량관리 매뉴얼 M-039-R4 공정별 실기평가 항목 (2026-10-26) ════
+// 배점 체계: 이론 30 + 작업수행평가 40 + 압착고측정 15 + 불량판별 15 = 100
+// 실습 항목 중 이름에 '작업수행'이 들어간 항목은 공정별 체크시트(원점수 합계 → 항목 만점으로 환산)로 채점한다.
+var PERF_CATS=[
+  {kr:'설비 작동 능력',es:'Operación del equipo'},
+  {kr:'작업 수행 능력',es:'Ejecución del trabajo'},
+  {kr:'합부 판정 능력',es:'Juicio OK/NG'},
+  {kr:'불량유형 및 영향 이해',es:'Tipos de defecto y efectos'}
+];
+// 공통 문구
+var _PD={
+  chk:['설비의 일상점검 항목·방법을 이해하고 점검기준에 따라 일상점검을 실시하는가?','¿Conoce los puntos/método de inspección diaria y la realiza según el estándar?'],
+  err:['작업 중 설비 이상 발생 시 조치가 원활하며, 설비 현상태(고장/수리 현황)를 파악하고 있는가?','¿Atiende fallas del equipo durante el trabajo y conoce su estado (fallas/reparaciones)?'],
+  mold:['금형 취부 후 유동이 없는가? 금형 취출 후 지그찍힘방지블럭을 결합하는가?','¿El molde queda sin juego al montarlo? ¿Coloca el bloque anti-marcas al retirarlo?'],
+  term:['단자 보관·수급 방법을 숙지·이행하고, 취출 시 끝단 정리, 취부 시 끝단부 손실이 없는가?','¿Conoce el almacenaje/suministro de terminales, ordena el extremo al retirar y no pierde terminales al montar?'],
+  moldm:['금형 사용 후 청소(Air)하고, 지정 장소에 청결하게 보관하는가?','¿Limpia el molde con aire después de usarlo y lo guarda limpio en su lugar?'],
+  ch:['초물 제작·압착상태 확인·압착고 측정, DIAL로 정확한 Setting, 부위별 허용공차 숙지, 초/중/종물 단계별 측정·기록을 하는가?','¿Hace primera pieza, ajusta con el DIAL, conoce tolerancias y mide/registra inicio/medio/final?'],
+  pull:['선경별 고착력 기준을 숙지하고 작업 Lot마다 고착력 Test를 실시하는가?','¿Conoce el estándar de fuerza de tensión por calibre y la prueba en cada lote?'],
+  nc:['부적합품 처리 방법을 숙지하고 기준에 따라 처리하는가?','¿Conoce y aplica el método de manejo de producto no conforme?'],
+  abn:['이상발생(금형고장/자재품절/설비고장) 시 조치방법을 숙지하고 기준에 따라 조치하는가?','¿Conoce y aplica la acción ante anomalías (molde/material/equipo)?'],
+  pack:['포장 전 자주검사, 비닐 포장 삽입한계선 준수, 단자보호 CAP 묶음수량·유동 없음, 걸대 정돈 상태가 양호한가?','¿Autoinspección antes de empacar, línea límite de bolsa, CAP por cantidad sin juego y orden en el rack?'],
+  packs:['포장 전 자주검사를 실시하고, 걸대 보관 정돈 상태가 양호한가?','¿Autoinspección antes de empacar y buen orden en el rack?'],
+  prep:['작업준비시간 최소화를 위해 사전 준비(자재·선재 등)가 원활한가?','¿Prepara con anticipación (material, cables) para minimizar el tiempo de preparación?'],
+  self:['자주검사 항목을 숙지하고 작업 중 자주검사 실시 및 결과를 기록(작업일보)하는가?','¿Conoce la autoinspección, la realiza y registra el resultado (reporte diario)?'],
+  judge:['불량 유형별 검사기준을 숙지하고 기준에 따라 합부 판정을 할 수 있는가?','¿Conoce los criterios por tipo de defecto y puede juzgar OK/NG?'],
+  eff:['불량유형을 구분할 수 있고 유형별 영향(고장모드)을 이해하는가?','¿Distingue los tipos de defecto y entiende su efecto (modo de falla)?']
+};
+function _pi(c,kr,es,d,pts){return{c,kr,es,dkr:Array.isArray(d)?d[0]:d,des:Array.isArray(d)?d[1]:'',pts};}
+var PERF_SHEETS=[
+ {key:'auto',kr:'자동절단압착',es:'Corte y crimpado automático',re:/자동|auto|komax|schleuniger|^km/i,items:[
+  _pi(0,'설비 일상 점검','Inspección diaria',_PD.chk,3),
+  _pi(0,'금형 조작','Manejo de molde',_PD.mold,2),
+  _pi(0,'Wire 삽입','Inserción de cable',['선경별 삽입레코드 홀 적용, 스트레너 압력 조정, 블루벨트부 삽입이 원활한가?','¿Usa el orificio correcto por calibre, ajusta la presión del enderezador y la inserción es fluida?'],5),
+  _pi(0,'작업 지시 입력','Ingreso de orden',['신규 Wire·단자 입력, Wire·단자(Seal) Setting, 이동전표 절단길이·수량을 정확히 입력하는가?','¿Registra cable/terminal nuevos, configura cable/terminal (sello) e ingresa longitud y cantidad del comprobante?'],5),
+  _pi(0,'작업 Setting','Ajuste de trabajo',['CFA(SPA) 기준값 적용, Strip 길이·압착 Position Setting, Press 높낮이 조정, 기본 Setting 임의조작 금지를 지키는가?','¿Aplica CFA(SPA), ajusta strip/posición y altura de prensa, sin alterar parámetros base?'],5),
+  _pi(0,'설비 이상 조치 능력','Atención a fallas',_PD.err,5),
+  _pi(1,'작업 준비','Preparación',['사전 작업 준비가 원활한가? (필요 소요량 확인)','¿Prepara con anticipación? (verifica cantidad requerida)'],5),
+  _pi(1,'작업지시 준수','Cumplimiento de orden',['준비·사용 중인 금형·단자(Seal)·Wire가 이동전표와 일치하는가?','¿Molde, terminal (sello) y cable coinciden con el comprobante?'],5),
+  _pi(1,'Wire 삽입·관리','Manejo de cable',['Wire 식별표 보관·부착, 106 풀림대 기준 사용, 선경별 규격 노즐 사용, 롤 Wire 전용 풀림대 사용 및 끝단 정렬·보관이 양호한가?','¿Etiqueta de cable, desenrollador 106, boquilla por calibre, desenrollador de rollo y orden del extremo?'],5),
+  _pi(1,'단자 취출/취부','Retiro/montaje de terminal',_PD.term,5),
+  _pi(1,'금형 관리','Control de molde',_PD.moldm,5),
+  _pi(1,'압착고 Setting','Ajuste de altura de crimpado',_PD.ch,5),
+  _pi(1,'고착력 Test','Prueba de tensión',_PD.pull,5),
+  _pi(1,'MES 활용 ①','Uso de MES ①',['작업시간 및 설비가동시간을 정확하게 입력하는가?','¿Registra correctamente tiempo de trabajo y de operación?'],2),
+  _pi(1,'MES 활용 ②','Uso de MES ②',['이동전표 확인 후 PMS 작업지시를 정확히 선택하고, 실적입력 항목의 단계별 실측치를 정확히 입력하는가?','¿Selecciona la orden correcta en PMS e ingresa las mediciones reales por etapa?'],5),
+  _pi(1,'MES 활용 ③','Uso de MES ③',['장애 발생·처리 완료 시 내역과 시간을 정확히 입력하는가?','¿Registra el detalle y tiempo de paros y su solución?'],3),
+  _pi(1,'부적합품 처리','Producto no conforme',_PD.nc,5),
+  _pi(1,'이상발생 처리','Manejo de anomalías',_PD.abn,5),
+  _pi(1,'포장 정리','Empaque',['포장 전 자주검사, 선재 특성별 규정 비닐 색상, 삽입한계선, CAP 묶음수량·유동, 걸대 정돈이 양호한가?','¿Autoinspección, color de bolsa según el cable, línea límite, CAP sin juego y orden en rack?'],5),
+  _pi(2,'자주 검사','Autoinspección',['자주검사 항목을 숙지하고 작업 중 자주검사 결과를 MES 실적에 입력하는가?','¿Conoce la autoinspección y registra el resultado en MES?'],10),
+  _pi(3,'불량유형별 영향','Efecto por tipo de defecto',['불량유형(압착고상이·단자변형·Bell-Mouth·심선노출·심선잘림·Strip길이·피복부 압착·상이단자 등)을 구분하고 영향을 이해하는가?','¿Distingue los defectos (altura, deformación, bell-mouth, hilos expuestos/cortados, strip, aislante, terminal equivocada) y su efecto?'],5)
+ ]},
+ {key:'manual',kr:'수동압착',es:'Crimpado manual',re:/수동|manual/i,items:[
+  _pi(0,'설비 일상 점검','Inspección diaria',_PD.chk,5),
+  _pi(0,'설비 조작','Operación del equipo',['금형 취출/취부 시 전원을 OFF하고 작업하며, 칩 커터가 작동하는가?','¿Apaga el equipo al cambiar el molde y funciona el cortador de chip?'],5),
+  _pi(0,'금형 조작','Manejo de molde',_PD.mold,5),
+  _pi(0,'설비 이상 조치 능력','Atención a fallas',_PD.err,5),
+  _pi(1,'작업 준비','Preparación',['사전 작업 준비가 원활한가? (자재/금형 준비, 작업선재 준비)','¿Prepara material, molde y cables con anticipación?'],5),
+  _pi(1,'작업지시 준수','Cumplimiento de orden',['준비·사용 중인 금형 및 단자가 이동전표와 일치하는가?','¿Molde y terminal coinciden con el comprobante?'],5),
+  _pi(1,'단자 취출/취부','Retiro/montaje de terminal',_PD.term,5),
+  _pi(1,'금형 관리','Control de molde',_PD.moldm,5),
+  _pi(1,'압착고 Setting','Ajuste de altura de crimpado',_PD.ch,10),
+  _pi(1,'고착력 Test','Prueba de tensión',_PD.pull,5),
+  _pi(1,'부적합품 처리','Producto no conforme',_PD.nc,10),
+  _pi(1,'이상발생 처리','Manejo de anomalías',_PD.abn,5),
+  _pi(1,'포장 정리','Empaque',_PD.pack,5),
+  _pi(2,'자주 검사','Autoinspección',_PD.self,10),
+  _pi(2,'불량 유형별 합부 판정','Juicio por tipo de defecto',['단자압착 검사기준을 숙지하고 불량 유형별 합부 판정을 할 수 있는가?','¿Conoce el estándar de inspección de crimpado y juzga OK/NG por defecto?'],10),
+  _pi(3,'불량유형별 영향','Efecto por tipo de defecto',_PD.eff,5)
+ ]},
+ {key:'joint',kr:'결속압착',es:'Crimpado de empalme (Joint)',re:/결속|joint|splice/i,items:[
+  _pi(0,'설비 일상 점검','Inspección diaria',_PD.chk,5),
+  _pi(0,'설비 조작','Operación del equipo',['금형 취출/취부 시 전원을 OFF하고 작업하는가?','¿Apaga el equipo al cambiar el molde?'],5),
+  _pi(0,'금형 조작','Manejo de molde',_PD.mold,5),
+  _pi(0,'설비 이상 조치 능력','Atención a fallas',_PD.err,5),
+  _pi(1,'작업 준비','Preparación',['사전 작업 준비가 원활한가? (자재/금형 준비, 작업선재 준비)','¿Prepara material, molde y cables con anticipación?'],5),
+  _pi(1,'작업지시 준수','Cumplimiento de orden',['금형·단자가 이동전표와 일치, 결속방향(가지선 방향)이 결속도와 일치, 원선·가지선이 동일 Set인가?','¿Molde/terminal según comprobante, dirección según diagrama y cables del mismo set?'],20),
+  _pi(1,'단자 취출/취부','Retiro/montaje de terminal',_PD.term,5),
+  _pi(1,'금형 관리','Control de molde',_PD.moldm,5),
+  _pi(1,'압착고 Setting','Ajuste de altura de crimpado',_PD.ch,5),
+  _pi(1,'고착력 Test','Prueba de tensión',_PD.pull,5),
+  _pi(1,'부적합품 처리','Producto no conforme',_PD.nc,5),
+  _pi(1,'이상발생 처리','Manejo de anomalías',_PD.abn,5),
+  _pi(1,'포장 정리','Empaque',_PD.pack,5),
+  _pi(2,'자주 검사','Autoinspección',_PD.self,5),
+  _pi(2,'불량 유형별 합부 판정','Juicio por tipo de defecto',['단자압착 검사기준을 숙지하고 불량 유형별 합부 판정을 할 수 있는가?','¿Conoce el estándar de inspección de crimpado y juzga OK/NG por defecto?'],10),
+  _pi(3,'불량유형별 영향','Efecto por tipo de defecto',_PD.eff,5)
+ ]},
+ {key:'seal',kr:'선취부 (Seal/Tube)',es:'Pre-inserción (Sello/Tubo)',re:/선취|seal|tube|씰/i,items:[
+  _pi(1,'작업 준비','Preparación',['사전 작업 준비가 원활한가? (자재·작업선재 준비 상태)','¿Material y cables preparados con anticipación?'],15),
+  _pi(1,'작업지시 준수','Cumplimiento de orden',['준비된 자재가 이동전표와 일치하는가?','¿El material coincide con el comprobante?'],15),
+  _pi(1,'선취자재 삽입','Inserción de sello/tubo',['Seal·Tube 삽입 위치가 기준에 부합하고 일정(산포 작음)하며, 작업 숙련도(속도)가 우수한가?','¿Posición de inserción según estándar y constante, con buena velocidad?'],30),
+  _pi(1,'포장','Empaque',['삽입 부품 보호 포장, 포장 후 부품 유동 없음, 완료 선재를 지정 장소(걸대)에 적재하는가?','¿Empaca para proteger la pieza, sin juego, y coloca en el rack designado?'],15),
+  _pi(2,'자주검사','Autoinspección',['자주검사 항목·기준(부품 상이, 삽입 위치, 심선 손상·흐트러짐)을 숙지·실시·기록하고 불량 시 즉각 조치하는가?','¿Conoce y realiza la autoinspección (pieza, posición, hilos), registra y actúa de inmediato?'],15),
+  _pi(3,'불량 유형','Tipos de defecto',['불량 유형(부품상이·삽입위치 상이·심선 손상/흐트러짐)과 영향을 이해하는가?','¿Entiende los defectos (pieza equivocada, posición, daño de hilos) y su efecto?'],10)
+ ]},
+ {key:'mstrip',kr:'중간 Strip',es:'Strip intermedio',re:/중간|mid|intermedi/i,items:[
+  _pi(0,'설비 일상 점검','Inspección diaria',_PD.chk,5),
+  _pi(0,'설비 조작','Operación del equipo',['선경과 동일한 Strip 칼날 사용, 기준단자 고정, 조작 절차 준수','¿Cuchilla según calibre, terminal de referencia fija y procedimiento correcto?'],10),
+  _pi(0,'설비 이상 조치 능력','Atención a fallas',_PD.err,5),
+  _pi(1,'작업 준비','Preparación',['사전 작업 준비가 원활한가? (작업선재·Strip 칼날 준비)','¿Prepara cables y cuchillas con anticipación?'],10),
+  _pi(1,'작업지시 준수','Cumplimiento de orden',['칼날이 선경과 일치, 결속도의 중간 Strip 위치·기준단자·Strip 길이를 준수하는가?','¿Cuchilla según calibre, posición, terminal de referencia y longitud según diagrama?'],10),
+  _pi(1,'Strip 칼날 관리','Control de cuchilla',['칼날 취출/취부가 원활, 마모 상태 관리, 사용 후 청결·보관이 양호한가?','¿Cambio de cuchilla fluido, control de desgaste, limpieza y almacenaje?'],10),
+  _pi(1,'Strip 작업','Operación de strip',['기준단자 끝단 정렬, 중간 Strip 위치 일정, 작업이 원활한가?','¿Alinea el extremo, posición constante y trabajo fluido?'],10),
+  _pi(1,'부적합품 처리','Producto no conforme',_PD.nc,5),
+  _pi(1,'이상발생 처리','Manejo de anomalías',['이상발생(설비고장) 시 조치방법을 숙지하고 기준에 따라 조치하는가?','¿Conoce y aplica la acción ante falla del equipo?'],5),
+  _pi(1,'포장 정리','Empaque',['포장 전 자주검사, 비닐 포장 삽입한계선 준수, 보관 정돈 상태가 양호한가?','¿Autoinspección, línea límite de bolsa y orden de almacenaje?'],5),
+  _pi(2,'자주 검사','Autoinspección',_PD.self,10),
+  _pi(2,'불량 유형별 합부 판정','Juicio por tipo de defecto',['중간 Strip 위치, 심선 긁힘·잘림 여부를 검사기준에 따라 판정할 수 있는가?','¿Juzga posición de strip y rayado/corte de hilos según el estándar?'],10),
+  _pi(3,'불량유형별 영향','Efecto por tipo de defecto',['중간 Strip 위치·심선 긁힘·심선 잘림의 영향(고장모드)을 이해하는가?','¿Entiende el efecto de posición de strip y rayado/corte de hilos?'],5)
+ ]},
+ {key:'taping',kr:'Taping',es:'Encintado (Taping)',re:/테이핑|taping|tapping|cinta/i,items:[
+  _pi(0,'설비 일상 점검','Inspección diaria',_PD.chk,5),
+  _pi(0,'설비 조작','Operación del equipo',['Tape 취출/취부를 전원 OFF 상태에서 원활하게 하는가?','¿Cambia la cinta con el equipo apagado y de forma fluida?'],5),
+  _pi(0,'설비 이상 조치 능력','Atención a fallas',['선재 걸림 등 이상 시 원활히 조치, 설비 상태 파악, Tape 엉킴 시 전원 OFF 후 조치하는가?','¿Atiende atoramientos, conoce el estado del equipo y apaga antes de desenredar la cinta?'],10),
+  _pi(1,'작업 준비','Preparación',['사전 작업 준비가 원활한가? (Tape·작업선재 준비)','¿Prepara cinta y cables con anticipación?'],5),
+  _pi(1,'작업지시 준수','Cumplimiento de orden',['결속단자에 따른 Tape 감김 횟수(1겹/2겹) 기준을 준수하는가?','¿Cumple el número de vueltas de cinta (1/2 capas) según el empalme?'],20),
+  _pi(1,'Tape 취출/취부','Cambio de cinta',['Tape 취부 시 고정대 이탈 없음, 지지롤러 중앙에 장착하는가?','¿La cinta queda en el soporte y centrada en el rodillo?'],5),
+  _pi(1,'Taping 작업','Operación de encintado',['결속부위 중앙에 Tape 위치, 원활한 작업, 안전(손 말려들어감 주의)에 유의하는가?','¿Cinta centrada en el empalme, trabajo fluido y seguro (manos)?'],20),
+  _pi(1,'부적합품 처리','Producto no conforme',_PD.nc,5),
+  _pi(1,'이상발생 처리','Manejo de anomalías',['이상발생(자재품절/설비고장) 시 조치방법을 숙지하고 기준에 따라 조치하는가?','¿Conoce y aplica la acción ante falta de material o falla?'],5),
+  _pi(1,'포장 정리','Empaque',_PD.pack,5),
+  _pi(2,'자주 검사','Autoinspección',_PD.self,5),
+  _pi(2,'불량 유형별 합부 판정','Juicio por tipo de defecto',['Taping 횟수, 결속단자 중앙 위치, 심선 돌출·노출, Tape 밀림 여부를 판정할 수 있는가?','¿Juzga vueltas, centrado, hilos salidos/expuestos y desplazamiento de cinta?'],5),
+  _pi(3,'불량유형별 영향','Efecto por tipo de defecto',_PD.eff,5)
+ ]},
+ {key:'heat',kr:'열수축',es:'Termocontráctil',re:/열수축|heat|termo|hsc|hmt/i,items:[
+  _pi(0,'설비 일상 점검','Inspección diaria',_PD.chk,5),
+  _pi(0,'설비 조작','Operación del equipo',['열수축기 온도 및 속도 조작이 가능한가?','¿Puede ajustar temperatura y velocidad?'],10),
+  _pi(0,'설비 이상 조치 능력','Atención a fallas',['속도·온도 설정 불가 등 이상 시 원활히 조치하고 설비 상태를 파악하는가?','¿Atiende fallas de velocidad/temperatura y conoce el estado del equipo?'],10),
+  _pi(1,'작업 준비','Preparación',['사전 작업 준비가 원활한가? (속도·온도 설정, 작업선재 준비)','¿Prepara ajustes y cables con anticipación?'],5),
+  _pi(1,'작업지시 준수','Cumplimiento de orden',['기준에 따른 설비 속도 및 온도가 설정되어 있는가?','¿Velocidad y temperatura según el estándar?'],20),
+  _pi(1,'열수축 작업','Operación de termocontracción',['인입부 Line 중앙에 Tube 중앙 위치, 원활한 작업, 안전(화상·장갑 말림 주의)에 유의하는가?','¿Tubo centrado, trabajo fluido y seguro (quemaduras, guantes)?'],20),
+  _pi(1,'부적합품 처리','Producto no conforme',_PD.nc,5),
+  _pi(1,'이상발생 처리','Manejo de anomalías',['이상발생(설비고장) 시 조치방법을 숙지하고 기준에 따라 조치하는가?','¿Conoce y aplica la acción ante falla del equipo?'],5),
+  _pi(1,'포장 정리','Empaque',_PD.pack,5),
+  _pi(2,'자주 검사','Autoinspección',_PD.self,5),
+  _pi(2,'불량 유형별 합부 판정','Juicio por tipo de defecto',['Tube 벌어짐·열화, 결속단자 가림(HSC), 피복 손상, 본드 융착(HMT), 압착부 노출을 판정할 수 있는가?','¿Juzga apertura/degradación del tubo, cobertura, daño de aislante, adhesivo y exposición?'],5),
+  _pi(3,'불량유형별 영향','Efecto por tipo de defecto',_PD.eff,5)
+ ]},
+ {key:'twist',kr:'Twist (AVP)',es:'Trenzado (AVP)',re:/twist|트위스트|avp|tren/i,items:[
+  _pi(0,'설비 일상 점검','Inspección diaria',_PD.chk,5),
+  _pi(0,'설비 조작','Operación del equipo',['양끝 단자·끝단 지지대 고정 시 유동 없음, 길이별 회전수/제동수 Setting이 가능한가?','¿Fija terminales y soporte sin juego y ajusta giros/frenado por longitud?'],20),
+  _pi(0,'설비 이상 조치 능력','Atención a fallas',['회전수 오류 등 이상 시 원활히 조치하고 설비 상태를 파악하는가?','¿Atiende errores de giro y conoce el estado del equipo?'],5),
+  _pi(1,'작업 준비','Preparación',['사전 작업 준비가 원활한가? (작업 선재 준비)','¿Prepara los cables con anticipación?'],5),
+  _pi(1,'Twist 작업','Operación de trenzado',['두 선재가 이동전표와 동일, 길이별 회전수/제동수 정확 입력, 단자 고정 후 작업, 안전(고속 회전)에 유의하는가?','¿Cables según comprobante, giros/frenado correctos, terminales fijas y trabajo seguro?'],30),
+  _pi(1,'부적합품 처리','Producto no conforme',_PD.nc,10),
+  _pi(1,'이상발생 처리','Manejo de anomalías',['이상발생(설비고장) 시 조치방법을 숙지하고 기준에 따라 조치하는가?','¿Conoce y aplica la acción ante falla del equipo?'],5),
+  _pi(1,'포장 정리','Empaque',['포장 전 자주검사, 삽입한계선, CAP 묶음수량·유동, 선재 적재 기준을 준수하는가?','¿Autoinspección, línea límite, CAP sin juego y apilado según estándar?'],5),
+  _pi(2,'자주 검사','Autoinspección',_PD.self,5),
+  _pi(2,'불량 유형별 합부 판정','Juicio por tipo de defecto',['단자 변형, 끝단 정렬, Pitch 길이(30±5mm)·균일성을 판정할 수 있는가?','¿Juzga deformación, alineación y paso (30±5mm) uniforme?'],5),
+  _pi(3,'불량유형별 영향','Efecto por tipo de defecto',_PD.eff,5)
+ ]},
+ {key:'sldcut',kr:'SLD 절단',es:'SLD Corte',re:/sld\s*절단|sld.*cut|sld.*corte/i,items:[
+  _pi(0,'설비 일상 점검','Inspección diaria',_PD.chk,5),
+  _pi(0,'Wire 삽입','Inserción de cable',['Wire 압력 조정이 이루어지고 삽입이 원활한가?','¿Ajusta la presión y la inserción es fluida?'],5),
+  _pi(0,'작업지시 입력','Ingreso de orden',['이동전표상의 절단길이 및 작업수량을 정확하게 입력하는가?','¿Ingresa longitud y cantidad del comprobante?'],5),
+  _pi(0,'작업 Setting','Ajuste de trabajo',['Strip 길이 및 절단길이 Setting을 할 수 있는가?','¿Puede ajustar strip y longitud de corte?'],20),
+  _pi(0,'설비 이상 조치 능력','Atención a fallas',_PD.err,5),
+  _pi(1,'작업 준비','Preparación',['사전 작업 준비가 원활한가? (작업선재 준비)','¿Prepara los cables con anticipación?'],5),
+  _pi(1,'작업지시 준수','Cumplimiento de orden',['기준에 준한 설비 속도가 설정되어 있는가?','¿Velocidad según el estándar?'],5),
+  _pi(1,'절단작업','Operación de corte',['SLD 선종별 절단, 원활한 작업, 안전(칼날에 장갑 끼임 주의)에 유의하는가?','¿Corta por tipo de SLD, trabajo fluido y seguro (guantes/cuchilla)?'],20),
+  _pi(1,'부적합품 처리','Producto no conforme',_PD.nc,5),
+  _pi(1,'이상발생 처리','Manejo de anomalías',['이상발생(설비고장) 시 조치방법을 숙지하고 기준에 따라 조치하는가?','¿Conoce y aplica la acción ante falla del equipo?'],5),
+  _pi(1,'포장 정리','Empaque',_PD.packs,5),
+  _pi(2,'자주 검사','Autoinspección',_PD.self,5),
+  _pi(2,'불량 유형별 합부 판정','Juicio por tipo de defecto',_PD.judge,5),
+  _pi(3,'불량유형별 영향','Efecto por tipo de defecto',_PD.eff,5)
+ ]},
+ {key:'sldout',kr:'SLD 외피탈피',es:'SLD Pelado de cubierta exterior',re:/외피|outer|exterior/i,items:[
+  _pi(0,'설비 일상 점검','Inspección diaria',_PD.chk,5),
+  _pi(0,'설비 조작','Operación del equipo',['외피 탈피 길이별·SLD 선종별 칼날 교체가 가능한가?','¿Cambia cuchillas por longitud de pelado y tipo de SLD?'],5),
+  _pi(0,'작업 Setting','Ajuste de trabajo',['Strip 길이·절단길이 Setting, Strip 칼날을 기준에 맞게 Setting하는가?','¿Ajusta strip/longitud y la cuchilla según el estándar?'],20),
+  _pi(0,'설비 이상 조치 능력','Atención a fallas',_PD.err,5),
+  _pi(1,'작업 준비','Preparación',['사전 작업 준비가 원활한가? (작업선재 준비)','¿Prepara los cables con anticipación?'],5),
+  _pi(1,'작업지시 준수','Cumplimiento de orden',['기준에 준한 설비 속도가 설정되어 있는가?','¿Velocidad según el estándar?'],5),
+  _pi(1,'외피 탈피작업','Pelado de cubierta',['SLD 선종별 작업, 원활한 작업, 안전(칼날에 장갑 끼임 주의)에 유의하는가?','¿Trabaja por tipo de SLD, de forma fluida y segura?'],20),
+  _pi(1,'부적합품 처리','Producto no conforme',_PD.nc,5),
+  _pi(1,'이상발생 처리','Manejo de anomalías',['이상발생(설비고장) 시 조치방법을 숙지하고 기준에 따라 조치하는가?','¿Conoce y aplica la acción ante falla del equipo?'],10),
+  _pi(1,'포장 정리','Empaque',_PD.packs,5),
+  _pi(2,'자주 검사','Autoinspección',_PD.self,5),
+  _pi(2,'불량 유형별 합부 판정','Juicio por tipo de defecto',_PD.judge,5),
+  _pi(3,'불량유형별 영향','Efecto por tipo de defecto',_PD.eff,5)
+ ]},
+ {key:'sldbraid',kr:'SLD 편조선 절단',es:'SLD Corte de malla',re:/편조|braid|malla/i,items:[
+  _pi(0,'설비 일상 점검','Inspección diaria',_PD.chk,5),
+  _pi(0,'설비 조작','Operación del equipo',['편조선에 따라 회전수 및 길이 조작이 가능한가?','¿Ajusta giros y longitud según la malla?'],20),
+  _pi(0,'설비 이상 조치 능력','Atención a fallas',['속도·회전수 등 이상 시 원활히 조치하고 설비 상태를 파악하는가?','¿Atiende fallas de velocidad/giros y conoce el estado del equipo?'],20),
+  _pi(1,'작업 준비','Preparación',['사전 작업 준비가 원활한가? (작업선재 준비)','¿Prepara los cables con anticipación?'],5),
+  _pi(1,'꼬임작업','Operación de torcido',['길이별 회전수/제동수 정확 입력, 선재 고정 후 작동, 안전(고속 회전)에 유의하는가?','¿Giros/frenado correctos, cable fijo y trabajo seguro?'],20),
+  _pi(1,'부적합품 처리','Producto no conforme',_PD.nc,5),
+  _pi(1,'이상발생 처리','Manejo de anomalías',['이상발생(설비고장) 시 조치방법을 숙지하고 기준에 따라 조치하는가?','¿Conoce y aplica la acción ante falla del equipo?'],5),
+  _pi(1,'포장 정리','Empaque',_PD.packs,5),
+  _pi(2,'자주 검사','Autoinspección',_PD.self,5),
+  _pi(2,'불량 유형별 합부 판정','Juicio por tipo de defecto',_PD.judge,5),
+  _pi(3,'불량유형별 영향','Efecto por tipo de defecto',_PD.eff,5)
+ ]},
+ {key:'sldin',kr:'SLD 내피탈피',es:'SLD Pelado de cubierta interior',re:/내피|inner|interior/i,items:[
+  _pi(0,'설비 일상 점검','Inspección diaria',_PD.chk,5),
+  _pi(0,'설비 조작','Operación del equipo',['내피 탈피 기준에 따라 조작이 가능한가?','¿Opera según el estándar de pelado interior?'],20),
+  _pi(0,'설비 이상 조치 능력','Atención a fallas',['탈피길이 등 이상 시 원활히 조치하고 설비 상태를 파악하는가?','¿Atiende fallas de longitud de pelado y conoce el estado del equipo?'],5),
+  _pi(1,'작업 준비','Preparación',['사전 작업 준비가 원활한가? (작업선재 준비)','¿Prepara los cables con anticipación?'],5),
+  _pi(1,'탈피작업','Operación de pelado',['이동전표에 따른 탈피 기준치 정확 입력, 심선 잘림 유의, 안전(끼임)에 유의하는가?','¿Ingresa el valor de pelado del comprobante, cuida los hilos y trabaja seguro?'],20),
+  _pi(1,'부적합품 처리','Producto no conforme',_PD.nc,5),
+  _pi(1,'이상발생 처리','Manejo de anomalías',['이상발생(설비고장) 시 조치방법을 숙지하고 기준에 따라 조치하는가?','¿Conoce y aplica la acción ante falla del equipo?'],20),
+  _pi(1,'포장 정리','Empaque',['포장 전 자주검사를 실시하는가?','¿Realiza autoinspección antes de empacar?'],5),
+  _pi(2,'자주 검사','Autoinspección',_PD.self,5),
+  _pi(2,'불량 유형별 합부 판정','Juicio por tipo de defecto',_PD.judge,5),
+  _pi(3,'불량유형별 영향','Efecto por tipo de defecto',_PD.eff,5)
+ ]},
+ {key:'sldhv',kr:'SLD 내전압 검사',es:'SLD Prueba de alto voltaje',re:/내전압|hipot|voltaje|전압/i,items:[
+  _pi(0,'설비 일상 점검','Inspección diaria',_PD.chk,5),
+  _pi(0,'설비 조작','Operación del equipo',['내전압 기준(1.5KV)에 따라 조작이 가능한가?','¿Opera según el estándar de voltaje (1.5 kV)?'],20),
+  _pi(0,'설비 이상 조치 능력','Atención a fallas',['전압 기준치 미달·과다 시 조치요령을 알고 설비 상태를 파악하는가?','¿Sabe actuar si el voltaje es bajo/alto y conoce el estado del equipo?'],5),
+  _pi(1,'작업 준비','Preparación',['사전 작업 준비가 원활한가? (작업선재 준비)','¿Prepara los cables con anticipación?'],5),
+  _pi(1,'내전압 TEST 작업','Prueba de alto voltaje',['안전(시험 중 심선이 손에 노출되지 않도록)에 유의하며 작업하는가?','¿Trabaja seguro, sin exponer los hilos a las manos durante la prueba?'],20),
+  _pi(1,'부적합품 처리','Producto no conforme',_PD.nc,20),
+  _pi(1,'이상발생 처리','Manejo de anomalías',['이상발생(설비고장) 시 조치방법을 숙지하고 기준에 따라 조치하는가?','¿Conoce y aplica la acción ante falla del equipo?'],5),
+  _pi(1,'포장 정리','Empaque',['포장 전 자주검사를 실시하는가?','¿Realiza autoinspección antes de empacar?'],5),
+  _pi(2,'자주 검사','Autoinspección',_PD.self,5),
+  _pi(2,'불량 유형별 합부 판정','Juicio por tipo de defecto',_PD.judge,5),
+  _pi(3,'불량유형별 영향','Efecto por tipo de defecto',_PD.eff,5)
+ ]}
+];
+PERF_SHEETS.forEach(s=>{s.max=s.items.reduce((a,b)=>a+b.pts,0);});
+
+function isPerfItem(item){return !!item&&/작업\s*수행|desempe|ejecuci/i.test(item.name||'');}
+function perfSheetByKey(k){return PERF_SHEETS.find(s=>s.key===k)||null;}
+// 공정명 → 체크시트 자동 매칭 (SLD 세부공정을 먼저 판별)
+function perfMatchProcess(proc){
+  const p=String(proc||'');
+  if(!p)return null;
+  const order=['sldhv','sldbraid','sldin','sldout','sldcut','taping','joint','heat','mstrip','seal','twist','manual','auto'];
+  for(const k of order){const s=perfSheetByKey(k);if(s&&s.re.test(p))return s;}
+  if(/sld/i.test(p))return perfSheetByKey('sldcut');
+  return null;
+}
+var _perfSheetData={}; // inputId → {key, scores:[], sum, max, conv, itemMax}
+var _perfCtx=null;
+
+function _perfEsc(s){return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function _perfIsEs(){try{return typeof currentLang!=='undefined'&&currentLang==='es';}catch(e){return false;}}
+function perfBtnHtml(inputId,proc,itemMax){
+  const d=_perfSheetData[inputId];
+  const lbl=d?(_perfIsEs()?'Hoja ✓':'체크시트 ✓'):(_perfIsEs()?'📋 Hoja':'📋 체크시트');
+  return `<button type="button" class="btn btn-secondary btn-sm" style="white-space:nowrap;padding:0.3rem 0.6rem" id="pfb_${inputId}" onclick="openPerfSheet('${inputId}','${_perfEsc(proc).replace(/'/g,"\\'")}',${parseFloat(itemMax)||40})">${lbl}</button>`;
+}
+// 저장된 itemScores의 체크시트 정보를 입력칸 상태로 복원
+function perfRestore(inputId,savedItem){
+  if(savedItem&&savedItem.sheet&&Array.isArray(savedItem.sheet.scores)){
+    const sh=savedItem.sheet;
+    _perfSheetData[inputId]={key:sh.key,scores:sh.scores.slice(),sum:sh.sum,max:sh.max,conv:savedItem.score,itemMax:savedItem.max};
+  }else{delete _perfSheetData[inputId];}
+}
+// itemScores 배열에 체크시트 상세를 첨부 (입력값이 체크시트 환산점수와 같을 때만)
+function perfAttach(itemScores,idFn){
+  (itemScores||[]).forEach((it,i)=>{
+    if(!isPerfItem(it))return;
+    const d=_perfSheetData[idFn(i)];
+    if(d&&Math.abs((parseFloat(it.score)||0)-d.conv)<0.051){
+      const s=perfSheetByKey(d.key);
+      it.sheet={key:d.key,process:s?s.kr:d.key,sum:d.sum,max:d.max,scores:d.scores.slice(),
+        detail:s?s.items.map((x,j)=>({cat:PERF_CATS[x.c].kr,name:x.kr,pts:x.pts,score:d.scores[j]||0})):[]};
+    }
+  });
+  return itemScores;
+}
+
+function openPerfSheet(inputId,proc,itemMax,viewOnly){
+  const d=_perfSheetData[inputId];
+  let s=d?perfSheetByKey(d.key):perfMatchProcess(proc);
+  _perfCtx={inputId,proc,itemMax:parseFloat(itemMax)||40,viewOnly:!!viewOnly,
+    key:(s||PERF_SHEETS[0]).key,
+    scores:d?d.scores.slice():null,auto:!d&&!!s};
+  let m=document.getElementById('perfSheetModal');
+  if(!m){
+    m=document.createElement('div');m.id='perfSheetModal';
+    m.style.cssText='position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.72);display:flex;align-items:flex-start;justify-content:center;overflow-y:auto;padding:24px 12px';
+    m.addEventListener('click',e=>{if(e.target===m)closePerfSheet();});
+    document.body.appendChild(m);
+  }
+  m.style.display='flex';
+  renderPerfSheet();
+}
+function closePerfSheet(){const m=document.getElementById('perfSheetModal');if(m)m.style.display='none';_perfCtx=null;}
+function perfSelectSheet(k){if(!_perfCtx)return;_perfCtx.key=k;_perfCtx.scores=null;_perfCtx.auto=false;renderPerfSheet();}
+function perfSetAll(mode){
+  const s=perfSheetByKey(_perfCtx.key);
+  _perfCtx.scores=s.items.map(x=>mode==='full'?x.pts:0);
+  renderPerfSheet();
+}
+function perfSetScore(j,v){
+  const s=perfSheetByKey(_perfCtx.key);
+  if(!_perfCtx.scores)_perfCtx.scores=s.items.map(()=>null);
+  let n=v===''||v==null?null:parseFloat(v);
+  if(n!=null){if(isNaN(n))n=null;else n=Math.max(0,Math.min(s.items[j].pts,n));}
+  _perfCtx.scores[j]=n;
+  // 버튼 상태·합계만 갱신
+  const row=document.getElementById('pfr_'+j);
+  if(row){
+    row.querySelectorAll('button[data-v]').forEach(b=>{const on=n!=null&&parseFloat(b.dataset.v)===n;b.style.background=on?'var(--accent,#c9a84c)':'var(--surface2,#1b1b1b)';b.style.color=on?'#111':'var(--text,#eee)';});
+    const inp=row.querySelector('input');if(inp&&document.activeElement!==inp)inp.value=n==null?'':n;
+  }
+  perfUpdateSum();
+}
+function perfCalc(){
+  const s=perfSheetByKey(_perfCtx.key);
+  const sc=_perfCtx.scores||s.items.map(()=>null);
+  const sum=sc.reduce((a,b)=>a+(parseFloat(b)||0),0);
+  const filled=sc.filter(v=>v!=null).length;
+  const conv=Math.round(sum/s.max*_perfCtx.itemMax*10)/10;
+  const cat=PERF_CATS.map((c,ci)=>{let mx=0,got=0;s.items.forEach((x,j)=>{if(x.c===ci){mx+=x.pts;got+=parseFloat(sc[j])||0;}});return{mx,got};});
+  return{s,sc,sum,filled,conv,cat};
+}
+function perfUpdateSum(){
+  const r=perfCalc();const es=_perfIsEs();
+  const el=document.getElementById('perfSumBox');
+  if(el)el.innerHTML=`<div style="display:flex;gap:1rem;flex-wrap:wrap;align-items:center">
+    ${r.cat.map((c,ci)=>c.mx?`<span style="font-size:.78rem;color:var(--text2,#aaa)">${es?PERF_CATS[ci].es:PERF_CATS[ci].kr} <b style="color:var(--text,#eee)">${c.got}/${c.mx}</b></span>`:'').join('')}
+    <span style="margin-left:auto;font-size:.85rem">${es?'Suma':'원점수'} <b>${r.sum}/${r.s.max}</b> → <b style="color:var(--purple,#9b7ee8);font-size:1.1rem">${r.conv}</b> / ${_perfCtx.itemMax}${es?' pts':'점'}</span>
+    <span style="font-size:.72rem;color:${r.filled===r.s.items.length?'var(--green,#2ecc7a)':'var(--gold,#e2c46a)'}">${es?'Evaluado':'입력'} ${r.filled}/${r.s.items.length}</span></div>`;
+}
+function renderPerfSheet(){
+  const m=document.getElementById('perfSheetModal');if(!m||!_perfCtx)return;
+  const es=_perfIsEs();const ctx=_perfCtx;const s=perfSheetByKey(ctx.key);
+  const sc=ctx.scores||s.items.map(()=>null);
+  let lastC=-1;
+  const rows=s.items.map((x,j)=>{
+    const head=x.c!==lastC?`<tr><td colspan="4" style="background:rgba(201,168,76,.12);color:var(--sky,#c9a84c);font-weight:700;font-size:.8rem;padding:.45rem .6rem">${x.c+1}) ${es?PERF_CATS[x.c].es:PERF_CATS[x.c].kr}</td></tr>`:'';
+    lastC=x.c;
+    const v=sc[j];
+    const opts=[x.pts,Math.round(x.pts/2*10)/10,0].filter((a,i,arr)=>arr.indexOf(a)===i);
+    const btns=ctx.viewOnly?'':opts.map(o=>{const on=v!=null&&parseFloat(v)===o;return`<button type="button" data-v="${o}" onclick="perfSetScore(${j},${o})" style="min-width:34px;padding:.3rem .45rem;border-radius:5px;border:1px solid var(--border,#2a2a2a);cursor:pointer;font-weight:700;font-size:.8rem;background:${on?'var(--accent,#c9a84c)':'var(--surface2,#1b1b1b)'};color:${on?'#111':'var(--text,#eee)'}">${o}</button>`;}).join('');
+    return head+`<tr id="pfr_${j}" style="border-bottom:1px solid var(--border,#2a2a2a)">
+      <td style="padding:.5rem .6rem;vertical-align:top;width:26%"><div style="font-weight:700;font-size:.85rem">${_perfEsc(es?x.es:x.kr)}</div><div style="font-size:.72rem;color:var(--text2,#999)">${_perfEsc(es?x.kr:x.es)}</div></td>
+      <td style="padding:.5rem .6rem;font-size:.78rem;color:var(--text2,#bbb);line-height:1.45">${_perfEsc(es&&x.des?x.des:x.dkr)}</td>
+      <td style="padding:.5rem .4rem;text-align:center;font-family:'JetBrains Mono',monospace;font-weight:700;white-space:nowrap">${x.pts}</td>
+      <td style="padding:.5rem .6rem;white-space:nowrap">${ctx.viewOnly?'':`<div style="display:flex;gap:.25rem;align-items:center">${btns}<input type="number" min="0" max="${x.pts}" step="0.5" value="${v==null?'':v}" oninput="perfSetScore(${j},this.value)" style="width:56px;text-align:center;padding:.25rem"></div>`}</td></tr>`;
+  }).join('');
+  m.innerHTML=`<div style="background:var(--surface,#141414);border:1px solid var(--border,#2a2a2a);border-radius:10px;width:min(980px,100%);padding:1.1rem 1.2rem;color:var(--text,#eee)">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:.6rem;flex-wrap:wrap;margin-bottom:.7rem">
+      <div><div style="font-weight:800;font-size:1rem">📋 ${es?'Evaluación de desempeño — hoja por proceso':'작업수행평가 체크시트'}</div>
+      <div style="font-size:.72rem;color:var(--text2,#999)">M-039-R4 · ${es?'Puntaje del proceso convertido a':'공정별 원점수 → 환산'} ${ctx.itemMax}${es?' pts':'점'}${ctx.proc?` · ${es?'Proceso':'응시자 공정'}: <b>${_perfEsc(ctx.proc)}</b>`:''}</div></div>
+      <button type="button" onclick="closePerfSheet()" class="btn btn-secondary btn-sm">✕ ${es?'Cerrar':'닫기'}</button>
+    </div>
+    ${ctx.evalMode?perfEvalHeaderHtml():''}
+    <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;margin-bottom:.6rem">
+      <label style="margin:0;font-size:.8rem">${ctx.evalMode?(es?'Hoja':'③ 체크시트'):(es?'Proceso':'평가 공정')}</label>
+      <select onchange="perfSelectSheet(this.value)" style="min-width:220px">${PERF_SHEETS.map(x=>`<option value="${x.key}" ${x.key===ctx.key?'selected':''}>${es?x.es:x.kr} (${x.max}${es?'':'점'})</option>`).join('')}</select>
+      ${ctx.auto?`<span style="font-size:.72rem;color:var(--green,#2ecc7a)">✓ ${es?'Seleccionado por el proceso del operador':'응시자 공정으로 자동 선택'}</span>`:''}
+      ${!ctx.proc||perfMatchProcess(ctx.proc)?'':`<span style="font-size:.72rem;color:var(--gold,#e2c46a)">⚠️ ${es?'Proceso no reconocido, seleccione':'공정 자동인식 불가 — 직접 선택'}</span>`}
+      <span style="flex:1"></span>
+      ${ctx.viewOnly?'':`<button type="button" class="btn btn-secondary btn-sm" onclick="perfSetAll('full')">${es?'Todo máximo':'전체 만점'}</button><button type="button" class="btn btn-secondary btn-sm" onclick="perfSetAll('zero')">${es?'Reiniciar':'초기화'}</button>`}
+      <button type="button" class="btn btn-secondary btn-sm" onclick="printPerfSheet()">🖨 ${es?'Imprimir':'인쇄'}</button>
+    </div>
+    <div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;min-width:640px">
+      <thead><tr style="font-size:.72rem;color:var(--text2,#999);text-align:left"><th style="padding:.35rem .6rem">${es?'Ítem':'항목'}</th><th style="padding:.35rem .6rem">${es?'Detalle de evaluación':'세부 평가 항목'}</th><th style="padding:.35rem .4rem;text-align:center">${es?'Pts':'배점'}</th><th style="padding:.35rem .6rem">${ctx.viewOnly?'':(es?'Puntaje':'평가점수')}</th></tr></thead>
+      <tbody>${rows}</tbody></table></div>
+    <div id="perfSumBox" style="margin-top:.8rem;background:var(--bg,#0a0a0a);border:1px solid var(--border,#2a2a2a);border-radius:6px;padding:.6rem .8rem"></div>
+    ${ctx.viewOnly?'':`<div style="display:flex;justify-content:flex-end;gap:.5rem;margin-top:.8rem">
+      <button type="button" class="btn btn-secondary" onclick="closePerfSheet()">${es?'Cancelar':'취소'}</button>
+      ${ctx.evalMode?`<button type="button" class="btn btn-success" onclick="savePerfEval()" ${ctx.eid?'':'disabled'}>💾 ${es?'Guardar evaluación':'평가 저장'}</button>`:`<button type="button" class="btn btn-primary" onclick="applyPerfSheet()">✅ ${es?'Aplicar puntaje':'점수 반영'}</button>`}</div>`}
+  </div>`;
+  perfUpdateSum();
+}
+function applyPerfSheet(){
+  if(!_perfCtx)return;
+  const r=perfCalc();
+  if(r.filled<r.s.items.length){
+    if(!confirm((_perfIsEs()?'Hay ítems sin puntaje (se cuentan como 0). ¿Continuar?':'점수를 입력하지 않은 항목이 있습니다 (0점 처리). 반영할까요?')))return;
+  }
+  const scores=r.sc.map(v=>parseFloat(v)||0);
+  const id=_perfCtx.inputId;
+  _perfSheetData[id]={key:r.s.key,scores,sum:r.sum,max:r.s.max,conv:r.conv,itemMax:_perfCtx.itemMax};
+  const inp=document.getElementById(id);
+  if(inp){inp.value=r.conv;inp.dispatchEvent(new Event('input',{bubbles:true}));}
+  const b=document.getElementById('pfb_'+id);if(b)b.textContent=_perfIsEs()?'Hoja ✓':'체크시트 ✓';
+  closePerfSheet();
+}
+function printPerfSheet(){
+  if(!_perfCtx)return;
+  const r=perfCalc();const s=r.s;const filled=r.filled>0;
+  let lastC=-1;
+  const rows=s.items.map((x,j)=>{
+    const h=x.c!==lastC?`<tr><td colspan="4" class="cat">${x.c+1}) ${PERF_CATS[x.c].kr} / ${PERF_CATS[x.c].es}</td></tr>`:'';lastC=x.c;
+    return h+`<tr><td><b>${_perfEsc(x.kr)}</b><br><small>${_perfEsc(x.es)}</small></td><td>${_perfEsc(x.dkr)}<br><small>${_perfEsc(x.des)}</small></td><td class="c">${x.pts}</td><td class="c">${filled&&r.sc[j]!=null?r.sc[j]:''}</td></tr>`;
+  }).join('');
+  const w=window.open('','_blank');if(!w){alert('팝업 차단을 해제해주세요.');return;}
+  w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>작업수행평가 체크시트 - ${_perfEsc(s.kr)}</title>
+  <style>body{font-family:'Malgun Gothic',sans-serif;margin:16px;color:#111}h2{margin:0 0 4px;font-size:18px}table{width:100%;border-collapse:collapse;font-size:11.5px}td,th{border:1px solid #555;padding:5px 6px;vertical-align:top}th{background:#eee}.c{text-align:center;width:52px}.cat{background:#f3ead0;font-weight:700}small{color:#555}.info td{border:1px solid #555;height:22px}@media print{button{display:none}}</style></head><body>
+  <h2>작업수행평가 체크시트 · Hoja de evaluación de desempeño — ${_perfEsc(s.kr)} / ${_perfEsc(s.es)}</h2>
+  <div style="font-size:11px;margin-bottom:8px">YURA HARNESS MÉXICO · 가공생산팀 1공장 · M-039-R4 · 원점수 ${s.max}점 → ${_perfCtx.itemMax}점 환산</div>
+  <table class="info" style="margin-bottom:8px"><tr><td style="width:12%">성명/Nombre</td><td></td><td style="width:12%">사번/No.</td><td></td><td style="width:12%">평가일/Fecha</td><td></td><td style="width:12%">평가자/Evaluador</td><td></td></tr></table>
+  <table><thead><tr><th style="width:22%">항목 / Ítem</th><th>세부 평가 항목 / Detalle</th><th class="c">배점</th><th class="c">점수</th></tr></thead><tbody>${rows}
+  <tr><td colspan="2" style="text-align:right;font-weight:700">합계 / Total (원점수 → 환산)</td><td class="c">${s.max}</td><td class="c">${filled?r.sum+' → '+r.conv:''}</td></tr></tbody></table>
+  <button onclick="print()" style="margin-top:10px;padding:6px 14px">인쇄 / Imprimir</button></body></html>`);
+  w.document.close();
+}
+// 설정 탭: 체크시트 미리보기
+
+// ════ 배점 설정 3블록 (① 이론 / ② 작업수행능력평가 / ③ 압착고측정 + 불량판별) ════
+// 내부적으로 실습 = ②+③, 실습 원점수 만점 = 실습 배점(%) → 원점수가 그대로 가중점수
+var PERF_ITEM_NAME='작업수행능력평가', CRIMP_ITEM_NAME='압착고측정능력 평가', DEFECT_ITEM_NAME='불량판별능력 평가';
+function _lv(id,def){const el=document.getElementById(id);const v=el?parseFloat(el.value):NaN;return isNaN(v)?def:v;}
+function buildPracticalFromLayout(){
+  const perf=_lv('perfPct',40),crimp=_lv('crimpPct',15),defect=_lv('defectPct',15);
+  const prac=perf+crimp+defect;
+  const pp=document.getElementById('practicalPct'),pm=document.getElementById('practicalMax');
+  if(pp)pp.value=prac; if(pm)pm.value=prac||1;
+  const s=document.getElementById('msaPctSum'); if(s)s.textContent='('+(crimp+defect)+'%)';
+  const next=[{name:PERF_ITEM_NAME,max:perf},{name:CRIMP_ITEM_NAME,max:crimp},{name:DEFECT_ITEM_NAME,max:defect}];
+  const same=practicalItems.length===3&&next.every((n,i)=>practicalItems[i].name===n.name&&Number(practicalItems[i].max)===n.max);
+  if(!same)practicalItems=next;
+  return !same;
+}
+var _layoutItemSaveTimer=null;
+function _saveLayoutToServer(){
+  clearTimeout(_layoutItemSaveTimer);
+  _layoutItemSaveTimer=setTimeout(()=>{
+    try{save();}catch(e){}
+    if(typeof _isLocalFile!=='undefined'&&_isLocalFile)return;
+    sbSavePracticalItems().catch(e=>console.warn('실습항목 저장 실패',e));
+    sbSaveConfig(collectExamCfg()).catch(e=>console.warn('시험설정 저장 실패',e));
+  },1200);
+}
+function onScoreLayoutChange(){
+  if(buildPracticalFromLayout())_saveLayoutToServer();
+  updateScoreSummary();
+}
+// 서버/로컬 설정 반영 후 호출: 새 키가 없으면 기존 실습항목에서 배점을 이어받아 자동 전환
+function syncLayoutFromState(cfg){
+  cfg=cfg||{};
+  const set=(id,v)=>{const el=document.getElementById(id);if(el&&document.activeElement!==el)el.value=v;};
+  const has=k=>cfg[k]!=null&&cfg[k]!=='';
+  if(!(has('perfPct')&&has('crimpPct')&&has('defectPct'))){
+    const f=re=>{const it=practicalItems.find(x=>re.test(x.name||''));return it?Number(it.max):null;};
+    const perf=practicalItems.find(isPerfItem);
+    // 기존(구 배점) 설정에서 처음 전환 시에는 M-039-R4 기본 배점(40/15/15) 적용
+    set('perfPct',perf?Number(perf.max):40);
+    set('crimpPct',perf?(f(/압착|altura/i)??15):15);
+    set('defectPct',perf?(f(/불량|판별|defect/i)??15):15);
+    if(buildPracticalFromLayout()||true)_saveLayoutToServer();
+  }else if(buildPracticalFromLayout()){_saveLayoutToServer();}
+}
+
+window.addEventListener('load',()=>{setTimeout(()=>{try{let c={};try{c=JSON.parse(localStorage.getItem('exam_cfg')||'{}')||{};}catch(e){}
+  if(document.getElementById('perfPct')){syncLayoutFromState(c);updateScoreSummary();}}catch(e){console.warn(e);}},0);});
+
+// ════ 채점하기: ① 이론평가점수 / ② 작업수행능력평가 / ③ 압착고측정+불량판별 — 작업자 카드별 점수 입력 (2026-10-26) ════
+var _scoreTab='theory', _csDirty={}, _csBusy=false;
+function _r1(v){return Math.round((parseFloat(v)||0)*10)/10;}
+function _csKey(eid){return String(eid).replace(/[^A-Za-z0-9]/g,'_');}
+function _csItemIdx(){
+  const pf=practicalItems.findIndex(isPerfItem);
+  const cr=practicalItems.findIndex((it,i)=>i!==pf&&/압착|altura/i.test(it.name||''));
+  const df=practicalItems.findIndex((it,i)=>i!==pf&&i!==cr&&/불량|판별|defect/i.test(it.name||''));
+  return{pf,cr,df};
+}
+function _latestResult(eid){
+  const rs=results.filter(r=>String(r.empId)===String(eid));
+  rs.sort((a,b)=>(new Date(b.date||0)-new Date(a.date||0))||((b.timestamp||0)-(a.timestamp||0)));
+  return rs[0]||null;
+}
+function _hasTheory(r){return !!r&&((parseFloat(r.theoryRawMax)||0)>0||(parseFloat(r.theoryWeighted)||0)>0||(r.details||[]).length>0);}
+function _findItem(r,item){if(!r||!item)return null;return (r.practicalItemScores||[]).find(x=>x.name===item.name)||null;}
+function _csScores(eid){
+  const r=_latestResult(eid), pt=pendingTheory[eid], ix=_csItemIdx();
+  const g=i=>{if(i<0)return null;const it=_findItem(r,practicalItems[i]);return it&&!it.na?parseFloat(it.score):null;};
+  return{r,
+    theory:_hasTheory(r)?_r1(r.theoryWeighted):null,
+    theoryPend:pt?pt.weighted:null,
+    perf:g(ix.pf),crimp:g(ix.cr),defect:g(ix.df),
+    perfItem:ix.pf>=0?_findItem(r,practicalItems[ix.pf]):null,
+    total:r?_r1(r.totalScore):null,passed:r?!!r.passed:null};
+}
+// 점수 반영 공통: 최신 결과에 반영(없으면 새 결과 생성) → 서버 저장
+async function upsertScores(eid,patch){
+  const cfg=getConfig();
+  const st=students.find(s=>String(s.empId||s.name)===String(eid))||{};
+  let r=_latestResult(eid);
+  if(!r){
+    r={name:st.name||String(eid),empId:st.empId||String(eid),team:document.getElementById('examTeam')?.value||'',
+      process:st.process||'',hireDate:st.hireDate||'',date:document.getElementById('examDate')?.value||new Date().toISOString().slice(0,10),
+      theoryRaw:0,theoryRawMax:0,theoryWeighted:0,theoryPct:cfg.theoryPct,
+      practicalRaw:0,practicalMax:cfg.practicalMax,practicalWeighted:0,practicalPct:cfg.practicalPct,
+      totalScore:0,correct:0,details:[],practicalItemScores:[],passed:false,timestamp:Date.now()};
+    results.push(r);
+  }
+  if(patch.theoryW!=null){
+    const rawMax=(questions.length*cfg.pointsPerQ)||100;
+    const w=Math.max(0,Math.min(cfg.theoryPct,parseFloat(patch.theoryW)||0));
+    r.theoryWeighted=_r1(w);r.theoryPct=cfg.theoryPct;r.theoryRawMax=rawMax;
+    r.theoryRaw=_r1(w/cfg.theoryPct*rawMax);r.correct=Math.round(r.theoryRaw/cfg.pointsPerQ);
+  }
+  if(patch.items&&patch.items.length){
+    const cur=practicalItems.map(it=>{const o=(r.practicalItemScores||[]).find(x=>x.name===it.name);
+      return o?Object.assign({},o,{max:it.max,score:Math.min(parseFloat(o.score)||0,it.max)}):{name:it.name,score:0,max:it.max,na:true};});
+    patch.items.forEach(p=>{const k=cur.findIndex(x=>x.name===p.name);if(k<0)return;
+      const n=Object.assign({},cur[k],p);n.score=Math.max(0,Math.min(n.max,parseFloat(p.score)||0));
+      if(p.sheet===null)delete n.sheet;delete n.na;cur[k]=n;});
+    r.practicalItemScores=cur;
+    const praw=cur.reduce((a,b)=>a+(parseFloat(b.score)||0),0);
+    r.practicalRaw=_r1(praw);r.practicalMax=cfg.practicalMax;r.practicalPct=cfg.practicalPct;
+    r.practicalWeighted=_r1(praw/cfg.practicalMax*cfg.practicalPct);
+  }
+  r.totalScore=_r1((parseFloat(r.theoryWeighted)||0)+(parseFloat(r.practicalWeighted)||0));
+  r.passed=r.totalScore>=cfg.passingScore;
+  try{save();}catch(e){}
+  const res=await sbSaveResult(r);
+  if(!r._sbId&&Array.isArray(res)&&res[0]&&res[0].id)r._sbId=res[0].id;
+  return r;
+}
+// 모바일 이론 결과(나중 생성)와 실습만 입력된 결과(먼저 생성)가 따로 있으면 하나로 합침
+function _csMergeSplit(){
+  const by={};
+  results.forEach(r=>{(by[String(r.empId)]=by[String(r.empId)]||[]).push(r);});
+  Object.keys(by).forEach(eid=>{
+    const list=by[eid];if(list.length<2)return;
+    const th=_latestResult(eid);
+    if(!_hasTheory(th)||(th.practicalItemScores||[]).length)return;
+    const po=list.find(x=>x!==th&&!_hasTheory(x)&&(x.practicalItemScores||[]).length);
+    if(!po)return;
+    th.practicalItemScores=po.practicalItemScores;th.practicalRaw=po.practicalRaw;th.practicalMax=po.practicalMax;
+    th.practicalPct=po.practicalPct;th.practicalWeighted=po.practicalWeighted;
+    th.totalScore=_r1((parseFloat(th.theoryWeighted)||0)+(parseFloat(th.practicalWeighted)||0));
+    th.passed=th.totalScore>=getConfig().passingScore;
+    const delId=po._sbId;
+    results.splice(results.indexOf(po),1);
+    sbSaveResult(th).then(()=>delId?sbFetch(`exam_results?id=eq.${delId}`,{method:'DELETE',headers:{'Prefer':''}}):null).catch(e=>console.warn('결과 병합 저장 실패',e));
+  });
+}
+
+function switchScoreTab(tab){
+  _scoreTab=tab;
+  ['theory','perf','msa'].forEach(t=>{const b=document.getElementById('stab_'+t);if(b)b.classList.toggle('active',t===tab);});
+  const ts=document.getElementById('jsonAutoTheorySection');if(ts)ts.style.display=tab==='theory'?'block':'none';
+  document.querySelectorAll('[data-cstab]').forEach(el=>{el.style.display=el.dataset.cstab.split(',').includes(tab)?'':'none';});
+  renderPracticalCardList();
+  if(tab==='msa')autoLoadMSA();
+}
+function goScoreTab(tab){
+  _scoreTab=tab;
+  const b=document.querySelector('.tab-btn[onclick*="\'grade\'"]');
+  switchTab('grade',b);
+  switchScoreTab(tab);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function switchAutoSubtab(sub){switchScoreTab(sub==='practical'?'perf':'theory');}
+
+function _csFiltered(){
+  const q=(document.getElementById('csSearch')?.value||'').trim().toLowerCase();
+  const pr=document.getElementById('csProc')?.value||'';
+  const only=document.getElementById('csOnlyEmpty')?.checked;
+  const seen={};
+  return students.filter(s=>(s.name||s.empId)).filter(s=>{const e=String(s.empId||s.name);if(seen[e])return false;seen[e]=1;return true;})
+    .filter(s=>!q||String(s.name||'').toLowerCase().includes(q)||String(s.empId||'').toLowerCase().includes(q))
+    .filter(s=>!pr||(s.process||'')===pr)
+    .filter(s=>{if(!only)return true;const c=_csScores(s.empId||s.name);
+      if(_scoreTab==='theory')return c.theory==null;if(_scoreTab==='perf')return c.perf==null;return c.crimp==null||c.defect==null;});
+}
+function _csChip(lbl,v,max,col){
+  return `<span class="cs-chip" style="border-color:${v==null?'var(--border)':col};color:${v==null?'var(--text2)':col}">${lbl} <b>${v==null?'-':v}</b>/${max}</span>`;
+}
+function renderPracticalCardList(){
+  const el=document.getElementById('practicalCardList');if(!el)return;
+  try{_csMergeSplit();}catch(e){console.warn(e);}
+  const cfg=getConfig(),ix=_csItemIdx();
+  const perfMax=ix.pf>=0?practicalItems[ix.pf].max:_lv('perfPct',40);
+  const crMax=ix.cr>=0?practicalItems[ix.cr].max:_lv('crimpPct',15);
+  const dfMax=ix.df>=0?practicalItems[ix.df].max:_lv('defectPct',15);
+  // 탭 버튼 배점 표시
+  const w=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v+'%';};
+  w('stabw_theory',cfg.theoryPct);w('stabw_perf',perfMax);w('stabw_msa',crMax+dfMax);
+  // 공정 필터 옵션
+  const ps=document.getElementById('csProc');
+  if(ps){const cur=ps.value;const procs=[...new Set(students.map(s=>s.process).filter(Boolean))].sort();
+    ps.innerHTML='<option value="">전체 공정</option>'+procs.map(p=>`<option ${p===cur?'selected':''}>${_perfEsc(p)}</option>`).join('');}
+  const list=_csFiltered();
+  const allN=students.filter(s=>s.name||s.empId).length;
+  const cnt=document.getElementById('csCount');if(cnt)cnt.textContent=`${list.length} / ${allN}명`;
+  _csUpdateDirtyCount();
+  if(!allN){el.innerHTML='<div class="empty-state"><div class="empty-icon">👥</div>먼저 응시자 명단을 등록해주세요</div>';return;}
+  if(!list.length){el.innerHTML='<div class="empty-state">조건에 맞는 응시자가 없습니다</div>';return;}
+  el.innerHTML=`<div class="cs-grid">${list.map(s=>{
+    const eid=String(s.empId||s.name),k=_csKey(eid),c=_csScores(eid),d=_csDirty[eid]||{};
+    const val=(f,v)=>d[f]!=null?d[f]:(v==null?'':v);
+    let body='';
+    if(_scoreTab==='theory'){
+      body=`<div class="cs-in"><label>이론평가점수</label><input type="number" id="cs_th_${k}" min="0" max="${cfg.theoryPct}" step="0.1" value="${val('theory',c.theory)}" oninput="csMark('${eid}','theory',this.value)" onkeydown="if(event.key==='Enter')csSaveCard('${eid}')"><span>/ ${cfg.theoryPct}</span></div>
+      ${c.r&&(c.r.details||[]).length?`<div class="cs-note">모바일/OMR 응시 ${c.r.correct||0}/${(c.r.details||[]).length} 정답</div>`:(c.theoryPend!=null?`<div class="cs-note" style="color:var(--gold)">JSON 채점 대기 ${c.theoryPend}점 (미저장)</div>`:'<div class="cs-note">종이시험은 점수 직접 입력</div>')}`;
+    }else if(_scoreTab==='perf'){
+      if(d.perf==null)perfRestore('cs_pf_'+k,c.perfItem);
+      body=`<div class="cs-in"><label>작업수행능력</label><input type="number" id="cs_pf_${k}" min="0" max="${perfMax}" step="0.1" value="${val('perf',c.perf)}" oninput="csMark('${eid}','perf',this.value)" onkeydown="if(event.key==='Enter')csSaveCard('${eid}')"><span>/ ${perfMax}</span>${perfBtnHtml('cs_pf_'+k,s.process||'',perfMax)}</div>
+      <div class="cs-note">${c.perfItem&&c.perfItem.sheet?`📋 ${_perfEsc(c.perfItem.sheet.process)} · 원점수 ${c.perfItem.sheet.sum}/${c.perfItem.sheet.max}`:`체크시트: ${_perfEsc((perfMatchProcess(s.process)||{kr:'공정 선택 필요'}).kr)}`}</div>`;
+    }else{
+      body=`<div class="cs-in"><label>압착고측정</label><input type="number" id="cs_cr_${k}" min="0" max="${crMax}" step="0.1" value="${val('crimp',c.crimp)}" oninput="csMark('${eid}','crimp',this.value)" onkeydown="if(event.key==='Enter')csSaveCard('${eid}')"><span>/ ${crMax}</span></div>
+      <div class="cs-in"><label>불량판별</label><input type="number" id="cs_df_${k}" min="0" max="${dfMax}" step="0.1" value="${val('defect',c.defect)}" oninput="csMark('${eid}','defect',this.value)" onkeydown="if(event.key==='Enter')csSaveCard('${eid}')"><span>/ ${dfMax}</span></div>`;
+    }
+    const dirty=Object.keys(d).length>0;
+    return`<div class="cs-card${dirty?' dirty':''}" id="csc_${k}">
+      <div class="cs-head"><div style="min-width:0"><div class="cs-name">${_perfEsc(s.name||eid)}</div>
+        <div class="cs-sub"><span style="font-family:'JetBrains Mono',monospace">${_perfEsc(s.empId||'-')}</span> · <span class="cs-proc">${_perfEsc(s.process||'공정미입력')}</span></div></div>
+        ${c.total!=null?`<div class="cs-total" style="color:${c.passed?'var(--green)':'var(--red)'}">${c.total}<small>${c.passed?'합격':'불합격'}</small></div>`:''}</div>
+      <div class="cs-chips">${_csChip('이론',c.theory,cfg.theoryPct,'var(--blue)')}${_csChip('작업수행',c.perf,perfMax,'var(--teal)')}${_csChip('압착고+불량',(c.crimp==null&&c.defect==null)?null:_r1((c.crimp||0)+(c.defect||0)),crMax+dfMax,'var(--purple)')}</div>
+      <div class="cs-body">${body}</div>
+      <div class="cs-foot"><button type="button" class="btn btn-success btn-sm" onclick="csSaveCard('${eid}')" id="csb_${k}">💾 저장</button></div>
+    </div>`;}).join('')}</div>`;
+}
+function csMark(eid,f,v){
+  (_csDirty[eid]=_csDirty[eid]||{})[f]=v;
+  const c=document.getElementById('csc_'+_csKey(eid));if(c)c.classList.add('dirty');
+  _csUpdateDirtyCount();
+}
+function _csUpdateDirtyCount(){
+  const n=Object.keys(_csDirty).filter(k=>Object.keys(_csDirty[k]).length).length;
+  const b=document.getElementById('csSaveAllBtn');
+  if(b){b.textContent=`💾 변경 카드 일괄 저장 (${n})`;b.disabled=!n;}
+}
+function _csPatch(eid){
+  const d=_csDirty[eid]||{},k=_csKey(eid),ix=_csItemIdx(),patch={},items=[];
+  const num=v=>(v===''||v==null||isNaN(parseFloat(v)))?null:parseFloat(v);
+  if(d.theory!=null&&num(d.theory)!=null)patch.theoryW=num(d.theory);
+  if(d.perf!=null&&num(d.perf)!=null&&ix.pf>=0){
+    const arr=perfAttach([{name:practicalItems[ix.pf].name,score:num(d.perf),max:practicalItems[ix.pf].max}],()=>'cs_pf_'+k);
+    if(!arr[0].sheet)arr[0].sheet=null;items.push(arr[0]);
+  }
+  if(d.crimp!=null&&num(d.crimp)!=null&&ix.cr>=0)items.push({name:practicalItems[ix.cr].name,score:num(d.crimp)});
+  if(d.defect!=null&&num(d.defect)!=null&&ix.df>=0)items.push({name:practicalItems[ix.df].name,score:num(d.defect)});
+  if(items.length)patch.items=items;
+  return patch;
+}
+async function csSaveCard(eid,silent){
+  const patch=_csPatch(eid);
+  if(patch.theoryW==null&&!patch.items){if(!silent)alert('입력된 점수가 없습니다.');return false;}
+  const btn=document.getElementById('csb_'+_csKey(eid));if(btn){btn.disabled=true;btn.textContent='저장중…';}
+  try{
+    const r=await upsertScores(eid,patch);
+    delete _csDirty[eid];
+    if(!silent){renderPracticalCardList();_csFlash(eid,`✅ 저장 · 총점 ${r.totalScore}점 (${r.passed?'합격':'불합격'})`);
+      _sbCacheTime=0;sbLoadAllCached(true).then(()=>renderPracticalCardList()).catch(()=>{});}
+    return true;
+  }catch(e){
+    console.warn('카드 점수 저장 실패',e);
+    if(btn){btn.disabled=false;btn.textContent='💾 저장';}
+    if(!silent)alert('⚠️ 서버 저장 실패: '+e.message);
+    return false;
+  }
+}
+async function csSaveAll(){
+  const keys=Object.keys(_csDirty).filter(k=>Object.keys(_csDirty[k]).length);
+  if(!keys.length)return;
+  const b=document.getElementById('csSaveAllBtn');if(b){b.disabled=true;b.textContent='저장중…';}
+  let ok=0,fail=0;
+  for(const eid of keys){(await csSaveCard(eid,true))?ok++:fail++;}
+  renderPracticalCardList();
+  _sbCacheTime=0;sbLoadAllCached(true).then(()=>renderPracticalCardList()).catch(()=>{});
+  alert(`💾 일괄 저장 완료: ${ok}명${fail?` · 실패 ${fail}명`:''}`);
+}
+function _csFlash(eid,msg){
+  const c=document.getElementById('csc_'+_csKey(eid));if(!c)return;
+  const n=document.createElement('div');n.className='cs-flash';n.textContent=msg;c.appendChild(n);
+  setTimeout(()=>n.remove(),2500);
+}
+
+
+// ════ 배포 → 「작업수행능력평가 시작」: 체크시트 창에서 작업자 선택 후 바로 평가·저장 ════
+function openPerfEval(){
+  // 근태관리 지정공정 최신화 후 목록 갱신
+  try{qualTressSync(true).then(()=>{if(_perfCtx&&_perfCtx.evalMode)renderPerfSheet();});}catch(e){}
+  const pf=practicalItems.find(isPerfItem);
+  openPerfSheet('__eval__','',pf?pf.max:_lv('perfPct',40));
+  _perfCtx.evalMode=true;_perfCtx.evalProc='';_perfCtx.eid=null;_perfCtx.scores=null;_perfCtx.auto=false;
+  renderPerfSheet();
+  setTimeout(()=>{const i=document.getElementById('perfEvalProc');if(i)i.focus();},50);
+}
+function _perfEvalList(){
+  const seen={};
+  return students.filter(s=>s.name||s.empId).filter(s=>{const e=String(s.empId||s.name);if(seen[e])return false;seen[e]=1;return true;});
+}
+function perfEvalHeaderHtml(){
+  const ctx=_perfCtx,es=_perfIsEs();
+  const all=_perfEvalList();
+  const procs={};all.forEach(s=>{const p=s.process||'(공정미입력)';procs[p]=(procs[p]||0)+1;});
+  const plist=Object.keys(procs).sort();
+  const fl=all.filter(s=>!ctx.evalProc||(s.process||'(공정미입력)')===ctx.evalProc);
+  const st=ctx.eid?all.find(s=>String(s.empId||s.name)===ctx.eid):null;
+  const cur=ctx.eid?_csScores(ctx.eid):null;
+  const done=fl.filter(s=>_csScores(String(s.empId||s.name)).perf!=null).length;
+  const selSt='font-size:.95rem;padding:.55rem .6rem;min-height:44px';
+  return `<div style="background:rgba(46,196,182,.08);border:1px solid rgba(46,196,182,.35);border-radius:8px;padding:.75rem .8rem;margin-bottom:.7rem">
+    <div style="display:grid;grid-template-columns:minmax(180px,1fr) minmax(260px,2fr);gap:.6rem">
+      <div><label style="margin:0 0 .25rem;display:block;font-size:.78rem;font-weight:700;color:var(--teal)">① ${es?'Proceso':'공정 선택'}</label>
+        <select id="perfEvalProc" onchange="perfEvalSetProc(this.value)" style="${selSt};width:100%">
+          <option value="">${es?'Todos':'전체 공정'} (${all.length}${es?'':'명'})</option>
+          ${plist.map(p=>`<option value="${_perfEsc(p)}" ${p===ctx.evalProc?'selected':''}>${_perfEsc(p)} (${procs[p]}${es?'':'명'})</option>`).join('')}
+        </select></div>
+      <div><label style="margin:0 0 .25rem;display:flex;justify-content:space-between;font-size:.78rem;font-weight:700;color:var(--teal)"><span>② ${es?'Operador':'작업자 선택 (이름 · 사번)'}</span><span style="font-weight:400;color:var(--text2)">${es?'Evaluados':'평가완료'} ${done}/${fl.length}</span></label>
+        <div style="display:flex;gap:.35rem">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="perfEvalStep(-1)" title="이전" style="min-width:40px">◀</button>
+          <select id="perfEvalWho" onchange="perfEvalPick(this.value)" style="${selSt};flex:1;min-width:0">
+            <option value="">-- ${es?'Seleccione':'작업자를 선택하세요'} --</option>
+            ${fl.map(s=>{const e=String(s.empId||s.name);const c=_csScores(e);return`<option value="${_perfEsc(e)}" ${e===ctx.eid?'selected':''}>${c.perf!=null?'✓ ':'○ '}${_perfEsc(s.name||e)} (${_perfEsc(s.empId||'-')})${ctx.evalProc?'':' · '+_perfEsc(s.process||'')}${c.perf!=null?' — '+c.perf+'점':''}</option>`;}).join('')}
+          </select>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="perfEvalStep(1)" title="다음" style="min-width:40px">▶</button>
+        </div></div>
+    </div>
+    ${st?`<div style="display:flex;gap:1rem;flex-wrap:wrap;margin-top:.5rem;font-size:.8rem;color:var(--text2)">
+      <span style="color:var(--text);font-weight:700">${_perfEsc(st.name||'')}</span>
+      <span>${es?'No.':'사번'} <b style="color:var(--text);font-family:'JetBrains Mono',monospace">${_perfEsc(st.empId||'-')}</b></span>
+      <span>${es?'Proceso':'공정'} <b style="color:var(--sky)">${_perfEsc(st.process||'-')}</b></span>
+      <span>${es?'Actual':'현재 작업수행'} <b style="color:var(--teal)">${cur&&cur.perf!=null?cur.perf+' / '+ctx.itemMax:'-'}</b></span>
+      ${cur&&cur.total!=null?`<span>${es?'Total':'총점'} <b style="color:${cur.passed?'var(--green)':'var(--red)'}">${cur.total}</b></span>`:''}
+    </div>`:''}
+    ${ctx.savedMsg?`<div style="font-size:.8rem;color:var(--green);margin-top:.45rem">${ctx.savedMsg}</div>`:''}
+  </div>`;
+}
+function perfEvalSetProc(p){
+  const ctx=_perfCtx;if(!ctx)return;
+  ctx.evalProc=p;ctx.eid=null;ctx.scores=null;ctx.savedMsg='';
+  const ms=perfMatchProcess(p);if(ms){ctx.key=ms.key;ctx.auto=true;}else ctx.auto=false;
+  ctx.proc=p;
+  setTimeout(renderPerfSheet,0);
+}
+function _perfEvalFiltered(){const ctx=_perfCtx;return _perfEvalList().filter(s=>!ctx.evalProc||(s.process||'(공정미입력)')===ctx.evalProc);}
+function perfEvalStep(d){
+  const fl=_perfEvalFiltered();if(!fl.length)return;
+  let k=fl.findIndex(s=>String(s.empId||s.name)===_perfCtx.eid);
+  k=k<0?(d>0?0:fl.length-1):Math.max(0,Math.min(fl.length-1,k+d));
+  _perfCtx.savedMsg='';
+  perfEvalPick(String(fl[k].empId||fl[k].name));
+}
+function perfEvalPick(eid){
+  const ctx=_perfCtx;if(!ctx)return;
+  const st=eid?_perfEvalList().find(s=>String(s.empId||s.name)===String(eid)):null;
+  if(!st){ctx.eid=null;setTimeout(renderPerfSheet,0);return;}
+  ctx.eid=String(st.empId||st.name);ctx.proc=st.process||'';
+  const prev=_csScores(ctx.eid).perfItem;
+  if(prev&&prev.sheet&&perfSheetByKey(prev.sheet.key)){ctx.key=prev.sheet.key;ctx.scores=(prev.sheet.scores||[]).slice();ctx.auto=false;}
+  else{const ms=perfMatchProcess(ctx.proc);ctx.key=(ms||perfSheetByKey(ctx.key)||PERF_SHEETS[0]).key;ctx.scores=null;ctx.auto=!!ms;}
+  setTimeout(renderPerfSheet,0);
+}
+async function savePerfEval(){
+  const ctx=_perfCtx;if(!ctx||!ctx.eid){alert('작업자를 먼저 선택해주세요.');return;}
+  const r=perfCalc();
+  if(r.filled<r.s.items.length&&!confirm('점수를 입력하지 않은 항목이 있습니다 (0점 처리). 저장할까요?'))return;
+  const pf=practicalItems.find(isPerfItem);if(!pf){alert('시험 설정에 작업수행능력평가 항목이 없습니다.');return;}
+  const scores=r.sc.map(v=>parseFloat(v)||0);
+  const sheet={key:r.s.key,process:r.s.kr,sum:r.sum,max:r.s.max,scores,
+    detail:r.s.items.map((x,j)=>({cat:PERF_CATS[x.c].kr,name:x.kr,pts:x.pts,score:scores[j]}))};
+  const eid=ctx.eid,name=(_perfEvalList().find(s=>String(s.empId||s.name)===eid)||{}).name||eid;
+  try{
+    const res=await upsertScores(eid,{items:[{name:pf.name,score:r.conv,sheet}]});
+    if(_csDirty[eid])delete _csDirty[eid].perf;
+    ctx.savedMsg=`✅ ${_perfEsc(name)} 저장 완료 — 작업수행 ${r.conv}/${ctx.itemMax}점 · 총점 ${res.totalScore}점`;
+    const _fl=_perfEvalFiltered();const _k=_fl.findIndex(x=>String(x.empId||x.name)===eid);
+    const _nx=_fl.slice(_k+1).find(x=>_csScores(String(x.empId||x.name)).perf==null);
+    if(_nx){const _m=ctx.savedMsg;perfEvalPick(String(_nx.empId||_nx.name));ctx.savedMsg=_m+' → 다음: '+_perfEsc(_nx.name||'');}
+    else{ctx.eid=null;ctx.scores=null;ctx.savedMsg+=' (이 공정 미평가 작업자 없음)';renderPerfSheet();}
+    setTimeout(()=>{const m=document.getElementById('perfSheetModal');if(m)m.scrollTop=0;},30);
+    try{if(document.getElementById('practicalCardList'))renderPracticalCardList();}catch(e){}
+    _sbCacheTime=0;sbLoadAllCached(true).catch(()=>{});
+  }catch(e){alert('⚠️ 서버 저장 실패: '+e.message);}
+}
+
+function viewPerfSheets(){openPerfSheet('__view__','',(practicalItems.find(isPerfItem)||{max:40}).max,true);}
+
+</script>
+<script>
 (function(){
   var VERSION='20260915001';
   var KEY='yura_page_ver_'+location.pathname;
@@ -90,7 +858,36 @@ label{font-size:0.78rem;color:var(--text2);margin-bottom:0.3rem;display:block;}
 /* Score config */
 .score-config{display:grid;grid-template-columns:1fr 1fr;gap:1.4rem;margin-bottom:1rem;}
 .score-block{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:1.1rem;}
-.score-block.theory{border-left:3px solid var(--blue);}.score-block.practical{border-left:3px solid var(--purple);}
+.score-block.theory{border-left:3px solid var(--blue);}
+.score-tabbar{display:grid;grid-template-columns:repeat(3,1fr);gap:0.7rem;margin-bottom:1rem}
+.score-tab{padding:0.95rem 1rem;border-radius:10px;border:1.5px solid var(--border);background:var(--surface);color:var(--text2);font-family:inherit;font-size:0.98rem;font-weight:800;cursor:pointer;transition:all .15s;text-align:left;display:flex;align-items:center;gap:0.45rem}
+.score-tab small{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:0.8rem;font-weight:700;opacity:.8}
+.score-tab:hover{border-color:var(--sky)}
+#stab_theory.active{border-color:var(--blue);color:var(--blue);background:rgba(201,168,76,.10)}
+#stab_perf.active{border-color:var(--teal);color:var(--teal);background:rgba(46,196,182,.10)}
+#stab_msa.active{border-color:var(--purple);color:var(--purple);background:rgba(155,126,232,.10)}
+.cs-toolbar{display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap;margin-bottom:0.9rem}
+.cs-toolbar [data-cstab]{display:inline-flex}
+.cs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:0.7rem}
+.cs-card{position:relative;background:var(--bg);border:1px solid var(--border);border-radius:9px;padding:0.85rem 0.9rem;display:flex;flex-direction:column;gap:0.55rem}
+.cs-card.dirty{border-color:var(--gold);box-shadow:0 0 0 1px rgba(226,196,106,.25)}
+.cs-head{display:flex;justify-content:space-between;gap:0.5rem;align-items:flex-start}
+.cs-name{font-weight:800;font-size:0.98rem;line-height:1.25}
+.cs-sub{font-size:0.74rem;color:var(--text2);margin-top:0.2rem}
+.cs-proc{color:var(--sky)}
+.cs-total{font-family:'JetBrains Mono',monospace;font-weight:800;font-size:1.25rem;text-align:right;line-height:1}
+.cs-total small{display:block;font-size:0.66rem;font-family:inherit;margin-top:0.2rem}
+.cs-chips{display:flex;gap:0.3rem;flex-wrap:wrap}
+.cs-chip{font-size:0.72rem;border:1px solid var(--border);border-radius:5px;padding:0.12rem 0.4rem;white-space:nowrap}
+.cs-body{display:flex;flex-direction:column;gap:0.4rem;border-top:1px dashed var(--border);padding-top:0.55rem}
+.cs-in{display:flex;align-items:center;gap:0.45rem}
+.cs-in label{margin:0;min-width:86px;font-size:0.8rem;color:var(--text2)}
+.cs-in input{width:84px;text-align:center;font-family:'JetBrains Mono',monospace;font-size:1rem;font-weight:700;padding:0.3rem}
+.cs-in span{font-size:0.78rem;color:var(--text2)}
+.cs-note{font-size:0.72rem;color:var(--text2)}
+.cs-foot{display:flex;justify-content:flex-end}
+.cs-flash{position:absolute;left:0.6rem;right:0.6rem;bottom:0.6rem;background:rgba(46,204,122,.15);border:1px solid rgba(46,204,122,.4);color:var(--green);font-size:0.76rem;border-radius:6px;padding:0.3rem 0.5rem;text-align:center}
+@media(max-width:700px){.score-tabbar{grid-template-columns:1fr}}.score-block.perf{border-left:3px solid var(--teal);}.score-config3{grid-template-columns:repeat(3,1fr)}@media(max-width:900px){.score-config3{grid-template-columns:1fr}}.score-block.practical{border-left:3px solid var(--purple);}
 .score-block-title{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:0.8rem;display:flex;align-items:center;gap:0.5rem;}
 .score-block-title.t{color:var(--blue);}.score-block-title.p{color:var(--purple);}
 .score-total-bar{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:0.65rem 1rem;display:flex;justify-content:space-between;align-items:center;font-size:0.85rem;}
@@ -734,14 +1531,15 @@ async function sbSaveGradeConfig() {
 }
 // 시험설정 → 입력칸 반영
 function applyExamCfgToInputs(cfg){
-  const m={title:'examTitle',date:'examDate',team:'examTeam',passingScore:'passingScore',examDuration:'examDuration',pointsPerQ:'pointsPerQ',theoryPct:'theoryPct',practicalPct:'practicalPct',practicalMax:'practicalMax',mobileExamTitle:'mobileExamTitle',mobileExamLang:'mobileExamLang'};
+  const m={title:'examTitle',date:'examDate',team:'examTeam',passingScore:'passingScore',examDuration:'examDuration',pointsPerQ:'pointsPerQ',theoryPct:'theoryPct',practicalPct:'practicalPct',practicalMax:'practicalMax',perfPct:'perfPct',crimpPct:'crimpPct',defectPct:'defectPct',mobileExamTitle:'mobileExamTitle',mobileExamLang:'mobileExamLang'};
   Object.keys(m).forEach(k=>{const el=document.getElementById(m[k]);if(el&&cfg[k]!=null&&cfg[k]!==''&&document.activeElement!==el)el.value=cfg[k];});
+  try{syncLayoutFromState(cfg);}catch(e){console.warn('배점 레이아웃 동기화 실패',e);}
   if(typeof updateScoreSummary==='function')updateScoreSummary();
 }
 // 시험설정 입력 변경 시 서버 자동저장 (1.5초 debounce)
 let _cfgSaveTimer=null;
 window.addEventListener('DOMContentLoaded',()=>{
-  ['examTitle','examDate','examTeam','passingScore','examDuration','pointsPerQ','theoryPct','practicalPct','practicalMax','mobileExamTitle','mobileExamLang'].forEach(id=>{
+  ['examTitle','examDate','examTeam','passingScore','examDuration','pointsPerQ','theoryPct','practicalPct','practicalMax','perfPct','crimpPct','defectPct','mobileExamTitle','mobileExamLang'].forEach(id=>{
     const el=document.getElementById(id); if(!el) return;
     el.addEventListener('change',()=>{
       clearTimeout(_cfgSaveTimer);
@@ -3347,52 +4145,43 @@ document.addEventListener('DOMContentLoaded', renderExamQr);
   </div>
 
   <div class="card">
-    <div class="card-title">⚖️ <span data-kr="배점 비율 설정 (이론 + 실습)" data-es="Configuración de Puntaje (Teórico + Práctico)">배점 비율 설정 (이론 + 실습)</span></div>
-    <div class="score-config">
+    <div class="card-title">⚖️ <span data-kr="배점 설정 (이론 + 작업수행 + 압착고·불량판별)" data-es="Configuración de Puntaje (Teórico + Desempeño + Altura/Defectos)">배점 설정 (이론 + 작업수행 + 압착고·불량판별)</span></div>
+    <div class="score-config score-config3">
       <div class="score-block theory">
-        <div class="score-block-title t">📝 <span data-kr="이론 평가 (객관식)" data-es="Evaluación Teórica">이론 평가 (객관식)</span></div>
+        <div class="score-block-title t">① <span data-kr="이론평가 (객관식)" data-es="Evaluación Teórica">이론평가 (객관식)</span></div>
         <div class="form-row" style="margin-bottom:0.5rem">
-          <div><label><span data-kr="배점 비율 (%)" data-es="Peso (%)">배점 비율 (%)</span></label><input type="number" id="theoryPct" value="50" min="0" max="100" onchange="updateScoreSummary()"></div>
+          <div><label><span data-kr="배점 (%)" data-es="Peso (%)">배점 (%)</span></label><input type="number" id="theoryPct" value="30" min="0" max="100" onchange="onScoreLayoutChange()"></div>
         </div>
-        <div style="font-size:0.76rem;color:var(--text2)" id="theoryMaxInfo">문항 20개 × 5점 = 원점수 100점 → 가중 50점 반영</div>
+        <div style="font-size:0.76rem;color:var(--text2)" id="theoryMaxInfo">문항 20개 × 5점 = 원점수 100점 → 가중 30점 반영</div>
+      </div>
+      <div class="score-block perf">
+        <div class="score-block-title" style="color:var(--teal)">② <span data-kr="작업수행능력평가" data-es="Evaluación de Desempeño">작업수행능력평가</span></div>
+        <div class="form-row" style="margin-bottom:0.5rem">
+          <div><label><span data-kr="배점 (%)" data-es="Peso (%)">배점 (%)</span></label><input type="number" id="perfPct" value="40" min="0" max="100" onchange="onScoreLayoutChange()"></div>
+        </div>
+        <div style="font-size:0.76rem;color:var(--text2);margin-bottom:0.6rem"><span data-kr="공정별 체크시트(M-039-R4) 원점수 100점 → 배점 환산" data-es="Hoja por proceso (M-039-R4), 100 pts → convertido al peso">공정별 체크시트(M-039-R4) 원점수 100점 → 배점 환산</span></div>
+        <button type="button" class="btn btn-teal btn-sm" onclick="viewPerfSheets()"><span data-kr="📋 작업수행 체크시트 보기" data-es="📋 Ver Hojas de Desempeño">📋 작업수행 체크시트 보기</span></button>
       </div>
       <div class="score-block practical">
-        <div class="score-block-title p">🔧 <span data-kr="실습 평가 (수기 입력)" data-es="Evaluación Práctica">실습 평가 (수기 입력)</span></div>
+        <div class="score-block-title p">③ <span data-kr="압착고측정 + 불량판별" data-es="Altura de Crimpado + Defectos">압착고측정 + 불량판별</span> <span id="msaPctSum" style="margin-left:auto;font-family:'JetBrains Mono',monospace;color:var(--purple)">(30%)</span></div>
         <div class="form-row col2" style="margin-bottom:0.5rem">
-          <div><label><span data-kr="배점 비율 (%)" data-es="Peso (%)">배점 비율 (%)</span></label><input type="number" id="practicalPct" value="50" min="0" max="100" onchange="updateScoreSummary()"></div>
-          <div><label><span data-kr="실습 만점 기준" data-es="Máx. Práctica">실습 만점 기준</span></label><input type="number" id="practicalMax" value="100" min="1" onchange="updateScoreSummary()"></div>
+          <div><label><span data-kr="압착고측정능력 (%)" data-es="Altura de crimpado (%)">압착고측정능력 (%)</span></label><input type="number" id="crimpPct" value="15" min="0" max="100" onchange="onScoreLayoutChange()"></div>
+          <div><label><span data-kr="불량판별능력 (%)" data-es="Detección de defectos (%)">불량판별능력 (%)</span></label><input type="number" id="defectPct" value="15" min="0" max="100" onchange="onScoreLayoutChange()"></div>
         </div>
+        <div style="font-size:0.76rem;color:var(--text2)"><span data-kr="MSA(계량형·계수형) 결과로 자동 반영 가능" data-es="Se puede cargar desde resultados MSA">MSA(계량형·계수형) 결과로 자동 반영 가능</span></div>
       </div>
     </div>
-    <div style="margin-bottom:1rem">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.6rem">
-        <label style="margin:0;font-size:0.8rem;color:var(--text2)"><span data-kr="실습 세부 항목 (선택)" data-es="Ítems Práctica (opcional)">실습 세부 항목 (선택)</span></label>
-        <div style="display:flex;gap:0.4rem">
-          <button class="btn btn-secondary btn-sm" onclick="addPracticalItem()"><span data-kr="+ 항목 추가" data-es="+ Agregar Ítem">+ 항목 추가</span></button>
-          <button class="btn btn-primary btn-sm" onclick="savePracticalItems()" id="practicalSaveBtn" style=""><span data-kr="💾 저장" data-es="💾 Guardar">💾 저장</span></button>
-        </div>
-      </div>
-      <div id="practicalItemList">
-    <div style="display:flex;gap:0.6rem;align-items:center;margin-bottom:0.5rem;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:0.5rem 0.7rem">
-      <span style="font-size:0.75rem;color:var(--text2);min-width:20px;text-align:center;font-weight:700">1</span>
-      <input type="text" value="불량판별능력 평가" placeholder="항목명 입력" style="flex:2;font-size:0.85rem" oninput="practicalItems[0].name=this.value;_practicalDirty=true">
-      <input type="number" value="20" placeholder="만점" style="flex:0.6;text-align:center;font-size:0.85rem" oninput="practicalItems[0].max=parseFloat(this.value)||0;_practicalDirty=true">
-      <span style="font-size:0.76rem;color:var(--text2)">점</span>
-      <button class="btn btn-danger btn-sm" onclick="removePracticalItem(0)">✕</button>
-    </div>
-    <div style="display:flex;gap:0.6rem;align-items:center;margin-bottom:0.5rem;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:0.5rem 0.7rem">
-      <span style="font-size:0.75rem;color:var(--text2);min-width:20px;text-align:center;font-weight:700">2</span>
-      <input type="text" value="압착고측정능력 평가" placeholder="항목명 입력" style="flex:2;font-size:0.85rem" oninput="practicalItems[1].name=this.value;_practicalDirty=true">
-      <input type="number" value="30" placeholder="만점" style="flex:0.6;text-align:center;font-size:0.85rem" oninput="practicalItems[1].max=parseFloat(this.value)||0;_practicalDirty=true">
-      <span style="font-size:0.76rem;color:var(--text2)">점</span>
-      <button class="btn btn-danger btn-sm" onclick="removePracticalItem(1)">✕</button>
-    </div></div>
+    <!-- 내부 계산용 (실습 = ② + ③, 원점수=가중점수) -->
+    <div style="display:none">
+      <input type="number" id="practicalPct" value="70"><input type="number" id="practicalMax" value="70">
+      <button id="practicalSaveBtn" onclick="savePracticalItems()"></button>
+      <div id="practicalItemList"></div>
     </div>
     <div class="score-total-bar">
       <span><span data-kr="총 배점 비율 합계:" data-es="Total Puntaje:">총 배점 비율 합계:</span></span>
       <span id="totalPctDisplay" style="font-weight: 700; font-family: &quot;JetBrains Mono&quot;, monospace; font-size: 1rem; color: var(--green);">100%</span>
     </div>
-    <div id="pctWarning" style="color:var(--red);font-size:0.76rem;margin-top:0.4rem;display:none">⚠️ <span data-kr="이론 + 실습 비율 합계가 100%가 되어야 합니다." data-es="La suma de Teórico + Práctico debe ser 100%.">이론 + 실습 비율 합계가 100%가 되어야 합니다.</span></div>
+    <div id="pctWarning" style="color:var(--red);font-size:0.76rem;margin-top:0.4rem;display:none">⚠️ <span data-kr="① + ② + ③ 배점 합계가 100%가 되어야 합니다." data-es="La suma ① + ② + ③ debe ser 100%.">① + ② + ③ 배점 합계가 100%가 되어야 합니다.</span></div>
     <div style="margin-top:0.7rem;background:var(--bg);border-radius:6px;padding:0.7rem 1rem;font-size:0.8rem;color:var(--text2)" id="scoreSummaryBox"><span class="tag tag-t">이론</span> 100점 기준 → <strong style="color:var(--blue)">50%</strong> 반영 &nbsp; <span class="tag tag-p">실습</span> 100점 기준 → <strong style="color:var(--purple)">50%</strong> 반영 &nbsp; 합격 기준: <strong style="color:var(--accent)">60점 이상</strong></div>
   </div>
 
@@ -3577,9 +4366,10 @@ document.addEventListener('DOMContentLoaded', renderExamQr);
   <!-- 상단: 서브탭 -->
   <div class="subtab-nav">
     <button class="subtab-btn active" onclick="switchDistSubtab('roster',this)">👥 응시자 명단</button>
-    <button class="subtab-btn" onclick="switchDistSubtab('mobile',this)">📱 모바일 시험 발송</button>
-    <button class="subtab-btn" onclick="switchDistSubtab('print',this)">🖨️ 종이 답안지 출력</button>
-    <button class="subtab-btn" style="border-color:var(--purple);color:var(--purple)" onclick="window.open('msa_1.html','_blank')" title="MSA 실기평가 (1공장) 열기"><span data-kr="🔧 실습평가 시작" data-es="🔧 Iniciar Evaluación Práctica">🔧 실습평가 시작</span></button>
+    <button class="subtab-btn" style="display:none" onclick="switchDistSubtab('mobile',this)">📱 모바일 시험 발송</button>
+    <button class="subtab-btn" style="display:none" onclick="switchDistSubtab('print',this)">🖨️ 종이 답안지 출력</button>
+    <button class="subtab-btn" style="border-color:var(--teal);color:var(--teal)" onclick="openPerfEval()" title="작업자 선택 → 공정별 체크시트로 작업수행능력 평가"><span data-kr="📋 작업수행능력평가 시작" data-es="📋 Iniciar Evaluación de Desempeño">📋 작업수행능력평가 시작</span></button>
+    <button class="subtab-btn" style="border-color:var(--purple);color:var(--purple)" onclick="window.open('msa_1.html','_blank')" title="MSA 실기평가 (1공장) 열기 — 결과는 채점하기 ③ 탭에 자동 반영"><span data-kr="🔧 압착고측정+불량판별 평가 시작" data-es="🔧 Iniciar Altura + Defectos (MSA)">🔧 압착고측정+불량판별 평가 시작</span></button>
   </div>
 
   <!-- 응시자 시험 페이지 QR 코드 -->
@@ -3788,22 +4578,22 @@ document.addEventListener('DOMContentLoaded', renderExamQr);
 
 <!-- ===== PAGE 3: 채점하기 ===== -->
 <div id="page-grade" class="page">
-  <!-- 채점 방식 선택 -->
-  <div class="subtab-nav">
+  <!-- 채점 방식 선택 (숨김: 카드 입력 방식으로 통일) -->
+  <div class="subtab-nav" style="display:none">
     <button class="subtab-btn active" id="modeJsonBtn" onclick="setGradeMode('json')"><span data-kr="🤖 자동채점 (JSON)" data-es="🤖 Calificación Auto (JSON)">🤖 자동채점 (JSON)</span></button>
     <button class="subtab-btn" id="modeManualBtn" onclick="setGradeMode('manual')"><span data-kr="✍️ 수동 채점" data-es="✍️ Calificación Manual">✍️ 수동 채점</span></button>
   </div>
 
   <!-- JSON 채점 모드 -->
   <div id="jsonModeSection">
-    <!-- 이론평가 JSON 업로드 -->
-    <div class="card">
-      <div class="subtab-nav" style="margin-bottom:0.8rem">
-        <button class="subtab-btn active" id="jsonTheoryTab" onclick="switchAutoSubtab('theory',this)"><span data-kr="📝 이론 자동채점 (JSON)" data-es="📝 Calificación Teórica Auto">📝 이론 자동채점 (JSON)</span></button>
-        <button class="subtab-btn" id="jsonPracticalTab" onclick="switchAutoSubtab('practical',this)"><span data-kr="🔧 실습평가 점수 입력" data-es="🔧 Ingreso Evaluación Práctica">🔧 실습평가 점수 입력</span></button>
-      </div>
-      <!-- 이론 섹션 -->
-      <div id="jsonAutoTheorySection">
+    <div class="score-tabbar">
+      <button type="button" class="score-tab active" id="stab_theory" onclick="switchScoreTab('theory')">① <span data-kr="이론평가점수" data-es="Teórico">이론평가점수</span> <small id="stabw_theory">30%</small></button>
+      <button type="button" class="score-tab" id="stab_perf" onclick="switchScoreTab('perf')">② <span data-kr="작업수행능력평가" data-es="Desempeño">작업수행능력평가</span> <small id="stabw_perf">40%</small></button>
+      <button type="button" class="score-tab" id="stab_msa" onclick="switchScoreTab('msa')">③ <span data-kr="압착고측정 + 불량판별" data-es="Altura + Defectos">압착고측정 + 불량판별</span> <small id="stabw_msa">30%</small></button>
+    </div>
+
+    <div id="jsonAutoTheorySection">
+      <div class="card" style="display:none">
       <div class="card-title blue">🤖 <span data-kr="이론 자동채점 — JSON 업로드" data-es="Calificación Teórica Auto — Subir JSON">이론 자동채점 — JSON 업로드</span></div>
       <div class="info-box">
         <div style="margin-bottom:0.3rem"><span class="hl">📄 JSON 파일 형식:</span> 작업자가 휴대폰으로 시험 후 저장된 파일을 드래그하세요</div>
@@ -3814,8 +4604,7 @@ document.addEventListener('DOMContentLoaded', renderExamQr);
         <div class="upload-icon">📁</div>
         <div class="upload-text"><strong>클릭 또는 드래그</strong>하여 JSON 파일 업로드 (여러 파일 동시 가능)</div>
       </div>
-    </div>
-
+      </div>
     <!-- JSON 채점 결과 미리보기 -->
     <div id="jsonGradePreviewCard" class="card" style="display:none">
       <div class="flex-between">
@@ -3833,7 +4622,7 @@ document.addEventListener('DOMContentLoaded', renderExamQr);
       </div>
       <div style="margin-top:0.8rem;display:flex;gap:0.6rem;align-items:center;flex-wrap:wrap">
         <button class="btn btn-secondary btn-sm" onclick="document.getElementById('practicalExcelInput').click()"><span data-kr="📊 실습점수 엑셀 업로드" data-es="📊 Subir Excel Práctica">📊 실습점수 엑셀 업로드</span></button>
-        <input type="file" id="practicalExcelInput" accept=".xlsx,.xls" style="display:none" onchange="loadPracticalExcel(event)">
+        
         <button class="btn btn-teal btn-sm" onclick="downloadPracticalTemplate()"><span data-kr="📥 실습점수 엑셀 서식" data-es="📥 Formato Excel Práctica">📥 실습점수 엑셀 서식</span></button>
         <span style="font-size:0.73rem;color:var(--text2)">A=사번, B=항목1점수, C=항목2점수... (또는 B=총점)</span>
       </div>
@@ -3841,24 +4630,32 @@ document.addEventListener('DOMContentLoaded', renderExamQr);
         <button class="btn btn-success" style="font-size:0.9rem;padding:0.65rem 1.8rem" onclick="saveAllPending()">✅ 전체 채점 저장 (<span id="pendingCount">0</span>명)</button>
       </div>
     </div>
-      </div><!-- /jsonAutoTheorySection -->
 
-      <!-- 실습평가 입력 섹션 -->
-      <div id="jsonAutoPracticalSection" style="display:none">
-        <div class="card">
-          <div class="card-title purple">🔧 <span data-kr="실습평가 점수 입력" data-es="Ingreso Evaluación Práctica">실습평가 점수 입력</span></div>
-          <div class="info-box"><span data-kr="이론채점 완료 시 이론점수 함께 표시. 실습점수 저장 시 자동 합산." data-es="Al calificar teoría, se muestra puntaje. Al guardar práctica, se suma automáticamente.">이론채점 완료 시 이론점수 함께 표시. 실습점수 저장 시 자동 합산.</span></div>
-          <div style="display:flex;gap:0.5rem;margin-bottom:1rem;flex-wrap:wrap">
-            <button class="btn btn-secondary btn-sm" onclick="document.getElementById('practicalExcelInput').click()"><span data-kr="📊 실습점수 엑셀 업로드" data-es="📊 Subir Excel Práctica">📊 실습점수 엑셀 업로드</span></button>
-            <input type="file" id="practicalExcelInput" accept=".xlsx,.xls" style="display:none" onchange="loadPracticalExcel(event)">
-            <button class="btn btn-teal btn-sm" onclick="downloadPracticalTemplate()"><span data-kr="📥 실습점수 엑셀 서식" data-es="📥 Formato Excel Práctica">📥 실습점수 엑셀 서식</span></button>
-            <button class="btn btn-success btn-sm" id="msaLoadBtn" onclick="loadPracticalFromMSA()"><span data-kr="🔄 실습평가 점수 불러오기 (MSA)" data-es="🔄 Cargar Puntajes MSA">🔄 실습평가 점수 불러오기 (MSA)</span></button>
-          </div>
-          <!-- 응시자 카드 목록 -->
-          <div id="practicalCardList"></div>
-        </div>
+    </div><!-- /jsonAutoTheorySection -->
+    <div id="jsonAutoPracticalSection" style="display:none"></div>
+
+    <!-- 작업자 카드별 점수 입력 -->
+    <div class="card" id="scoreCardWrap">
+      <div class="card-title purple">👥 <span data-kr="작업자별 점수 입력" data-es="Puntaje por Operador">작업자별 점수 입력</span></div>
+      <div class="info-box" data-cstab="theory">📝 모바일 응시·JSON 결과는 자동 표시됩니다. 종이시험은 카드에 이론점수(가중점수)를 직접 입력 후 저장하세요.</div>
+      <div class="info-box" data-cstab="perf" style="display:none">📋 카드의 <b>체크시트</b> 버튼으로 공정별(M-039-R4) 평가 → 환산점수가 자동 입력됩니다. 점수를 직접 입력해도 됩니다.</div>
+      <div class="info-box" data-cstab="msa" style="display:none">📏 탭을 열면 MSA 최신 이력(계량형=압착고, 계수형=불량판별) 점수가 자동으로 반영됩니다. 직접 입력·수정도 가능합니다.</div>
+      <div class="cs-toolbar">
+        <input type="text" id="csSearch" placeholder="🔍 이름 / 사번" oninput="renderPracticalCardList()" style="max-width:200px">
+        <select id="csProc" onchange="renderPracticalCardList()" style="max-width:200px"><option value="">전체 공정</option></select>
+        <label style="margin:0;display:flex;align-items:center;gap:0.3rem;font-size:0.8rem;white-space:nowrap"><input type="checkbox" id="csOnlyEmpty" onchange="renderPracticalCardList()" style="width:auto"> 미입력만</label>
+        <span id="csCount" style="font-size:0.78rem;color:var(--text2)"></span>
+        <span style="flex:1"></span>
+        <span data-cstab="msa" style="display:none;gap:0.4rem;flex-wrap:wrap">
+          <span id="msaStatus" style="font-size:0.76rem;color:var(--teal)"></span>
+        </span>
+        <input type="file" id="practicalExcelInput" accept=".xlsx,.xls" style="display:none" onchange="loadPracticalExcel(event)">
+        <button class="btn btn-primary btn-sm" id="csSaveAllBtn" onclick="csSaveAll()" disabled>💾 변경 카드 일괄 저장 (0)</button>
+      </div>
+      <div id="practicalCardList"></div>
+    </div>
         <!-- 개별 입력 영역 -->
-        <div class="card" id="practicalDirectCard" style="display:none">
+        <div class="card" id="practicalDirectCard" style="display:none!important">
           <div class="card-title purple">🔧 <span data-kr="실습점수 입력" data-es="Ingreso Puntaje Práctica">실습점수 입력</span></div>
           <div id="practicalDirectHeader" style="background:rgba(155,126,232,0.08);border:1px solid rgba(155,126,232,0.3);border-radius:8px;padding:0.8rem 1rem;margin-bottom:0.8rem">
             <div style="display:flex;gap:1rem;align-items:center;flex-wrap:wrap;margin-bottom:0.5rem">
@@ -3881,7 +4678,7 @@ document.addEventListener('DOMContentLoaded', renderExamQr);
             <button class="btn btn-success" onclick="savePracticalEntry()"><span data-kr="💾 실습점수 저장" data-es="💾 Guardar Práctica">💾 실습점수 저장</span></button>
           </div>
         </div>
-      </div><!-- /jsonAutoPracticalSection -->
+
   </div>
 
   <!-- 수동 채점 모드 -->
@@ -4492,6 +5289,7 @@ function collectExamCfg(){
     passingScore:v('passingScore'), examDuration:v('examDuration'),
     pointsPerQ:v('pointsPerQ'), theoryPct:v('theoryPct'),
     practicalPct:v('practicalPct'), practicalMax:v('practicalMax'),
+    perfPct:v('perfPct'), crimpPct:v('crimpPct'), defectPct:v('defectPct'),
     mobileExamTitle:v('mobileExamTitle'), mobileExamLang:v('mobileExamLang')
   };
 }
@@ -4519,13 +5317,15 @@ function getConfig(){
 }
 function updateScoreSummary(){
   const cfg=getConfig();
-  const total=cfg.theoryPct+cfg.practicalPct;
+  const perf=_lv('perfPct',40),crimp=_lv('crimpPct',15),defect=_lv('defectPct',15);
+  const total=cfg.theoryPct+perf+crimp+defect;
   const el=document.getElementById('totalPctDisplay');
   el.textContent=total+'%';el.style.color=total===100?'var(--green)':'var(--red)';
   document.getElementById('pctWarning').style.display=total===100?'none':'block';
   const theoryRaw=questions.length*cfg.pointsPerQ;
   document.getElementById('theoryMaxInfo').textContent=`문항 ${questions.length}개 × ${cfg.pointsPerQ}점 = 원점수 ${theoryRaw}점 → 가중 ${cfg.theoryPct}점 반영`;
-  document.getElementById('scoreSummaryBox').innerHTML=`<span class="tag tag-t">이론</span> ${theoryRaw}점 기준 → <strong style="color:var(--blue)">${cfg.theoryPct}%</strong> 반영 &nbsp; <span class="tag tag-p">실습</span> ${cfg.practicalMax}점 기준 → <strong style="color:var(--purple)">${cfg.practicalPct}%</strong> 반영 &nbsp; 합격 기준: <strong style="color:var(--accent)">${cfg.passingScore}점 이상</strong>`;
+  const ms=document.getElementById('msaPctSum'); if(ms)ms.textContent='('+(crimp+defect)+'%)';
+  document.getElementById('scoreSummaryBox').innerHTML=`<span class="tag tag-t">① 이론</span> <strong style="color:var(--blue)">${cfg.theoryPct}%</strong> &nbsp;+&nbsp; <span class="tag" style="background:rgba(46,196,182,.15);color:var(--teal)">② 작업수행능력</span> <strong style="color:var(--teal)">${perf}%</strong> &nbsp;+&nbsp; <span class="tag tag-p">③ 압착고 ${crimp}% + 불량판별 ${defect}%</span> <strong style="color:var(--purple)">${crimp+defect}%</strong> &nbsp;=&nbsp; <strong>${total}%</strong> &nbsp;|&nbsp; 합격 기준: <strong style="color:var(--gold)">${cfg.passingScore}점 이상</strong>`;
 }
 
 // =================== TAB ===================
@@ -4565,7 +5365,7 @@ function switchTab(tab,btn){
     if(tab==='sheet'){try{qualTressSync();}catch(e){} try{renderStudentTable();}catch(e){} try{updateRosterCount();}catch(e){} try{switchDistSubtab('roster',document.querySelector('#page-sheet .subtab-btn'));}catch(e){}}
     if(tab==='results'){try{renderResults();}catch(e){} try{renderHistory();}catch(e){}}
     if(tab==='exam'){try{updateScoreSummary();}catch(e){} try{renderPracticalItemList();}catch(e){}}
-    if(tab==='grade'){try{refreshManualStudentList();}catch(e){} try{setGradeMode('json');}catch(e){}}
+    if(tab==='grade'){try{qualTressSync(true).then(()=>{try{renderPracticalCardList();}catch(e){}});}catch(e){} try{refreshManualStudentList();}catch(e){} try{setGradeMode('json');}catch(e){}}
     if(tab==='stats'){try{renderAllStats();}catch(e){}}
     if(tab==='skills'){try{switchSkillsSubtab('grade',document.querySelector('#page-skills .subtab-btn'));}catch(e){} try{updateSkillProcessFilter();}catch(e){}}
   }catch(e){console.warn('switchTab 오류:',e);}
@@ -4603,14 +5403,7 @@ function setGradeMode(mode){
   document.getElementById('modeJsonBtn').className='subtab-btn'+(mode==='json'?' active':'');
   document.getElementById('modeManualBtn').className='subtab-btn'+(mode==='manual'?' active':'');
   if(mode==='manual')refreshManualStudentList();
-  if(mode==='json')renderPracticalCardList();
-}
-function switchAutoSubtab(sub,btn){
-  document.querySelectorAll('#jsonModeSection .subtab-btn').forEach(b=>b.classList.remove('active'));
-  if(btn)btn.classList.add('active');
-  document.getElementById('jsonAutoTheorySection').style.display=sub==='theory'?'block':'none';
-  document.getElementById('jsonAutoPracticalSection').style.display=sub==='practical'?'block':'none';
-  if(sub==='practical')renderPracticalCardList();
+  if(mode==='json')switchScoreTab(_scoreTab||'theory');
 }
 function switchSkillsSubtab(sub,btn){
   document.querySelectorAll('#page-skills .subtab-btn').forEach(b=>b.classList.remove('active'));
@@ -4866,6 +5659,7 @@ function submitManualGrading(){
       const v=parseFloat(document.getElementById('pi_'+i)?.value||0);
       itemScores.push({name:item.name,score:v,max:item.max});
     });
+    perfAttach(itemScores,i=>'pi_'+i);
   }
   const _r1={
     name:manualRecognizedStudent.name,empId:manualRecognizedStudent.empId,
@@ -4906,9 +5700,9 @@ function renderPracticalItemList(){
       <span style="font-size:0.75rem;color:var(--text2);min-width:20px;text-align:center;font-weight:700">${i+1}</span>
       <input type="text" value="${item.name}" placeholder="항목명 입력" style="flex:2;font-size:0.85rem" oninput="practicalItems[${i}].name=this.value;_practicalDirty=true">
       <input type="number" value="${item.max}" placeholder="만점" style="flex:0.6;text-align:center;font-size:0.85rem" oninput="practicalItems[${i}].max=parseFloat(this.value)||0;_practicalDirty=true">
-      <span style="font-size:0.76rem;color:var(--text2)">점</span>
+      <span style="font-size:0.76rem;color:var(--text2)">점</span>${isPerfItem(item)?'<span style="font-size:0.7rem;color:var(--teal);white-space:nowrap">📋 공정별 체크시트</span>':''}
       <button class="btn btn-danger btn-sm" onclick="removePracticalItem(${i})">✕</button>
-    </div>`).join('');
+    </div>`).join('')+(()=>{const sm=practicalItems.reduce((a,b)=>a+(parseFloat(b.max)||0),0);const pm=getConfig().practicalMax;return sm!==pm?`<div style="font-size:0.76rem;color:var(--red);margin-top:0.3rem">⚠️ 항목 만점 합계 ${sm}점 ≠ 실습 만점 기준 ${pm}점 — 맞춰주세요</div>`:`<div style="font-size:0.74rem;color:var(--text2);margin-top:0.3rem">항목 만점 합계 ${sm}점 = 실습 만점 기준 ✓ · '작업수행'이 들어간 항목은 공정별 체크시트(M-039-R4) 원점수를 만점으로 환산</div>`;})();
 }
 var _practicalDirty=false;
 function addPracticalItem(){
@@ -4950,6 +5744,7 @@ function renderPracticalGradeInputs(){
   document.getElementById('practicalTotalScore').value='';
   document.getElementById('practicalWeightedInfo').textContent='';
   const container=document.getElementById('practicalItemInputs');
+  practicalItems.forEach((_,i)=>{delete _perfSheetData['pi_'+i];});
   if(!practicalItems.length){container.innerHTML='';return;}
   container.innerHTML=`
     <div style="font-size:0.78rem;color:var(--text2);margin-bottom:0.7rem">세부 항목별 점수 입력 → 합산이 총점에 자동 반영</div>
@@ -4957,7 +5752,7 @@ function renderPracticalGradeInputs(){
       ${practicalItems.map((item,i)=>`
         <div class="practical-item-box">
           <label>${item.name||'항목 '+(i+1)} (만점: ${item.max}점)</label>
-          <input type="number" id="pi_${i}" min="0" max="${item.max}" placeholder="0" oninput="sumPracticalItems()">
+          ${isPerfItem(item)?`<div style="display:flex;gap:0.4rem;align-items:center"><input type="number" id="pi_${i}" min="0" max="${item.max}" step="0.1" placeholder="0" oninput="sumPracticalItems()" style="flex:1">${perfBtnHtml('pi_'+i,(manualRecognizedStudent&&manualRecognizedStudent.process)||'',item.max)}</div>`:`<input type="number" id="pi_${i}" min="0" max="${item.max}" placeholder="0" oninput="sumPracticalItems()">`}
         </div>`).join('')}
     </div>`;
 }
@@ -5053,6 +5848,7 @@ function renderPendingTheoryTable(){
       // item-by-item input
       const itemRows=practicalItems.map((item,i)=>{
         const existing=prac?.itemScores?.find(s=>s.name===item.name);
+        if(isPerfItem(item))perfRestore(`pi_${empId}_${i}`,existing);
         const val=existing?existing.score:(prac?.itemScores?.length?'':((prac?.rawScore||'')!==''&&i===0&&practicalItems.length===1?prac.rawScore:''));
         return`<div style="display:flex;align-items:center;gap:0.4rem;margin-bottom:0.3rem">
           <span style="font-size:0.72rem;color:var(--text2);min-width:70px;flex:1">${item.name}</span>
@@ -5060,6 +5856,7 @@ function renderPendingTheoryTable(){
             oninput="updatePendingPracticalItems('${empId}')"
             style="width:72px;text-align:center;font-family:'JetBrains Mono',monospace;font-size:0.9rem;padding:0.25rem 0.4rem">
           <span style="font-size:0.7rem;color:var(--text2)">/${item.max}</span>
+          ${isPerfItem(item)?perfBtnHtml(`pi_${empId}_${i}`,t.process||'',item.max):''}
         </div>`;
       }).join('');
       practicalInputHtml=`<div style="min-width:180px">${itemRows}
@@ -5107,7 +5904,7 @@ function updatePendingPracticalItems(empId){
     itemScores.push({name:item.name,score:v,max:item.max});
   });
   pendingPractical[empId].rawScore=Math.min(total,cfg.practicalMax);
-  pendingPractical[empId].itemScores=itemScores;
+  pendingPractical[empId].itemScores=perfAttach(itemScores,i=>`pi_${empId}_${i}`);
   // 합계 표시만 업데이트 (입력창 재렌더링 없음)
   const sumEl=document.getElementById(`psum_${empId}`);
   if(sumEl)sumEl.textContent=pendingPractical[empId].rawScore;
@@ -5142,6 +5939,7 @@ function loadPracticalExcel(event){
       let updated=0;
       // 첫행이 헤더인지 판단
       const startRow=isNaN(parseFloat(String(rows[0]?.[1]||'')))?1:0;
+      const _xjobs=[];
       rows.slice(startRow).forEach(row=>{
         const empId=String(row[0]||'').trim();
         if(!empId)return;
@@ -5161,9 +5959,12 @@ function loadPracticalExcel(event){
         if(!pendingPractical[empId])pendingPractical[empId]={rawScore:0,itemScores:[]};
         pendingPractical[empId].rawScore=totalRaw;
         pendingPractical[empId].itemScores=itemScores;
+        if(itemScores.length)_xjobs.push([empId,itemScores]);
         updated++;
       });
-      alert(`엑셀에서 ${updated}명의 실습 점수가 업데이트되었습니다.`);
+      (async()=>{let ok=0;for(const [eid,its] of _xjobs){try{await upsertScores(eid,{items:its});ok++;}catch(e){console.warn('엑셀 점수 저장 실패',eid,e);}}
+        renderPracticalCardList();_sbCacheTime=0;sbLoadAllCached(true).then(()=>renderPracticalCardList()).catch(()=>{});
+        alert(`엑셀에서 ${updated}명의 실습 점수를 읽었습니다.${_xjobs.length?`\n서버 저장: ${ok}명`:''}`);})();
       renderPendingTheoryTable();
     }catch(err){alert('엑셀 읽기 오류: '+err.message);}
   };
@@ -5197,7 +5998,15 @@ function saveAllPending(){
       practicalItemScores:prac?.itemScores||[],
       passed,timestamp:Date.now()
     };
-    results.push(_r2);
+    {const _po=results.find(x=>String(x.empId)===String(_r2.empId)&&!_hasTheory(x)&&(x.practicalItemScores||[]).length);
+     if(_po){
+       if(!(prac&&prac.itemScores&&prac.itemScores.length)){
+         _r2.practicalItemScores=_po.practicalItemScores;_r2.practicalRaw=_po.practicalRaw;_r2.practicalMax=_po.practicalMax;
+         _r2.practicalPct=_po.practicalPct;_r2.practicalWeighted=_po.practicalWeighted;
+         _r2.totalScore=parseFloat(((_r2.theoryWeighted||0)+(_po.practicalWeighted||0)).toFixed(1));_r2.passed=_r2.totalScore>=cfg.passingScore;
+       }
+       _r2._sbId=_po._sbId;Object.assign(_po,_r2);
+     }else results.push(_r2);}
     sbSaveResult(_r2).then(()=>{ _sbCacheTime=0; sbLoadAllCached(true); }).catch(e=>console.warn('결과 저장 실패',e));
     saved++;
   });
@@ -5842,7 +6651,7 @@ function showDetail(idx){
       <div class="score-box" style="border:1px solid rgba(155,126,232,0.3)"><div class="score-box-val" style="color:var(--purple)">${r.practicalWeighted||0}</div><div class="score-box-label">실습 점수</div><div class="score-box-sub" style="color:var(--text2)">${r.practicalRaw||0}/${r.practicalMax||'-'} 원점수<br>${r.practicalPct||0}% 반영</div></div>
       <div class="score-box" id="detailTotalBox" style="border:1px solid ${r.passed?'rgba(46,204,122,0.4)':'rgba(224,82,82,0.4)'}"><div class="score-box-val" style="color:${r.passed?'var(--green)':'var(--red)'}">${r.totalScore}</div><div class="score-box-label">총점 / 100점</div><div class="score-box-sub" style="color:${r.passed?'var(--green)':'var(--red)'}">${r.passed?'✅ 합격':'❌ 불합격'}</div></div>
     </div>
-    ${r.practicalItemScores?.length?`<div style="margin-bottom:0.9rem"><div style="font-size:0.76rem;font-weight:700;color:var(--purple);margin-bottom:0.5rem">실습 항목별 점수</div><div style="display:flex;gap:0.5rem;flex-wrap:wrap">${r.practicalItemScores.map(it=>`<div style="background:var(--bg);border:1px solid rgba(155,126,232,0.3);border-radius:6px;padding:0.5rem 0.8rem;font-size:0.78rem"><div style="color:var(--text2);margin-bottom:0.2rem">${it.name}</div><strong style="color:var(--purple)">${it.score}/${it.max}</strong></div>`).join('')}</div></div>`:''}
+    ${r.practicalItemScores?.length?`<div style="margin-bottom:0.9rem"><div style="font-size:0.76rem;font-weight:700;color:var(--purple);margin-bottom:0.5rem">실습 항목별 점수</div><div style="display:flex;gap:0.5rem;flex-wrap:wrap">${r.practicalItemScores.map(it=>`<div style="background:var(--bg);border:1px solid rgba(155,126,232,0.3);border-radius:6px;padding:0.5rem 0.8rem;font-size:0.78rem"><div style="color:var(--text2);margin-bottom:0.2rem">${it.name}</div><strong style="color:var(--purple)">${it.score}/${it.max}</strong>${it.sheet?`<div style="font-size:0.7rem;color:var(--teal);margin-top:0.2rem">${it.sheet.process} · 원점수 ${it.sheet.sum}/${it.sheet.max}</div>${(it.sheet.detail||[]).filter(x=>x.score<x.pts).length?`<div style="font-size:0.68rem;color:var(--gold);margin-top:0.2rem;max-width:260px">감점: ${(it.sheet.detail||[]).filter(x=>x.score<x.pts).map(x=>x.name+' '+x.score+'/'+x.pts).join(', ')}</div>`:''}`:''}</div>`).join('')}</div></div>`:''}
     <div class="score-bar-wrap">
       <div class="score-bar-label"><span>점수 구성</span><span style="font-size:0.7rem"><span style="color:var(--blue)">■ 이론 ${r.theoryWeighted||0}점</span> + <span style="color:var(--purple)">■ 실습 ${r.practicalWeighted||0}점</span></span></div>
       <div class="score-bar"><div class="score-bar-t" style="width:${r.theoryWeighted||0}%"></div><div class="score-bar-p" style="width:${r.practicalWeighted||0}%"></div></div>
@@ -6893,7 +7702,7 @@ async function exportHtmlWithData(){
   const hasImg=questions.some(q=>q.img);
   alert('✅ HTML 저장 완료\n문제 사진: '+(hasImg?'✅ 포함됨':'없음'));
 }
-function renderPracticalCardList(){
+function _oldRenderPracticalCardList(){
   const el=document.getElementById('practicalCardList');
   if(!el)return;
   const cfg=getConfig();
@@ -6960,6 +7769,12 @@ function openPracticalEntry(si){
     cont.innerHTML=`<div style="font-size:0.78rem;color:var(--text2);margin-bottom:0.5rem">항목별 입력 → 자동 합산</div>
       <div class="practical-items-grid">${practicalItems.map((item,i)=>{
         const ex=savedItems.find(s=>s.name===item.name);
+        if(isPerfItem(item)){
+          perfRestore('pdi_item_'+i,ex);
+          return`<div class="practical-item-box">
+          <label>${item.name} <span style="color:var(--text2);font-size:0.72rem">(만점: ${item.max})</span>${ex?.sheet?` <span style="color:var(--teal);font-size:0.7rem">· ${ex.sheet.process}</span>`:''}</label>
+          <div style="display:flex;gap:0.4rem;align-items:center"><input type="number" id="pdi_item_${i}" min="0" step="0.1" placeholder="0" value="${ex?.score||''}" oninput="sumPracticalItems2()" style="font-size:1rem;flex:1">${perfBtnHtml('pdi_item_'+i,s.process||'',item.max)}</div>
+        </div>`;}
         return`<div class="practical-item-box">
           <label>${item.name} <span style="color:var(--text2);font-size:0.72rem">(만점: ${item.max})</span></label>
           <input type="number" id="pdi_item_${i}" min="0" placeholder="0" value="${ex?.score||''}" oninput="sumPracticalItems2()" style="font-size:1rem;width:100%">
@@ -6994,9 +7809,9 @@ function savePracticalEntry(){
   if(!eid){alert('응시자를 먼저 선택해주세요.');return;}
   const cfg=getConfig();
   const total=parseFloat(document.getElementById('practicalDirectTotal')?.value||0);
-  const itemScores=practicalItems.map((item,i)=>({
+  const itemScores=perfAttach(practicalItems.map((item,i)=>({
     name:item.name,score:parseFloat(document.getElementById('pdi_item_'+i)?.value||0),max:item.max
-  }));
+  })),i=>'pdi_item_'+i);
   if(!pendingPractical[eid])pendingPractical[eid]={rawScore:0,itemScores:[]};
   pendingPractical[eid].rawScore=total;
   pendingPractical[eid].itemScores=itemScores;
@@ -7032,19 +7847,20 @@ function savePracticalEntry(){
 // msa.html이 Supabase에 저장한 Gage R&R 이력에서 응시자별 실기점수를 산출해 자동 입력한다.
 //  · 계수형(msa_sessions/msa_evaluations)  → '불량판별' 항목 : 합격(E·PFA·PMISS 기준 충족) 시 만점, 미달 시 E×만점
 //  · 계량형(msa_var_sessions/msa_var_measures) → '압착고측정' 항목 : 조 판정 Aprobado 시 만점
-async function loadPracticalFromMSA(){
+async function loadPracticalFromMSA(silent){
+  const _say=m=>{if(silent){_msaStatus(m);}else alert(m);};
   const seen={};
   const list=students.filter(s=>s.empId&&!seen[s.empId]&&(seen[s.empId]=1));
-  if(!list.length){alert('먼저 응시자 명단을 등록해주세요.');return;}
-  if(typeof _isLocalFile!=='undefined'&&_isLocalFile){alert('로컬 파일 모드에서는 Supabase 조회가 불가합니다.\n웹(GitHub Pages)에서 실행해주세요.');return;}
+  if(!list.length){_say('먼저 응시자 명단을 등록해주세요.');return;}
+  if(typeof _isLocalFile!=='undefined'&&_isLocalFile){_say('로컬 파일 모드에서는 MSA 조회가 불가합니다 (웹에서 실행).');return;}
   const btn=document.getElementById('msaLoadBtn'); if(btn)btn.disabled=true;
   const cfg=getConfig();
   let attS,varS;
   try{
     attS=await sbFetch('msa_sessions?select=id,eval_date,refs,crit_e,crit_pfa,crit_pmiss,msa_evaluations(employee_id,answers)&order=eval_date.desc&limit=300');
     varS=await sbFetch('msa_var_sessions?select=id,eval_date,result,grade,msa_var_measures(employee_id)&order=eval_date.desc&limit=500');
-  }catch(e){ if(btn)btn.disabled=false; alert('MSA 데이터 조회 실패: '+e.message); return; }
-  if(!Array.isArray(attS)||!Array.isArray(varS)){ if(btn)btn.disabled=false; alert('MSA 데이터 조회 실패 (응답 형식 오류)'); return; }
+  }catch(e){ if(btn)btn.disabled=false; _say('MSA 데이터 조회 실패: '+e.message); return; }
+  if(!Array.isArray(attS)||!Array.isArray(varS)){ if(btn)btn.disabled=false; _say('MSA 데이터 조회 실패 (응답 형식 오류)'); return; }
   // ── 계수형: 사번별 최신 세션 기준 E/합격 판정 (msa.html calcAtt 로직 재현) ──
   const attBy={};
   attS.forEach(s=>{
@@ -7073,14 +7889,19 @@ async function loadPracticalFromMSA(){
   });});
   // ── 실습 항목 매핑 (이름으로 판별, 없으면 순서대로) ──
   const items=practicalItems.length?practicalItems:[{name:'불량판별능력 평가',max:20},{name:'압착고측정능력 평가',max:30}];
-  let iAtt=items.findIndex(it=>/불량|판별|계수|atribut/i.test(it.name)); if(iAtt<0)iAtt=0;
-  let iVar=items.findIndex(it=>/압착|측정|계량|variable|altura/i.test(it.name)); if(iVar<0)iVar=items.length>1?1:0;
+  let iAtt=items.findIndex(it=>!isPerfItem(it)&&/불량|판별|계수|atribut/i.test(it.name)); if(iAtt<0)iAtt=items.findIndex(it=>!isPerfItem(it)); if(iAtt<0)iAtt=0;
+  let iVar=items.findIndex(it=>!isPerfItem(it)&&/압착|측정|계량|variable|altura/i.test(it.name)); if(iVar<0)iVar=items.findIndex((it,k)=>!isPerfItem(it)&&k!==iAtt); if(iVar<0)iVar=iAtt;
   // ── 응시자별 점수 반영 ──
   let both=0,part=0,none=0,saved=0;
   for(const st of list){
     const eid=st.empId, a=attBy[eid], v=varBy[eid];
     if(!a&&!v){none++;continue;}
+    if(_csDirty[eid]&&(_csDirty[eid].crimp!=null||_csDirty[eid].defect!=null)){part++;continue;} // 입력 중인 카드는 건너뜀
     const itemScores=items.map(it=>({name:it.name,score:0,max:it.max}));
+    // 작업수행평가(체크시트) 점수는 MSA와 무관 → 기존 입력값 유지
+    {const _rs0=results.filter(r=>r.empId===eid).sort((x,y)=>new Date(y.date)-new Date(x.date))[0];
+     const _prev=(pendingPractical[eid]?.itemScores?.length?pendingPractical[eid].itemScores:(_rs0?.practicalItemScores||[]));
+     items.forEach((it,k)=>{if(isPerfItem(it)){const o=_prev.find(x=>x.name===it.name);if(o){itemScores[k].score=parseFloat(o.score)||0;if(o.sheet)itemScores[k].sheet=o.sheet;}}});}
     if(a)itemScores[iAtt].score=a.pass?items[iAtt].max:Math.round(a.E*items[iAtt].max*10)/10;
     if(v)itemScores[iVar].score=v.pass?items[iVar].max:0;
     const total=parseFloat(itemScores.reduce((s,x)=>s+x.score,0).toFixed(1));
@@ -7088,22 +7909,28 @@ async function loadPracticalFromMSA(){
     (a&&v)?both++:part++;
     // 이론 결과가 이미 저장돼 있으면 즉시 합산 후 Supabase 반영 (최신 결과 기준)
     const rs=results.filter(r=>r.empId===eid).sort((x,y)=>new Date(y.date)-new Date(x.date));
-    if(rs.length){
-      const r=rs[0];
-      const pw=(total/cfg.practicalMax)*cfg.practicalPct;
-      r.practicalRaw=total;r.practicalMax=cfg.practicalMax;
-      r.practicalWeighted=parseFloat(pw.toFixed(1));r.practicalPct=cfg.practicalPct;
-      r.totalScore=parseFloat(((r.theoryWeighted||0)+pw).toFixed(1));
-      r.passed=r.totalScore>=cfg.passingScore;
-      r.practicalItemScores=itemScores;
-      try{await sbSaveResult(r);saved++;}catch(e){console.warn('실습점수 Supabase 저장 실패:',eid,e);}
-    }
+    // MSA 이력이 있는 항목만 반영 (없는 항목은 기존 값 유지)
+    const _send=[];
+    if(a)_send.push({name:items[iAtt].name,score:itemScores[iAtt].score});
+    if(v&&iVar!==iAtt)_send.push({name:items[iVar].name,score:itemScores[iVar].score});
+    const r0=rs[0];
+    if(r0&&_send.every(x=>{const o=(r0.practicalItemScores||[]).find(y=>y.name===x.name);return o&&!o.na&&Math.abs((parseFloat(o.score)||0)-x.score)<0.05;}))continue;
+    try{await upsertScores(eid,{items:_send});saved++;}catch(e){console.warn('실습점수 Supabase 저장 실패:',eid,e);}
   }
   save();
   renderPracticalCardList();
   if(Object.keys(pendingTheory).length)renderPendingTheoryTable();
   if(btn)btn.disabled=false;
-  alert(`🔄 MSA 실습평가 점수 불러오기 완료\n\n· 두 항목 모두 반영: ${both}명\n· 일부 항목만 반영: ${part}명\n· MSA 이력 없음: ${none}명\n· 저장된 결과에 합산 반영: ${saved}명`);
+  _say(silent?`MSA 반영 완료 · 갱신 ${saved}명 · 이력 없음 ${none}명 (${new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})})`:`🔄 MSA 실습평가 점수 불러오기 완료\n\n· 두 항목 모두 반영: ${both}명\n· 일부 항목만 반영: ${part}명\n· MSA 이력 없음: ${none}명\n· 저장된 결과에 합산 반영: ${saved}명`);
+}
+function _msaStatus(m){const e=document.getElementById('msaStatus');if(e)e.textContent=m;}
+var _msaAutoAt=0,_msaAutoBusy=false;
+async function autoLoadMSA(){
+  if(_msaAutoBusy||Date.now()-_msaAutoAt<60000)return;
+  _msaAutoBusy=true;_msaStatus('🔄 MSA 점수 불러오는 중…');
+  try{await loadPracticalFromMSA(true);_msaAutoAt=Date.now();}catch(e){_msaStatus('MSA 불러오기 실패: '+e.message);}
+  finally{_msaAutoBusy=false;}
+  if(_scoreTab==='msa'){renderPracticalCardList();_sbCacheTime=0;sbLoadAllCached(true).then(()=>{if(_scoreTab==='msa')renderPracticalCardList();}).catch(()=>{});}
 }
 
 
