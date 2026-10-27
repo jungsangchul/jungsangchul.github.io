@@ -285,6 +285,16 @@ function openPerfSheet(inputId,proc,itemMax,viewOnly){
   m.style.display='flex';
   renderPerfSheet();
 }
+function _perfLangPill(){
+  const es=_perfIsEs();
+  const b=(on,l,v)=>`<button type="button" onclick="perfSetLang('${v}')" style="padding:.32rem .75rem;border:none;cursor:pointer;font-size:.78rem;font-weight:700;background:${on?'var(--accent,#c9a84c)':'transparent'};color:${on?'#111':'var(--text2,#aaa)'}">${l}</button>`;
+  return `<div style="display:inline-flex;border:1px solid var(--border,#2a2a2a);border-radius:999px;overflow:hidden">${b(!es,'한국어','ko')}${b(es,'Español','es')}</div>`;
+}
+function perfSetLang(l){
+  if((l==='es')!==_perfIsEs()){try{toggleLang();}catch(e){currentLang=l;}}
+  try{renderRoundBars();}catch(e){}
+  renderPerfSheet();
+}
 function closePerfSheet(){const m=document.getElementById('perfSheetModal');if(m)m.style.display='none';_perfCtx=null;}
 function perfSelectSheet(k){if(!_perfCtx)return;_perfCtx.key=k;_perfCtx.scores=null;_perfCtx.auto=false;renderPerfSheet();}
 function perfSetAll(mode){
@@ -338,7 +348,7 @@ function renderPerfSheet(){
     const btns=ctx.viewOnly?'':opts.map(o=>{const on=v!=null&&parseFloat(v)===o;return`<button type="button" data-v="${o}" onclick="perfSetScore(${j},${o})" style="min-width:34px;padding:.3rem .45rem;border-radius:5px;border:1px solid var(--border,#2a2a2a);cursor:pointer;font-weight:700;font-size:.8rem;background:${on?'var(--accent,#c9a84c)':'var(--surface2,#1b1b1b)'};color:${on?'#111':'var(--text,#eee)'}">${o}</button>`;}).join('');
     return head+`<tr id="pfr_${j}" style="border-bottom:1px solid var(--border,#2a2a2a)">
       <td style="padding:.5rem .6rem;vertical-align:top;width:26%"><div style="font-weight:700;font-size:.85rem">${_perfEsc(es?x.es:x.kr)}</div><div style="font-size:.72rem;color:var(--text2,#999)">${_perfEsc(es?x.kr:x.es)}</div></td>
-      <td style="padding:.5rem .6rem;font-size:.78rem;color:var(--text2,#bbb);line-height:1.45">${_perfEsc(es&&x.des?x.des:x.dkr)}</td>
+      <td style="padding:.5rem .6rem;font-size:.78rem;color:var(--text2,#bbb);line-height:1.45">${_perfEsc(es&&x.des?x.des:x.dkr)}${x.des?`<div style="font-size:.72rem;color:var(--text3,#7d7d7d);margin-top:.2rem;line-height:1.4">${_perfEsc(es?x.dkr:x.des)}</div>`:''}</td>
       <td style="padding:.5rem .4rem;text-align:center;font-family:'JetBrains Mono',monospace;font-weight:700;white-space:nowrap">${x.pts}</td>
       <td style="padding:.5rem .6rem;white-space:nowrap">${ctx.viewOnly?'':`<div style="display:flex;gap:.25rem;align-items:center">${btns}<input type="number" min="0" max="${x.pts}" step="0.5" value="${v==null?'':v}" oninput="perfSetScore(${j},this.value)" style="width:56px;text-align:center;padding:.25rem"></div>`}${_pvS&&_pvS.scores&&_pvS.scores[j]!=null?`<div class="perf-prev-item">${es?'anterior':'이전'} ${_pvS.scores[j]}</div>`:''}</td></tr>`;
   }).join('');
@@ -346,7 +356,7 @@ function renderPerfSheet(){
     <div style="display:flex;justify-content:space-between;align-items:center;gap:.6rem;flex-wrap:wrap;margin-bottom:.7rem">
       <div><div style="font-weight:800;font-size:1rem">📋 ${es?'Evaluación de desempeño — hoja por proceso':'작업수행평가 체크시트'}</div>
       <div style="font-size:.72rem;color:var(--text2,#999)">M-039-R4 · ${es?'Puntaje del proceso convertido a':'공정별 원점수 → 환산'} ${ctx.itemMax}${es?' pts':'점'}${ctx.proc?` · ${es?'Proceso':'응시자 공정'}: <b>${_perfEsc(ctx.proc)}</b>`:''}</div></div>
-      <button type="button" onclick="closePerfSheet()" class="btn btn-secondary btn-sm">✕ ${es?'Cerrar':'닫기'}</button>
+      <div style="display:flex;gap:.45rem;align-items:center">${_perfLangPill()}<button type="button" onclick="closePerfSheet()" class="btn btn-secondary btn-sm">✕ ${es?'Cerrar':'닫기'}</button></div>
     </div>
     ${ctx.evalMode?perfEvalHeaderHtml():''}
     <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;margin-bottom:.6rem">
@@ -499,14 +509,15 @@ function roundBarHtml(){
   const cnt={};results.forEach(r=>{const k=r.evalRound||'';cnt[k]=(cnt[k]||0)+1;});
   const coh=_activeCohort();
   const nTarget=coh?(typeof students!=='undefined'?students:[]).filter(st=>_empCohort(st.empId)===coh).length:null;
+  const es=_perfIsEs();
   return `<div class="round-bar">
-    <span class="round-bar-lbl">🏷️ 평가구분</span>
-    <select onchange="setActiveRound(this.value)" title="지금 진행하는 평가 — 저장되는 모든 점수(이론 모바일 응시·작업수행·MSA)에 이 평가구분이 붙습니다">
-      <option value="" ${!activeRound?'selected':''}>미지정 — 먼저 평가 후 결과 이력에서 일괄 지정</option>
-      ${_sortedRounds().map(r=>`<option value="${_perfEsc(r.id)}" ${r.id===activeRound?'selected':''}>${_perfEsc(r.name)} (${cnt[r.id]||0}건)</option>`).join('')}
+    <span class="round-bar-lbl">🏷️ ${es?'Tipo de evaluación':'평가구분'}</span>
+    <select onchange="setActiveRound(this.value)" title="${es?'Evaluación en curso — se asigna a todos los puntajes guardados (teoría móvil, desempeño, MSA)':'지금 진행하는 평가 — 저장되는 모든 점수(이론 모바일 응시·작업수행·MSA)에 이 평가구분이 붙습니다'}">
+      <option value="" ${!activeRound?'selected':''}>${es?'Sin asignar — evaluar primero y asignar en lote en el historial':'미지정 — 먼저 평가 후 결과 이력에서 일괄 지정'}</option>
+      ${_sortedRounds().map(r=>`<option value="${_perfEsc(r.id)}" ${r.id===activeRound?'selected':''}>${_perfEsc(r.name)} (${cnt[r.id]||0}${es?'':'건'})</option>`).join('')}
     </select>
-    <button type="button" class="btn btn-secondary btn-sm" onclick="openRoundEditor()">＋ 새 평가구분</button>
-    <span class="round-bar-info">${activeRound?(coh?`대상: <b>${coh.replace('-','년 ')}월 입사자 ${nTarget}명</b> · `:'')+'이 평가구분 기록만 표시·저장':'평가구분 없이 저장 (미지정 '+(cnt['']||0)+'건)'}</span>
+    <button type="button" class="btn btn-secondary btn-sm" onclick="openRoundEditor()">＋ ${es?'Nuevo tipo':'새 평가구분'}</button>
+    <span class="round-bar-info">${activeRound?(coh?(es?`Objetivo: <b>ingresos ${coh} · ${nTarget} personas</b> · `:`대상: <b>${coh.replace('-','년 ')}월 입사자 ${nTarget}명</b> · `):'')+(es?'Solo se muestran/guardan registros de este tipo':'이 평가구분 기록만 표시·저장'):(es?'Guardado sin tipo (sin asignar '+(cnt['']||0)+')':'평가구분 없이 저장 (미지정 '+(cnt['']||0)+'건)')}</span>
   </div>`;
 }
 function renderRoundBars(){document.querySelectorAll('.round-bar-slot').forEach(el=>{el.innerHTML=roundBarHtml();});}
@@ -830,7 +841,9 @@ function _perfEvalList(){
 function perfEvalHeaderHtml(){
   const ctx=_perfCtx,es=_perfIsEs();
   const all=_perfEvalList();
-  const procs={};all.forEach(s=>{const p=s.process||'(공정미입력)';procs[p]=(procs[p]||0)+1;});
+  const procs={},pes={};all.forEach(s=>{const p=s.process||'(공정미입력)';procs[p]=(procs[p]||0)+1;if(s.processEs&&!pes[p])pes[p]=s.processEs;});
+  const pl=p=>es?(p==='(공정미입력)'?'(Sin proceso)':(pes[p]||p)):p;
+  const spl=s=>es?(s.processEs||s.process||''):(s.process||'');
   const plist=Object.keys(procs).sort();
   const fl=all.filter(s=>!ctx.evalProc||(s.process||'(공정미입력)')===ctx.evalProc);
   const st=ctx.eid?all.find(s=>String(s.empId||s.name)===ctx.eid):null;
@@ -844,22 +857,22 @@ function perfEvalHeaderHtml(){
       <div><label style="margin:0 0 .25rem;display:block;font-size:.78rem;font-weight:700;color:var(--teal)">① ${es?'Proceso':'공정 선택'}</label>
         <select id="perfEvalProc" onchange="perfEvalSetProc(this.value)" style="${selSt};width:100%">
           <option value="">${es?'Todos':'전체 공정'} (${all.length}${es?'':'명'})</option>
-          ${plist.map(p=>`<option value="${_perfEsc(p)}" ${p===ctx.evalProc?'selected':''}>${_perfEsc(p)} (${procs[p]}${es?'':'명'})</option>`).join('')}
+          ${plist.map(p=>`<option value="${_perfEsc(p)}" ${p===ctx.evalProc?'selected':''}>${_perfEsc(pl(p))} (${procs[p]}${es?'':'명'})</option>`).join('')}
         </select></div>
       <div><label style="margin:0 0 .25rem;display:flex;justify-content:space-between;font-size:.78rem;font-weight:700;color:var(--teal)"><span>② ${es?'Operador':'작업자 선택 (이름 · 사번)'}</span><span style="font-weight:400;color:var(--text2)">${es?'Evaluados':'평가완료'} ${done}/${fl.length}</span></label>
         <div style="display:flex;gap:.35rem">
-          <button type="button" class="btn btn-secondary btn-sm" onclick="perfEvalStep(-1)" title="이전" style="min-width:40px">◀</button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="perfEvalStep(-1)" title="${es?'Anterior':'이전'}" style="min-width:40px">◀</button>
           <select id="perfEvalWho" onchange="perfEvalPick(this.value)" style="${selSt};flex:1;min-width:0">
             <option value="">-- ${es?'Seleccione':'작업자를 선택하세요'} --</option>
-            ${fl.map(s=>{const e=String(s.empId||s.name);const c=_csScores(e);return`<option value="${_perfEsc(e)}" ${e===ctx.eid?'selected':''}>${c.perf!=null?'✓ ':'○ '}${_perfEsc(s.name||e)} (${_perfEsc(s.empId||'-')})${ctx.evalProc?'':' · '+_perfEsc(s.process||'')}</option>`;}).join('')}
+            ${fl.map(s=>{const e=String(s.empId||s.name);const c=_csScores(e);return`<option value="${_perfEsc(e)}" ${e===ctx.eid?'selected':''}>${c.perf!=null?'✓ ':'○ '}${_perfEsc(s.name||e)} (${_perfEsc(s.empId||'-')})${ctx.evalProc?'':' · '+_perfEsc(spl(s))}</option>`;}).join('')}
           </select>
-          <button type="button" class="btn btn-secondary btn-sm" onclick="perfEvalStep(1)" title="다음" style="min-width:40px">▶</button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="perfEvalStep(1)" title="${es?'Siguiente':'다음'}" style="min-width:40px">▶</button>
         </div></div>
     </div>
     ${st?`<div style="display:flex;gap:1rem;flex-wrap:wrap;margin-top:.5rem;font-size:.8rem;color:var(--text2)">
       <span style="color:var(--text);font-weight:700">${_perfEsc(st.name||'')}</span>
       <span>${es?'No.':'사번'} <b style="color:var(--text);font-family:'JetBrains Mono',monospace">${_perfEsc(st.empId||'-')}</b></span>
-      <span>${es?'Proceso':'공정'} <b style="color:var(--sky)">${_perfEsc(st.process||'-')}</b></span>
+      <span>${es?'Proceso':'공정'} <b style="color:var(--sky)">${_perfEsc(spl(st)||'-')}</b></span>
       <span>${es?'Esta evaluación':'이번 평가'} <b style="color:var(--teal)">${_perfEsc(roundName(_activeFor(st.empId||ctx.eid)))}</b> · ${cur&&cur.perf!=null?`<b style="color:var(--green)">✓ ${es?'guardado':'저장됨'}</b>`:(es?'sin evaluar':'미평가')}</span>
     </div>
     <div class="perf-prev">${pv?`📌 ${es?'Evaluación anterior':'이전 평가'}: <b>${_perfEsc(pv.r.date||'-')}</b> · ${_perfEsc(roundName(pv.r.evalRound))} · ${es?'Desempeño':'작업수행'} <b>${pv.item.score}</b>/${pv.item.max||ctx.itemMax}${pvSheet?` (${es?'hoja':'체크시트'} ${_perfEsc(pvSheet.process||'')} ${es?'puntaje':'원점수'} ${pvSheet.sum}/${pvSheet.max})`:''}`:`📌 ${es?'Sin evaluación anterior':'이전 평가 없음'}`}</div>`:''}
