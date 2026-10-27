@@ -4529,13 +4529,40 @@ function updateScoreSummary(){
 }
 
 // =================== TAB ===================
+// ════ [TRESS 연동] 배포 탭 접속 시 응시자 명단 자동 동기화 (2026-10-26) ════
+// 관리자 대시보드 직원 마스터(TRESS)의 해당 팀 재직자 → 명단에 없으면 추가, TRESS 퇴사자 → 명단에서 제거
+// (서버 RPC qual_sync_tress — 공정명은 근태관리 지정공정, 입사일은 TRESS 기준, 빈 칸만 보완)
+var _qualTressBusy=false, _qualTressAt=0;
+async function qualTressSync(force){
+  if(_isLocalFile||_qualTressBusy) return;
+  if(!force && Date.now()-_qualTressAt<60000) return;
+  _qualTressBusy=true;
+  try{
+    setSyncStatus(null,'🔄 TRESS 인원 확인 중…');
+    const r=await sbFetch('rpc/qual_sync_tress',{method:'POST',body:JSON.stringify({p_table:'exam_students'})});
+    _qualTressAt=Date.now();
+    const a=(r&&r.added)||0, d=(r&&r.removed)||0, x=(r&&r.fixed)||0;
+    if(a||d||x){
+      if(document.querySelector('#studentBody input:focus')) document.activeElement.blur();
+      await sbLoadAll();
+      if(typeof updateRosterCount==='function') try{updateRosterCount();}catch(e){}
+    }
+    const es=(typeof currentLang!=='undefined'&&currentLang==='es');
+    const msg=es?`☁️ TRESS sincronizado · +${a} altas · -${d} bajas · ${students.filter(s=>s.name||s.empId).length} aspirantes`
+               :`☁️ TRESS 연동 ${new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})} · 추가 ${a} · 퇴사제외 ${d} · 응시자 ${students.filter(s=>s.name||s.empId).length}명`;
+    setSyncStatus(true,msg);
+  }catch(e){
+    console.warn('[TRESS 명단연동] 실패:',e);
+    setSyncStatus(false,'⚠️ TRESS 인원 연동 실패: '+e.message);
+  }finally{ _qualTressBusy=false; }
+}
 function switchTab(tab,btn){
   try{
     document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
     document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
     const pg=document.getElementById('page-'+tab);if(pg)pg.classList.add('active');
     if(btn)btn.classList.add('active');
-    if(tab==='sheet'){try{renderStudentTable();}catch(e){} try{updateRosterCount();}catch(e){} try{switchDistSubtab('roster',document.querySelector('#page-sheet .subtab-btn'));}catch(e){}}
+    if(tab==='sheet'){try{qualTressSync();}catch(e){} try{renderStudentTable();}catch(e){} try{updateRosterCount();}catch(e){} try{switchDistSubtab('roster',document.querySelector('#page-sheet .subtab-btn'));}catch(e){}}
     if(tab==='results'){try{renderResults();}catch(e){} try{renderHistory();}catch(e){}}
     if(tab==='exam'){try{updateScoreSummary();}catch(e){} try{renderPracticalItemList();}catch(e){}}
     if(tab==='grade'){try{refreshManualStudentList();}catch(e){} try{setGradeMode('json');}catch(e){}}
