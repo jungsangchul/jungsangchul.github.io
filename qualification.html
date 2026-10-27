@@ -459,10 +459,13 @@ function _csItemIdx(){
   const df=practicalItems.findIndex((it,i)=>i!==pf&&i!==cr&&/불량|판별|defect/i.test(it.name||''));
   return{pf,cr,df};
 }
+// ✅ 작업수행능력평가까지 입력돼 합격한 기록 (2026-10-27)
+function _isDoneRec(r){const pf=(r.practicalItemScores||[]).find(x=>/작업수행|desempe/i.test(x.name||''));return !!(r.passed&&pf&&!pf.na);}
 function _latestResult(eid){
   const rs=results.filter(r=>String(r.empId)===String(eid));
   rs.sort((a,b)=>(new Date(b.date||0)-new Date(a.date||0))||((b.timestamp||0)-(a.timestamp||0)));
-  return rs[0]||null;
+  // 작업수행까지 입력돼 합격한 기록이 있으면 그 기록 우선 (이후 이론만 있는 기록보다 우선)
+  return rs.find(_isDoneRec)||rs[0]||null;
 }
 function _hasTheory(r){return !!r&&((parseFloat(r.theoryRawMax)||0)>0||(parseFloat(r.theoryWeighted)||0)>0||(r.details||[]).length>0);}
 function _findItem(r,item){if(!r||!item)return null;return (r.practicalItemScores||[]).find(x=>x.name===item.name)||null;}
@@ -7244,7 +7247,9 @@ function buildLatestWorkerProcess(){
     const key=r.empId||r.name;
     if(!workerProcess[key])workerProcess[key]={name:r.name,empId:r.empId,hireDate:r.hireDate,processes:{}};
     const p=r.process||'미분류';
-    if(!workerProcess[key].processes[p]||new Date(r.date)>new Date(workerProcess[key].processes[p].date))
+    const cur=workerProcess[key].processes[p];
+    // ✅ 작업수행까지 입력돼 합격한 기록 우선, 그다음 최신 응시일 (2026-10-27)
+    if(!cur||(_isDoneRec(r)&&!_isDoneRec(cur))||(_isDoneRec(r)===_isDoneRec(cur)&&new Date(r.date)>new Date(cur.date)))
       workerProcess[key].processes[p]=r;
   });
   return workerProcess;
@@ -7414,7 +7419,9 @@ function renderSkillGrades(){
     const key=r.empId||r.name;
     if(!workerProcess[key])workerProcess[key]={name:r.name,empId:r.empId,hireDate:r.hireDate,processes:{}};
     const p=r.process||'미분류';
-    if(!workerProcess[key].processes[p]||new Date(r.date)>new Date(workerProcess[key].processes[p].date))
+    const cur=workerProcess[key].processes[p];
+    // ✅ 작업수행까지 입력돼 합격한 기록 우선, 그다음 최신 응시일 (2026-10-27)
+    if(!cur||(_isDoneRec(r)&&!_isDoneRec(cur))||(_isDoneRec(r)===_isDoneRec(cur)&&new Date(r.date)>new Date(cur.date)))
       workerProcess[key].processes[p]=r;
   });
   // 검색 필터 적용
@@ -7536,7 +7543,9 @@ function exportSkillGrades(){
     const key=r.empId||r.name;
     if(!workerProcess[key])workerProcess[key]={name:r.name,empId:r.empId,hireDate:r.hireDate,processes:{}};
     const p=r.process||'미분류';
-    if(!workerProcess[key].processes[p]||new Date(r.date)>new Date(workerProcess[key].processes[p].date))
+    const cur=workerProcess[key].processes[p];
+    // ✅ 작업수행까지 입력돼 합격한 기록 우선, 그다음 최신 응시일 (2026-10-27)
+    if(!cur||(_isDoneRec(r)&&!_isDoneRec(cur))||(_isDoneRec(r)===_isDoneRec(cur)&&new Date(r.date)>new Date(cur.date)))
       workerProcess[key].processes[p]=r;
   });
   const rows=[['이름','사번','근속','공정명','응시일','이론점수','실습점수','총점','합격여부','등급','다기능여부']];
