@@ -1672,7 +1672,7 @@ tbody tr:hover{background:#1b1b1b!important}
       </select>
       <input class="si" id="m-proc-ko" placeholder="공정명 (한국어)" style="max-width:180px" value="">
       <input class="si" id="m-proc-es" placeholder="Proceso (스페인어)" style="max-width:180px" value="">
-      <select class="fs" id="m-proc-loc"><option value="MAIN" selected="selected">MAIN</option><option value="FRONT">FRONT</option><option value="CONTROL">CONTROL</option><option value="FLOOR">FLOOR</option><option value="DR DRI">DR DRI</option><option value="DR ASS">DR ASS</option><option value="RR DR LH">RR DR LH</option><option value="RR DR RH">RR DR RH</option><option value="TAILGATE">TAILGATE</option><option value="ROOF">ROOF</option><option value="FEM">FEM</option><option value="RPAS">RPAS</option><option value="FPAS">FPAS</option><option value="BATT CABLE HEV">BATT CABLE HEV</option><option value="ENG GND">ENG GND</option><option value="OPU AC">OPU AC</option><option value="INVERTER DC">INVERTER DC</option><option value="MOTOR AC">MOTOR AC</option><option value="HSG AC COMP DC">HSG AC COMP DC</option></select>
+      <input class="si" id="m-proc-loc" placeholder="MAIN / FLOOR (직접입력)" style="max-width:160px" value="MAIN">
       <button class="ba" onclick="mAddProcess()">+ 추가</button>
     </div>
     <div class="tw" style="max-height:260px;overflow-y:auto"><table>
@@ -2690,7 +2690,7 @@ var DB={employees:[],absences:[],holidays:[],extraWorkDays:[],buses:[],
 function getAbsCodes(){return DB.absCodes&&DB.absCodes.length?DB.absCodes:ABS_CODES;}
 function getResCodes(){return DB.resCodes&&DB.resCodes.length?DB.resCodes:RESIGN_CODES;}
 function getAddresses(){return DB.addresses&&DB.addresses.length?DB.addresses:ADDRESSES;}
-function getProcesses(){return DB.processes&&DB.processes.length?DB.processes:PROCESSES;}
+function getProcesses(){var l=DB.processes&&DB.processes.length?DB.processes:PROCESSES;return l.map(function(p){return (p.ko&&p.es)?p:Object.assign({},p,{ko:p.ko||p.es||'',es:p.es||p.ko||''});});}
 function initDBDefaults(){
   if(!DB.addresses||!DB.addresses.length)DB.addresses=JSON.parse(JSON.stringify(ADDRESSES));
   if(!DB.absCodes||!DB.absCodes.length)DB.absCodes=JSON.parse(JSON.stringify(ABS_CODES));
@@ -5950,20 +5950,19 @@ function delMasterResCode(i){if(!confirm('삭제?'))return;DB.resCodes.splice(i,
 
 function renderMasterProcess(){
   var tb=document.getElementById('m-proc-tbody');if(!tb)return;
-  var procs=getProcesses();
+  var procs=(DB.processes&&DB.processes.length)?DB.processes:getProcesses();
   tb.innerHTML=procs.map(function(p,i){
     return '<tr>'
       +'<td><input class="fi" value="'+(p.ban||'').replace(/"/g,'&quot;')+'" id="mproc-ban-'+i+'" style="padding:4px 6px;font-size:11px;max-width:60px"></td>'
       +'<td><select id="mproc-type-'+i+'" style="background:#0d0d0d;border:1px solid #262626;border-radius:5px;color:#e8e8e8;font-size:10px;padding:4px">'
+        +(p.type?'':'<option value="" selected>-</option>')
         +'<option value="\uc9c1\uc811\uc778\uc6d0"'+(p.type==='\uc9c1\uc811\uc778\uc6d0'?' selected':'')+'>\uc9c1\uc811\uc778\uc6d0</option>'
         +'<option value="\uac04\uc811\uc778\uc6d0"'+(p.type==='\uac04\uc811\uc778\uc6d0'?' selected':'')+'>\uac04\uc811\uc778\uc6d0</option>'
         +'<option value="\uacf5\uc815\uad00\ub9ac"'+(p.type==='\uacf5\uc815\uad00\ub9ac'?' selected':'')+'>\uacf5\uc815\uad00\ub9ac</option>'
         +'</select></td>'
-      +'<td><input class="fi" value="'+p.ko.replace(/"/g,'&quot;')+'" id="mproc-ko-'+i+'" style="padding:4px 8px;font-size:11px"></td>'
-      +'<td><input class="fi" value="'+p.es.replace(/"/g,'&quot;')+'" id="mproc-es-'+i+'" style="padding:4px 8px;font-size:11px;color:#b0b0b0"></td>'
-      +'<td><select id="mproc-loc-'+i+'" style="background:#0d0d0d;border:1px solid #262626;border-radius:5px;color:#e8e8e8;font-size:10px;padding:4px">'
-        +locOptionsHTML(p.loc)
-        +'</select></td>'
+      +'<td><input class="fi" value="'+(p.ko||'').replace(/"/g,'&quot;')+'" id="mproc-ko-'+i+'" style="padding:4px 8px;font-size:11px"></td>'
+      +'<td><input class="fi" value="'+(p.es||'').replace(/"/g,'&quot;')+'" id="mproc-es-'+i+'" style="padding:4px 8px;font-size:11px;color:#b0b0b0"></td>'
+      +'<td><input class="fi" value="'+(p.loc||'').replace(/"/g,'&quot;')+'" id="mproc-loc-'+i+'" placeholder="MAIN / FLOOR" style="padding:4px 8px;font-size:11px;max-width:140px"></td>'
       +'<td style="white-space:nowrap">'
         +'<button onclick="saveMasterProcess('+i+')" style="background:none;border:1px solid #333333;border-radius:4px;color:#c9a84c;cursor:pointer;font-size:10px;padding:3px 7px;margin-right:4px">💾</button>'
         +'<button onclick="delMasterProcess('+i+')" style="background:none;border:none;color:#e05c5c;cursor:pointer;font-size:10px">✕</button>'
@@ -5975,8 +5974,8 @@ function saveMasterProcess(i){
   var type=document.getElementById('mproc-type-'+i).value;
   var ko=document.getElementById('mproc-ko-'+i).value.trim();
   var es=document.getElementById('mproc-es-'+i).value.trim();
-  var loc=document.getElementById('mproc-loc-'+i).value;
-  if(!ko||!es){toast('\uacf5\uc815\uba85\uc744 \uc785\ub825\ud558\uc138\uc694.','#8a2020');return;}
+  var loc=document.getElementById('mproc-loc-'+i).value.trim();
+  if(!ko&&!es){toast('\uacf5\uc815\uba85\uc744 \uc785\ub825\ud558\uc138\uc694.','#8a2020');return;}
   DB.processes[i]={ban:ban,type:type,ko:ko,es:es,loc:loc};
   updateEFProcess();scheduleAutoSave();toast('\uc218\uc815\ub428','#3f9a6a');
 }
@@ -5985,8 +5984,8 @@ function mAddProcess(){
   var type=document.getElementById('m-proc-type').value;
   var ko=document.getElementById('m-proc-ko').value.trim();
   var es=document.getElementById('m-proc-es').value.trim();
-  var loc=document.getElementById('m-proc-loc').value;
-  if(!ko||!es){toast('\uacf5\uc815\uba85\uc744 \uc785\ub825\ud558\uc138\uc694.','#8a2020');return;}
+  var loc=document.getElementById('m-proc-loc').value.trim();
+  if(!ko&&!es){toast('\uacf5\uc815\uba85\uc744 \uc785\ub825\ud558\uc138\uc694.','#8a2020');return;}
   if(!DB.processes)DB.processes=[];
   DB.processes.push({ban:ban,type:type,ko:ko,es:es,loc:loc});
   document.getElementById('m-proc-ko').value='';document.getElementById('m-proc-es').value='';
