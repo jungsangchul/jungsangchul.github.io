@@ -274,6 +274,11 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(70%) sepia(50%
 .ind-emp-card.resigned-card{opacity:.45;}
 
 /* ── EMPLOYEE PHOTO VIEWER ── */
+.emp-proc-td{min-width:190px;}
+.emp-proc-sel{width:100%;min-width:180px;max-width:260px;background:#111111;border:1px solid #333333;border-radius:7px;padding:6px 8px;color:#f0f0f0;font-size:12px;font-weight:700;font-family:inherit;cursor:pointer;}
+.emp-proc-sel:hover,.emp-proc-sel:focus{border-color:#c9a84c;outline:none;background:#141414;}
+.emp-proc-sel.saved{border-color:#3f9a6a;box-shadow:0 0 0 2px #3f9a6a66;}
+.emp-proc-sel option,.emp-proc-sel optgroup{background:#111111;color:#f0f0f0;}
 .emp-photo-click{cursor:zoom-in;transition:transform .15s, box-shadow .15s;}
 .emp-photo-click:hover{transform:scale(1.08);box-shadow:0 0 0 3px rgba(201,168,76,.25);}
 .photo-viewer{position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:3000;display:none;align-items:center;justify-content:center;padding:28px;backdrop-filter:blur(5px);}
@@ -3799,7 +3804,7 @@ function renderEmpList(){
       <td><b>${e.name}</b>${e.resigned?`<span class="b-res" style="margin-left:5px">${resLbl}</span>`:''}</td>
       <td style="color:#666666;font-size:11px">${e.empno||'-'}</td>
       <td><span class="badge" style="background:${TYPE_COLORS[e.processType]+'30'};color:${TYPE_COLORS[e.processType]}">${typeLabel(e.processType)}</span></td>
-      <td style="font-size:11px">${procLabel(e)}</td>
+      <td class="emp-proc-td" onclick="event.stopPropagation()">${empProcSelectHTML(e,isEs)}</td>
       <td><span class="shift-ind ${curShift==='주간'?'shift-day':'shift-night'}">${curShift==='주간'?dayLbl:nightLbl}</span></td>
       <td style="font-size:11px">${(isEs?(e.jobGrade||e.jobGradeKo):(e.jobGradeKo||e.jobGrade))||'-'}</td>
       <td style="font-size:11px;color:#8a8a8a">${e.phone||'-'}</td>
@@ -3812,6 +3817,56 @@ function renderEmpList(){
       </td>
     </tr>`;
   }).join('') || `<tr><td colspan="12" class="empty-msg">${isEs?'Sin empleados':'직원이 없습니다.'}</td></tr>`;
+}
+/* ── 직원목록 공정 인라인 수정 (반·MAIN/FLOOR 포함) ── */
+function empProcSelectHTML(e,isEs){
+  var procs=getProcesses();
+  var esc=function(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');};
+  var nm=function(p){return isEs?(p.es||p.ko):(p.ko||p.es);};
+  var same=function(p){return (p.ko===e.processName||p.es===e.processName||(e.processNameEs&&p.es===e.processNameEs));};
+  var curIdx=-1;
+  procs.forEach(function(p,i){ if(curIdx<0 && same(p) && (p.ban||'')===(e.ban||'') && (p.loc||'')===(e.loc||'')) curIdx=i; });
+  if(curIdx<0) procs.forEach(function(p,i){ if(curIdx<0 && same(p) && (p.ban||'')===(e.ban||'') && (e.ban||'')!=='') curIdx=i; });
+  var h='';
+  if(curIdx<0){
+    var cur=e.processName
+      ? ((isEs?(e.processNameEs||e.processName):e.processName)+(procs.some(same)?(isEs?' (sin línea)':' (반 미지정)'):(isEs?' (no en maestro)':' (마스터에 없음)')))
+      : (isEs?'-- Sin proceso --':'-- 공정 미지정 --');
+    h+='<option value="" selected>'+esc(cur)+'</option>';
+  }
+  var bans=[]; procs.forEach(function(p){var b=p.ban||''; if(bans.indexOf(b)<0) bans.push(b);});
+  bans.sort(function(a,b){ if(a==='') return 1; if(b==='') return -1; var na=parseFloat(a),nb=parseFloat(b); if(!isNaN(na)&&!isNaN(nb)) return na-nb; return a.localeCompare(b); });
+  bans.forEach(function(b){
+    var items=''; procs.forEach(function(p,i){ if((p.ban||'')!==b) return;
+      items+='<option value="'+i+'"'+(i===curIdx?' selected':'')+'>'+esc(nm(p)+(p.loc?' · '+p.loc:''))+'</option>'; });
+    if(items) h+='<optgroup label="'+esc(b?(isEs?('Línea '+b):(b+'반')):(isEs?'Sin línea':'반 미지정'))+'">'+items+'</optgroup>';
+  });
+  var tip=(e.ban?(e.ban+(isEs?'':'반')+' · '):'')+(e.loc||'');
+  return '<select class="emp-proc-sel" title="'+esc(tip)+'" onclick="event.stopPropagation()" onchange="empInlineSetProc(\''+esc(e.id)+'\',this)">'+h+'</select>';
+}
+function empInlineSetProc(id,sel){
+  var isEs=currentLang==='es';
+  var emp=DB.employees.find(function(x){return empIdEq(x.id,id);});
+  var p=getProcesses()[parseInt(sel.value,10)];
+  if(!emp||!p){ renderEmpList(); return; }
+  var newType=p.type||emp.processType||'';
+  if(emp.processName===p.ko && (emp.ban||'')===(p.ban||'') && (emp.loc||'')===(p.loc||'') && emp.processType===newType) return;
+  if(p.type && emp.processType && emp.processType!==p.type){
+    var msg=isEs
+      ? ('Cambiará el tipo de '+emp.name+': '+emp.processType+' → '+p.type+'\n¿Continuar?')
+      : (emp.name+' 님의 구분이 변경됩니다.\n'+emp.processType+' → '+p.type+'\n계속하시겠습니까?');
+    if(!confirm(msg)){ renderEmpList(); return; }
+  }
+  var oldName=emp.processName||'-';
+  emp.processType=newType; emp.processName=p.ko; emp.processNameEs=p.es; emp.ban=p.ban||''; emp.loc=p.loc||'';
+  emp._mt=new Date().toISOString();
+  try{ scheduleAutoSave(); }catch(_e){ try{ autoSave(); }catch(_e2){} }
+  try{ updateFileStats(); }catch(_e){}
+  renderEmpList();
+  try{ renderDash(); }catch(_e){}
+  try{ var s2=document.querySelector('#emp-tbody select[onchange*="\''+String(id).replace(/'/g,"")+'\'"]'); if(s2){ s2.classList.add('saved'); setTimeout(function(){s2.classList.remove('saved');},1500);} }catch(_e){}
+  var lbl=(p.ban?(p.ban+(isEs?' · ':'반 · ')):'')+(isEs?(p.es||p.ko):p.ko)+(p.loc?' · '+p.loc:'');
+  toast(isEs?('Proceso actualizado: '+emp.name+' → '+lbl):(emp.name+' 공정 변경: '+oldName+' → '+lbl),'#3f9a6a');
 }
 function updateEFProcess(){
   var banSel=document.getElementById('ef-ban');
