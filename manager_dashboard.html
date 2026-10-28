@@ -1309,7 +1309,7 @@ const I18N={
     earlyOutWarn:(n,inBy)=>`⚠️ 지금은 출근시간(${inBy}) 전후입니다.\n\n${n} 님을 정말 퇴근 타각 처리할까요?\n(정규 퇴근시각으로 기록됩니다)`,
     mealAdd:"식사 수기 등록", mealAddBtn:"+ 식사 등록", mealOk:"등록", mealDup:"이미 식사 신청됨", idBad:"등록되지 않은 사번입니다", needId:"사번을 입력하세요",
     trBtn:"TRESS 붙여넣기", trTitle:"TRESS 근태 붙여넣기 → 출결현황 반영", trDate:"반영 날짜", trFactory:"장소",
-    trHint:"TRESS 「Asistencia Diaria」 엑셀(1·2공장 통합 파일)을 B열부터 또는 행 전체 복사해 붙여넣으세요. 행마다 공장을 자동 판별합니다 — 1공장: B열 8자리 사번(M0+8자리로 변환) · 2공장: C열 번호(숫자 그대로). D열=이름, G열=부서, I/J·K/L=출·퇴근. 한 번 반영으로 1·2공장 출결현황이 각각 업데이트됩니다. 같은 날짜의 이전 TRESS 반영분은 교체되고 QR 타각 기록은 유지됩니다.",
+    trHint:"TRESS 「Asistencia Diaria」 엑셀(1·2공장 통합 파일)을 B열부터 또는 행 전체 복사해 붙여넣으세요. 행마다 공장을 자동 판별합니다 — 1공장: B열 8자리 사번(M0+8자리로 변환) · 2공장: C열 번호(숫자 그대로). D열=이름, G열=부서, I/J=주간 출·퇴근, K/L=야간 출·퇴근(퇴근은 다음날 새벽). 한 번 반영으로 1·2공장 출결현황이 각각 업데이트됩니다. 같은 날짜의 이전 TRESS 반영분은 교체되고 QR 타각 기록은 유지됩니다.",
     trReg:"미등록 사번은 직원 마스터에 등록 (반영과 동시에)", trMapH:n=>`미등록 ${n}명 — TRESS 부서 → 시스템 팀 지정 (빈칸이면 부서명 그대로 저장)`, trMapPh:"팀 선택/입력",
     trRegDone:n=>`신규 직원 ${n}명 마스터 등록`, trRegFail:"직원 마스터 등록 실패 — Supabase 권한 확인",
     trRun:"출결현황에 반영", trNone:"인식된 행이 없습니다 — B열 사번(1공장 8자리) 또는 C열 번호(2공장)가 포함되도록 B열부터 붙여넣으세요",
@@ -1355,7 +1355,7 @@ const I18N={
     earlyOutWarn:(n,inBy)=>`⚠️ Ahora es antes o cerca de la hora de entrada (${inBy}).\n\n¿Realmente desea marcar la SALIDA de ${n}?\n(Se registrará a la hora oficial de salida)`,
     mealAdd:"Registro manual de comida", mealAddBtn:"+ Comida", mealOk:"Registrar", mealDup:"Comida ya registrada", idBad:"N° no registrado", needId:"Ingrese el N°",
     trBtn:"Pegar TRESS", trTitle:"Pegar asistencia TRESS → Panel", trDate:"Fecha", trFactory:"Lugar",
-    trHint:"Copie desde la col. B (o filas completas) del Excel «Asistencia Diaria» de TRESS (archivo combinado Planta 1 y 2) y péguelas aquí. La planta se detecta por fila — Planta 1: N° de 8 dígitos en col. B (se convierte a M0+8 dígitos) · Planta 2: número en col. C (tal cual). D=Nombre, G=Dpto, I/J·K/L=Ent/Sal. Una sola aplicación actualiza ambas plantas. Los registros TRESS anteriores de la misma fecha se reemplazan; las checadas QR se conservan.",
+    trHint:"Copie desde la col. B (o filas completas) del Excel «Asistencia Diaria» de TRESS (archivo combinado Planta 1 y 2) y péguelas aquí. La planta se detecta por fila — Planta 1: N° de 8 dígitos en col. B (se convierte a M0+8 dígitos) · Planta 2: número en col. C (tal cual). D=Nombre, G=Dpto, I/J=Ent/Sal diurno, K/L=Ent/Sal nocturno (salida al día siguiente). Una sola aplicación actualiza ambas plantas. Los registros TRESS anteriores de la misma fecha se reemplazan; las checadas QR se conservan.",
     trReg:"Registrar N° no registrados en el maestro de empleados (al aplicar)", trMapH:n=>`${n} no registrados — Dpto TRESS → Equipo del sistema (vacío = usar el nombre del dpto)`, trMapPh:"Elegir/escribir equipo",
     trRegDone:n=>`${n} empleados nuevos registrados`, trRegFail:"Error al registrar empleados — revise permisos",
     trRun:"Aplicar al panel", trNone:"No se reconoció ninguna fila — pegue desde la col. B con el N° (Planta 1: 8 dígitos en B · Planta 2: número en C)",
@@ -1816,7 +1816,7 @@ async function markLeft(empId, btn){
    TRESS 통합 엑셀(1·2공장이 한 파일)을 B열부터(또는 행 전체) 복사해 붙여넣으면 행마다 공장을 자동 판별:
      · 1공장 = B열에 8자리 사번(26050013 …)  → M0+8자리 → att_employees / tress_import
      · 2공장 = C열에 번호(6, 16, 123 …)       → 숫자 그대로 → att_employees_2 / tress_import_2
-   한 번의 반영으로 두 공장 데이터가 각각의 테이블에 같이 업데이트됨. 열 위치는 B열 기준 고정(D=이름, G=부서, I/J·K/L=출·퇴근) */
+   한 번의 반영으로 두 공장 데이터가 각각의 테이블에 같이 업데이트됨. 열 위치는 B열 기준 고정(D=이름, G=부서, I/J=주간 출·퇴근, K/L=야간 출·퇴근(퇴근은 다음날 새벽)) */
 const TRESS_THIS="1";
 const TRESS_PLANTS={
   "1":{ label:{ko:"1공장",es:"Planta 1"}, emp:"att_employees", rpc:"tress_import", rate:"att_rate_daily", ratePlant:"1공장", factory:"1",
@@ -1912,6 +1912,7 @@ function tressClassify(cells){
   }
   return null;
 }
+const TRESS_LONE_OUT={"1":"15:36","2":"14:20"};   // 공장별 퇴근기준(17:36 / 16:20) − 2시간
 const STATUS_WORD=/^(falta|permiso|vacaciones|incapacidad|descanso|festivo)$/i;
 function parseTress(){
   const txt=$("trText").value||"";
@@ -1935,14 +1936,17 @@ function parseTress(){
     let dept=g(5);
     if(!isTxt(dept)||STATUS_WORD.test(dept)){ dept=""; for(let i=ni+1;i<cells.length;i++){ const x=cells[i]; if(isTxt(x)&&!STATUS_WORD.test(x)){ dept=x; break; } } }
     /* 시각: I/J/K/L(b+7~10) → 아니면 이름 뒤 HH:MM 셀 전부(첫=출근, 마지막=퇴근) */
-    const in1=tressTime(g(7)), out1=tressTime(g(8)), in2=tressTime(g(9)), out2=tressTime(g(10));
-    let tIn=in1||in2, tOut=out2||out1;
-    if(!tIn&&!tOut){ const times=[]; for(let i=ni+1;i<cells.length;i++){ const tm=tressTime(cells[i]); if(tm) times.push(tm); }
-      tIn=times[0]||""; tOut=times.length>=2?times[times.length-1]:""; }
-    if(!tIn&&!tOut) continue;   // Falta(결근)
+    /* v7.40: 1/Ent·1/Sal = 주간 출·퇴근, 2/Ent·2/Sal = 야간 출·퇴근(퇴근은 다음날 새벽) — 4칸 각각 저장 */
+    let in1=tressTime(g(7)), out1=tressTime(g(8)), in2=tressTime(g(9)), out2=tressTime(g(10));
+    if(!in1&&!out1&&!in2&&!out2){ const times=[]; for(let i=ni+1;i<cells.length;i++){ const tm=tressTime(cells[i]); if(tm) times.push(tm); }
+      in1=times[0]||""; out1=times.length>=2?times[times.length-1]:""; }
+    /* 주간 타각이 1개뿐이고 퇴근 무렵(퇴근기준 2시간 전 ~ 18:00)이면 출근 미타각 + 퇴근으로 처리 */
+    if(in1&&!out1&&in1>=TRESS_LONE_OUT[plant]&&in1<"18:00"){ out1=in1; in1=""; }
+    if(!in1&&!out1&&!in2&&!out2) continue;   // Falta(결근)
+    const tIn=in1||in2, tOut=out2||out1;
     seen.add(key);
     const e=tressEmp[plant][id];
-    out.push({ plant, employee_id:id, name:e?(e.name||id):tressName(name), pasteName:tressName(name), team:dept, in:tIn, out:tOut, reg:!!e });
+    out.push({ plant, employee_id:id, name:e?(e.name||id):tressName(name), pasteName:tressName(name), team:dept, in:tIn, out:tOut, in1, out1, in2, out2, reg:!!e });
   }
   tressRows=out;
   // 부서 체크 상태 유지 (새 부서는 기본 선택)
@@ -2037,7 +2041,7 @@ async function submitTress(){
       }
       /* 2) 출결 반영 (공장별 RPC) */
       for(let i=0;i<prow.length;i+=CH){
-        const part=prow.slice(i,i+CH).map(r=>({employee_id:r.employee_id,name:r.pasteName||r.name,team:r.team,in:r.in,out:r.out,register:false}));
+        const part=prow.slice(i,i+CH).map(r=>({employee_id:r.employee_id,name:r.pasteName||r.name,team:r.team,in1:r.in1,out1:r.out1,in2:r.in2,out2:r.out2,register:false}));
         $("trProg").textContent=lbl+T.trProg(Math.min(i+CH,prow.length),prow.length);
         const res=await fetch(REST("rpc/"+P.rpc),{method:"POST",headers:Object.assign({},HEADERS,{"Content-Type":"application/json"}),
           body:JSON.stringify({p_date:date,p_factory:factory,p_rows:part})});
