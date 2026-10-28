@@ -640,6 +640,35 @@
   #turnModal .rt-ring::before{inset:5px}
   #turnModal .rt-bar{margin-top:6px;height:5px}
   #turnModal .rt-card{padding:14px 16px;margin-bottom:12px}
+  /* ── 근무시간 분석 (TRESS Horas·Extras·Sin/Aut·Tardes) ── */
+  .addbtn.rt-open.wh-open{background:linear-gradient(180deg,#8fd3a8,#4caf7d);border-color:rgba(76,175,125,.55);box-shadow:0 4px 16px rgba(76,175,125,.28)}
+  .wh-top::before{background:linear-gradient(90deg,#4caf7d 0%,var(--gold) 50%,#6fb8dd 100%)!important}
+  .wh-fbar{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}
+  .wh-fbar label{display:flex;flex-direction:column;gap:4px;font-family:var(--mono);font-size:12px;letter-spacing:.08em;color:#888;text-transform:uppercase}
+  .wh-fbar input[type=date]{height:34px;border:1px solid var(--line2);border-radius:8px;background:#0d0d0d;color:#f0f0f0;padding:0 10px;font-family:var(--mono);font-size:12.5px;outline:none;color-scheme:dark}
+  .wh-quick{display:flex;gap:6px;flex-wrap:wrap}
+  .wh-quick button{height:34px;border:1px solid var(--line2);border-radius:999px;background:transparent;color:#bbb;padding:0 12px;font-size:12px;cursor:pointer}
+  .wh-quick button.on,.wh-quick button:hover{border-color:var(--gold);color:var(--gold);background:rgba(201,168,76,.08)}
+  #whModal .rt-hero{grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+  @media (max-width:1100px){#whModal .rt-hero{grid-template-columns:repeat(2,minmax(0,1fr))}}
+  @media (max-width:560px){#whModal .rt-hero{grid-template-columns:1fr}}
+  #whModal .rt-tile{padding:12px 14px}
+  #whModal .rt-tile .k{font-size:12px;letter-spacing:.04em;color:#999;font-family:var(--mono);text-transform:uppercase}
+  #whModal .rt-tile .k i{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:6px;vertical-align:1px}
+  .wh-dual{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+  .wh-dual>div{border-left:3px solid var(--wc);padding-left:8px}
+  .wh-dual .n{font-family:var(--mono);font-size:21px;font-weight:700;color:#fafafa;white-space:nowrap}
+  .wh-dual .n small{font-size:12px;color:#888;font-weight:400;margin-left:3px}
+  .wh-dual .l{font-size:12px;color:#888;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #whModal .rt-card{padding:14px 16px;margin-bottom:12px}
+  #whModal .rt-t td.num,#whModal .rt-t th.num{text-align:right;font-family:var(--mono)}
+  #whModal .rt-t td.warn{color:#ffb74d;font-weight:700}
+  #whModal .rt-t td.bad{color:#ef9a9a;font-weight:700}
+  .wh-tag{display:inline-block;padding:1px 8px;border-radius:999px;font-size:12px;font-weight:700;border:1px solid}
+  .wh-tag.p1{color:#e2c46a;border-color:rgba(226,196,106,.5)}.wh-tag.p2{color:#6fb8dd;border-color:rgba(111,184,221,.5)}
+  .wh-nohead{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+  .wh-nohead select{height:32px;border:1px solid var(--line2);border-radius:8px;background:#0d0d0d;color:#f0f0f0;padding:0 10px;font-family:var(--mono);font-size:12.5px}
+  .wh-cnt{font-family:var(--mono);font-size:12px;color:#aaa}.wh-cnt b{color:#ef9a9a}
   #turnModal .rt-card .h{margin-bottom:6px}
   #turnModal .rt-grid2{margin-bottom:12px;gap:12px}
   #turnModal .rt-chart{height:220px}
@@ -810,6 +839,7 @@
         <button class="addbtn rt-open rp-open" id="bRpt" onclick="openReport()">분석 리포트<span class="nw">NEW</span></button>
         <button class="addbtn rt-open" id="bRate" onclick="openRate()">출근율 분석</button>
         <button class="addbtn rt-open tn-open" id="bTurn" onclick="openTurn()">퇴사율 분석</button>
+        <button class="addbtn rt-open wh-open" id="bWh" onclick="openWh()">근무시간 분석<span class="nw">NEW</span></button>
         <div class="langtog" id="langTog">
           <button id="langKo" onclick="setLang('ko')">한국어</button>
           <button id="langEs" onclick="setLang('es')">Español</button>
@@ -1028,6 +1058,47 @@
 
 
 <!-- ═══ 출근율 분석 오버레이 ═══ -->
+<!-- ═══ 근무시간 분석 오버레이 (TRESS Horas·Extras·Sin/Aut·Tardes) ═══ -->
+<div class="rt-overlay" id="whModal" role="dialog" aria-modal="true">
+  <div class="rt-top wh-top">
+    <div class="rt-top-in">
+      <div>
+        <div class="rt-title" id="whTitle">근무시간 분석</div>
+        <div class="rt-sub" id="whSub">Work hours · Plant 1 vs Plant 2 · <span id="whRange">—</span></div>
+      </div>
+    </div>
+    <div class="tn-fwrap"><div class="tn-fbar wh-fbar">
+      <label><span id="whCapFrom">시작일</span><input type="date" id="whFrom" onchange="whQuickSel='';whLoad()"></label>
+      <label><span id="whCapTo">종료일</span><input type="date" id="whTo" onchange="whQuickSel='';whLoad()"></label>
+      <div class="wh-quick" id="whQuick"></div>
+    </div>
+      <div class="rt-ctrl tn-ctrl">
+        <span class="rt-act"><button class="rt-btn green" id="whExpBtn" onclick="whExport()">⤓ Excel 다운로드</button><small id="whCapExp">3개 시트 · 서식 포함</small></span>
+        <span class="rt-act"><button class="rt-btn blue" id="whReloadBtn" onclick="whLoad()">↻ 새로고침</button><small id="whCapReload">최신 데이터 다시 읽기</small></span>
+        <span class="rt-act"><button class="rt-btn red" id="whCloseBtn" onclick="closeWh()">✕ 닫기</button><small id="whCapClose">대시보드로 돌아가기 (ESC)</small></span>
+      </div>
+    </div>
+  </div>
+  <div class="rt-wrap">
+    <div class="rt-status" id="whStatus"></div>
+    <div class="rt-hero" id="whHero"></div>
+    <div class="rt-card">
+      <div class="h"><h3 id="whH1">일별 인당 근무시간 · 잔업</h3><span class="d">daily · avg hours / overtime</span></div>
+      <div class="rt-chart tall"><canvas id="whChart"></canvas></div>
+    </div>
+    <div class="rt-card">
+      <div class="h"><h3 id="whH2">팀별 근무시간 집계</h3><span class="d">by team · period total</span></div>
+      <div class="rt-tw"><table class="rt-t" id="whTeam"><thead></thead><tbody></tbody></table></div>
+    </div>
+    <div class="rt-card">
+      <div class="h"><h3 id="whH3">퇴근 미타각 명단</h3><span class="d">clock-in without clock-out</span></div>
+      <div class="wh-nohead"><select id="whNoDate" onchange="whLoadNo()"></select><span class="wh-cnt" id="whNoCnt"></span></div>
+      <div class="rt-tw"><table class="rt-t" id="whNo"><thead></thead><tbody></tbody></table></div>
+    </div>
+    <div class="rt-note" id="whNote"></div>
+  </div>
+</div>
+
 <div class="rt-overlay" id="turnModal" role="dialog" aria-modal="true">
   <div class="rt-top tn-top">
     <div class="rt-top-in">
@@ -1940,9 +2011,11 @@ function parseTress(){
     if(in1&&!out1&&in1>=TRESS_LONE_OUT[plant]&&in1<"18:00"){ out1=in1; in1=""; }
     if(!in1&&!out1&&!in2&&!out2) continue;   // Falta(결근)
     const tIn=in1||in2, tOut=out2||out1;
+    const hv=i=>{ const x=g(i).replace(",","."); return /^-?\d+(\.\d+)?$/.test(x)||/^\d{1,3}:\d{2}$/.test(x)?x:""; };
+    const horas=hv(11), extras=hv(12), sin_aut=hv(13), tardes=hv(14);   // M~P열
     seen.add(key);
     const e=tressEmp[plant][id];
-    out.push({ plant, employee_id:id, name:e?(e.name||id):tressName(name), pasteName:tressName(name), team:dept, in:tIn, out:tOut, in1, out1, in2, out2, reg:!!e });
+    out.push({ plant, employee_id:id, name:e?(e.name||id):tressName(name), pasteName:tressName(name), team:dept, in:tIn, out:tOut, in1, out1, in2, out2, horas, extras, sin_aut, tardes, reg:!!e });
   }
   tressRows=out;
   // 부서 체크 상태 유지 (새 부서는 기본 선택)
@@ -2037,7 +2110,7 @@ async function submitTress(){
       }
       /* 2) 출결 반영 (공장별 RPC) */
       for(let i=0;i<prow.length;i+=CH){
-        const part=prow.slice(i,i+CH).map(r=>({employee_id:r.employee_id,name:r.pasteName||r.name,team:r.team,in1:r.in1,out1:r.out1,in2:r.in2,out2:r.out2,register:false}));
+        const part=prow.slice(i,i+CH).map(r=>({employee_id:r.employee_id,name:r.pasteName||r.name,team:r.team,in1:r.in1,out1:r.out1,in2:r.in2,out2:r.out2,horas:r.horas,extras:r.extras,sin_aut:r.sin_aut,tardes:r.tardes,register:false}));
         $("trProg").textContent=lbl+T.trProg(Math.min(i+CH,prow.length),prow.length);
         const res=await fetch(REST("rpc/"+P.rpc),{method:"POST",headers:Object.assign({},HEADERS,{"Content-Type":"application/json"}),
           body:JSON.stringify({p_date:date,p_factory:factory,p_rows:part})});
@@ -4471,6 +4544,175 @@ setTimeout(rptCheckNew,1500); setInterval(rptCheckNew,5*60*1000);
 $("tnInText").addEventListener("input",turnInputChanged); $("tnInText").addEventListener("paste",()=>setTimeout(turnInputChanged,0));
 $("tnInHold").addEventListener("input",turnInputChanged); $("tnInHold").addEventListener("paste",()=>setTimeout(turnInputChanged,0));
 try{ turnApplyLang(); }catch(_){ }
+
+/* ════════════════════════════════════════════════════════════════════
+   근무시간 분석 (v7.41) — TRESS 「Asistencia Diaria」 Horas·Extras·Sin/Aut·Tardes
+   · TRESS 붙여넣기 때 M~P열 값이 att_work_hours(_2)에 근무일별로 자동 저장
+   · 출근 판정은 타각 기준 그대로, 근무시간·잔업·미승인·지각은 여기서 분석
+   · 퇴근 미타각 = 출근 타각은 있는데 같은 근무일 퇴근 타각 없음 (오늘은 제외)
+   ════════════════════════════════════════════════════════════════════ */
+const WH_C={p1:"#e2c46a",p2:"#6fb8dd",ext:"#4caf7d",sin:"#ff8a65",late:"#b39ddb",no:"#ef9a9a"};
+let whRows=[], whChartObj=null, whNoRows=[], whQuickSel="m0";
+const WH_PL=p=>p==="1공장"?L2("1공장","Planta 1"):L2("2공장","Planta 2");
+function whFmt(v,d=1){ return (v==null||isNaN(v))?"–":(+v).toLocaleString("en-US",{minimumFractionDigits:d,maximumFractionDigits:d}); }
+function whAddDays(s,n){ const d=new Date(s+"T12:00:00Z"); d.setUTCDate(d.getUTCDate()+n); return d.toISOString().slice(0,10); }
+function whSetQuick(k){
+  const t=todayDate(); whQuickSel=k;
+  if(k==="m0"){ $("whFrom").value=t.slice(0,8)+"01"; $("whTo").value=t; }
+  if(k==="m1"){ const f=new Date(t.slice(0,8)+"01T12:00:00Z"); f.setUTCMonth(f.getUTCMonth()-1); const s=f.toISOString().slice(0,10); $("whFrom").value=s; $("whTo").value=whAddDays(t.slice(0,8)+"01",-1); }
+  if(k==="w1"){ $("whFrom").value=whAddDays(t,-6); $("whTo").value=t; }
+  if(k==="d1"){ $("whFrom").value=whAddDays(t,-1); $("whTo").value=whAddDays(t,-1); }
+  whLoad();
+}
+function whApplyLang(){
+  const B=$("bWh"); if(B) B.firstChild.textContent=L2("근무시간 분석","Horas trabajadas");
+  $("whTitle").textContent=L2("근무시간 분석","Análisis de horas trabajadas");
+  $("whSub").firstChild.textContent=L2("근무 · 잔업 · 미승인 · 지각 · ","Horas · Extras · Sin autorizar · Retardos · ");
+  $("whCapFrom").textContent=L2("시작일","Desde"); $("whCapTo").textContent=L2("종료일","Hasta");
+  $("whExpBtn").textContent=L2("⤓ Excel 다운로드","⤓ Descargar Excel"); $("whCapExp").textContent=L2("3개 시트 · 서식 포함","3 hojas · con formato");
+  $("whReloadBtn").textContent=L2("↻ 새로고침","↻ Actualizar"); $("whCapReload").textContent=L2("최신 데이터 다시 읽기","Volver a leer datos");
+  $("whCloseBtn").textContent=L2("✕ 닫기","✕ Cerrar"); $("whCapClose").textContent=L2("대시보드로 돌아가기 (ESC)","Volver al panel (ESC)");
+  $("whH1").textContent=L2("일별 인당 근무시간 · 잔업","Horas promedio por persona · extras por día");
+  $("whH2").textContent=L2("팀별 근무시간 집계","Horas por equipo");
+  $("whH3").textContent=L2("퇴근 미타각 명단","Sin checada de salida");
+  const Q=[["m0",L2("이번 달","Este mes")],["m1",L2("지난 달","Mes pasado")],["w1",L2("최근 7일","Últimos 7 días")],["d1",L2("어제","Ayer")]];
+  $("whQuick").innerHTML=Q.map(([k,l])=>`<button class="${whQuickSel===k?"on":""}" onclick="whSetQuick('${k}')">${l}</button>`).join("");
+  $("whNote").innerHTML=L2(
+    "<b>데이터</b> — TRESS 붙여넣기(출근율 현황 「TRESS 붙여넣기」) 때 M~P열 <b>Horas</b>(실근무)·<b>Extras</b>(잔업)·<b>Sin/Aut</b>(미승인 시간)·<b>Tardes</b>(지각)이 근무일별로 자동 저장됩니다. 아침 반영분은 퇴근 전이라 0이고, 저녁 반영 때 값이 채워집니다.<br><b>인당 근무시간</b> = Horas 합계 ÷ Horas가 0보다 큰 인원. <b>퇴근 미타각</b> = 출근 타각은 있는데 같은 근무일 퇴근 타각이 없는 인원 (오늘은 아직 근무 중이라 제외). 하루 전체가 미타각이면 저녁 TRESS 반영이 빠진 날입니다.",
+    "<b>Datos</b> — al pegar TRESS se guardan por día las col. M~P: <b>Horas</b>, <b>Extras</b>, <b>Sin/Aut</b> (no autorizadas) y <b>Tardes</b>. La carga de la mañana trae 0; los valores se llenan con la de la tarde.<br><b>Horas por persona</b> = suma de Horas ÷ personas con Horas &gt; 0. <b>Sin salida</b> = tiene entrada pero no salida ese día (hoy no se cuenta). Si casi todos aparecen, falta la carga de la tarde de TRESS.");
+}
+async function openWh(){
+  $("whModal").classList.add("open"); document.body.style.overflow="hidden";
+  if(!$("whFrom").value){ const t=todayDate(); $("whFrom").value=t.slice(0,8)+"01"; $("whTo").value=t; }
+  whApplyLang();
+  try{ await rateLoadScript(RATE_CHART_SRC,()=>!!window.Chart); }catch(e){ console.warn(e); }
+  await whLoad();
+}
+function closeWh(){ $("whModal").classList.remove("open"); document.body.style.overflow=""; }
+document.addEventListener("keydown",e=>{ if(e.key==="Escape"&&$("whModal").classList.contains("open")) closeWh(); });
+try{ const _setLangWh=setLang; setLang=function(l){ _setLangWh(l); try{ whApplyLang(); if($("whModal").classList.contains("open")) whRender(); }catch(_){ } }; }catch(_){ }
+
+async function whLoad(){
+  let f=$("whFrom").value, t=$("whTo").value; if(!f||!t) return;
+  if(f>t){ [f,t]=[t,f]; $("whFrom").value=f; $("whTo").value=t; }
+  const QK=["m0","m1","w1","d1"]; [...$("whQuick").children].forEach((b,i)=>b.classList.toggle("on",QK[i]===whQuickSel));
+  $("whStatus").textContent=L2("불러오는 중…","Cargando…");
+  try{
+    const res=await fetch(REST("rpc/att_hours_daily"),{method:"POST",headers:Object.assign({},HEADERS,{"Content-Type":"application/json"}),body:JSON.stringify({p_from:f,p_to:t})});
+    if(!res.ok) throw new Error(await res.text());
+    whRows=(await res.json()).map(r=>({...r,d:String(r.d).slice(0,10),horas:+r.horas||0,extras:+r.extras||0,sin_aut:+r.sin_aut||0,tardes:+r.tardes||0,worked:+r.worked||0,late_cnt:+r.late_cnt||0,no_out:+r.no_out||0}));
+  }catch(e){ console.error(e); whRows=[]; $("whStatus").textContent=L2("불러오기 실패 — Supabase 함수(att_hours_daily) 확인","Error al cargar — revise att_hours_daily"); return; }
+  /* 퇴근 미타각 날짜 목록 (미타각이 있는 날, 최근순) */
+  const nd={}; whRows.forEach(r=>{ if(r.no_out) nd[r.d]=(nd[r.d]||0)+r.no_out; });
+  const days=Object.keys(nd).sort().reverse(); const keep=$("whNoDate").value;
+  $("whNoDate").innerHTML=days.length?days.map(d=>`<option value="${d}"${d===keep?" selected":""}>${d} (${nd[d]}${L2("명"," p.")})</option>`).join(""):`<option value="">${L2("미타각 없음","Sin pendientes")}</option>`;
+  whRender(); whLoadNo();
+}
+function whAgg(filter){
+  const a={worked:0,horas:0,extras:0,sin:0,tardes:0,late:0,no:0,days:new Set()};
+  whRows.forEach(r=>{ if(!filter(r)) return; a.worked+=r.worked; a.horas+=r.horas; a.extras+=r.extras; a.sin+=r.sin_aut; a.tardes+=r.tardes; a.late+=r.late_cnt; a.no+=r.no_out; if(r.worked) a.days.add(r.d); });
+  a.avg=a.worked?a.horas/a.worked:null; a.extPer=a.worked?a.extras/a.worked:null; return a;
+}
+function whRender(){
+  const f=$("whFrom").value, t=$("whTo").value; $("whRange").textContent=`${f} ~ ${t}`;
+  if(!whRows.length){ $("whStatus").textContent=L2("이 기간에 저장된 근무시간이 없습니다 — TRESS 붙여넣기부터 반영되며, 이전 날짜는 TRESS를 다시 붙여넣으면 채워집니다.","Sin datos en este periodo — se guardan al pegar TRESS; pegue de nuevo días anteriores para llenarlos."); $("whHero").innerHTML=""; $("whTeam").querySelector("thead").innerHTML=""; $("whTeam").querySelector("tbody").innerHTML=""; if(whChartObj){ whChartObj.destroy(); whChartObj=null; } return; }
+  const A={"1공장":whAgg(r=>r.plant==="1공장"),"2공장":whAgg(r=>r.plant==="2공장")};
+  const nDays=new Set(whRows.filter(r=>r.worked).map(r=>r.d)).size;
+  $("whStatus").innerHTML=L2(`근무시간 저장일 <b>${nDays}</b>일 · 1공장 인원일 <b>${A["1공장"].worked.toLocaleString()}</b> · 2공장 인원일 <b>${A["2공장"].worked.toLocaleString()}</b>`,
+    `Días con horas <b>${nDays}</b> · Planta 1 <b>${A["1공장"].worked.toLocaleString()}</b> · Planta 2 <b>${A["2공장"].worked.toLocaleString()}</b> persona-día`);
+  const tile=(k,c,v1,v2,l1,l2)=>`<div class="rt-tile"><div class="k"><i style="background:${c};box-shadow:0 0 8px ${c}"></i>${k}</div><div class="wh-dual"><div style="--wc:${WH_C.p1}"><div class="n">${v1}</div><div class="l">${WH_PL("1공장")} · ${l1}</div></div><div style="--wc:${WH_C.p2}"><div class="n">${v2}</div><div class="l">${WH_PL("2공장")} · ${l2}</div></div></div></div>`;
+  const a1=A["1공장"], a2=A["2공장"], h=L2("h","h");
+  $("whHero").innerHTML=[
+    tile(L2("인당 근무시간","Horas / persona"),"#e2c46a",`${whFmt(a1.avg,2)}<small>${h}</small>`,`${whFmt(a2.avg,2)}<small>${h}</small>`,`${L2("합계","total")} ${whFmt(a1.horas,0)}h`,`${L2("합계","total")} ${whFmt(a2.horas,0)}h`),
+    tile(L2("잔업 (Extras)","Extras"),WH_C.ext,`${whFmt(a1.extras,1)}<small>${h}</small>`,`${whFmt(a2.extras,1)}<small>${h}</small>`,`${L2("인당","p/p")} ${whFmt(a1.extPer,2)}h`,`${L2("인당","p/p")} ${whFmt(a2.extPer,2)}h`),
+    tile(L2("미승인 시간 (Sin/Aut)","Sin autorizar"),WH_C.sin,`${whFmt(a1.sin,1)}<small>${h}</small>`,`${whFmt(a2.sin,1)}<small>${h}</small>`,L2("잔업 승인 누락","extra sin aut."),L2("잔업 승인 누락","extra sin aut.")),
+    tile(L2("지각 (Tardes)","Retardos"),WH_C.late,`${a1.late.toLocaleString()}<small>${L2("건","")}</small>`,`${a2.late.toLocaleString()}<small>${L2("건","")}</small>`,`Tardes ${whFmt(a1.tardes,1)}`,`Tardes ${whFmt(a2.tardes,1)}`),
+    tile(L2("퇴근 미타각","Sin salida"),WH_C.no,`${a1.no.toLocaleString()}<small>${L2("건","")}</small>`,`${a2.no.toLocaleString()}<small>${L2("건","")}</small>`,L2("오늘 제외","sin hoy"),L2("오늘 제외","sin hoy"))
+  ].join("");
+
+  /* 일별 차트: 인당 근무시간(선) + 잔업 합계(막대) */
+  const days=[]; for(let d=f; d<=t; d=whAddDays(d,1)) days.push(d);
+  const by=(p,d)=>whAgg(r=>r.plant===p&&r.d===d);
+  const s=days.map(d=>({d,p1:by("1공장",d),p2:by("2공장",d)}));
+  if(window.Chart){
+    if(whChartObj) whChartObj.destroy();
+    const ctx=$("whChart").getContext("2d");
+    whChartObj=new Chart(ctx,{data:{labels:days.map(d=>d.slice(5).replace("-","/")),datasets:[
+      {type:"line",label:WH_PL("1공장")+" · "+L2("인당 근무h","h/persona"),data:s.map(x=>x.p1.avg==null?null:+x.p1.avg.toFixed(2)),borderColor:WH_C.p1,backgroundColor:WH_C.p1,tension:.3,spanGaps:true,yAxisID:"y",pointRadius:3},
+      {type:"line",label:WH_PL("2공장")+" · "+L2("인당 근무h","h/persona"),data:s.map(x=>x.p2.avg==null?null:+x.p2.avg.toFixed(2)),borderColor:WH_C.p2,backgroundColor:WH_C.p2,tension:.3,spanGaps:true,yAxisID:"y",pointRadius:3},
+      {type:"bar",label:WH_PL("1공장")+" · "+L2("잔업 합계h","extras h"),data:s.map(x=>+x.p1.extras.toFixed(1)),backgroundColor:"rgba(226,196,106,.28)",borderColor:"rgba(226,196,106,.6)",borderWidth:1,yAxisID:"y2"},
+      {type:"bar",label:WH_PL("2공장")+" · "+L2("잔업 합계h","extras h"),data:s.map(x=>+x.p2.extras.toFixed(1)),backgroundColor:"rgba(111,184,221,.28)",borderColor:"rgba(111,184,221,.6)",borderWidth:1,yAxisID:"y2"}]},
+      options:{responsive:true,maintainAspectRatio:false,interaction:{mode:"index",intersect:false},
+        plugins:{legend:{labels:{color:"#bbb",font:{size:12}}}},
+        scales:{x:{ticks:{color:"#888",font:{size:12}},grid:{color:"rgba(255,255,255,.04)"}},
+          y:{position:"left",title:{display:true,text:L2("인당 근무시간(h)","h/persona"),color:"#888"},ticks:{color:"#888"},grid:{color:"rgba(255,255,255,.06)"},suggestedMin:0},
+          y2:{position:"right",title:{display:true,text:L2("잔업 합계(h)","Extras (h)"),color:"#888"},ticks:{color:"#888"},grid:{display:false},suggestedMin:0}}}});
+  }
+
+  /* 팀별 표 */
+  const tm={}; whRows.forEach(r=>{ const k=r.plant+"|"+r.team; const x=(tm[k]=tm[k]||{plant:r.plant,team:r.team,worked:0,horas:0,extras:0,sin:0,late:0,no:0}); x.worked+=r.worked; x.horas+=r.horas; x.extras+=r.extras; x.sin+=r.sin_aut; x.late+=r.late_cnt; x.no+=r.no_out; });
+  const list=Object.values(tm).sort((a,b)=>a.plant.localeCompare(b.plant)||b.horas-a.horas);
+  $("whTeam").querySelector("thead").innerHTML=`<tr><th>${L2("공장","Planta")}</th><th>${L2("팀","Equipo")}</th><th class="num">${L2("근무 인원일","Persona-día")}</th><th class="num">${L2("근무시간 합계","Horas")}</th><th class="num">${L2("인당 근무h","h/persona")}</th><th class="num">${L2("잔업 h","Extras h")}</th><th class="num">${L2("인당 잔업h","Extras p/p")}</th><th class="num">${L2("미승인 h","Sin aut. h")}</th><th class="num">${L2("지각 건","Retardos")}</th><th class="num">${L2("퇴근 미타각","Sin salida")}</th></tr>`;
+  $("whTeam").querySelector("tbody").innerHTML=list.map(x=>{ const av=x.worked?x.horas/x.worked:null, ep=x.worked?x.extras/x.worked:null;
+    return `<tr><td><span class="wh-tag ${x.plant==="1공장"?"p1":"p2"}">${WH_PL(x.plant)}</span></td><td>${escapeHtml(x.team)}</td><td class="num">${x.worked.toLocaleString()}</td><td class="num">${whFmt(x.horas,1)}</td><td class="num">${whFmt(av,2)}</td><td class="num">${whFmt(x.extras,1)}</td><td class="num">${whFmt(ep,2)}</td><td class="num ${x.sin>0?"warn":""}">${whFmt(x.sin,1)}</td><td class="num">${x.late||"–"}</td><td class="num ${x.no>0?"bad":""}">${x.no||"–"}</td></tr>`; }).join("");
+}
+async function whLoadNo(){
+  const d=$("whNoDate").value; const tb=$("whNo");
+  if(!d){ whNoRows=[]; tb.querySelector("thead").innerHTML=""; tb.querySelector("tbody").innerHTML=""; $("whNoCnt").textContent=""; return; }
+  try{
+    const res=await fetch(REST("rpc/att_noout_list"),{method:"POST",headers:Object.assign({},HEADERS,{"Content-Type":"application/json"}),body:JSON.stringify({p_date:d})});
+    if(!res.ok) throw new Error(await res.text()); whNoRows=await res.json();
+  }catch(e){ console.error(e); whNoRows=[]; }
+  const c1=whNoRows.filter(r=>r.plant==="1공장").length, c2=whNoRows.length-c1;
+  $("whNoCnt").innerHTML=`${WH_PL("1공장")} <b>${c1}</b> · ${WH_PL("2공장")} <b>${c2}</b>`;
+  tb.querySelector("thead").innerHTML=`<tr><th>${L2("공장","Planta")}</th><th>${L2("사번","N°")}</th><th>${L2("이름","Nombre")}</th><th>${L2("팀","Equipo")}</th><th class="num">${L2("출근 타각","Entrada")}</th></tr>`;
+  tb.querySelector("tbody").innerHTML=whNoRows.map(r=>`<tr><td><span class="wh-tag ${r.plant==="1공장"?"p1":"p2"}">${WH_PL(r.plant)}</span></td><td>${escapeHtml(r.employee_id)}</td><td>${escapeHtml(r.name||"")}</td><td>${escapeHtml(r.team||"")}</td><td class="num">${escapeHtml(r.in_time||"")}</td></tr>`).join("");
+}
+async function whExport(){
+  if(!whRows.length) return;
+  const btn=$("whExpBtn"); const txt=btn.textContent; btn.disabled=true; btn.textContent=L2("만드는 중…","Generando…");
+  try{
+    await rateLoadScript(RATE_XLSX_SRC,()=>!!window.ExcelJS);
+    const f=$("whFrom").value, t=$("whTo").value;
+    const wb=new ExcelJS.Workbook(); wb.creator="YURA HARNESS MÉXICO"; wb.created=new Date();
+    const C={navy:"FF1F3864",p1:"FFFFF2CC",p2:"FFDDEBF7",line:"FFBFBFBF",warn:"FFFCE4D6",bad:"FFFFC7CE"};
+    const F=(b,c,s)=>({name:"Malgun Gothic",size:s||10,bold:!!b,color:{argb:c||"FF000000"}});
+    const fill=c=>({type:"pattern",pattern:"solid",fgColor:{argb:c}});
+    const bd={top:{style:"thin",color:{argb:C.line}},bottom:{style:"thin",color:{argb:C.line}},left:{style:"thin",color:{argb:C.line}},right:{style:"thin",color:{argb:C.line}}};
+    const sheet=(name,titleTxt,head,rows,widths,fmts,rowFill)=>{
+      const ws=wb.addWorksheet(name,{views:[{state:"frozen",ySplit:4}]});
+      ws.pageSetup={orientation:"landscape",fitToPage:true,fitToWidth:1,fitToHeight:0,paperSize:9};
+      ws.mergeCells(1,1,1,head.length); const c=ws.getCell(1,1); c.value=titleTxt; c.font=F(true,C.navy,14); ws.getRow(1).height=26;
+      ws.mergeCells(2,1,2,head.length); const s=ws.getCell(2,1); s.value=`YURA HARNESS MÉXICO · ${f} ~ ${t} · ${L2("작성","Generado")} ${todayDate()}`; s.font=F(false,"FF808080",9);
+      head.forEach((h,i)=>{ const x=ws.getCell(4,i+1); x.value=h; x.font=F(true,"FFFFFFFF",9.5); x.fill=fill(C.navy); x.alignment={horizontal:"center",vertical:"middle",wrapText:true}; x.border=bd; }); ws.getRow(4).height=24;
+      rows.forEach((r,ri)=>{ r.forEach((v,ci)=>{ const x=ws.getCell(5+ri,ci+1); x.value=(v==null?"–":v); x.border=bd; x.font=F(false);
+        x.alignment={horizontal:typeof v==="number"?"right":"center",vertical:"middle"}; if(fmts&&fmts[ci]&&typeof v==="number") x.numFmt=fmts[ci];
+        const rf=rowFill&&rowFill(r,ci); if(rf) x.fill=fill(rf); }); });
+      widths.forEach((w,i)=>ws.getColumn(i+1).width=w);
+      ws.autoFilter={from:{row:4,column:1},to:{row:4+rows.length,column:head.length}};
+    };
+    const pf=r=>r[0]===WH_PL("1공장")?C.p1:C.p2;
+    /* 1. 일별 */
+    const dm={}; whRows.forEach(r=>{ const k=r.d+"|"+r.plant; const x=(dm[k]=dm[k]||{d:r.d,plant:r.plant,worked:0,horas:0,extras:0,sin:0,late:0,no:0}); x.worked+=r.worked; x.horas+=r.horas; x.extras+=r.extras; x.sin+=r.sin_aut; x.late+=r.late_cnt; x.no+=r.no_out; });
+    const dr=Object.values(dm).sort((a,b)=>a.d.localeCompare(b.d)||a.plant.localeCompare(b.plant)).map(x=>[x.d,WH_PL(x.plant),x.worked,+x.horas.toFixed(2),x.worked?+(x.horas/x.worked).toFixed(2):null,+x.extras.toFixed(2),+x.sin.toFixed(2),x.late,x.no]);
+    const HD=[L2("일자","Fecha"),L2("공장","Planta"),L2("근무 인원","Personas"),L2("근무시간 합계","Horas"),L2("인당 근무h","h/persona"),L2("잔업 h","Extras h"),L2("미승인 h","Sin aut. h"),L2("지각 건","Retardos"),L2("퇴근 미타각","Sin salida")];
+    sheet(L2("일별","Diario"),L2("일별 근무시간","Horas por día"),HD,dr,[12,10,11,13,11,11,11,10,11],[null,null,"#,##0","#,##0.0","0.00","#,##0.0","#,##0.0","#,##0","#,##0"],(r,ci)=>ci<2?pf([r[1]]):(ci===8&&r[8]>0?C.bad:(ci===6&&r[6]>0?C.warn:null)));
+    /* 2. 팀별 */
+    const tm={}; whRows.forEach(r=>{ const k=r.plant+"|"+r.team; const x=(tm[k]=tm[k]||{plant:r.plant,team:r.team,worked:0,horas:0,extras:0,sin:0,late:0,no:0}); x.worked+=r.worked; x.horas+=r.horas; x.extras+=r.extras; x.sin+=r.sin_aut; x.late+=r.late_cnt; x.no+=r.no_out; });
+    const tr=Object.values(tm).sort((a,b)=>a.plant.localeCompare(b.plant)||b.horas-a.horas).map(x=>[WH_PL(x.plant),x.team,x.worked,+x.horas.toFixed(2),x.worked?+(x.horas/x.worked).toFixed(2):null,+x.extras.toFixed(2),x.worked?+(x.extras/x.worked).toFixed(2):null,+x.sin.toFixed(2),x.late,x.no]);
+    sheet(L2("팀별","Por equipo"),L2("팀별 근무시간 집계","Horas por equipo"),[L2("공장","Planta"),L2("팀","Equipo"),L2("근무 인원일","Persona-día"),L2("근무시간 합계","Horas"),L2("인당 근무h","h/persona"),L2("잔업 h","Extras h"),L2("인당 잔업h","Extras p/p"),L2("미승인 h","Sin aut. h"),L2("지각 건","Retardos"),L2("퇴근 미타각","Sin salida")],
+      tr,[10,30,12,13,11,11,11,11,10,11],[null,null,"#,##0","#,##0.0","0.00","#,##0.0","0.00","#,##0.0","#,##0","#,##0"],(r,ci)=>ci<2?pf(r):(ci===9&&r[9]>0?C.bad:(ci===7&&r[7]>0?C.warn:null)));
+    /* 3. 퇴근 미타각 (선택 날짜) */
+    const nd=$("whNoDate").value||"";
+    sheet(L2("퇴근미타각","Sin salida"),L2("퇴근 미타각 명단","Sin checada de salida")+(nd?` · ${nd}`:""),[L2("공장","Planta"),L2("사번","N°"),L2("이름","Nombre"),L2("팀","Equipo"),L2("출근 타각","Entrada")],
+      whNoRows.map(r=>[WH_PL(r.plant),r.employee_id,r.name||"",r.team||"",r.in_time||""]),[10,14,34,30,11],null,(r,ci)=>ci===0?pf(r):null);
+    const buf=await wb.xlsx.writeBuffer();
+    const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([buf],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}));
+    a.download=`${L2("근무시간분석","HorasTrabajadas")}_${f}_${t}.xlsx`; document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },500);
+  }catch(e){ console.error(e); alert(L2("엑셀 생성 실패","Error al generar Excel")); }
+  finally{ btn.disabled=false; btn.textContent=txt; }
+}
+try{ whApplyLang(); }catch(_){ }
 </script>
 </body>
 </html>
