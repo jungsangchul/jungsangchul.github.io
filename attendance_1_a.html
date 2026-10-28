@@ -652,8 +652,10 @@ tbody tr:hover{background:#1b1b1b!important}
         <th style="width:50px" data-ko="사진" data-es="Foto">사진</th>
         <th onclick="empSort('name')" data-ko="이름" data-es="Nombre">이름</th>
         <th onclick="empSort('empno')" data-ko="사번" data-es="No. Emp.">사번</th>
-        <th data-ko="구분" data-es="Tipo">구분</th>
+        <th onclick="empSort('loc')" data-ko="아이템" data-es="Item">아이템</th>
+        <th onclick="empSort('ban')" data-ko="반" data-es="Línea">반</th>
         <th onclick="empSort('processName')" data-ko="공정" data-es="Proceso">공정</th>
+        <th data-ko="구분" data-es="Tipo">구분</th>
         <th data-ko="교대" data-es="Turno">교대</th>
         <th data-ko="직급" data-es="Puesto">직급</th>
         <th data-ko="전화번호" data-es="Teléfono">전화번호</th>
@@ -1677,11 +1679,11 @@ tbody tr:hover{background:#1b1b1b!important}
       </select>
       <input class="si" id="m-proc-ko" placeholder="공정명 (한국어)" style="max-width:180px" value="">
       <input class="si" id="m-proc-es" placeholder="Proceso (스페인어)" style="max-width:180px" value="">
-      <input class="si" id="m-proc-loc" placeholder="MAIN / FLOOR (직접입력)" style="max-width:160px" value="MAIN">
+      <input class="si" id="m-proc-loc" placeholder="아이템 (MAIN·FLOOR 등)" style="max-width:160px" value="MAIN">
       <button class="ba" onclick="mAddProcess()">+ 추가</button>
     </div>
     <div class="tw" style="max-height:260px;overflow-y:auto"><table>
-      <thead><tr><th>반</th><th>구분</th><th>공정명 (KO)</th><th>공정명 (ES)</th><th>MAIN/FLOOR</th><th></th></tr></thead>
+      <thead><tr><th>반</th><th>구분</th><th>공정명 (KO)</th><th>공정명 (ES)</th><th>아이템</th><th></th></tr></thead>
       <tbody id="m-proc-tbody"></tbody>
     </table></div>
   </div>
@@ -3773,7 +3775,7 @@ function renderEmpList(){
     const tb = typeOrder[b.processType] || 99;
     if(ta !== tb) return ta - tb;
     let va=a[empSortKey]||'', vb=b[empSortKey]||'';
-    const r = String(va).localeCompare(String(vb),'ko');
+    const r = String(va).localeCompare(String(vb),'ko',{numeric:true});
     return empSortDir==='asc'?r:-r;
   });
 
@@ -3803,8 +3805,10 @@ function renderEmpList(){
       <td onclick="${photoCellClick}" title="${e.photo?(isEs?'Ampliar foto':'사진 확대'):''}">${photo}</td>
       <td><b>${e.name}</b>${e.resigned?`<span class="b-res" style="margin-left:5px">${resLbl}</span>`:''}</td>
       <td style="color:#666666;font-size:11px">${e.empno||'-'}</td>
-      <td><span class="badge" style="background:${TYPE_COLORS[e.processType]+'30'};color:${TYPE_COLORS[e.processType]}">${typeLabel(e.processType)}</span></td>
+      <td style="font-size:11px;font-weight:700;color:#c9a84c;white-space:nowrap">${e.loc||'-'}</td>
+      <td style="font-size:11px;font-weight:700;white-space:nowrap">${e.ban?(isEs?e.ban:e.ban+'반'):'-'}</td>
       <td class="emp-proc-td" onclick="event.stopPropagation()">${empProcSelectHTML(e,isEs)}</td>
+      <td>${e.processType?`<span class="badge" style="background:${TYPE_COLORS[e.processType]+'30'};color:${TYPE_COLORS[e.processType]}">${typeLabel(e.processType)}</span>`:'-'}</td>
       <td><span class="shift-ind ${curShift==='주간'?'shift-day':'shift-night'}">${curShift==='주간'?dayLbl:nightLbl}</span></td>
       <td style="font-size:11px">${(isEs?(e.jobGrade||e.jobGradeKo):(e.jobGradeKo||e.jobGrade))||'-'}</td>
       <td style="font-size:11px;color:#8a8a8a">${e.phone||'-'}</td>
@@ -3816,7 +3820,7 @@ function renderEmpList(){
         <button onclick="event.stopPropagation();confirmDelEmp(${e.id})" style="background:#3a1a1a;border:1px solid #6a2a2a;border-radius:5px;padding:3px 8px;color:#e05c5c;font-size:10px;cursor:pointer;font-family:inherit;font-weight:700;margin-left:3px">${delLbl}</button>
       </td>
     </tr>`;
-  }).join('') || `<tr><td colspan="12" class="empty-msg">${isEs?'Sin empleados':'직원이 없습니다.'}</td></tr>`;
+  }).join('') || `<tr><td colspan="14" class="empty-msg">${isEs?'Sin empleados':'직원이 없습니다.'}</td></tr>`;
 }
 /* ── 직원목록 공정 인라인 수정 (반·MAIN/FLOOR 포함) ── */
 function empProcSelectHTML(e,isEs){
@@ -3826,11 +3830,10 @@ function empProcSelectHTML(e,isEs){
   var same=function(p){return (p.ko===e.processName||p.es===e.processName||(e.processNameEs&&p.es===e.processNameEs));};
   var curIdx=-1;
   procs.forEach(function(p,i){ if(curIdx<0 && same(p) && (p.ban||'')===(e.ban||'') && (p.loc||'')===(e.loc||'')) curIdx=i; });
-  if(curIdx<0) procs.forEach(function(p,i){ if(curIdx<0 && same(p) && (p.ban||'')===(e.ban||'') && (e.ban||'')!=='') curIdx=i; });
   var h='';
   if(curIdx<0){
     var cur=e.processName
-      ? ((isEs?(e.processNameEs||e.processName):e.processName)+(procs.some(same)?(isEs?' (sin línea)':' (반 미지정)'):(isEs?' (no en maestro)':' (마스터에 없음)')))
+      ? ((isEs?(e.processNameEs||e.processName):e.processName)+(!procs.some(same)?(isEs?' (no en maestro)':' (마스터에 없음)'):(e.ban?(isEs?' (combinación no en maestro)':' (마스터에 없는 조합)'):(isEs?' (sin línea)':' (반 미지정)'))))
       : (isEs?'-- Sin proceso --':'-- 공정 미지정 --');
     h+='<option value="" selected>'+esc(cur)+'</option>';
   }
