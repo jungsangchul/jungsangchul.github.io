@@ -170,6 +170,20 @@ table.cfg input{width:17px;height:17px}
 .mhd button:hover{color:#fff}
 .mbd{padding:16px 18px}
 @media(max-width:640px){main{padding:14px 14px 80px}}
+/* 자재이력조회 */
+.hisk{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px}
+.hisk .kpi{cursor:default}
+.hisk .kpi small{display:block;margin-top:6px;font-size:12px;color:var(--mute);font-family:var(--body);letter-spacing:0;text-transform:none}
+.hisk .kpi.in b{color:var(--blue)}.hisk .kpi.out b{color:var(--amb)}
+.hisc{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.hisc button{background:rgba(255,255,255,.03);border:1px solid var(--line2);border-radius:999px;color:var(--ink2);padding:6px 12px;font-size:13px;text-align:left}
+.hisc button b{color:var(--ac);font-family:var(--code);font-size:15px;margin-right:6px}
+.hisc button:hover{border-color:rgba(201,168,76,.45);color:#fff}
+.hisc button.on{background:rgba(201,168,76,.12);border-color:rgba(201,168,76,.45);color:var(--ac2)}
+.grid3{display:grid;grid-template-columns:1fr 1fr;gap:14px}.grid3>.card{min-width:0}
+@media(max-width:900px){.grid3{grid-template-columns:1fr}}
+td.in{color:var(--blue);font-weight:700}td.out{color:var(--amb);font-weight:700}
+tr.tot td{background:#101010;font-weight:700;color:#fff;position:sticky;bottom:0}
 </style>
 
 <!-- ═══ 포털 공통 (yh-common-v2): 제목 서체 · 닫기 버튼 · 최소 글자 크기 ═══ -->
@@ -292,6 +306,7 @@ table.cfg input{width:17px;height:17px}
   <button data-tab="rec"><svg viewBox="0 0 24 24"><path d="M12 4v12M6 10l6 6 6-6"/><path d="M4 20h16"/></svg><span data-t="tab_rec">현장입고 (30810)</span></button>
   <button data-tab="use"><svg viewBox="0 0 24 24"><path d="M12 20V8M6 14l6-6 6 6"/><path d="M4 4h16"/></svg><span data-t="tab_use">사용량 (32040)</span></button>
   <button data-tab="ret"><svg viewBox="0 0 24 24"><path d="M9 14l-4-4 4-4"/><path d="M5 10h11a4 4 0 0 1 0 8h-3"/></svg><span data-t="tab_ret">반품현황 (24170)</span></button>
+  <button data-tab="his"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4.3-4.3"/><path d="M11 8v3l2 1.5"/></svg><span data-t="tab_his">자재이력조회</span></button>
   <button data-tab="mst"><svg viewBox="0 0 24 24"><path d="M3 9l9-5 9 5v11H3z"/><path d="M9 20v-6h6v6"/></svg><span data-t="tab_mst">창고보유자재 (25010)</span></button>
   <button data-tab="adj"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1.2l2-1.6-2-3.4-2.4.9a7 7 0 0 0-2-1.2L14 3h-4l-.5 2.5a7 7 0 0 0-2 1.2l-2.4-.9-2 3.4 2 1.6A7 7 0 0 0 5 12a7 7 0 0 0 .1 1.2l-2 1.6 2 3.4 2.4-.9a7 7 0 0 0 2 1.2L10 21h4l.5-2.5a7 7 0 0 0 2-1.2l2.4.9 2-3.4-2-1.6A7 7 0 0 0 19 12z"/></svg><span data-t="tab_adj">재고조정</span></button>
 </nav>
@@ -370,6 +385,41 @@ table.cfg input{width:17px;height:17px}
 <section class="tab" id="t-rec"></section>
 <section class="tab" id="t-use"></section>
 <section class="tab" id="t-ret"></section>
+
+<!-- ===== 자재이력조회 (입고·사용) ===== -->
+<section class="tab" id="t-his">
+  <div class="card">
+    <h3 data-t="his_h">자재 입고·사용 이력 조회</h3>
+    <div class="hint" data-t="his_hint">자재코드 또는 자재명 일부를 입력하고 조회하세요. 현장입고(30810)와 사용량(32040)에 저장된 내역에서 날짜별 입고수량·사용수량을 보여줍니다. 여러 자재가 검색되면 아래 목록에서 선택하세요.</div>
+    <div class="row" style="margin-top:10px">
+      <label class="f"><span data-t="his_q">자재코드 / 자재명</span><input id="hQ" list="hList" autocomplete="off" style="width:280px" placeholder="예: 7116-4110 / TERMINAL"></label>
+      <datalist id="hList"></datalist>
+      <label class="f"><span data-t="from">시작</span><input type="date" id="hFrom"></label>
+      <label class="f"><span data-t="to">종료</span><input type="date" id="hTo"></label>
+      <button class="btn" id="hRun" data-t="run">조회</button>
+      <button class="btn sec" id="hAll" data-t="his_all">기간 전체</button>
+      <span class="sp"></span>
+      <button class="btn sec" id="hXlsx" data-t="xlsx">엑셀</button>
+    </div>
+    <div class="hisc" id="hCand"></div>
+    <div class="hint" id="hInfo" style="margin-top:8px"></div>
+  </div>
+  <div id="hBody" style="display:none">
+    <div class="hisk">
+      <div class="kpi in"><span data-t="his_k_in">입고수량 합계</span><b id="hkIn">-</b><small id="hkInS"></small></div>
+      <div class="kpi out"><span data-t="his_k_use">사용수량 합계</span><b id="hkUse">-</b><small id="hkUseS"></small></div>
+      <div class="kpi"><span data-t="his_k_diff">입고 − 사용</span><b id="hkDiff">-</b><small id="hkDiffS"></small></div>
+    </div>
+    <div class="card">
+      <h3 data-t="his_day">날짜별 입고·사용</h3>
+      <div class="tw m"><table id="hDay"></table></div>
+    </div>
+    <div class="grid3">
+      <div class="card"><h3><span data-t="his_in_h">입고 내역 (30810)</span> <span class="hint" id="hInN"></span></h3><div class="tw m"><table id="hIn"></table></div></div>
+      <div class="card"><h3><span data-t="his_use_h">사용 내역 (32040)</span> <span class="hint" id="hUseN"></span></h3><div class="tw m"><table id="hUse"></table></div></div>
+    </div>
+  </div>
+</section>
 
 <!-- ===== 창고보유자재 ===== -->
 <section class="tab" id="t-mst">
@@ -472,7 +522,7 @@ mst_one:'Agregar / editar',del:'Eliminar',mst_click:'Haga clic en una fila para 
 date:'Fecha',useRowDate:'Usar fecha de cada fila (si falta, la seleccionada)',paste:'Pegar datos',savedDates:'Fechas guardadas',viewDel:'Eliminar fecha',
 tab_adj:'Ajuste de stock',adj_h:'Ajuste de stock',adj_hint:'Ingrese el código y la cantidad real; se guarda la diferencia para que el stock actual quede en esa cantidad. También puede tocar el número de Stock en la tabla de faltantes.',
 adj_code:'Código',adj_name:'Nombre',adj_cur:'Stock actual (calc.)',adj_roll:'Rollos piso',adj_after:'Cantidad real',adj_memo:'Motivo',adj_zero:'A cero',
-adj_help_h:'Cómo usar',adj_help:'1) Consulte en Faltantes → 2) toque el Stock o escriba el código → 3) ingrese la cantidad real y guarde. Solo cuentan los ajustes dentro del periodo consultado.',adj_list:'Historial de ajustes'};
+adj_help_h:'Cómo usar',adj_help:'1) Consulte en Faltantes → 2) toque el Stock o escriba el código → 3) ingrese la cantidad real y guarde. Solo cuentan los ajustes dentro del periodo consultado.',adj_list:'Historial de ajustes',tab_his:'Historial de material',his_h:'Historial de entrada y consumo',his_hint:'Escriba el código o parte del nombre y consulte. Muestra por fecha la entrada (30810) y el consumo (32040) guardados. Si hay varios materiales, elija uno de la lista.',his_q:'Código / nombre',his_all:'Todo el periodo',his_k_in:'Total entrada',his_k_use:'Total consumo',his_k_diff:'Entrada − consumo',his_day:'Entrada y consumo por fecha',his_in_h:'Detalle de entrada (30810)',his_use_h:'Detalle de consumo (32040)'};
 let LANG=localStorage.getItem('mshort_lang_2')||'ko';
 const KO={};
 function applyLang(){
@@ -999,6 +1049,97 @@ function renderAdj(){
     busy(1);try{await del('mshort_adjust_2','id=eq.'+b.dataset.id);await calc();toast('OK')}catch(e){alert(e.message)}busy(0)});
 }
 $('aQ').oninput=renderAdj;
+
+/* ---------- 자재이력조회 (입고 30810 · 사용 32040) ---------- */
+const HT={rec:'mshort_receipt_2',use:'mshort_usage_2'};
+let HIS=null,HCAND=[];
+const hNames=()=>{const m={};const put=(c,n)=>{c=String(c||'').toUpperCase();if(!c)return;if(n&&!m[c])m[c]=n;else if(!(c in m))m[c]=''};
+  NEED.forEach(r=>put(r.code,r.name));MST.forEach(r=>put(r.code,r.name));(SUM&&SUM.list||[]).forEach(r=>put(r.code,r.name));return m};
+function hFillList(){const m=hNames();$('hList').innerHTML=Object.entries(m).slice(0,4000).map(([c,n])=>`<option value="${esc(c)}">${esc(n)}</option>`).join('')}
+async function hFind(q){
+  const Q=q.toUpperCase(),local=hNames(),found={};
+  Object.entries(local).forEach(([c,n])=>{if(c.includes(Q)||String(n).toUpperCase().includes(Q))found[c]=n});
+  const w=encodeURIComponent('*'+q.replace(/[(),*"]/g,' ').trim()+'*');
+  const get=async url=>{const r=await fetch(SB+url,{headers:H});if(!r.ok)throw new Error(await r.text());return r.json()};
+  const [a,b]=await Promise.all([
+    get(`${HT.rec}?select=code,name&or=(code.ilike.${w},name.ilike.${w})&limit=5000`),
+    get(`${HT.use}?select=code,name&or=(code.ilike.${w},name.ilike.${w})&limit=5000`)]);
+  a.forEach(r=>{const c=String(r.code).toUpperCase();if(!found[c])found[c]=r.name||local[c]||''});
+  b.forEach(r=>{const c=String(r.code).toUpperCase();if(!found[c])found[c]=r.name||local[c]||''});
+  return Object.entries(found).map(([code,name])=>({code,name})).sort((x,y)=>x.code.localeCompare(y.code));
+}
+function hRange(){const f=$('hFrom').value,t=$('hTo').value;return{f,t}}
+async function hRun(){
+  const q=$('hQ').value.trim();if(q.length<2)return toast(tr('2글자 이상 입력하세요','Escriba al menos 2 caracteres'));
+  busy(1);try{
+    const cand=await hFind(q),exact=cand.find(c=>c.code===q.toUpperCase());
+    HCAND=cand;
+    if(!cand.length){$('hCand').innerHTML='';$('hBody').style.display='none';HIS=null;$('hInfo').textContent=tr('검색 결과가 없습니다.','Sin resultados.');busy(0);return}
+    if(exact||cand.length===1){busy(0);return hLoad((exact||cand[0]).code)}
+    hCandRender(null);$('hBody').style.display='none';HIS=null;
+    $('hInfo').textContent=tr(`${cand.length}개 자재가 검색되었습니다. 조회할 자재를 선택하세요.`,`${cand.length} materiales encontrados. Elija uno.`);
+  }catch(e){alert(e.message)}busy(0);
+}
+function hCandRender(cur){
+  $('hCand').innerHTML=HCAND.length>1?HCAND.slice(0,200).map(c=>`<button data-c="${esc(c.code)}" class="${c.code===cur?'on':''}"><b>${esc(c.code)}</b>${esc(c.name||'')}</button>`).join('')+(HCAND.length>200?`<span class="hint">… +${HCAND.length-200}</span>`:''):'';
+  $('hCand').querySelectorAll('button').forEach(b=>b.onclick=()=>hLoad(b.dataset.c));
+}
+async function hLoad(code){
+  const {f,t}=hRange(),c=encodeURIComponent(code);
+  busy(1);try{
+    const [rec,use]=await Promise.all([
+      sel(HT.rec,`select=rdate,qty,unit,name,barcode,used&code=eq.${c}${f?'&rdate=gte.'+f:''}${t?'&rdate=lte.'+t:''}&order=rdate,id`),
+      sel(HT.use,`select=udate,qty,grp,name&code=eq.${c}${f?'&udate=gte.'+f:''}${t?'&udate=lte.'+t:''}&order=udate,id`)]);
+    const nm=hNames()[code]||(rec.find(r=>r.name)||{}).name||(use.find(r=>r.name)||{}).name||'';
+    HIS={code,name:nm,unit:(rec.find(r=>r.unit)||{}).unit||'',rec,use,f,t};
+    hCandRender(code);hRender();
+  }catch(e){alert(e.message)}busy(0);
+}
+function hDays(){
+  const D={};const g=d=>D[d]||(D[d]={d,iq:0,ir:0,uq:0});
+  HIS.rec.forEach(r=>{const o=g(r.rdate);o.iq+=Number(r.qty)||0;o.ir++});
+  HIS.use.forEach(r=>{const o=g(r.udate);o.uq+=Number(r.qty)||0});
+  let acc=0;return Object.values(D).sort((a,b)=>a.d.localeCompare(b.d)).map(o=>{acc+=o.iq-o.uq;return{...o,acc}});
+}
+function hRender(){
+  if(!HIS){$('hBody').style.display='none';return}
+  $('hBody').style.display='block';
+  const H_=HIS,days=hDays(),ti=H_.rec.reduce((a,r)=>a+(Number(r.qty)||0),0),tu=H_.use.reduce((a,r)=>a+(Number(r.qty)||0),0);
+  const di=new Set(H_.rec.map(r=>r.rdate)).size,du=new Set(H_.use.map(r=>r.udate)).size;
+  const per=(H_.f||H_.t)?`${H_.f||'…'} ~ ${H_.t||'…'}`:tr('전체 기간','Todo el periodo');
+  $('hInfo').innerHTML=`<b style="color:var(--ac);font-family:var(--code);font-size:17px">${esc(H_.code)}</b> ${esc(H_.name)} ${H_.unit?`<span class="tag none">${esc(H_.unit)}</span>`:''} · ${per}`;
+  $('hkIn').textContent=fmt(ti);$('hkInS').textContent=tr(`${di}일 · ${H_.rec.length}건(롤)`,`${di} días · ${H_.rec.length} rollos`);
+  $('hkUse').textContent=fmt(tu);$('hkUseS').textContent=tr(`${du}일 · ${H_.use.length}건`,`${du} días · ${H_.use.length} filas`);
+  $('hkDiff').textContent=fmt(ti-tu);$('hkDiff').style.color=ti-tu<0?'var(--red)':'';$('hkDiffS').textContent=tr('실사·반품·조정 미반영','Sin inventario/devol./ajuste');
+  $('hDay').innerHTML=`<tr><th>${tr('날짜','Fecha')}</th><th class="n">${tr('입고수량','Entrada')}</th><th class="n">${tr('입고 롤수','Rollos')}</th><th class="n">${tr('사용수량','Consumo')}</th><th class="n">${tr('입고−사용','Entrada−consumo')}</th><th class="n">${tr('누계','Acumulado')}</th></tr>`+
+    (days.length?days.slice().reverse().map(o=>`<tr><td>${o.d}</td><td class="n ${o.iq?'in':'mute'}">${o.iq?fmt(o.iq):'-'}</td><td class="n mute">${o.ir||''}</td><td class="n ${o.uq?'out':'mute'}">${o.uq?fmt(o.uq):'-'}</td><td class="n ${o.iq-o.uq<0?'neg':''}">${fmt(o.iq-o.uq)}</td><td class="n ${o.acc<0?'neg':''}">${fmt(o.acc)}</td></tr>`).join('')+
+      `<tr class="tot"><td>${tr('합계','Total')}</td><td class="n">${fmt(ti)}</td><td class="n">${H_.rec.length}</td><td class="n">${fmt(tu)}</td><td class="n">${fmt(ti-tu)}</td><td></td></tr>`
+     :`<tr><td class="empty" colspan="6">${tr('해당 기간 입고·사용 내역이 없습니다','Sin movimientos')}</td></tr>`);
+  $('hInN').textContent=`${H_.rec.length}${tr('건','')}`;$('hUseN').textContent=`${H_.use.length}${tr('건','')}`;
+  $('hIn').innerHTML=`<tr><th>#</th><th>${tr('입고날짜','Fecha')}</th><th class="n">${tr('입고수량','Cantidad')}</th><th>${tr('바코드','Cód. barras')}</th><th>${tr('사용','Uso')}</th></tr>`+
+    (H_.rec.length?H_.rec.slice().reverse().map((r,i)=>`<tr><td class="mute">${H_.rec.length-i}</td><td>${esc(r.rdate)}</td><td class="n in">${fmt(r.qty)}</td><td>${esc(r.barcode||'')}</td><td>${esc(r.used||'')}</td></tr>`).join('')
+      :`<tr><td class="empty" colspan="5">-</td></tr>`);
+  $('hUse').innerHTML=`<tr><th>#</th><th>${tr('사용날짜','Fecha')}</th><th class="n">${tr('사용수량','Cantidad')}</th><th>${tr('품목그룹','Grupo')}</th><th>${tr('자재명','Nombre')}</th></tr>`+
+    (H_.use.length?H_.use.slice().reverse().map((r,i)=>`<tr><td class="mute">${H_.use.length-i}</td><td>${esc(r.udate)}</td><td class="n out">${fmt(r.qty)}</td><td>${esc(r.grp||'')}</td><td>${esc(r.name||'')}</td></tr>`).join('')
+      :`<tr><td class="empty" colspan="5">-</td></tr>`);
+}
+$('hRun').onclick=hRun;
+$('hQ').onkeydown=e=>{if(e.key==='Enter')hRun()};
+$('hAll').onclick=()=>{$('hFrom').value='';$('hTo').value='';if(HIS)hLoad(HIS.code);else if($('hQ').value.trim())hRun()};
+$('hFrom').onchange=$('hTo').onchange=()=>{if(HIS)hLoad(HIS.code)};
+$('hXlsx').onclick=()=>{
+  if(!HIS)return toast(tr('먼저 자재를 조회하세요','Consulte un material primero'));
+  const wb=XLSX.utils.book_new(),days=hDays();
+  const add=(name,aoa,w)=>{const ws=XLSX.utils.aoa_to_sheet(aoa);ws['!cols']=w.map(x=>({wch:x}));XLSX.utils.book_append_sheet(wb,ws,name)};
+  const head=[[tr('자재코드','Código'),HIS.code],[tr('자재명','Nombre'),HIS.name],[tr('기간','Periodo'),(HIS.f||'')+' ~ '+(HIS.t||'')],[]];
+  add(tr('날짜별','Por fecha'),head.concat([[tr('날짜','Fecha'),tr('입고수량','Entrada'),tr('입고 롤수','Rollos'),tr('사용수량','Consumo'),tr('입고−사용','Entrada−consumo'),tr('누계','Acumulado')]],
+    days.map(o=>[o.d,o.iq,o.ir,o.uq,o.iq-o.uq,o.acc])),[12,14,10,14,16,14]);
+  add(tr('입고내역','Entrada'),[[tr('입고날짜','Fecha'),tr('입고수량','Cantidad'),tr('단위','Unidad'),tr('바코드','Cód. barras'),tr('사용','Uso')]].concat(HIS.rec.map(r=>[r.rdate,Number(r.qty),r.unit||'',r.barcode||'',r.used||''])),[12,12,8,26,8]);
+  add(tr('사용내역','Consumo'),[[tr('사용날짜','Fecha'),tr('사용수량','Cantidad'),tr('품목그룹','Grupo'),tr('자재명','Nombre')]].concat(HIS.use.map(r=>[r.udate,Number(r.qty),r.grp||'',r.name||''])),[12,12,10,24]);
+  XLSX.writeFile(wb,`${tr('자재이력','Historial')}_${HIS.code}_${today()}.xlsx`);
+};
+document.querySelector('#nav button[data-tab="his"]').addEventListener('click',hFillList);
+document.getElementById('langBtn').addEventListener('click',()=>{hRender();if(HIS)hCandRender(HIS.code)});
 
 /* ---------- init ---------- */
 (async()=>{
