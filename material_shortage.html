@@ -633,11 +633,31 @@ function toDate(v){
 }
 const rowDate=(c,ci)=>{for(let i=0;i<ci;i++){const d=toDate(c[i]);if(d)return d}return''};
 
-/* 실사: 코드 + 수량(코드 뒤 마지막 숫자) */
+/* 실사: 바코드 · 유라코드 · 실사수량 (바코드 없이 코드 · 수량도 인식) */
+const isBcCell=v=>/^@[A-Za-z0-9]{6,}$/.test(String(v||'').trim());
 function parseCount(txt){
+  const seen=new Set();
   return rows(txt).map(c=>{const ci=findCode(c);if(ci<0)return null;
-    let q=NaN;for(let i=c.length-1;i>ci;i--)if(isNum(c[i])){q=num(c[i]);break}
-    return{code:c[ci].toUpperCase(),qty:q,_rd:rowDate(c,ci)}}).filter(r=>r&&!isNaN(r.qty));
+    const bi=c.findIndex(isBcCell);const bc=bi>=0?c[bi].trim():'';
+    let q=NaN;for(let i=c.length-1;i>ci;i--)if(i!==bi&&isNum(c[i])){q=num(c[i]);break}
+    if(bc){if(seen.has(bc))return null;seen.add(bc)}
+    return{barcode:bc||null,code:c[ci].toUpperCase(),qty:q,_rd:rowDate(c,ci)}}).filter(r=>r&&!isNaN(r.qty));
+}
+const recvMs=v=>{v=String(v||'').trim();let m=v.match(/^(\d{4})-(\d{1,2})-(\d{1,2})(?:[ T](\d{1,2}):(\d{2}))?/);if(m)return new Date(+m[1],m[2]-1,+m[3],+(m[4]||0),+(m[5]||0)).getTime();
+  m=v.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})(?:\s+(\d{1,2}):(\d{2}))?/);if(m){const y=+m[3]<100?2000+ +m[3]:+m[3];return new Date(y,m[1]-1,+m[2],+(m[4]||0),+(m[5]||0)).getTime()}return 0};
+/* 실사 바코드 기준 TML·WIRE 0처리 계획: 실사(수량>0) 바코드 외 현장 롤은 0처리, 실사에 있는데 0처리된 롤은 복원 */
+async function cntZeroPlan(cd,p){
+  const bcRows=p.filter(r=>r.barcode);if(!bcRows.length)return null;
+  const keep=new Map();
+  (await sel('mshort_count',`select=barcode,qty&cdate=eq.${cd}&barcode=not.is.null`)).forEach(o=>keep.set(o.barcode,Number(o.qty)||0));
+  bcRows.forEach(r=>keep.set(r.barcode,Number(r.qty)||0));
+  const [rr,zz]=await Promise.all([sel('tmlwire_receipts','select=barcode,recv_at'),sel('tmlwire_zero','select=barcode')]);
+  const Z=new Set(zz.map(z=>z.barcode)),cut=new Date(cd+'T23:59:59').getTime(),RB=new Set();
+  const zero=[];rr.forEach(r=>{if(!r.barcode)return;RB.add(r.barcode);if(Z.has(r.barcode))return;
+    if((keep.get(r.barcode)||0)>0)return;const t=recvMs(r.recv_at);if(t&&t>cut)return;zero.push(r.barcode)});
+  const restore=[...keep].filter(([b,q])=>q>0&&Z.has(b)).map(([b])=>b);
+  const unknown=[...keep].filter(([b,q])=>q>0&&!RB.has(b)).length;
+  return{zero,restore,unknown};
 }
 /* 사용량: 코드 · 업체명 · 품목그룹 · 사용량 — 머릿글/빈열/앞쪽 날짜열 있어도 인식 */
 function parseUsage(txt){
@@ -715,8 +735,9 @@ function parseRet(txt){
   return out;
 }
 const DAILY=[
- {key:'cnt',kind:'count',table:'mshort_count',dcol:'cdate',ko:'실사',es:'Inventario físico',parser:parseCount,
-  hint:['월말 실사한 순수 원자재 수량. 유라코드·실사수량을 붙여넣으세요(머릿글 없어도 됨). 같은 코드는 합산됩니다.','Código y cantidad contada (sin encabezado OK). Códigos repetidos se suman.']},
+ {key:'cnt',kind:'count',table:'mshort_count',dcol:'cdate',ko:'실사',es:'Inventario físico',parser:parseCount,bcd:true,
+  hint:['월말 실사 결과를 바코드·유라코드·실사수량 순서로 붙여넣으세요(머릿글 없어도 됨). 저장하면 실사 목록에 있는(수량>0) 바코드를 제외한 현장 롤은 모두 TML·WIRE에서 0처리됩니다(실사일 이후 입고분 제외). 수량 0인 바코드도 0처리, 실사에 있는데 0처리돼 있던 바코드는 복원됩니다. 실사 날짜를 삭제하면 이 0처리도 되돌립니다. 바코드 없이 유라코드·수량만 넣으면 0처리 없이 저장됩니다.',
+        'Pegue código de barras, código y cantidad contada (sin encabezado OK). Al guardar, todos los rollos en piso cuyo código de barras no esté en el inventario (cant.>0) se cierran (0) en TML·WIRE (excepto entradas posteriores a la fecha). Los de cantidad 0 también se cierran y los que estaban cerrados pero aparecen en el inventario se reabren. Al eliminar la fecha se revierte. Sin código de barras se guarda sin cierre.']},
  {key:'rec',kind:'receipt',table:'mshort_receipt',dcol:'rdate',ko:'현장입고',es:'Entrada a piso',parser:parseErp,erp:true,bc:true,
   hint:['ERP 30810 형식(실사일자·유라코드·업체품명·단위·실사수량·바코드·업체바코드·사용)을 붙여넣으세요. 머릿글이 없어도 인식합니다. 같은 바코드는 1번만 반영되며, 재업로드 시 바코드가 같고 수량이 다르면 수정됩니다.',
         'Pegue el formato ERP 30810 (fecha, código, nombre, unidad, cantidad, código de barras, cód. proveedor, uso), con o sin encabezado. Códigos de barras repetidos se cuentan una vez; al recargar, si la cantidad cambia se actualiza.']},
@@ -756,19 +777,24 @@ DAILY.forEach(d=>{
     const p=parse();if(!p.length)return toast(tr('인식된 행이 없습니다','Sin filas'));
     if(p.some(r=>!r._d))return toast(tr('날짜를 지정하세요','Seleccione fecha'));
     const ds=Object.keys(groups(p)).sort();
+    let zp=null;
+    if(d.key==='cnt'){busy(1);try{zp=await cntZeroPlan(ds[0],p)}catch(e){busy(0);return alert(e.message)}busy(0);
+      if(zp&&!confirm(tr(`실사 ${ds[0]} 저장\n\n· 실사 목록에 없는 현장 롤 ${zp.zero.length}개 → TML·WIRE 0처리\n· 0처리돼 있던 실사 롤 ${zp.restore.length}개 → 복원`+(zp.unknown?`\n· TML·WIRE 입고이력에 없는 바코드 ${zp.unknown}개 (수량은 그대로 저장)`:'')+`\n\n계속할까요?`,
+        `Guardar inventario ${ds[0]}\n\n· ${zp.zero.length} rollos fuera del inventario → cierre (0) en TML·WIRE\n· ${zp.restore.length} rollos cerrados que aparecen → reabrir`+(zp.unknown?`\n· ${zp.unknown} códigos de barras sin entrada en TML·WIRE`:'')+`\n\n¿Continuar?`)))return}
     busy(1);try{
       const res=await mergeSave(d,p);
+      let zr=null;if(zp&&(zp.zero.length||zp.restore.length))zr=await rpc('mshort_cnt_zero_apply',{p_cdate:ds[0],p_zero:zp.zero,p_restore:zp.restore,p_zero_at:ds[0]});
       $(d.key+'Txt').value='';$(d.key+'Prev').textContent='';$(d.key+'Warn').textContent='';
       await loadDates();viewDate(d,ds[ds.length-1]);
-      toast(tr(`저장 완료 · 신규 ${res.add} · 수정 ${res.upd} · 동일 ${res.same}`,`Guardado · nuevos ${res.add} · actualizados ${res.upd} · iguales ${res.same}`))}catch(e){alert(e.message)}busy(0)};
+      toast(tr(`저장 완료 · 신규 ${res.add} · 수정 ${res.upd} · 동일 ${res.same}`,`Guardado · nuevos ${res.add} · actualizados ${res.upd} · iguales ${res.same}`)+(zr?tr(` · 0처리 ${zr.zero} · 복원 ${zr.restore}`,` · cierre ${zr.zero} · reabiertos ${zr.restore}`):''))}catch(e){alert(e.message)}busy(0)};
 });
 /* 병합 저장: 입고는 바코드 기준(바코드 없으면 날짜+코드), 사용량은 날짜+코드+품목그룹, 실사는 날짜+코드
    같은 키가 이미 있으면 수량(입고는 날짜 포함)이 다를 때만 갱신, 없으면 추가, 기존 다른 항목은 유지 */
-const mkey=(d,r,dt)=>d.bc&&r.barcode?'B:'+r.barcode:dt+'|'+String(r.code).toUpperCase()+(d.kind==='usage'?'|'+(r.grp||''):'');
+const mkey=(d,r,dt)=>d.bc&&r.barcode?'B:'+r.barcode:d.bcd&&r.barcode?dt+'|B:'+r.barcode:dt+'|'+String(r.code).toUpperCase()+(d.kind==='usage'?'|'+(r.grp||''):'');
 async function mergeSave(d,p){
   const up={};
   p.forEach(({_d,...r})=>{const k=mkey(d,r,_d);
-    if(up[k]){if(!(d.bc&&r.barcode))up[k].qty+=Number(r.qty)||0}
+    if(up[k]){if(!((d.bc||d.bcd)&&r.barcode))up[k].qty+=Number(r.qty)||0}
     else up[k]={...r,qty:Number(r.qty)||0,[d.dcol]:_d}});
   const ds=[...new Set(Object.values(up).map(r=>r[d.dcol]))];
   let old=[];
@@ -801,8 +827,8 @@ function renderDates(d){
     <button class="btn red sm" data-del="${x.d}">×</button></div>`).join('')||'<span class="hint">-</span>';
   $(d.key+'Dates').querySelectorAll('[data-d] span').forEach(s=>s.onclick=()=>viewDate(d,s.parentNode.dataset.d));
   $(d.key+'Dates').querySelectorAll('[data-del]').forEach(b=>b.onclick=async()=>{
-    if(!confirm(tr(`${b.dataset.del} 데이터 삭제?`,`¿Eliminar ${b.dataset.del}?`)))return;
-    busy(1);try{await del(d.table,d.dcol+'=eq.'+b.dataset.del);if(d.cur===b.dataset.del){d.cur=null;$(d.key+'Tbl').innerHTML='';$(d.key+'VH').textContent=''}await loadDates()}catch(e){alert(e.message)}busy(0)});
+    if(!confirm(tr(`${b.dataset.del} 데이터 삭제?`,`¿Eliminar ${b.dataset.del}?`)+(d.key==='cnt'?tr('\n이 실사로 0처리·복원한 TML·WIRE 롤도 원래대로 되돌립니다.','\nTambién se revierten los cierres/reaperturas de TML·WIRE hechos por este inventario.'):'')))return;
+    busy(1);try{if(d.key==='cnt')await rpc('mshort_cnt_zero_undo',{p_cdate:b.dataset.del});await del(d.table,d.dcol+'=eq.'+b.dataset.del);if(d.cur===b.dataset.del){d.cur=null;$(d.key+'Tbl').innerHTML='';$(d.key+'VH').textContent=''}await loadDates()}catch(e){alert(e.message)}busy(0)});
 }
 async function viewDate(d,dt){
   d.cur=dt;renderDates(d);busy(1);
@@ -814,6 +840,9 @@ async function viewDate(d,dt){
     }else if(d.erp){
       $(d.key+'Tbl').innerHTML=`<tr><th>#</th><th>${tr('실사일자','Fecha')}</th><th>${tr('유라코드','Código')}</th><th>${tr('업체품명','Nombre')}</th><th>${tr('단위','Unidad')}</th><th class="n">${tr('실사수량','Cantidad')}</th><th>${tr('바코드','Cód. barras')}</th><th>${tr('업체바코드','Cód. proveedor')}</th><th>${tr('사용','Uso')}</th></tr>`+
         r.map((x,i)=>`<tr><td>${i+1}</td><td>${esc(x.rdate)}</td><td>${esc(x.code)}</td><td>${esc(x.name)}</td><td>${esc(x.unit)}</td><td class="n">${fmt(x.qty)}</td><td>${esc(x.barcode)}</td><td>${esc(x.vbarcode)}</td><td>${esc(x.used)}</td></tr>`).join('');
+    }else if(d.key==='cnt'&&r.some(x=>x.barcode)){
+      $(d.key+'Tbl').innerHTML=`<tr><th>#</th><th>${tr('바코드','Cód. barras')}</th><th>${tr('유라코드','Código')}</th><th class="n">${tr('실사수량','Cantidad')}</th></tr>`+
+        r.map((x,i)=>`<tr><td>${i+1}</td><td>${esc(x.barcode||'')}</td><td>${esc(x.code)}</td><td class="n">${fmt(x.qty)}</td></tr>`).join('');
     }else
     $(d.key+'Tbl').innerHTML=`<tr><th>#</th><th>${tr('자재코드','Código')}</th>${d.key!=='cnt'?`<th>${tr('자재명','Nombre')}</th>`:''}${d.key==='use'?`<th>${tr('품목그룹','Grupo')}</th>`:''}<th class="n">${tr('수량','Cant.')}</th></tr>`+
       r.map((x,i)=>`<tr><td>${i+1}</td><td>${esc(x.code)}</td>${d.key!=='cnt'?`<td>${esc(x.name)}</td>`:''}${d.key==='use'?`<td>${esc(x.grp)}</td>`:''}<td class="n">${fmt(x.qty)}</td></tr>`).join('');
