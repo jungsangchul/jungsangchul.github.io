@@ -514,7 +514,7 @@ main{max-width:var(--w);margin:0 auto;padding:22px 16px 110px}
     <div class="panel" id="p-cntzero">
       <h2 data-i18n="czTitle">실사 기준 일괄 0처리</h2>
       <div class="meta" id="m-cntzero">…</div>
-      <p class="hint" data-i18n="czHint">가공생산팀 자재관리의 가장 최근 실사 데이터를 기준으로, 실사에 등록된 바코드(실사수량 0 포함)를 제외한 현장 롤을 모두 0처리합니다. 실사일 이후 입고된 롤과 바코드 공란으로 실사 등록된 자재의 롤은 제외되고, 실사에 있는데 0처리돼 있던 롤은 복원됩니다. 자재관리에서 해당 실사 날짜를 삭제하면 되돌려집니다.</p>
+      <p class="hint" data-i18n="czHint">가공생산팀 자재관리의 가장 최근 실사 데이터를 기준으로, 실사에 등록된 바코드(실사수량 0 포함)를 제외한 현장 롤을 모두 0처리합니다. 실사일 당일·이후 입고된 롤과 바코드 공란으로 실사 등록된 자재의 롤은 제외되고, 실사에 있는데 0처리돼 있던 롤은 복원됩니다. 자재관리에서 해당 실사 날짜를 삭제하면 되돌려집니다.</p>
       <div class="acts">
         <button class="btn sm" id="czCheck" data-i18n="czCheck">대상 확인</button>
         <button class="btn sm up" id="czRun" disabled data-i18n="czRun">0처리 실행</button>
@@ -647,7 +647,7 @@ const I18N = {
     recTitle:'추천 호기', recEmpty:z=>`이 자재 재고 없음${z ? ' · 최근 0처리 ' + z : ''}`, recLow:n=>`이 자재 재고가 가장 적음 (${n}개)`,
     recTag:'추천', stock:n=>`재고 ${n}`,
     zrTitle:'0처리 내역 (사용완료 바코드)',
-    czTitle:'실사 기준 일괄 0처리', czHint:'가공생산팀 자재관리의 가장 최근 실사 데이터를 기준으로, 실사에 등록된 바코드(실사수량 0 포함)를 제외한 현장 롤을 모두 0처리합니다. 실사일 이후 입고된 롤과 바코드 공란으로 실사 등록된 자재의 롤은 제외되고, 실사에 있는데 0처리돼 있던 롤은 복원됩니다. 자재관리에서 해당 실사 날짜를 삭제하면 되돌려집니다.',
+    czTitle:'실사 기준 일괄 0처리', czHint:'가공생산팀 자재관리의 가장 최근 실사 데이터를 기준으로, 실사에 등록된 바코드(실사수량 0 포함)를 제외한 현장 롤을 모두 0처리합니다. 실사일 당일·이후 입고된 롤과 바코드 공란으로 실사 등록된 자재의 롤은 제외되고, 실사에 있는데 0처리돼 있던 롤은 복원됩니다. 자재관리에서 해당 실사 날짜를 삭제하면 되돌려집니다.',
     czCheck:'대상 확인', czRun:'0처리 실행', czNone:'등록된 실사 데이터가 없습니다',
     czMeta:(d,n,nb)=>`최근 실사 ${d} · ${n}행 (바코드 ${nb})`,
     czPlan:(z,r,u,pr)=>`0처리 ${z}개 · 복원 ${r}개`+(u?` · 입고이력 없는 실사 바코드 ${u}개`:'')+(pr?` · 바코드 공란 자재 ${pr}종 제외`:''),
@@ -721,7 +721,7 @@ const I18N = {
     recTitle:'Máquina sugerida', recEmpty:z=>`Sin existencia de este material${z ? ' · último cero ' + z : ''}`, recLow:n=>`Menor existencia de este material (${n})`,
     recTag:'Sugerida', stock:n=>`Exist. ${n}`,
     zrTitle:'Registro de puesta en cero (códigos consumidos)',
-    czTitle:'Cierre (0) según inventario físico', czHint:'Con el inventario físico más reciente de Gestión de materiales (Corte), todos los rollos en piso cuyo código de barras no esté en el inventario (incl. cantidad 0) se ponen en cero. Se excluyen los rollos recibidos después de la fecha del inventario y los de materiales capturados sin código de barras; los que estaban en cero pero aparecen en el inventario se reabren. Al eliminar esa fecha en Gestión de materiales se revierte.',
+    czTitle:'Cierre (0) según inventario físico', czHint:'Con el inventario físico más reciente de Gestión de materiales (Corte), todos los rollos en piso cuyo código de barras no esté en el inventario (incl. cantidad 0) se ponen en cero. Se excluyen los rollos recibidos desde la fecha del inventario y los de materiales capturados sin código de barras; los que estaban en cero pero aparecen en el inventario se reabren. Al eliminar esa fecha en Gestión de materiales se revierte.',
     czCheck:'Revisar', czRun:'Ejecutar cierre', czNone:'No hay inventario físico registrado',
     czMeta:(d,n,nb)=>`Último inventario ${d} · ${n} filas (con cód. barras ${nb})`,
     czPlan:(z,r,u,pr)=>`Cierre ${z} · reabrir ${r}`+(u?` · ${u} cód. sin entrada`:'')+(pr?` · ${pr} materiales sin cód. excluidos`:''),
@@ -900,10 +900,10 @@ async function czPlan(){
   cnt.forEach(o => { const q = Number(o.qty)||0; if(o.barcode) keep.set(o.barcode, q); else { const c = String(o.code||'').toUpperCase(); nbc.set(c, (nbc.get(c)||0) + q); } });
   const prot = new Set([...nbc].filter(([c,q]) => q > 0).map(([c]) => c));
   const [rr, zz] = await Promise.all([sbAll(`${T_RC}?select=barcode,mat_code,recv_at&order=barcode.asc`), sbAll(`${T_ZR}?select=barcode&order=barcode.asc`)]);
-  const Z = new Set(zz.map(z => z.barcode)), cut = new Date(cd + 'T23:59:59').getTime(), RB = new Set(), zero = [];
+  const Z = new Set(zz.map(z => z.barcode)), cut = new Date(cd + 'T00:00:00').getTime(), RB = new Set(), zero = [];
   rr.forEach(r => { if(!r.barcode) return; RB.add(r.barcode); if(Z.has(r.barcode)) return;
     if(keep.has(r.barcode)) return; if(prot.has(String(r.mat_code||'').toUpperCase())) return;
-    const tm = czRecvMs(r.recv_at); if(tm && tm > cut) return; zero.push(r.barcode); });
+    const tm = czRecvMs(r.recv_at); if(tm && tm >= cut) return; zero.push(r.barcode); });
   const restore = [...keep.keys()].filter(b => Z.has(b));
   const unknown = [...keep.keys()].filter(b => !RB.has(b)).length;
   return {cd, n:cnt.length, nb:keep.size, zero, restore, unknown, prot:prot.size};

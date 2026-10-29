@@ -669,9 +669,9 @@ async function cntZeroPlan(cd,p){
   /* 바코드 공란으로 수량>0 입력한 자재는 어느 롤인지 알 수 없으므로 그 자재의 롤은 0처리하지 않음 */
   const prot=new Set([...nbc].filter(([c,q])=>q>0).map(([c])=>c));
   const [rr,zz]=await Promise.all([sel('tmlwire_receipts','select=barcode,mat_code,recv_at'),sel('tmlwire_zero','select=barcode')]);
-  const Z=new Set(zz.map(z=>z.barcode)),cut=new Date(cd+'T23:59:59').getTime(),RB=new Set();
+  const Z=new Set(zz.map(z=>z.barcode)),cut=new Date(cd+'T00:00:00').getTime(),RB=new Set();
   const zero=[];rr.forEach(r=>{if(!r.barcode)return;RB.add(r.barcode);if(Z.has(r.barcode))return;
-    if(keep.has(r.barcode))return;if(prot.has(String(r.mat_code||'').toUpperCase()))return;const t=recvMs(r.recv_at);if(t&&t>cut)return;zero.push(r.barcode)});
+    if(keep.has(r.barcode))return;if(prot.has(String(r.mat_code||'').toUpperCase()))return;const t=recvMs(r.recv_at);if(t&&t>=cut)return;zero.push(r.barcode)});
   const restore=[...keep.keys()].filter(b=>Z.has(b));
   const unknown=[...keep.keys()].filter(b=>!RB.has(b)).length;
   return{zero,restore,unknown,prot:prot.size};
@@ -753,8 +753,8 @@ function parseRet(txt){
 }
 const DAILY=[
  {key:'cnt',kind:'count',table:'mshort_count',dcol:'cdate',ko:'실사',es:'Inventario físico',parser:parseCount,bcd:true,
-  hint:['월말 실사 결과를 바코드·유라코드·실사수량 순서로 붙여넣으세요(머릿글 없어도 됨). 저장하면 실사 목록에 있는 바코드를 제외한 현장 롤은 모두 TML·WIRE에서 0처리됩니다(실사일 이후 입고분 제외). 실사수량이 0이어도 스캔된 바코드는 현장 롤로 남고(재고 0·롤수 표시), 실사에 있는데 0처리돼 있던 바코드는 복원됩니다. 바코드는 공란이어도 되며(유라코드·실사수량은 필수), 바코드 공란으로 수량을 입력한 자재의 롤은 0처리하지 않습니다. 같은 날짜·코드의 공란 행은 합산됩니다. 실사 날짜를 삭제하면 0처리도 되돌립니다.',
-        'Pegue código de barras, código y cantidad contada (sin encabezado OK). Al guardar, todos los rollos en piso cuyo código de barras no esté en el inventario se cierran (0) en TML·WIRE (excepto entradas posteriores a la fecha). Los escaneados con cantidad 0 siguen como rollos en piso (stock 0, se cuentan los rollos) y los que estaban cerrados pero aparecen en el inventario se reabren. El código de barras puede quedar vacío (código y cantidad obligatorios); los rollos de materiales capturados sin código de barras no se cierran. Al eliminar la fecha se revierte.']},
+  hint:['월말 실사 결과를 바코드·유라코드·실사수량 순서로 붙여넣으세요(머릿글 없어도 됨). 저장하면 실사 목록에 있는 바코드를 제외한 현장 롤은 모두 TML·WIRE에서 0처리됩니다(실사일 당일·이후 입고분 제외). 실사수량이 0이어도 스캔된 바코드는 현장 롤로 남고(재고 0·롤수 표시), 실사에 있는데 0처리돼 있던 바코드는 복원됩니다. 바코드는 공란이어도 되며(유라코드·실사수량은 필수), 바코드 공란으로 수량을 입력한 자재의 롤은 0처리하지 않습니다. 같은 날짜·코드의 공란 행은 합산됩니다. 실사 날짜를 삭제하면 0처리도 되돌립니다.',
+        'Pegue código de barras, código y cantidad contada (sin encabezado OK). Al guardar, todos los rollos en piso cuyo código de barras no esté en el inventario se cierran (0) en TML·WIRE (excepto entradas desde la fecha del inventario). Los escaneados con cantidad 0 siguen como rollos en piso (stock 0, se cuentan los rollos) y los que estaban cerrados pero aparecen en el inventario se reabren. El código de barras puede quedar vacío (código y cantidad obligatorios); los rollos de materiales capturados sin código de barras no se cierran. Al eliminar la fecha se revierte.']},
  {key:'rec',kind:'receipt',table:'mshort_receipt',dcol:'rdate',ko:'현장입고',es:'Entrada a piso',parser:parseErp,erp:true,bc:true,
   hint:['ERP 30810 형식(실사일자·유라코드·업체품명·단위·실사수량·바코드·업체바코드·사용)을 붙여넣으세요. 머릿글이 없어도 인식합니다. 같은 바코드는 1번만 반영되며, 재업로드 시 바코드가 같고 수량이 다르면 수정됩니다.',
         'Pegue el formato ERP 30810 (fecha, código, nombre, unidad, cantidad, código de barras, cód. proveedor, uso), con o sin encabezado. Códigos de barras repetidos se cuentan una vez; al recargar, si la cantidad cambia se actualiza.']},
@@ -876,9 +876,9 @@ async function loadDates(){
   const cs=DATES.filter(x=>x.kind==='count').map(x=>x.d).sort().reverse();
   $('sCnt').innerHTML=cs.length?cs.map(d=>`<option>${d}</option>`).join(''):`<option value="">(${tr('실사 없음','sin inventario')})</option>`;
   if(cs.includes(cur))$('sCnt').value=cur;
-  if(!$('sFrom').value&&cs[0])$('sFrom').value=addDay(cs[0],1);
+  if(cs[0]&&(!$('sFrom').value||$('sFrom').value===addDay(cs[0],1)||!cs.includes(cur)))$('sFrom').value=$('sCnt').value||cs[0];
 }
-$('sCnt').onchange=()=>{if($('sCnt').value)$('sFrom').value=addDay($('sCnt').value,1)};
+$('sCnt').onchange=()=>{if($('sCnt').value)$('sFrom').value=$('sCnt').value};
 
 /* ---------- 창고보유자재 (25010) ---------- */
 function parseMst(txt){
