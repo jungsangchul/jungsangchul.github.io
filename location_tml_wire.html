@@ -511,6 +511,16 @@ main{max-width:var(--w);margin:0 auto;padding:22px 16px 110px}
         <div class="prog"><i></i></div><span class="stat"></span>
       </div>
     </div>
+    <div class="panel" id="p-cntzero">
+      <h2 data-i18n="czTitle">실사 기준 일괄 0처리</h2>
+      <div class="meta" id="m-cntzero">…</div>
+      <p class="hint" data-i18n="czHint">가공생산팀 자재관리의 가장 최근 실사 데이터를 기준으로, 실사에 등록된(수량&gt;0) 바코드를 제외한 현장 롤을 모두 0처리합니다. 실사일 이후 입고된 롤과 바코드 공란으로 실사 등록된 자재의 롤은 제외되고, 실사에 있는데 0처리돼 있던 롤은 복원됩니다. 자재관리에서 해당 실사 날짜를 삭제하면 되돌려집니다.</p>
+      <div class="acts">
+        <button class="btn sm" id="czCheck" data-i18n="czCheck">대상 확인</button>
+        <button class="btn sm up" id="czRun" disabled data-i18n="czRun">0처리 실행</button>
+        <span class="stat" id="czStat"></span>
+      </div>
+    </div>
     <div class="panel" id="p-zero">
       <h2 data-i18n="zrTitle">0처리 내역 (사용완료 바코드)</h2>
       <div class="meta" id="m-zero">…</div>
@@ -637,6 +647,12 @@ const I18N = {
     recTitle:'추천 호기', recEmpty:z=>`이 자재 재고 없음${z ? ' · 최근 0처리 ' + z : ''}`, recLow:n=>`이 자재 재고가 가장 적음 (${n}개)`,
     recTag:'추천', stock:n=>`재고 ${n}`,
     zrTitle:'0처리 내역 (사용완료 바코드)',
+    czTitle:'실사 기준 일괄 0처리', czHint:'가공생산팀 자재관리의 가장 최근 실사 데이터를 기준으로, 실사에 등록된(수량>0) 바코드를 제외한 현장 롤을 모두 0처리합니다. 실사일 이후 입고된 롤과 바코드 공란으로 실사 등록된 자재의 롤은 제외되고, 실사에 있는데 0처리돼 있던 롤은 복원됩니다. 자재관리에서 해당 실사 날짜를 삭제하면 되돌려집니다.',
+    czCheck:'대상 확인', czRun:'0처리 실행', czNone:'등록된 실사 데이터가 없습니다',
+    czMeta:(d,n,nb)=>`최근 실사 ${d} · ${n}행 (바코드 ${nb})`,
+    czPlan:(z,r,u,pr)=>`0처리 ${z}개 · 복원 ${r}개`+(u?` · 입고이력 없는 실사 바코드 ${u}개`:'')+(pr?` · 바코드 공란 자재 ${pr}종 제외`:''),
+    czConfirm:(d,z,r)=>`실사 ${d} 기준\n\n· 실사에 없는 현장 롤 ${z}개 → 0처리\n· 0처리돼 있던 실사 롤 ${r}개 → 복원\n\n실행할까요?`,
+    czDone:(z,r)=>`완료 · 0처리 ${z}개 · 복원 ${r}개`, czNothing:'처리할 대상이 없습니다',
     zrStep1:'0처리 내역 엑셀에서 바코드가 포함된 범위를 선택해 복사 (열 순서는 상관없음 — 바코드 열을 자동으로 찾습니다)',
     zrReplace:'기존 0처리 내역을 모두 지우고 이번 내용으로 교체',
     zrCols:(b,d)=>`바코드 = ${b}열` + (d ? `, 0처리 일시 = ${d}열` : ', 일시 열 없음'),
@@ -705,6 +721,12 @@ const I18N = {
     recTitle:'Máquina sugerida', recEmpty:z=>`Sin existencia de este material${z ? ' · último cero ' + z : ''}`, recLow:n=>`Menor existencia de este material (${n})`,
     recTag:'Sugerida', stock:n=>`Exist. ${n}`,
     zrTitle:'Registro de puesta en cero (códigos consumidos)',
+    czTitle:'Cierre (0) según inventario físico', czHint:'Con el inventario físico más reciente de Gestión de materiales (Corte), todos los rollos en piso cuyo código de barras no esté en el inventario (cant.>0) se ponen en cero. Se excluyen los rollos recibidos después de la fecha del inventario y los de materiales capturados sin código de barras; los que estaban en cero pero aparecen en el inventario se reabren. Al eliminar esa fecha en Gestión de materiales se revierte.',
+    czCheck:'Revisar', czRun:'Ejecutar cierre', czNone:'No hay inventario físico registrado',
+    czMeta:(d,n,nb)=>`Último inventario ${d} · ${n} filas (con cód. barras ${nb})`,
+    czPlan:(z,r,u,pr)=>`Cierre ${z} · reabrir ${r}`+(u?` · ${u} cód. sin entrada`:'')+(pr?` · ${pr} materiales sin cód. excluidos`:''),
+    czConfirm:(d,z,r)=>`Inventario ${d}\n\n· ${z} rollos fuera del inventario → cierre (0)\n· ${r} rollos cerrados que aparecen → reabrir\n\n¿Ejecutar?`,
+    czDone:(z,r)=>`Listo · cierre ${z} · reabiertos ${r}`, czNothing:'Nada que procesar',
     zrStep1:'En el Excel de puesta en cero seleccione el rango que incluya el código de barras y copie (el orden de columnas no importa)',
     zrReplace:'Borrar todo el registro anterior y reemplazarlo con este',
     zrCols:(b,d)=>`Código de barras = col. ${b}` + (d ? `, fecha = col. ${d}` : ', sin columna de fecha'),
@@ -862,6 +884,54 @@ setInterval(() => {                                  // 실시간 연결이 없�
   pollN++; if(!live || pollN % 4 === 0) syncAssign();
 }, 15000);
 document.addEventListener('visibilitychange', () => { if(!document.hidden) syncAssign(); });
+
+/* ---------- 실사 기준 일괄 0처리 (mshort_count 최근 실사) ---------- */
+const czRecvMs = v => { v = String(v||'').trim(); let m = v.match(/^(\d{4})-(\d{1,2})-(\d{1,2})(?:[ T](\d{1,2}):(\d{2}))?/);
+  if(m) return new Date(+m[1], m[2]-1, +m[3], +(m[4]||0), +(m[5]||0)).getTime();
+  m = v.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})(?:\s+(\d{1,2}):(\d{2}))?/);
+  if(m){ const y = +m[3] < 100 ? 2000 + +m[3] : +m[3]; return new Date(y, m[1]-1, +m[2], +(m[4]||0), +(m[5]||0)).getTime(); } return 0; };
+let CZ = null;
+async function czPlan(){
+  const last = await sb('mshort_count?select=cdate&order=cdate.desc&limit=1');
+  if(!last || !last.length) return null;
+  const cd = last[0].cdate;
+  const cnt = await sbAll(`mshort_count?select=barcode,code,qty&cdate=eq.${cd}&order=id.asc`);
+  const keep = new Map(), nbc = new Map();
+  cnt.forEach(o => { const q = Number(o.qty)||0; if(o.barcode) keep.set(o.barcode, q); else { const c = String(o.code||'').toUpperCase(); nbc.set(c, (nbc.get(c)||0) + q); } });
+  const prot = new Set([...nbc].filter(([c,q]) => q > 0).map(([c]) => c));
+  const [rr, zz] = await Promise.all([sbAll(`${T_RC}?select=barcode,mat_code,recv_at&order=barcode.asc`), sbAll(`${T_ZR}?select=barcode&order=barcode.asc`)]);
+  const Z = new Set(zz.map(z => z.barcode)), cut = new Date(cd + 'T23:59:59').getTime(), RB = new Set(), zero = [];
+  rr.forEach(r => { if(!r.barcode) return; RB.add(r.barcode); if(Z.has(r.barcode)) return;
+    if((keep.get(r.barcode)||0) > 0) return; if(prot.has(String(r.mat_code||'').toUpperCase())) return;
+    const tm = czRecvMs(r.recv_at); if(tm && tm > cut) return; zero.push(r.barcode); });
+  const restore = [...keep].filter(([b,q]) => q > 0 && Z.has(b)).map(([b]) => b);
+  const unknown = [...keep].filter(([b,q]) => q > 0 && !RB.has(b)).length;
+  return {cd, n:cnt.length, nb:keep.size, zero, restore, unknown, prot:prot.size};
+}
+async function czCheck(){
+  const st = $('czStat'); $('czRun').disabled = true; st.textContent = '…';
+  try{
+    CZ = await czPlan();
+    if(!CZ){ $('m-cntzero').textContent = t('czNone'); st.textContent = ''; return; }
+    $('m-cntzero').textContent = t('czMeta')(CZ.cd, CZ.n, CZ.nb);
+    st.textContent = t('czPlan')(CZ.zero.length, CZ.restore.length, CZ.unknown, CZ.prot);
+    $('czRun').disabled = !(CZ.zero.length || CZ.restore.length);
+  }catch(e){ st.textContent = '⚠ ' + e.message; }
+}
+$('czCheck').onclick = czCheck;
+$('czRun').onclick = async () => {
+  if(!CZ) return;
+  try{ CZ = await czPlan(); }catch(e){ alert(e.message); return; }      // 실행 직전 다시 계산
+  if(!CZ || !(CZ.zero.length || CZ.restore.length)){ $('czStat').textContent = t('czNothing'); $('czRun').disabled = true; return; }
+  if(!confirm(t('czConfirm')(CZ.cd, CZ.zero.length, CZ.restore.length))) return;
+  const btn = $('czRun'); btn.disabled = true; $('czStat').textContent = '…';
+  try{
+    const r = await sb('rpc/mshort_cnt_zero_apply', {method:'POST', body:{p_cdate:CZ.cd, p_zero:CZ.zero, p_restore:CZ.restore, p_zero_at:CZ.cd}});
+    $('czStat').textContent = t('czDone')(r.zero, r.restore);
+    masterStale = true; loadZero(); CZ = null;
+  }catch(e){ $('czStat').textContent = '⚠ ' + e.message; btn.disabled = false; }
+};
+document.querySelector('#nav button[data-tab="update"], [data-tab="update"]').addEventListener('click', () => { if(!CZ) czCheck(); });
 
 /* ---------- 0처리 내역 + 추천 호기 ---------- */
 const ZERO = new Map();            // barcode → 0처리 일시(문자)
