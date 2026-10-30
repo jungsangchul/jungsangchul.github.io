@@ -44,6 +44,8 @@ textarea{resize:vertical;min-height:64px;font-family:ui-monospace,Menlo,Consolas
 .grid{display:grid;gap:10px}
 .g2{grid-template-columns:repeat(2,1fr)} .g3{grid-template-columns:repeat(3,1fr)}
 .g4{grid-template-columns:repeat(4,1fr)}
+.g5{grid-template-columns:repeat(5,1fr)}
+@media(max-width:760px){.g5{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:760px){.g3,.g4{grid-template-columns:repeat(2,1fr)}}
 button{font-family:inherit;font-size:13px;font-weight:700;padding:10px 14px;border-radius:6px;
   border:1px solid transparent;cursor:pointer;transition:filter .15s}
@@ -767,7 +769,8 @@ hr{border-top-color:#2a2a2a}
   <section class="panel" id="p-hist">
     <div class="card">
       <h2>기간 조회 <small>Consulta por periodo</small></h2>
-      <div class="grid g4">
+      <div class="grid g5">
+        <div><label>팀 (Equipo)</label><select id="hTeam"><option value="">— 전체 팀 —</option></select></div>
         <div><label>시작일</label><input type="date" id="hFrom"></div>
         <div><label>종료일</label><input type="date" id="hTo"></div>
         <div><label>평가주기 (Periodo)</label>
@@ -779,7 +782,7 @@ hr{border-top-color:#2a2a2a}
           <button class="btn-gold" style="flex:1" onclick="exportHistXlsx()">엑셀</button>
         </div>
       </div>
-      <p class="note">상단에서 선택한 공장·팀 기준으로 조회합니다. <b>표의 행을 클릭하면 평가 세부내역</b>이 열립니다.</p>
+      <p class="note">선택한 팀 기준으로 조회합니다 (전체 팀 = 모든 팀). <b>표의 행을 클릭하면 평가 세부내역</b>이 열립니다.</p>
     </div>
     <div class="card">
       <h2>계량형 이력 <small>Historial — Variable</small></h2>
@@ -897,6 +900,7 @@ async function loadEmployees(){
   const teams=[...new Set(ALL_EMP.map(e=>e.team).filter(Boolean))].sort();
   $('fTeam').innerHTML='<option value="">— 전체 팀 —</option>'+
     teams.map(t=>'<option value="'+esc(t)+'">'+esc(t)+'</option>').join('');
+  fillHistTeams(teams);
   SEL=[]; VD={};
   renderEmp();
 }
@@ -946,6 +950,23 @@ function selAll(on){
   }else{ SEL=[]; VD={}; }
   renderEmp(); renderAttInput(); renderGTabs(); renderVarInput(); admRender(); }
 $('fFactory').onchange=loadEmployees;
+/* 이력 조회 팀 선택: 직원 마스터 팀 + 평가 이력에 저장된 팀 */
+async function fillHistTeams(empTeams){
+  const sel=$('hTeam'); if(!sel) return;
+  const cur=sel.value, fac=$('fFactory').value;
+  let set=new Set(empTeams||[]);
+  try{
+    const [a,b]=await Promise.all([
+      sb('msa_var_sessions?select=team&factory=eq.'+fac+'&team=not.is.null&limit=5000').catch(()=>[]),
+      sb('msa_sessions?select=team&factory=eq.'+fac+'&team=not.is.null&limit=5000').catch(()=>[])]);
+    (a||[]).concat(b||[]).forEach(r=>{ if(r.team) set.add(r.team); });
+  }catch(_){ }
+  const list=[...set].sort();
+  sel.innerHTML='<option value="">'+(typeof LANG!=='undefined'&&LANG==='es'?'— Todos los equipos —':'— 전체 팀 —')+'</option>'+
+    list.map(t=>'<option value="'+esc(t)+'">'+esc(t)+'</option>').join('');
+  if(cur && list.includes(cur)) sel.value=cur;
+}
+$('hTeam').onchange=()=>loadHist();
 $('fTeam').onchange=()=>{ renderEmp(); loadRetestQueue(); loadAttRetestQueue(); };
 $('fSearch').oninput=renderEmp;
 
@@ -2400,7 +2421,7 @@ function measurerNames(r){
 }
 async function loadHist(){
   const f=$('hFrom').value||'2000-01-01', t=$('hTo').value||'2999-12-31';
-  const fac=$('fFactory').value, tm=$('fTeam').value;
+  const fac=$('fFactory').value, tm=$('hTeam').value;
   const tq=(tm?'&team=eq.'+encodeURIComponent(tm):'')+periodFilter('hYear','hQtr');
 
   $('histVar').innerHTML='<div class="empty">불러오는 중…</div>';
@@ -2948,6 +2969,7 @@ const SUB={
 /* 이력 · 상세 */
 '기간 조회':'Consulta por periodo','시작일':'Fecha inicial','종료일':'Fecha final',
 '상단에서 선택한 공장·팀 기준으로 조회합니다.':'Se consulta según la planta y el equipo elegidos arriba.',
+'선택한 팀 기준으로 조회합니다 (전체 팀 = 모든 팀).':'Se consulta según el equipo elegido (Todos = todos los equipos).',
 '표의 행을 클릭하면 평가 세부내역':'Haga clic en una fila para ver el detalle',
 '이 열립니다.':'.',
 '계량형 이력':'Historial — Variable','계수형 이력':'Historial — Atributos',
