@@ -185,6 +185,26 @@ tr.hit td{background:rgba(201,168,76,.10)}tr.hit td:first-child{box-shadow:inset
 @media(max-width:900px){.grid3{grid-template-columns:1fr}}
 td.in{color:var(--blue);font-weight:700}td.out{color:var(--amb);font-weight:700}
 tr.tot td{background:#101010;font-weight:700;color:#fff;position:sticky;bottom:0}
+
+/* 적용차종 조회 */
+.cark{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px}
+.cark .kpi{cursor:default}.cark .kpi small{display:block;margin-top:6px;font-size:12px;color:var(--mute);font-family:var(--body);letter-spacing:0;text-transform:none}
+.cark .kpi.car b{color:var(--ac)}.cark .kpi.pn b{color:var(--blue)}.cark .kpi.wn b{color:var(--grn)}
+.carchips{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.carchips button{background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.35);border-radius:10px;color:var(--ink2);padding:8px 14px;font-size:13px;text-align:left;line-height:1.3}
+.carchips button b{display:block;color:var(--ac);font-family:var(--code);font-size:18px;letter-spacing:.02em}
+.carchips button small{color:var(--mute);font-size:12px}
+.carchips button:hover,.carchips button.on{background:rgba(201,168,76,.16);border-color:var(--ac);color:#fff}
+.role{display:inline-block;padding:1px 7px;border-radius:4px;font-size:11.5px;font-weight:700;margin-right:3px;border:1px solid transparent;white-space:nowrap}
+.role.wire{background:rgba(76,175,125,.14);color:var(--grn);border-color:rgba(76,175,125,.4)}
+.role.tL,.role.tR{background:rgba(111,184,221,.12);color:var(--blue);border-color:rgba(111,184,221,.35)}
+.role.pL,.role.pR{background:rgba(224,168,74,.12);color:var(--amb);border-color:rgba(224,168,74,.35)}
+.role.need{background:rgba(255,255,255,.05);color:var(--mute);border-color:var(--line2)}
+tr.pnrow{cursor:pointer}tr.pnrow:hover td{background:rgba(255,255,255,.03)}tr.pnrow.on td{background:rgba(201,168,76,.10)}tr.pnrow.on td:first-child{box-shadow:inset 3px 0 var(--ac)}
+td.hl{color:var(--ac);font-weight:700}
+.codelink{cursor:pointer;border-bottom:1px dotted rgba(201,168,76,.5)}.codelink:hover{color:var(--ac)}
+.carbtn{background:rgba(201,168,76,.10);border:1px solid rgba(201,168,76,.4);color:var(--ac2);border-radius:999px;padding:4px 12px;font-size:12.5px;font-weight:700;cursor:pointer;margin-left:10px;vertical-align:middle}
+.carbtn:hover{background:rgba(201,168,76,.2);color:#fff}
 </style>
 
 <!-- ═══ 포털 공통 (yh-common-v2): 제목 서체 · 닫기 버튼 · 최소 글자 크기 ═══ -->
@@ -308,6 +328,7 @@ tr.tot td{background:#101010;font-weight:700;color:#fff;position:sticky;bottom:0
   <button data-tab="use"><svg viewBox="0 0 24 24"><path d="M12 20V8M6 14l6-6 6 6"/><path d="M4 4h16"/></svg><span data-t="tab_use">사용량 (32040)</span></button>
   <button data-tab="ret"><svg viewBox="0 0 24 24"><path d="M9 14l-4-4 4-4"/><path d="M5 10h11a4 4 0 0 1 0 8h-3"/></svg><span data-t="tab_ret">반품현황 (24170)</span></button>
   <button data-tab="his"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4.3-4.3"/><path d="M11 8v3l2 1.5"/></svg><span data-t="tab_his">자재이력조회</span></button>
+  <button data-tab="car"><svg viewBox="0 0 24 24"><path d="M3 13l2-5a2 2 0 0 1 2-1h10a2 2 0 0 1 2 1l2 5v5H3z"/><circle cx="7.5" cy="17" r="1.5"/><circle cx="16.5" cy="17" r="1.5"/><path d="M5 13h14"/></svg><span data-t="tab_car">적용차종 조회</span></button>
   <button data-tab="mst"><svg viewBox="0 0 24 24"><path d="M3 9l9-5 9 5v11H3z"/><path d="M9 20v-6h6v6"/></svg><span data-t="tab_mst">창고보유자재 (25010)</span></button>
   <button data-tab="adj"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1.2l2-1.6-2-3.4-2.4.9a7 7 0 0 0-2-1.2L14 3h-4l-.5 2.5a7 7 0 0 0-2 1.2l-2.4-.9-2 3.4 2 1.6A7 7 0 0 0 5 12a7 7 0 0 0 .1 1.2l-2 1.6 2 3.4 2.4-.9a7 7 0 0 0 2 1.2L10 21h4l.5-2.5a7 7 0 0 0 2-1.2l2.4.9 2-3.4-2-1.6A7 7 0 0 0 19 12z"/></svg><span data-t="tab_adj">재고조정</span></button>
 </nav>
@@ -428,6 +449,43 @@ tr.tot td{background:#101010;font-weight:700;color:#fff;position:sticky;bottom:0
   </div>
 </section>
 
+
+<!-- ===== 적용차종 조회 (회로 마스터) ===== -->
+<section class="tab" id="t-car">
+  <div class="card">
+    <h3 data-t="car_h">자재 적용 차종 · 품번 조회</h3>
+    <div class="hint" data-t="car_hint">현장에 없는 자재가 어느 차종·품번에 쓰이는지 회로 마스터(회로 조회 프로그램)에서 찾습니다. 자재코드(단자·와이어·씰·압착전부품)를 입력하거나 바코드를 스캔하세요. 회로 마스터에 없는 자재(튜브 등)는 17000 선번으로 품번을 찾습니다. 자재명 일부로도 검색됩니다.</div>
+    <div class="row" style="margin-top:10px">
+      <label class="f"><span data-t="car_q">자재코드 / 자재명 / 바코드</span><input id="cQ" list="hList" autocomplete="off" style="width:320px" placeholder="예: TKY1207002SN / THR1202505SN"></label>
+      <button class="btn" id="cRun" data-t="run">조회</button>
+      <span class="sp"></span>
+      <button class="btn sec" id="cXlsx" data-t="xlsx">엑셀</button>
+    </div>
+    <div class="hisc" id="cCand"></div>
+    <div class="hint" id="cInfo" style="margin-top:8px"></div>
+  </div>
+  <div id="cBody" style="display:none">
+    <div class="cark">
+      <div class="kpi car"><span data-t="car_k_car">적용 차종</span><b id="ckCar">-</b><small id="ckCarS"></small></div>
+      <div class="kpi pn"><span data-t="car_k_pn">적용 품번</span><b id="ckPn">-</b><small id="ckPnS"></small></div>
+      <div class="kpi wn"><span data-t="car_k_wn">사용 회로</span><b id="ckWn">-</b><small id="ckWnS"></small></div>
+      <div class="kpi"><span data-t="car_k_role">사용 위치</span><b class="s" id="ckRole">-</b><small data-t="car_k_role_s">회로 마스터에서 이 자재가 들어간 열</small></div>
+    </div>
+    <div class="card">
+      <h3 data-t="car_cars">차종별 요약 <span class="hint" data-t="car_cars_s">(누르면 아래 품번 목록이 그 차종만 보입니다)</span></h3>
+      <div class="carchips" id="cChips"></div>
+    </div>
+    <div class="card">
+      <h3><span data-t="car_pn_h">품번별 사용 현황</span> <span class="hint" id="cPnN"></span></h3>
+      <div class="tw m"><table id="cPn"></table></div>
+    </div>
+    <div class="card">
+      <h3><span data-t="car_wn_h">회로 상세</span> <span class="hint" id="cWnN"></span></h3>
+      <div class="tw m"><table id="cWn"></table></div>
+    </div>
+  </div>
+</section>
+
 <!-- ===== 창고보유자재 ===== -->
 <section class="tab" id="t-mst">
   <div class="grid2">
@@ -530,7 +588,7 @@ mst_one:'Agregar / editar',del:'Eliminar',mst_click:'Haga clic en una fila para 
 date:'Fecha',useRowDate:'Usar fecha de cada fila (si falta, la seleccionada)',paste:'Pegar datos',savedDates:'Fechas guardadas',viewDel:'Eliminar fecha',
 tab_adj:'Ajuste de stock',adj_h:'Ajuste de stock',adj_hint:'Ingrese el código y la cantidad real; se guarda la diferencia para que el stock actual quede en esa cantidad. También puede tocar el número de Stock en la tabla de faltantes.',
 adj_code:'Código',adj_name:'Nombre',adj_cur:'Stock actual (calc.)',adj_roll:'Rollos piso',adj_after:'Cantidad real',adj_memo:'Motivo',adj_zero:'A cero',
-adj_auto_h:'Ajuste automático por cierre (0)',adj_auto_hint:'Si en el programa TML·WIRE se cierran (0) los códigos de barras y no queda ningún rollo en piso, el stock se ajusta a 0 automáticamente. Un ajuste manual guardado después del cierre tiene prioridad.',adj_list:'Historial de ajustes',tab_his:'Historial de material',his_h:'Historial de entrada y consumo',his_hint:'Escriba el código, parte del nombre o un código de barras y consulte. Muestra la entrada (30810), el consumo (32040), el inventario físico y los rollos en piso de TML·WIRE. Con un código de barras se consulta directamente su material. Si hay varios materiales, elija uno de la lista.',his_q:'Código / nombre / cód. barras',his_k_cnt:'Inventario físico (último)',his_k_roll:'Rollos en piso',his_cnt_h:'Detalle de inventario físico',his_roll_h:'Rollos en piso TML·WIRE',his_zero_chk:'Incluir rollos cerrados (0)',his_all:'Todo el periodo',his_k_in:'Total entrada',his_k_use:'Total consumo',his_k_diff:'Entrada − consumo',his_day:'Entrada y consumo por fecha',his_in_h:'Detalle de entrada (30810)',his_use_h:'Detalle de consumo (32040)'};
+adj_auto_h:'Ajuste automático por cierre (0)',adj_auto_hint:'Si en el programa TML·WIRE se cierran (0) los códigos de barras y no queda ningún rollo en piso, el stock se ajusta a 0 automáticamente. Un ajuste manual guardado después del cierre tiene prioridad.',adj_list:'Historial de ajustes',tab_car:'Modelo de aplicación',car_h:'Modelo y No. de parte donde se usa el material',car_hint:'Busca en el maestro de circuitos (Consulta de circuitos) en qué modelos y números de parte se usa un material que no está en piso. Escriba el código (terminal, cable, sello, pieza pre-crimpada) o escanee el código de barras. Para materiales que no están en el maestro (tubos, etc.) se usa el No. de circuito del 17000. También se puede buscar por parte del nombre.',car_q:'Código / nombre / cód. barras',car_k_car:'Modelos',car_k_pn:'Números de parte',car_k_wn:'Circuitos',car_k_role:'Posición de uso',car_k_role_s:'Columnas del maestro donde aparece este material',car_cars:'Resumen por modelo',car_cars_s:'(toque un modelo para filtrar la lista de abajo)',car_pn_h:'Uso por No. de parte',car_wn_h:'Detalle de circuitos',tab_his:'Historial de material',his_h:'Historial de entrada y consumo',his_hint:'Escriba el código, parte del nombre o un código de barras y consulte. Muestra la entrada (30810), el consumo (32040), el inventario físico y los rollos en piso de TML·WIRE. Con un código de barras se consulta directamente su material. Si hay varios materiales, elija uno de la lista.',his_q:'Código / nombre / cód. barras',his_k_cnt:'Inventario físico (último)',his_k_roll:'Rollos en piso',his_cnt_h:'Detalle de inventario físico',his_roll_h:'Rollos en piso TML·WIRE',his_zero_chk:'Incluir rollos cerrados (0)',his_all:'Todo el periodo',his_k_in:'Total entrada',his_k_use:'Total consumo',his_k_diff:'Entrada − consumo',his_day:'Entrada y consumo por fecha',his_in_h:'Detalle de entrada (30810)',his_use_h:'Detalle de consumo (32040)'};
 let LANG=localStorage.getItem('mshort_lang')||'ko';
 const KO={};
 function applyLang(){
@@ -1017,16 +1075,16 @@ function renderSum(){
   const C=cols(),l=viewList();
   const lab={short:tr('부족','Faltante'),care:tr('주의','Alerta'),ok:'OK'};
   $('sTbl').innerHTML='<tr>'+C.map(([k,h,n])=>`<th class="${n?'n':''}" data-k="${k}">${h}${sortK===k?(sortD>0?' ▲':' ▼'):''}</th>`).join('')+'</tr>'+
-    l.map(r=>{const s=status(r);return`<tr class="${s==='ok'?'':s}">`+C.map(([k,h,n])=>{
+    l.map(r=>{const s=status(r);return`<tr class="${s==='ok'?'':s}" data-code="${esc(r.code)}">`+C.map(([k,h,n])=>{
       if(k==='chk')return`<td><span class="tag ${s}">${lab[s]}</span></td>`;
-      if(k==='car')return`<td class="carc">${r.car?r.car.split(', ').flatMap(x=>{const i=x.indexOf(' '),c=i<0?x:x.slice(0,i),ps=i<0?['']:x.slice(i+1).split('·');return ps.map(p=>`<span class="cl"><b>${esc(c)}</b>${esc(p)}</span>`)}).join(''):'<span class="hint">-</span>'}</td>`;
+      if(k==='car')return`<td class="carc" title="${tr('눌러서 적용차종 조회','Toque para ver modelos')}" style="cursor:pointer">${r.car?r.car.split(', ').flatMap(x=>{const i=x.indexOf(' '),c=i<0?x:x.slice(0,i),ps=i<0?['']:x.slice(i+1).split('·');return ps.map(p=>`<span class="cl"><b>${esc(c)}</b>${esc(p)}</span>`)}).join(''):'<span class="hint">-</span>'}</td>`;
       const v=r[k];
       if(k==='adj')return`<td class="n ${v<0?'neg':''}" title="${r.auto?tr('0처리 자동조정 포함: ','Incluye ajuste por cierre: ')+fmt(r.auto):''}">${v?fmt(v):'<span class="hint">0</span>'}${r.auto?'<span class="tag az">0</span>':''}</td>`;
       if(k==='ret')return`<td class="n">${v?fmt(v):'<span class="hint">0</span>'}</td>`;
       if(k==='cur')return`<td class="n adjc ${v<0?'neg':''}" data-adj="${esc(r.code)}" title="${tr('눌러서 재고조정','Toque para ajustar')}">${fmt(v)}</td>`;
       if(k==='whroll')return`<td class="n">${v?fmt(v):'<span class="hint">0</span>'}</td>`;
       if(k==='roll')return`<td class="n" title="${tr('현장 보유 롤 수량합','Cant. en rollos')}: ${fmt(r.rollq)}${r.rollx?tr(` · 재고조정 0으로 ${r.rollx}롤 제외`,` · ${r.rollx} rollos excluidos por ajuste a 0`):''}">${v?fmt(v):'<span class="hint">0</span>'}${r.rollx?'<span class="tag az">0</span>':''}</td>`;
-      if(k==='code'&&r.extra)return`<td>${esc(v)}<span class="tag xt" title="${tr('17000 작업필요자재에 없음','No está en 17000')}">${tr('현장','Piso')}</span></td>`;
+      if(k==='code')return`<td class="codelink" title="${tr('눌러서 적용차종 조회','Toque para ver modelos')}">${esc(v)}${r.extra?`<span class="tag xt" title="${tr('17000 작업필요자재에 없음','No está en 17000')}">${tr('현장','Piso')}</span>`:''}</td>`;
       return n?`<td class="n ${v<0?'neg':''}">${fmt(v)}</td>`:`<td>${esc(v)}</td>`}).join('')+'</tr>'}).join('');
   $('sTbl').querySelectorAll('td[data-adj]').forEach(td=>td.onclick=e=>{e.stopPropagation();openAdj(td.dataset.adj)});
   $('sTbl').querySelectorAll('th').forEach(th=>th.onclick=()=>{const k=th.dataset.k==='chk'?'short':th.dataset.k;
@@ -1216,7 +1274,7 @@ function hRender(){
   const H_=HIS,days=hDays(),ti=H_.rec.reduce((a,r)=>a+(Number(r.qty)||0),0),tu=H_.use.reduce((a,r)=>a+(Number(r.qty)||0),0);
   const di=new Set(H_.rec.map(r=>r.rdate)).size,du=new Set(H_.use.map(r=>r.udate)).size;
   const per=(H_.f||H_.t)?`${H_.f||'…'} ~ ${H_.t||'…'}`:tr('전체 기간','Todo el periodo');
-  $('hInfo').innerHTML=`<b style="color:var(--ac);font-family:var(--code);font-size:17px">${esc(H_.code)}</b> ${esc(H_.name)} ${H_.unit?`<span class="tag none">${esc(H_.unit)}</span>`:''} · ${per}`;
+  $('hInfo').innerHTML=`<b style="color:var(--ac);font-family:var(--code);font-size:17px">${esc(H_.code)}</b> ${esc(H_.name)} ${H_.unit?`<span class="tag none">${esc(H_.unit)}</span>`:''} · ${per} <button class="carbtn" onclick="openCar('${esc(H_.code)}')">${tr('적용차종 조회 →','Ver modelos →')}</button>`;
   $('hkIn').textContent=fmt(ti);$('hkInS').textContent=tr(`${di}일 · ${H_.rec.length}건(롤)`,`${di} días · ${H_.rec.length} rollos`);
   $('hkUse').textContent=fmt(tu);$('hkUseS').textContent=tr(`${du}일 · ${H_.use.length}건`,`${du} días · ${H_.use.length} filas`);
   $('hkDiff').textContent=fmt(ti-tu);$('hkDiff').style.color=ti-tu<0?'var(--red)':'';$('hkDiffS').textContent=tr('실사·반품·조정 미반영','Sin inventario/devol./ajuste');
@@ -1266,6 +1324,85 @@ $('hXlsx').onclick=()=>{
 };
 document.querySelector('#nav button[data-tab="his"]').addEventListener('click',hFillList);
 document.getElementById('langBtn').addEventListener('click',()=>{hRender();if(HIS)hCandRender(HIS.code)});
+
+
+/* ---------- 적용차종 조회 (회로 마스터 circuit_master → 차종·품번·회로) ---------- */
+let CAR=null,CCAND=[],CSEL={car:null,pn:null};
+const ROLE_L={wire:['와이어','Cable'],tL:['좌단자','Term. izq.'],tR:['우단자','Term. der.'],pL:['압착전부품 좌','Pieza izq.'],pR:['압착전부품 우','Pieza der.'],need:['17000 선번','Circuito 17000']};
+const roleTag=r=>`<span class="role ${r}">${esc(tr(...(ROLE_L[r]||[r,r])))}</span>`;
+async function carRpc(code){const r=await fetch(SB+'rpc/mshort_car_usage',{method:'POST',headers:H,body:JSON.stringify({p_plant:1,p_code:code})});if(!r.ok)throw new Error(await r.text());return r.json()}
+function openCar(code){document.querySelector('#nav button[data-tab="car"]').click();$('cQ').value=code;cLoad(code)}
+async function cRun(){
+  const q=$('cQ').value.trim();if(q.length<2)return toast(tr('2글자 이상 입력하세요','Escriba al menos 2 caracteres'));
+  busy(1);try{
+    /* 1) 입력값 자체를 자재코드로 보고 회로 마스터에서 바로 찾기 (30810·17000 등에 없는 자재도 조회) */
+    if(!/\s/.test(q)){const d=await carRpc(q);if(d&&Number(d.n)>0){CCAND=[];$('cCand').innerHTML='';busy(0);return cShow(q.toUpperCase(),d)}}
+    /* 2) 자재명·바코드로 후보 검색 */
+    const cand=await hFind(q);CCAND=cand;
+    const exact=cand.find(c=>c.code===q.toUpperCase())||(cand.filter(c=>c.bc).length===1?cand.find(c=>c.bc):null);
+    if(!cand.length){$('cCand').innerHTML='';$('cBody').style.display='none';CAR=null;$('cInfo').textContent=tr('회로 마스터·자재 데이터에서 찾지 못했습니다. 자재코드를 확인하세요.','No se encontró en el maestro de circuitos ni en los datos de material.');busy(0);return}
+    if(exact||cand.length===1){busy(0);return cLoad((exact||cand[0]).code)}
+    cCandRender(null);$('cBody').style.display='none';CAR=null;
+    $('cInfo').textContent=tr(`${cand.length}개 자재가 검색되었습니다. 조회할 자재를 선택하세요.`,`${cand.length} materiales encontrados. Elija uno.`);
+  }catch(e){alert(e.message)}busy(0);
+}
+function cCandRender(cur){
+  $('cCand').innerHTML=CCAND.length>1?CCAND.slice(0,200).map(c=>`<button data-c="${esc(c.code)}" class="${c.code===cur?'on':''}"><b>${esc(c.code)}</b>${esc(c.name||'')}</button>`).join('')+(CCAND.length>200?`<span class="hint">… +${CCAND.length-200}</span>`:''):'';
+  $('cCand').querySelectorAll('button').forEach(b=>b.onclick=()=>cLoad(b.dataset.c));
+}
+async function cLoad(code){
+  busy(1);try{const d=await carRpc(code);cCandRender(code.toUpperCase());cShow(code.toUpperCase(),d)}catch(e){alert(e.message)}busy(0);
+}
+function cShow(code,d){
+  const rows=(d&&d.rows)||[];const nm=hNames()[code]||(CCAND.find(c=>c.code===code)||{}).name||'';
+  CAR={code,name:nm,n:Number(d&&d.n)||0,rows};CSEL={car:null,pn:null};cRender();
+}
+const carKey=r=>[r.car,r.pname].filter(Boolean).join(' · ')||tr('(차종 미등록)','(sin modelo)');
+function cGroups(){
+  const byCar={},byPn={};
+  CAR.rows.forEach(r=>{const ck=carKey(r);const c=byCar[ck]||(byCar[ck]={key:ck,car:r.car,pname:r.pname,pns:new Set(),wns:new Set(),n:0});c.pns.add(r.pn);c.wns.add(r.pn+'|'+r.wn);c.n++;
+    const p=byPn[r.pn]||(byPn[r.pn]={pn:r.pn,car:r.car,pname:r.pname,key:ck,wns:new Set(),roles:{},n:0});p.wns.add(r.wn);p.roles[r.role]=(p.roles[r.role]||0)+1;p.n++});
+  return{cars:Object.values(byCar).sort((a,b)=>a.key.localeCompare(b.key)),pns:Object.values(byPn).sort((a,b)=>a.key.localeCompare(b.key)||a.pn.localeCompare(b.pn))};
+}
+function cRender(){
+  if(!CAR){$('cBody').style.display='none';return}
+  $('cBody').style.display='block';
+  const {cars,pns}=cGroups(),wnAll=new Set(CAR.rows.map(r=>r.pn+'|'+r.wn)),roles={};CAR.rows.forEach(r=>roles[r.role]=(roles[r.role]||0)+1);
+  $('cInfo').innerHTML=`<b style="color:var(--ac);font-family:var(--code);font-size:17px">${esc(CAR.code)}</b> ${esc(CAR.name)}`+(CAR.n?'':` · <span style="color:var(--red)">${tr('회로 마스터에 없는 자재입니다','No está en el maestro de circuitos')}</span>`)+(CAR.n>CAR.rows.length?` · <span class="hint">${tr(`앞 ${CAR.rows.length}건만 표시 (전체 ${CAR.n})`,`Mostrando ${CAR.rows.length} de ${CAR.n}`)}</span>`:'');
+  $('ckCar').textContent=cars.length;$('ckCarS').textContent=cars.map(c=>c.car||'?').filter((v,i,a)=>a.indexOf(v)===i).join(', ');
+  $('ckPn').textContent=pns.length;$('ckPnS').textContent=tr(`회로 마스터 품번 기준`,`según maestro de circuitos`);
+  $('ckWn').textContent=wnAll.size;$('ckWnS').textContent=tr(`${CAR.rows.length}곳에서 사용`,`${CAR.rows.length} usos`);
+  $('ckRole').innerHTML=Object.keys(roles).length?Object.entries(roles).map(([r,n])=>`${roleTag(r)}<span class="hint">${n}</span> `).join(''):'-';
+  $('cChips').innerHTML=cars.length?cars.map(c=>`<button data-k="${esc(c.key)}" class="${CSEL.car===c.key?'on':''}"><b>${esc(c.car||'?')}</b>${esc(c.pname||'')}<br><small>${tr(`품번 ${c.pns.size} · 회로 ${c.wns.size}`,`${c.pns.size} partes · ${c.wns.size} circuitos`)}</small></button>`).join(''):`<span class="hint">${tr('적용 차종이 없습니다','Sin modelos')}</span>`;
+  $('cChips').querySelectorAll('button').forEach(b=>b.onclick=()=>{CSEL.car=CSEL.car===b.dataset.k?null:b.dataset.k;CSEL.pn=null;cRender()});
+  const pl=pns.filter(p=>!CSEL.car||p.key===CSEL.car);
+  $('cPnN').textContent=tr(`${pl.length}개 품번${CSEL.car?' · '+CSEL.car:''}`,`${pl.length} partes${CSEL.car?' · '+CSEL.car:''}`);
+  $('cPn').innerHTML=`<tr><th>#</th><th>${tr('차종','Modelo')}</th><th>${tr('품명','Producto')}</th><th>${tr('품번','No. de parte')}</th><th class="n">${tr('회로 수','Circuitos')}</th><th>${tr('사용 위치','Posición')}</th><th>${tr('선번 (예)','Circuitos (ej.)')}</th></tr>`+
+    (pl.length?pl.map((p,i)=>{const w=[...p.wns];return`<tr class="pnrow ${CSEL.pn===p.pn?'on':''}" data-pn="${esc(p.pn)}"><td class="mute">${i+1}</td><td class="hl">${esc(p.car||'-')}</td><td>${esc(p.pname||'-')}</td><td style="font-family:var(--code)">${esc(p.pn)}</td><td class="n">${w.length}</td><td>${Object.entries(p.roles).map(([r,n])=>roleTag(r)+(n>1?`<span class="hint">${n}</span> `:' ')).join('')}</td><td class="hint">${esc(w.slice(0,8).join(', '))}${w.length>8?` … +${w.length-8}`:''}</td></tr>`}).join('')
+      :`<tr><td class="empty" colspan="7">${tr('이 자재가 들어가는 품번이 없습니다','Sin números de parte')}</td></tr>`);
+  $('cPn').querySelectorAll('tr.pnrow').forEach(t=>t.onclick=()=>{CSEL.pn=CSEL.pn===t.dataset.pn?null:t.dataset.pn;cRender();});
+  const wl=CAR.rows.filter(r=>(!CSEL.car||carKey(r)===CSEL.car)&&(!CSEL.pn||r.pn===CSEL.pn));
+  $('cWnN').textContent=tr(`${wl.length}건${CSEL.pn?' · '+CSEL.pn:CSEL.car?' · '+CSEL.car:''}`,`${wl.length} filas${CSEL.pn?' · '+CSEL.pn:CSEL.car?' · '+CSEL.car:''}`);
+  const hit=v=>String(v||'').toUpperCase()===CAR.code?' class="hl"':'';
+  $('cWn').innerHTML=`<tr><th>#</th><th>${tr('차종','Modelo')}</th><th>${tr('품번','No. de parte')}</th><th>${tr('선번','Circuito')}</th><th>${tr('위치','Posición')}</th><th>${tr('재질','Material')}</th><th>SQ</th><th>${tr('색상','Color')}</th><th class="n">${tr('길이','Long.')}</th><th>${tr('좌단자','Term. izq.')}</th><th>${tr('우단자','Term. der.')}</th><th>${tr('압착전부품 좌','Pieza izq.')}</th><th>${tr('압착전부품 우','Pieza der.')}</th></tr>`+
+    (wl.length?wl.slice(0,1500).map((r,i)=>`<tr><td class="mute">${i+1}</td><td>${esc(r.car||'-')}</td><td style="font-family:var(--code)">${esc(r.pn)}</td><td style="font-family:var(--code);font-weight:700">${esc(r.wn)}</td><td>${roleTag(r.role)}</td><td>${esc(r.mat||'')}</td><td>${esc(r.sq||'')}</td><td>${esc(r.col||'')}</td><td class="n">${esc(r.len||'')}</td><td${hit(r.tl)}>${esc(r.tl||'')}</td><td${hit(r.tr_)}>${esc(r.tr_||'')}</td><td${hit(r.pl)}>${esc(r.pl||'')}</td><td${hit(r.pr)}>${esc(r.pr||'')}</td></tr>`).join('')+(wl.length>1500?`<tr><td class="hint" colspan="13">${tr(`앞 1500건만 표시`,`Mostrando 1500`)}</td></tr>`:'')
+      :`<tr><td class="empty" colspan="13">-</td></tr>`);
+}
+$('cRun').onclick=cRun;$('cQ').onkeydown=e=>{if(e.key==='Enter')cRun()};
+$('cXlsx').onclick=()=>{
+  if(!CAR)return toast(tr('먼저 자재를 조회하세요','Consulte un material primero'));
+  const {cars,pns}=cGroups(),wb=XLSX.utils.book_new();
+  const add=(name,aoa,w)=>{const ws=XLSX.utils.aoa_to_sheet(aoa);ws['!cols']=w.map(x=>({wch:x}));XLSX.utils.book_append_sheet(wb,ws,name)};
+  const head=[[tr('자재코드','Código'),CAR.code],[tr('자재명','Nombre'),CAR.name],[tr('조회일','Fecha'),today()],[]];
+  add(tr('차종별','Por modelo'),head.concat([[tr('차종','Modelo'),tr('품명','Producto'),tr('품번 수','Partes'),tr('회로 수','Circuitos'),tr('사용 횟수','Usos')]],cars.map(c=>[c.car,c.pname,c.pns.size,c.wns.size,c.n])),[12,16,10,10,10]);
+  add(tr('품번별','Por parte'),[[tr('차종','Modelo'),tr('품명','Producto'),tr('품번','No. de parte'),tr('회로 수','Circuitos'),tr('사용 위치','Posición'),tr('선번','Circuitos')]].concat(pns.map(p=>[p.car,p.pname,p.pn,p.wns.size,Object.entries(p.roles).map(([r,n])=>tr(...(ROLE_L[r]||[r,r]))+(n>1?' x'+n:'')).join(', '),[...p.wns].join(', ')])),[12,16,18,10,24,60]);
+  add(tr('회로상세','Circuitos'),[[tr('차종','Modelo'),tr('품명','Producto'),tr('품번','No. de parte'),tr('선번','Circuito'),tr('위치','Posición'),tr('재질','Material'),'SQ',tr('색상','Color'),tr('길이','Long.'),tr('좌단자','Term. izq.'),tr('우단자','Term. der.'),tr('압착전부품 좌','Pieza izq.'),tr('압착전부품 우','Pieza der.')]].concat(CAR.rows.map(r=>[r.car,r.pname,r.pn,r.wn,tr(...(ROLE_L[r.role]||[r.role,r.role])),r.mat,r.sq,r.col,r.len,r.tl,r.tr_,r.pl,r.pr])),[10,14,18,10,14,8,6,6,8,16,16,16,16]);
+  XLSX.writeFile(wb,`${tr('적용차종','Modelo')}_${CAR.code}_${today()}.xlsx`);
+};
+document.querySelector('#nav button[data-tab="car"]').addEventListener('click',()=>{hFillList();setTimeout(()=>$('cQ').focus(),50)});
+document.getElementById('langBtn').addEventListener('click',()=>{if(CAR)cRender()});
+/* 부족예상 표 · 자재이력조회에서 바로 열기 */
+$('sTbl').addEventListener('click',e=>{const c=e.target.closest('td.codelink,td.carc');if(!c)return;const tr_=c.closest('tr');const code=tr_&&tr_.dataset.code;if(code)openCar(code)});
 
 /* ---------- init ---------- */
 (async()=>{
