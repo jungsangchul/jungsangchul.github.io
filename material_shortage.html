@@ -327,7 +327,7 @@ tr.tot td{background:#101010;font-weight:700;color:#fff;position:sticky;bottom:0
       <label class="f"><span data-t="search">검색</span><input id="sQ" placeholder="코드/자재명" style="width:170px"></label><label class="f"><span id="fCarL">차종</span><select id="fCar" style="width:110px"></select></label><label class="f"><span id="fPnL">품명</span><select id="fPn" style="width:130px"></select></label>
       <label class="f"><span data-t="filter">표시</span><select id="sF">
         <option value="all" data-t="f_all">전체</option><option value="short" data-t="f_short">부족</option>
-        <option value="care" data-t="f_care">주의</option><option value="chk" data-t="f_chk">부족+주의</option><option value="need" data-t="f_need">17000 자재만</option><option value="extra" data-t="f_extra">17000 외 현장보유</option></select></label>
+        <option value="care" data-t="f_care">주의</option><option value="chk" data-t="f_chk">부족+주의</option><option value="need" data-t="f_need">17000 자재만</option><option value="extra" data-t="f_extra">17000 외 가공보유</option></select></label>
       <div class="f tyf" id="sType"><span data-t="type">구분</span><div class="tyc"><label><input type="checkbox" value="Terminal" checked>Terminal <b data-tc="Terminal"></b></label><label><input type="checkbox" value="Wire" checked>Wire <b data-tc="Wire"></b></label><label><input type="checkbox" value="Seal" checked>Seal <b data-tc="Seal"></b></label><label><input type="checkbox" value="Other" checked>Other <b data-tc="Other"></b></label></div></div>
       <button class="btn sec" id="sCopy" data-t="copy">복사</button>
       <button class="btn sec" id="sXlsx" data-t="xlsx">엑셀</button>
@@ -957,19 +957,19 @@ async function calc(fresh=true){
     /* 0처리 자동조정: 바코드 관리 자재인데 현장롤 0 + 마지막 0처리가 마지막 수동조정보다 나중 → 현재고 0 */
     const fin0=(c,base)=>{const auto=(HB[c]&&!(RL[c])&&(LZ[c]||0)>(LA[c]||0)&&Math.abs(base)>1e-9)?-base:0;return{adj:(A[c]||0)+auto,auto,base,cur:base+auto,lz:LZ[c]||0,rollx:RX[c]||0}};
     const fin=fin0;
-    const C=sum(cnt),U=sum(use),R=sum(rec),RT=sum(ret),W={},WR={};MST.forEach(r=>{W[r.code]=Number(r.qty)||0;WR[r.code]=Number(r.cnt)||0;nm(r.code,r.name,r.unit)});
+    const C=sum(cnt),U=sum(use),R=sum(rec),RT=sum(ret),W={},WR={};MST.forEach(r=>{const k=String(r.code||'').toUpperCase();W[k]=(W[k]||0)+(Number(r.qty)||0);WR[k]=(WR[k]||0)+(Number(r.cnt)||0);nm(r.code,r.name,r.unit)});
     use.forEach(r=>nm(r.code,r.name));rec.forEach(r=>nm(r.code,r.name,r.unit));ret.forEach(r=>nm(r.code,r.name,r.unit));
     const agg={},order=[];let exRows=0;
     NEED.forEach(r=>{if(isEx(r.lotno)){exRows++;return}
       if(!agg[r.code]){agg[r.code]={code:r.code,name:r.name,unit:r.unit,need:0};order.push(r.code)}
       agg[r.code].need+=Number(r.qty)||0});
-    const list=order.map((c,i)=>{const a=agg[c];const cnt_=C[c]||0,u=U[c]||0,rc=R[c]||0,rt=RT[c]||0,w=W[c]||0;
+    const list=order.map((c,i)=>{const a=agg[c];c=String(c).toUpperCase();const cnt_=C[c]||0,u=U[c]||0,rc=R[c]||0,rt=RT[c]||0,w=W[c]||0;
       const F=fin(c=String(c).toUpperCase(),cnt_-u+rc-rt+(A[c]||0)),cur=F.cur,sh=cur+w-a.need;return{...a,i,cnt:cnt_,use:u,rec:rc,ret:rt,...F,roll:RL[c]||0,rollq:RQ[c]||0,wh:w,whroll:WR[c]||0,short:sh}});
-    /* 17000에 없는 현장보유 자재 (현재고≠0 또는 현장 롤 보유) */
+    /* 17000에 없는 가공 보유 자재 — 실사·사용·입고·반납·현장롤·조정·창고보유 중 하나라도 있으면 전부 표시 (현재고 0 포함) */
     const inNeed=new Set(order.map(c=>String(c).toUpperCase()));
-    const xs=new Set([...Object.keys(C),...Object.keys(U),...Object.keys(R),...Object.keys(RT),...Object.keys(RL),...Object.keys(A)]);
+    const xs=new Set([...Object.keys(C),...Object.keys(U),...Object.keys(R),...Object.keys(RT),...Object.keys(RL),...Object.keys(A),...Object.keys(W).map(k=>String(k).toUpperCase())]);
     [...xs].filter(c=>c&&!inNeed.has(c)).sort().forEach(c=>{const cnt_=C[c]||0,u=U[c]||0,rc=R[c]||0,rt=RT[c]||0,F=fin(c,cnt_-u+rc-rt+(A[c]||0)),cur=F.cur,rl=RL[c]||0;
-      if(Math.abs(cur)<1e-9&&!rl)return;const w=W[c]||0,o=NM[c]||{};
+      const w=W[c]||0,o=NM[c]||{};
       list.push({code:c,name:o.name||'',unit:o.unit||'',need:0,i:list.length,cnt:cnt_,use:u,rec:rc,ret:rt,...F,roll:rl,rollq:RQ[c]||0,wh:w,whroll:WR[c]||0,short:cur+w,extra:1})});
     SUM={list,exRows,cd,f,t,zAt};fillAdjCodes();
   }catch(e){alert(e.message)}
