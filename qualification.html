@@ -614,6 +614,7 @@ async function deleteRound(id){
 //  track 'regular' = 정기·재평가·기타 (… + 숙련도)            — exam_config.trackWeights.regular
 //  총점·합격 최종 판정은 서버 트리거(exam_results_judge)가 수행, 여기서는 동일 규칙으로 미리 계산해 표시
 var TRACKW={new:{theory:30,perf:40,crimp:15,defect:15,prof:0},regular:{theory:20,perf:30,crimp:10,defect:10,prof:30}};
+var PROFBANDS=[{min:100,pct:100},{min:95,pct:90},{min:90,pct:80},{min:85,pct:70},{min:80,pct:60},{min:70,pct:45},{min:0,pct:30}];
 var MINPCT={theory:0,perf:0,msa:0,prof:0}, PROFRULE={minDays:10,periodDays:30,defectCapPpm:3000}, _hasTrackCols=true, _trackCfgLoaded=false;
 const TRACK_KR={new:'신입사원평가',regular:'정기·재평가'};
 function trackOfRound(id){if(!id)return'new';const r=_roundById(id);if(!r)return /^NEW-/.test(id)?'new':'regular';return r.type==='new'?'new':'regular';}
@@ -645,6 +646,84 @@ function judgeLocal(r){
   if(w.prof>0&&prof==null)ok=false;
   return{total,passed:ok,prof};
 }
+// ════ ⑦ 평가기준 탭: 현재 설정(배점·과락·숙련도·등급·실습항목)을 읽기 전용으로 표시 — ⑧ 관리자에서 변경하면 즉시 반영 ════
+function renderCriteria(){
+  const el=document.getElementById('criteriaRoot');if(!el)return;
+  const es=_perfIsEs(),T=(k,e)=>es?e:k;
+  const cfg=getConfig(),pass=cfg.passingScore;
+  const wN=trackW('new'),wR=trackW('regular'),ct=curTrack();
+  const bar=w=>{const parts=[['theory',T('이론','Teoría'),'#5ba3e8'],['perf',T('작업수행','Desempeño'),'#2ec4b6'],['crimp',T('압착고','Altura'),'#9b7ee8'],['defect',T('불량판별','Defectos'),'#b58de8'],['prof',T('숙련도','Productividad'),'#c9a84c']].filter(p=>w[p[0]]>0);
+    const sum=parts.reduce((a,p)=>a+w[p[0]],0)||1;
+    return `<div class="crit-bar">${parts.map(p=>`<span style="flex:${w[p[0]]};background:${p[2]}" title="${p[1]} ${w[p[0]]}%">${w[p[0]]>=8?p[1]+' '+w[p[0]]:w[p[0]]}</span>`).join('')}</div>
+      <div class="crit-kv">${parts.map(p=>`<span style="color:${p[2]}">● ${p[1]}</span><b>${w[p[0]]}${T('점','pts')}</b>`).join('')}<span style="color:var(--text2)">${T('합계','Total')}</span><b style="color:${sum===100?'var(--green)':'var(--red)'}">${sum}</b></div>`;};
+  const mp=k=>MINPCT[k]>0?`<b style="color:var(--orange)">${MINPCT[k]}%</b>`:`<span style="color:var(--text2)">${T('미적용','No aplica')}</span>`;
+  const bands=[...PROFBANDS].sort((a,b)=>b.min-a.min);
+  const grades=[...gradeConfig].sort((a,b)=>b.minScore-a.minScore);
+  const sheets=(typeof PERF_SHEETS!=='undefined'?PERF_SHEETS:[]);
+  const badge=t=>`<span style="border:1px solid ${t==='new'?'rgba(91,163,232,.5)':'rgba(201,168,76,.5)'};color:${t==='new'?'var(--sky)':'var(--gold)'};border-radius:999px;padding:.1rem .55rem;font-size:.72rem;font-weight:700">${t==='new'?'🆕 ':'🔁 '}${T(TRACK_KR[t],t==='new'?'Nuevo ingreso':'Periódica / Reevaluación')}</span>`;
+  el.innerHTML=`
+  <div class="info-box" style="display:flex;gap:.8rem;flex-wrap:wrap;align-items:center">
+    <span>📌 ${T('현재 평가구분','Evaluación actual')}: <b style="color:var(--text)">${_perfEsc(roundName(activeRound))}</b></span> ${badge(ct)}
+    <span style="margin-left:auto">${T('기준 변경은 ⑧ 관리자 모드에서 — 변경 즉시 이 화면·채점·판정에 반영','Los cambios se hacen en ⑧ Admin y se reflejan de inmediato')}</span>
+  </div>
+  <div class="card"><div class="card-title">🧭 ${T('평가 체계','Sistema de evaluación')}</div>
+    <div class="crit-grid">
+      <div><div style="margin-bottom:.4rem">${badge('new')}</div>
+        <div class="crit-step"><div class="crit-num">1</div><div><b>${T('신입사원평가','Evaluación de nuevo ingreso')}</b><div style="font-size:.78rem;color:var(--text2)">${T('대상: 입사월 코호트(사번 M0YYMM) · 시기: 입사 후 15~17일','Objetivo: cohorte por mes de ingreso · 15~17 días después del ingreso')}<br>${T('이론(모바일 객관식) + 작업수행능력(공정별 체크시트) + MSA(압착고 GR&R·불량판별)','Teoría (móvil) + Desempeño (hoja por proceso) + MSA (GR&R altura · defectos)')}</div></div></div>
+        <div class="crit-step"><div class="crit-num">✓</div><div><b>${T('최종합격','Aprobación final')}</b><div style="font-size:.78rem;color:var(--text2)">${T(`총점 ${pass}점 이상 + 과락 없음 + MSA 조(組) 결과 Aprobado → 최종합격. 불합격 시 재평가`,`Total ≥ ${pass} + sin reprobar materias + grupo MSA Aprobado → Aprobado final; si no, reevaluación`)}</div></div></div>
+      </div>
+      <div><div style="margin-bottom:.4rem">${badge('regular')}</div>
+        <div class="crit-step"><div class="crit-num">2</div><div><b>${T('정기평가','Evaluación periódica')}</b><div style="font-size:.78rem;color:var(--text2)">${T('대상: 신입평가 합격 후 재직자 · 반기 1회','Personal aprobado · una vez por semestre')}<br>${T('이론 + 작업수행 + MSA + <b style="color:var(--gold)">숙련도(생산성)</b> → 총점으로 L등급','Teoría + Desempeño + MSA + <b style="color:var(--gold)">Productividad</b> → nivel L por puntaje total')}</div></div></div>
+        <div class="crit-step"><div class="crit-num">3</div><div><b>${T('재평가','Reevaluación')}</b><div style="font-size:.78rem;color:var(--text2)">${T('불합격·등급 하락자 · 1개월 내 · 정기평가와 같은 배점, 미달 항목 재평가 결과로 대체','Reprobados / baja de nivel · en 1 mes · mismo peso que la periódica')}</div></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="crit-grid">
+    <div class="card"><div class="card-title">⚖️ ${T('배점 — 신입사원평가','Peso — Nuevo ingreso')} ${ct==='new'?`<span style="margin-left:auto;font-size:.68rem;color:var(--green);text-transform:none;letter-spacing:0">${T('현재 적용 중','En uso')}</span>`:''}</div>${bar(wN)}</div>
+    <div class="card"><div class="card-title">⚖️ ${T('배점 — 정기·재평가','Peso — Periódica / Reevaluación')} ${ct==='regular'?`<span style="margin-left:auto;font-size:.68rem;color:var(--green);text-transform:none;letter-spacing:0">${T('현재 적용 중','En uso')}</span>`:''}</div>${bar(wR)}</div>
+  </div>
+  <div class="crit-grid">
+    <div class="card"><div class="card-title">⛔ ${T('합격 판정 규칙','Reglas de aprobación')}</div>
+      <div class="crit-kv">
+        <span>${T('합격 총점','Puntaje mínimo')}</span><b style="color:var(--gold)">${pass}${T('점 이상','+')}</b>
+        <span>${T('과락 · 이론','Mínimo · Teoría')}</span>${mp('theory')}
+        <span>${T('과락 · 작업수행','Mínimo · Desempeño')}</span>${mp('perf')}
+        <span>${T('과락 · MSA(압착고+불량판별)','Mínimo · MSA')}</span>${mp('msa')}
+        <span>${T('과락 · 숙련도','Mínimo · Productividad')}</span>${mp('prof')}
+        <span>MSA</span><b>${T('계량형 GR&R 조 결과 Aprobado 필수 (압착고 배점 만점/0점)','Grupo GR&R Aprobado obligatorio (altura: todo o nada)')}</b>
+        <span>${T('숙련도 자료','Datos de productividad')}</span><b>${T(`실적 ${PROFRULE.minDays}일 미만이면 「평가중」(합격 보류)`,`menos de ${PROFRULE.minDays} días → "En evaluación"`)}</b>
+      </div>
+      <div style="font-size:.74rem;color:var(--text2);margin-top:.6rem">${T('과락 %는 해당 과목 배점 대비 최소 득점률. 예) 이론 30% → 정기평가 이론 배점 20점 중 6점 미만이면 총점과 무관하게 불합격.','El % mínimo se aplica sobre el peso de cada materia.')}</div>
+    </div>
+    <div class="card"><div class="card-title">📈 ${T('숙련도(생산성) 산출','Cálculo de productividad')}</div>
+      <div class="crit-kv" style="margin-bottom:.6rem">
+        <span>${T('지표','Indicador')}</span><b>${T('달성률 = 실적수량 ÷ 목표수량 × 100 (일자별 평균)','Cumplimiento = real ÷ meta × 100 (promedio diario)')}</b>
+        <span>${T('기간','Periodo')}</span><b>${T(`평가일 직전 ${PROFRULE.periodDays}일 · 최소 ${PROFRULE.minDays} 실적일`,`${PROFRULE.periodDays} días antes de la evaluación · mín. ${PROFRULE.minDays} días`)}</b>
+        <span>${T('품질 보정','Ajuste de calidad')}</span><b>${T(`불량 ${PROFRULE.defectCapPpm} ppm 초과 시 달성률 −5%p`,`> ${PROFRULE.defectCapPpm} ppm → −5 puntos`)}</b>
+      </div>
+      <table class="results-table"><thead><tr><th>${T('달성률','Cumplimiento')}</th><th>${T('배점 대비','% del peso')}</th><th>${T('정기평가 점수','Pts periódica')} (/${wR.prof})</th></tr></thead><tbody>
+        ${bands.map((b,i)=>`<tr><td>${b.min}%${i?` ~ ${bands[i-1].min-0.1}%`:' ↑'}</td><td>${b.pct}%</td><td style="color:var(--gold);font-weight:700">${_r1(wR.prof*b.pct/100)}</td></tr>`).join('')}
+      </tbody></table>
+    </div>
+  </div>
+  <div class="crit-grid">
+    <div class="card"><div class="card-title">🎖️ ${T('등급 기준 (총점)','Niveles (puntaje total)')}</div>
+      <table class="results-table"><thead><tr><th>${T('등급','Nivel')}</th><th>${T('총점','Total')}</th><th>${T('설명','Descripción')}</th></tr></thead><tbody>
+        ${grades.map(g=>`<tr><td><span style="background:${g.color}20;color:${g.color};border:1px solid ${g.color}50;border-radius:6px;padding:.1rem .5rem;font-weight:700">${_perfEsc(g.label)}</span></td><td>${g.minScore}${T('점 이상','+')}</td><td style="color:var(--text2)">${_perfEsc(es?(g.descEs||g.desc||''):(g.desc||''))}</td></tr>`).join('')}
+        <tr><td><span class="grade-fail">${T('미달','Reprobado')}</span></td><td>&lt; ${pass}</td><td style="color:var(--text2)">${T('불합격 · 재평가 대상','Reevaluación')}</td></tr>
+      </tbody></table>
+    </div>
+    <div class="card"><div class="card-title">🔧 ${T('실습 평가 항목','Evaluación práctica')}</div>
+      <div class="crit-kv" style="margin-bottom:.6rem">
+        <span>${T('작업수행능력','Desempeño')}</span><b>${T('작업자 기량관리 매뉴얼 M-039-R4 공정별 체크시트 · 원점수 합계 → 배점 환산','Hoja por proceso M-039-R4 · suma → peso')}</b>
+        <span>${T('압착고 측정','Altura de crimpado')}</span><b>${T('계량형 MSA GR&R (3인 1조 · 10부품 × 3회) — %Study <10 우수 · ≤30 양호 · 초과 부족','MSA variable GR&R (3 op · 10 piezas × 3) — %Study <10 Excelente · ≤30 Bueno')}</b>
+        <span>${T('불량판별','Detección de defectos')}</span><b>${T('계수형 MSA (20 샘플 × 3회) — 정확도 ≥90% · 오경보 ≤5% · 누락 ≤2% 만점, 미달 시 정확도 비례','MSA atributos (20 × 3) — exactitud ≥90%, falsa alarma ≤5%, omisión ≤2%')}</b>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:.35rem">${sheets.map(sh=>`<span style="border:1px solid var(--border);border-radius:999px;padding:.15rem .6rem;font-size:.74rem">${_perfEsc(es?sh.es:sh.kr)} <span style="color:var(--text2)">${sh.items.length}${T('항목','ítems')} · ${sh.max}</span></span>`).join('')}</div>
+      <div style="margin-top:.6rem"><button type="button" class="btn btn-teal btn-sm" onclick="viewPerfSheets()">📋 ${T('체크시트 보기','Ver hojas')}</button></div>
+    </div>
+  </div>`;
+}
 function _applyJudge(r){const j=judgeLocal(r);r.totalScore=j.total;r.passed=j.passed;return r;}
 // 서버 저장 결과(트리거 계산값)로 메모리 기록 동기화
 function _syncFromSaved(r,res){const x=Array.isArray(res)?res[0]:null;if(!x)return;if(x.total_score!=null)r.totalScore=parseFloat(x.total_score);if(x.passed!=null)r.passed=!!x.passed;
@@ -660,6 +739,8 @@ function _applyRoundCfg(cfgObj){
   try{if(cfgObj.trackWeights){const t=JSON.parse(cfgObj.trackWeights);if(t&&t.new&&t.regular)TRACKW=t;}else{TRACKW.new={theory:_lv('theoryPct',30),perf:_lv('perfPct',40),crimp:_lv('crimpPct',15),defect:_lv('defectPct',15),prof:0};}}catch(e){}
   try{if(cfgObj.minPct)MINPCT=Object.assign(MINPCT,JSON.parse(cfgObj.minPct));}catch(e){}
   try{if(cfgObj.profRule)PROFRULE=Object.assign(PROFRULE,JSON.parse(cfgObj.profRule));}catch(e){}
+  try{if(cfgObj.profBands){const b=JSON.parse(cfgObj.profBands);if(Array.isArray(b)&&b.length)PROFBANDS=b;}}catch(e){}
+  try{if(document.getElementById('page-criteria')?.classList.contains('active'))renderCriteria();}catch(e){}
   try{applyTrackToInputs();}catch(e){}
   try{renderRoundBars();}catch(e){}
 }
@@ -4239,7 +4320,9 @@ document.addEventListener('DOMContentLoaded', renderExamQr);
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
 /* ⑦ 관리자 모드 */
-@media(min-width:1100px){.tab-nav .tab-btn{padding:0 .5rem;font-size:.72rem}.header-left{min-width:0}.logo-es{white-space:nowrap;font-size:.74rem}.logo-kr{font-size:.68rem}header{padding:0 .8rem}}
+@media(min-width:1100px){.tab-nav .tab-btn{padding:0 .38rem;font-size:.71rem}.header-left{min-width:0}.logo-es{white-space:nowrap;font-size:.74rem}.logo-kr{font-size:.68rem}header{padding:0 .8rem}}
+@media(min-width:1100px) and (max-width:1500px){.logo-es{display:none}.logo-kr{font-size:.86rem;font-weight:700;color:#fafafa}}
+.crit-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:1rem}.crit-bar{display:flex;height:22px;border-radius:6px;overflow:hidden;border:1px solid var(--border);margin:.5rem 0}.crit-bar span{display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;color:#111;white-space:nowrap;overflow:hidden}.crit-kv{display:grid;grid-template-columns:auto 1fr;gap:.3rem .8rem;font-size:.8rem}.crit-kv b{color:var(--text)}.crit-step{display:flex;gap:.6rem;align-items:flex-start;padding:.5rem 0;border-bottom:1px solid var(--border)}.crit-step:last-child{border-bottom:none}.crit-num{flex:0 0 26px;height:26px;border-radius:50%;background:rgba(201,168,76,.15);color:var(--gold);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.78rem}
 #qaRoot label,#qaRoot .chip,#qaRoot th{text-transform:none;letter-spacing:0;font-family:'Noto Sans KR',sans-serif}
 #qaRoot label.f{font-size:.72rem;color:var(--text2);margin-bottom:.25rem;display:block}
 #qaRoot{--bg:#0a0a0a;--bg2:#121212;--card:#161616;--line:#262626;--text:#ededed;--text2:#8a8a8a;--gold:#c9a84c;--green:#3ec98a;--red:#e8574f;--orange:#e6a23c;--blue:#5ba3e8;--teal:#2ec4b6;--purple:#9b7ee8}
@@ -4340,7 +4423,8 @@ document.addEventListener('DOMContentLoaded', renderExamQr);
     <button class="tab-btn" onclick="switchTab('results',this)"><span data-kr="④ 결과 이력" data-es="④ Historial">④ 결과 이력</span></button>
     <button class="tab-btn" onclick="switchTab('stats',this)"><span data-kr="⑤ 통계 분석" data-es="⑤ Estadísticas">⑤ 통계 분석</span></button>
     <button class="tab-btn" onclick="switchTab('skills',this)"><span data-kr="⑥ 숙련도·다기능" data-es="⑥ Habilidades">⑥ 숙련도·다기능</span></button>
-    <button class="tab-btn" onclick="switchTab('admin',this)" style="border-color:rgba(201,168,76,.5)"><span data-kr="⑦ 관리자" data-es="⑦ Admin">⑦ 관리자</span></button>
+    <button class="tab-btn" onclick="switchTab('criteria',this)"><span data-kr="⑦ 평가기준" data-es="⑦ Criterios">⑦ 평가기준</span></button>
+    <button class="tab-btn" onclick="switchTab('admin',this)" style="border-color:rgba(201,168,76,.5)"><span data-kr="⑧ 관리자" data-es="⑧ Admin">⑧ 관리자</span></button>
   </nav>
   <div style="display:flex;align-items:center;gap:0.5rem;flex-shrink:0;padding-left:0.5rem">
     <button type="button" onclick="syncImagesToSupabase()" style="padding:5px 11px;background:#c0392b;color:#fff;border:none;border-radius:5px;cursor:pointer;font-family:inherit;font-size:0.75rem;font-weight:700;white-space:nowrap" title="로컬 이미지를 Supabase에 재업로드">🖼️ 이미지 복구</button>
@@ -5523,7 +5607,12 @@ document.addEventListener('DOMContentLoaded', renderExamQr);
   </div>
 </div>
 
-<!-- ===== PAGE 7: 관리자 모드 ===== -->
+<!-- ===== PAGE 7: 평가기준 (읽기 전용 — ⑧ 관리자에서 변경) ===== -->
+<div id="page-criteria" class="page">
+  <div id="criteriaRoot"><div class="info-box">불러오는 중…</div></div>
+</div>
+
+<!-- ===== PAGE 8: 관리자 모드 ===== -->
 <div id="page-admin" class="page">
 <div id="qaRoot">
 
@@ -5536,11 +5625,11 @@ document.addEventListener('DOMContentLoaded', renderExamQr);
 </div></div>
 
 <div class="tabs"><button class="btn sm" onclick="QA.loadAll(true)">↻ 새로고침</button><span class="muted" id="syncMsg" style="align-self:center"></span>
-  <div class="tab on" data-t="diag" onclick="QA.go('diag')">① 시스템 진단</div>
+  <div class="tab on" data-t="diag" onclick="QA.go('diag')">① 데이터 점검</div>
   <div class="tab" data-t="weights" onclick="QA.go('weights')">② 배점·판정 설계</div>
   <div class="tab" data-t="prof" onclick="QA.go('prof')">③ 숙련도(생산성) 데이터</div>
   <div class="tab" data-t="dummy" onclick="QA.go('dummy')">④ 임의데이터 생성·적용</div>
-  <div class="tab" data-t="sim" onclick="QA.go('sim')">⑤ 숙련도 반영 시뮬레이션</div>
+  <div class="tab" data-t="sim" onclick="QA.go('sim')">⑤ 숙련도 반영 시뮬레이션</div><span class="muted" style="align-self:center">여기서 저장한 기준은 ⑦ 평가기준 탭에 바로 표시됩니다</span>
 </div>
 <div class="qamain">
 
@@ -5550,45 +5639,18 @@ document.addEventListener('DOMContentLoaded', renderExamQr);
     <div class="kpis" id="kpis"><div class="muted">불러오는 중…</div></div>
     <div class="note" id="diagSqlHint" style="margin-top:.6rem"></div>
   </div>
-  <div class="grid g2">
-  <div class="card"><h3>🔴 구조적 문제 (우선 개선)</h3><ul class="diag" style="list-style:none">
-    <li><span class="sev s1">P1</span> <b>배점이 전역 1세트뿐</b> — theoryPct·perfPct·crimpPct·defectPct가 모든 평가구분(신입/정기/재평가)에 공통 적용. 정기평가에 숙련도를 넣으려면 평가구분(종류)별 배점이 필요.
-      <span class="fix">→ 적용 완료(2026-10-30): exam_config.trackWeights(new/regular) — 현재 평가구분 종류에 따라 ① 시험 설정·채점·MSA 반영·서버 판정이 해당 배점 세트를 사용.</span></li>
-    <li><span class="sev s1">P1</span> <b>숙련도(생산성) 데이터 소스 부재</b> — ⑥ 숙련도 탭은 총점을 등급으로 바꿔 보여줄 뿐, 생산성 지표가 없음. 다기능 등급도 합격 공정 수로 하드코딩(3=다기능, 4=숙련, 5=최고수).
-      <span class="fix">→ 적용 완료: exam_productivity(일자별 목표/실적/불량) + 달성률→점수 구간표(profBands) + 최소 실적일수(profRule). 정기·재평가 기록 저장 시 서버가 평가일 직전 기간 실적으로 숙련도 점수를 자동 계산. ③ 탭에서 MES/작업일보 붙여넣기.</span></li>
-    <li><span class="sev s1">P1</span> <b>과목별 과락 없음</b> — 합격 기준이 총점 60점 하나. 이론 0점이어도 작업수행 40+MSA 30=70점으로 합격 가능.
-      <span class="fix">→ 적용 완료: 과목별 최소 득점률(minPct) — ②에서 설정하면 서버 판정 트리거(exam_results_judge)가 합격에 반영. 기본값 0(미적용).</span></li>
-    <li><span class="sev s1">P1</span> <b>기록 분리·중복</b> — 같은 사번·같은 평가구분 기록 중복 그룹, 평가구분 미지정(null)과 지정 기록이 동시에 있는 사번 다수(10-27 MSA 트리거가 activeRound 미설정 상태에서 생성). 결과 이력·숙련도 집계가 어느 기록을 쓸지 규칙(_latestResult)에 의존.
-      <span class="fix">→ 사번+평가구분 1행 원칙: DB unique 제약 또는 upsert RPC(exam_upsert_result)로 통일, 미지정 52건은 결과 이력 「일괄 지정」으로 NEW-2026-10에 귀속 후 병합.</span></li>
-  </ul></div>
-  <div class="card"><h3>🟠 판정·점수 로직</h3><ul class="diag" style="list-style:none">
-    <li><span class="sev s2">P2</span> <b>압착고 점수가 0/15 이분법</b> — GR&R 결과 Aprobado면 15점, 아니면 0점. 우수(%Study&lt;10)와 양호(≤30)가 같은 점수.
-      <span class="fix">→ 등급 연동: 우수 100% · 양호 80% · 부족 0% (또는 %Study 선형 환산). 재평가 합격은 상한 80% 등 차등 가능.</span></li>
-    <li><span class="sev s2">P2</span> <b>MSA는 조(組) 단위 판정</b> — 계량형 GR&R은 3인 1조 결과를 개인에게 동일 부여(10-27 결정). 조원 1명의 편차로 3명이 동시에 불합격/합격되므로, 개인 식별 지표(fault_ops·측정자별 편차)를 개인 점수에 반영할 여지.
-      <span class="fix">→ fault_ops에 포함된 측정자는 개인 감점(예 −5) 옵션.</span></li>
-    <li><span class="sev s2">P2</span> <b>이론 원점수 체계 불일치</b> — 모바일 응시는 raw=정답수/raw_max=문항수(20), 설정 pointsPerQ=5는 100점 기준. 레코드마다 raw_max가 다름(trg_normalize_theory가 보정).
-      <span class="fix">→ 원점수는 「정답수/문항수」로 고정하고 pointsPerQ 설정은 제거 또는 표시용으로만.</span></li>
-    <li><span class="sev s2">P2</span> <b>등급 기준 중복</b> — exam_grade_config에 S와 L0가 둘 다 95점(동점 2개 라벨). 정렬 순서에 따라 라벨이 달라짐.
-      <span class="fix">→ L0~L5 또는 S/A/B/C/D 중 하나로 통일. 정기평가는 숙련도 포함 총점 기준 L등급, 신입은 합격/불합격만.</span></li>
-    <li><span class="sev s2">P2</span> <b>항목 식별이 이름 정규식</b> — /작업수행|desempe/, /압착|altura/ 로 항목을 찾음. 항목명을 바꾸면 채점·집계·DB 트리거(exam_msa_sync의 n_perf 등)가 동시에 깨짐.
-      <span class="fix">→ exam_practical_items에 kind('perf'|'crimp'|'defect') 컬럼 추가, practical_item_scores에도 kind 저장.</span></li>
-  </ul></div>
-  <div class="card"><h3>🔵 운영·유지보수</h3><ul class="diag" style="list-style:none">
-    <li><span class="sev s3">P3</span> <b>테스트/실데이터 미구분</b> — 임의데이터를 넣으면 실 통계에 섞임. <span class="fix">→ is_dummy 컬럼(이번 SQL) + 임의 사번 규칙(M0YYMM99xx) + 일괄 삭제 RPC.</span></li>
-    <li><span class="sev s3">P3</span> <b>날짜가 text</b> — exam_results.date·hire_date·exam_students.hire_date 모두 text. 기간 필터·근속 계산이 문자열 비교. <span class="fix">→ date 타입 컬럼 병행 추가 후 전환.</span></li>
-    <li><span class="sev s3">P3</span> <b>평가자·근거 추적 부재</b> — 작업수행 체크시트에 평가자(조장/관리자)·평가일시·서명이 없음. 감사(IATF 7.2 역량 기록) 대응 시 근거 부족. <span class="fix">→ sheet에 evaluator·evaluated_at 추가, 결과 PDF 출력.</span></li>
-    <li><span class="sev s3">P3</span> <b>6개 파일 템플릿 재생성 구조</b> — 1공장 가공 수정 → 6파일 재생성. 숙련도 반영은 팀마다 지표가 달라(조립은 UPH→C/T 기준 L1~L5) 공통 템플릿에 분기 필요. <span class="fix">→ 팀별 설정(exam_config.track/prof)만 다르게 두고 로직은 공통 유지.</span></li>
-    <li><span class="sev s3">P3</span> <b>anon 키 전권</b> — 모든 exam_* 테이블에 anon 삭제·수정 허용(RLS true). 포털 로그인과 무관하게 URL만 알면 수정 가능. <span class="fix">→ 쓰기는 RPC로 모으고 portal_session 토큰 검증 또는 배점·설정 변경은 관리자 PIN 확인.</span></li>
-  </ul></div>
-  <div class="card"><h3>🧭 제안 운영 모델</h3>
-    <table><thead><tr><th>구분</th><th>대상</th><th>시기</th><th>구성 (기본 배점)</th><th>판정</th></tr></thead><tbody>
-    <tr><td><b>신입사원평가</b> (track=new)</td><td>입사월 코호트</td><td>입사 후 15~17일</td><td>이론 30 · 작업수행 40 · 압착고 15 · 불량판별 15</td><td>총점 ≥60 + MSA 조 합격 → 최종합격 / 불합격 시 재평가</td></tr>
-    <tr><td><b>정기평가</b> (track=regular)</td><td>합격 후 6개월 이상 재직자</td><td>반기 1회</td><td>이론 20 · 작업수행 30 · 압착고 10 · 불량판별 10 · <b style="color:var(--gold)">숙련도 30</b></td><td>총점으로 L등급(L0~L5) · 과목 과락 적용 · 등급 하락 시 재교육</td></tr>
-    <tr><td><b>재평가</b> (track=regular)</td><td>불합격·등급 하락자</td><td>1개월 내</td><td>정기와 동일(또는 미달 항목만)</td><td>미달 항목 재평가 결과로 대체</td></tr>
-    </tbody></table>
-    <div class="note" style="margin-top:.6rem">숙련도 = 평가기간(기본 30일, 최소 10 실적일) 평균 달성률(실적/목표) → 구간표로 배점 환산, 불량 ppm 상한 초과 시 −5%p. 배점·구간표·과락은 ② 탭에서 언제든 변경(저장 즉시 ⑤ 시뮬레이션과 메인 앱 설정에 반영).</div>
-  </div>
-  </div>
+  <div class="card"><h3>🛠 조치 필요 항목 <span class="muted">현재 데이터에서 자동 추출</span></h3><div id="diagActions" class="muted">-</div></div>
+  <details class="card" style="cursor:pointer"><summary style="font-family:'IBM Plex Sans KR',sans-serif;font-weight:700;font-size:.95rem">📎 추가 개선 후보 (미적용 · 참고)</summary>
+    <ul class="diag" style="list-style:none;margin-top:.5rem">
+      <li><b>압착고 점수 차등</b> — 현재 GR&R 조 결과 Aprobado=만점 / 아니면 0점. 우수 100%·양호 80% 차등 가능</li>
+      <li><b>MSA 개인 감점</b> — 조 판정에 fault_ops(편차 큰 측정자) 개인 감점 옵션</li>
+      <li><b>이론 원점수 체계</b> — 「정답수/문항수」로 고정, pointsPerQ 설정은 표시용으로만</li>
+      <li><b>실습 항목 kind 컬럼</b> — 항목명 정규식 대신 exam_practical_items.kind(perf/crimp/defect)로 식별</li>
+      <li><b>평가자·일시 기록</b> — 작업수행 체크시트에 평가자·평가일시 저장(감사 대응)</li>
+      <li><b>날짜 컬럼 타입</b> — exam_results.date·hire_date text → date</li>
+      <li><b>쓰기 권한</b> — anon 키 직접 수정 대신 RPC + 포털 세션 검증</li>
+    </ul>
+  </details>
 </section>
 
 <!-- ───────── ② 배점 ───────── -->
@@ -5907,6 +5969,7 @@ function switchTab(tab,btn){
     if(tab==='grade'){try{qualTressSync(true).then(()=>{try{renderPracticalCardList();}catch(e){}});}catch(e){} try{refreshManualStudentList();}catch(e){} try{setGradeMode('json');}catch(e){}}
     if(tab==='stats'){try{renderAllStats();}catch(e){}}
     if(tab==='skills'){try{switchSkillsSubtab('grade',document.querySelector('#page-skills .subtab-btn'));}catch(e){} try{updateSkillProcessFilter();}catch(e){}}
+    if(tab==='criteria'){try{renderCriteria();}catch(e){console.warn(e);}}
     if(tab==='admin'){try{QA.enter();}catch(e){}}
   }catch(e){console.warn('switchTab 오류:',e);}
 }
@@ -6078,7 +6141,7 @@ function applyLang(){
   if(document.getElementById('page-stats').classList.contains('active'))renderAllStats();
 }
 
-function toggleLang(){
+function toggleLang(){try{setTimeout(()=>{if(document.getElementById('page-criteria')?.classList.contains('active'))renderCriteria();},0);}catch(e){}
   currentLang=currentLang==='ko'?'es':'ko';
   const btn=document.getElementById('langBtn');
   if(btn)btn.textContent='🌐 '+(currentLang==='ko'?'ES':'KR');
@@ -9339,6 +9402,18 @@ function renderDiag(){
     ['msa_var_sessions_f1','MSA 계량형 세션','ok'],['msa_att_sessions_f1','MSA 계수형 세션','ok'],
     ['dummy_results','임의 기록',H.dummy_results>0?'warn':'ok'],['dummy_students','임의 응시자',H.dummy_students>0?'warn':'ok']];
   el.innerHTML=items.map(([k,l,c])=>`<div class="kpi ${c}"><div class="v">${H[k]??'-'}</div><div class="l">${l}</div></div>`).join('');
+  const acts=[];
+  if(H.results_unassigned_round>0)acts.push(['warn',`평가구분 미지정 기록 ${H.results_unassigned_round}건`,'④ 결과 이력 → 행 선택 → 「평가구분 일괄 지정」 (10월 입사자 MSA 자동등록분은 NEW-2026-10)']);
+  if(H.dup_emp_round>0)acts.push(['bad',`같은 사번·평가구분에 기록이 2건 이상인 그룹 ${H.dup_emp_round}개`,'④ 결과 이력에서 중복 행 삭제 또는 「평가결과 집계 → 저장」으로 1행 통합']);
+  if(H.split_null_and_round>0)acts.push(['bad',`미지정 기록과 지정 기록이 함께 있는 사번 ${H.split_null_and_round}명`,'미지정분을 같은 평가구분으로 일괄 지정하면 자동 병합 대상이 됨']);
+  if(H.students_no_hire>0)acts.push(['warn',`입사일 없는 응시자 ${H.students_no_hire}명`,'② 배포 → 응시자 명단에서 입사일 입력 (TRESS 연동 시 자동 보완)']);
+  if(H.students_no_process>0)acts.push(['warn',`공정 없는 응시자 ${H.students_no_process}명`,'근태관리 지정공정 입력 → 배포 탭 접속 시 자동 반영']);
+  if(H.grade_dup_minscore>0)acts.push(['warn',`등급 기준 동점 라벨 ${H.grade_dup_minscore}쌍`,'⑥ 등급 기준 마스터에서 하나로 정리']);
+  if(H.evaluating_now>0)acts.push(['ok',`이론 미시행(평가중) 기록 ${H.evaluating_now}건`,'모바일 이론 응시 진행 후 자동 완료 — 조치 불필요']);
+  if(!(H.productivity_rows>0))acts.push(['warn','생산실적 데이터 없음','정기·재평가 전 ③ 숙련도 데이터 탭에서 MES/작업일보 붙여넣기 — 없으면 정기평가 숙련도가 「자료부족·평가중」']);
+  if(H.dummy_results>0||H.dummy_students>0||H.dummy_productivity>0)acts.push(['warn',`임의(테스트) 데이터 존재 — 기록 ${H.dummy_results||0} · 응시자 ${H.dummy_students||0} · 생산실적 ${H.dummy_productivity||0}`,'실운영 통계에 섞이지 않게 확인 후 ④ 「임의데이터 전체 삭제」']);
+  const col={bad:'var(--red)',warn:'var(--orange)',ok:'var(--green)'};
+  document.getElementById('diagActions').innerHTML=acts.length?`<ul class="diag" style="list-style:none">${acts.map(a=>`<li><span style="color:${col[a[0]]};font-weight:700">●</span> <b>${a[1]}</b><span class="fix">→ ${a[2]}</span></li>`).join('')}</ul>`:'<span style="color:var(--green)">✅ 정리할 항목 없음</span>';
 }
 
 /* ═══════════ ② 배점 ═══════════ */
@@ -9372,7 +9447,7 @@ async function saveWeights(){
     // 메인 앱 실습 항목 만점도 신입 배점에 맞춤
     for(const it of PITEMS){const k=itemKind(it.name);if(n[k]!=null&&n[k]!==it.max){await sb(`exam_practical_items?name=eq.${encodeURIComponent(it.name)}`,{method:'PATCH',headers:{'Prefer':'return=minimal'},body:JSON.stringify({max_score:n[k]})});it.max=n[k];}}
     CFG.passingScore=String(pass);document.getElementById('wMsg').textContent='✅ 저장 완료 — 현재 평가구분의 배점·과락이 ① 시험 설정과 채점에 즉시 반영';toast('배점·판정 설정 저장 완료');renderSim();
-    try{window.TRACKW=JSON.parse(JSON.stringify(W));Object.assign(window.MINPCT,MINP);Object.assign(window.PROFRULE,RULE);const ps=document.getElementById('passingScore');if(ps)ps.value=pass;window.applyTrackToInputs();}catch(e){}
+    try{window.TRACKW=JSON.parse(JSON.stringify(W));Object.assign(window.MINPCT,MINP);Object.assign(window.PROFRULE,RULE);window.PROFBANDS=JSON.parse(JSON.stringify(BANDS));const ps=document.getElementById('passingScore');if(ps)ps.value=pass;window.applyTrackToInputs();if(typeof window.renderCriteria==='function')window.renderCriteria();}catch(e){}
   }catch(e){alert('저장 실패: '+e.message);}
 }
 async function savePin(){const v=document.getElementById('newPin').value.trim();if(!/^\w{4,12}$/.test(v)){alert('4~12자');return;}await cfgSet({adminPinHash:await sha256(v)});document.getElementById('newPin').value='';toast('관리자 비밀번호 변경 완료');}
