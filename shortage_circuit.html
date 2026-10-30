@@ -1280,8 +1280,11 @@ function pinDialog(title,desc,fields){return new Promise(res=>{
   $('pinModal').onkeydown=e=>{if(e.key==='Escape')close(null);if(e.key==='Enter'){e.preventDefault();$('pinOk').click();}};
 });}
 const roleName=r=>T(r==='asm'?'roleAsm':'roleProc');
+/* 승인자 고정: 누가 승인해도 조립=백지환, 가공=정상철로 기록 */
+const APPROVER={asm:'백지환',proc:'정상철'};
 async function leaderAction(role,action,ids,by,note){
   if(!ids.length){toast(T('noSel'));return false;}
+  if(action==='approve'||action==='unapprove')by=APPROVER[role];
   for(let tries=0;tries<3;tries++){
     let pin=PINC[role]&&PINC[role].exp>Date.now()?PINC[role].pin:null;
     if(!pin){const v=await pinDialog(`🔒 ${roleName(role)} PIN`,T('pinDesc'),[T('pinLabel')]);if(!v)return false;pin=v[0];}
@@ -1311,8 +1314,8 @@ async function pinChange(role){
 $('haPinChg').onclick=()=>pinChange('asm');$('hpPinChg').onclick=()=>pinChange('proc');
 
 /* 조립 */
-$('haAppr').onclick=()=>{const w=need('haName','needAsmWorker');if(w)leaderAction('asm','approve',selOf('ha',['신청']),w);};
-$('haApprUndo').onclick=()=>{const w=need('haName','needAsmWorker');if(w)leaderAction('asm','unapprove',selOf('ha',['승인']),w);};
+$('haAppr').onclick=()=>leaderAction('asm','approve',selOf('ha',['신청']),APPROVER.asm);
+$('haApprUndo').onclick=()=>leaderAction('asm','unapprove',selOf('ha',['승인']),APPROVER.asm);
 $('haReject').onclick=()=>{const w=need('haName','needAsmWorker');if(!w)return;const why=prompt(T('rejectWhy'),'');if(why===null)return;
   leaderAction('asm','reject',selOf('ha',['신청']),w,why.trim());};
 $('haRecv').onclick=()=>{const w=need('haName','needAsmWorker');if(w)run([[selOf('ha',['출고']),['출고'],{status:'수령',recv_at:now(),recv_by:w}]]);};
@@ -1331,7 +1334,7 @@ $('haCancel').onclick=()=>{const w=need('haName','needAsmWorker');if(!w)return;
   run([[ids,['신청','승인','접수','가공승인'],{status:'취소',done_at:now(),done_by:w}]]);};
 /* 가공 */
 $('hpRecv').onclick=()=>{const w=need('hpName','needWorker');if(w)run([[selOf('hp',['승인']),['승인'],{status:'접수',received_at:now(),received_by:w}]]);};
-$('hpAppr').onclick=()=>{const w=need('hpName','needWorker');if(w)leaderAction('proc','approve',selOf('hp',['접수']),w);};
+$('hpAppr').onclick=()=>leaderAction('proc','approve',selOf('hp',['접수']),APPROVER.proc);
 $('hpShip').onclick=async()=>{const w=need('hpName','needWorker');if(!w)return;const lot=need('hpLot','needLot');if(!lot)return;
   if(await run([[selOf('hp',['가공승인']),['가공승인'],{status:'출고',ship_at:now(),ship_by:w,mes_no:lot}]]))$('hpLot').value='';};
 $('hpReject').onclick=()=>{const w=need('hpName','needWorker');if(!w)return;const why=prompt(T('rejectWhy'),'');if(why===null)return;
@@ -1339,7 +1342,7 @@ $('hpReject').onclick=()=>{const w=need('hpName','needWorker');if(!w)return;cons
 $('hpUndo').onclick=async()=>{
   const pa=selOf('hp',['가공승인']),rest=[[selOf('hp',['접수']),['접수'],{status:'승인',received_at:null,received_by:null}],[selOf('hp',['출고']),['출고'],{status:'가공승인',ship_at:null,ship_by:null,mes_no:null}]];
   // 가공승인 취소는 팀장 PIN 필요
-  if(pa.length){const w=need('hpName','needWorker');if(!w)return;const keep=new Set(rest.flatMap(j=>j[0]));if(!await leaderAction('proc','unapprove',pa,w))return;keep.forEach(i=>H.hp.sel.add(i));}
+  if(pa.length){const w=APPROVER.proc;const keep=new Set(rest.flatMap(j=>j[0]));if(!await leaderAction('proc','unapprove',pa,w))return;keep.forEach(i=>H.hp.sel.add(i));}
   if(rest.some(j=>j[0].length))run(rest);};
 
 $('hpRetOk').onclick=()=>{const w=need('hpName','needWorker');if(w)run([[selOf('hp',['반납']),['반납'],{status:'반납확인',ret_ok_at:now(),ret_ok_by:w}]]);};
