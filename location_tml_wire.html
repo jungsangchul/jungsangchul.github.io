@@ -1712,7 +1712,8 @@ function buildZero(rows){
 
 const pasted = {receipts:null, locations:null, zero:null};
 document.querySelectorAll('.panel').forEach(panel => {
-  const ta = panel.querySelector('.drop'), target = ta.dataset.target;
+  const ta = panel.querySelector('.drop'); if(!ta) return;           // 붙여넣기 패널이 아닌 것(실사 기준 일괄 0처리)은 건너뜀
+  const target = ta.dataset.target;
   const out = panel.querySelector('.parsed'), btn = panel.querySelector('.up'), clr = panel.querySelector('.clr');
   const prog = panel.querySelector('.prog'), bar = prog.querySelector('i'), stat = panel.querySelector('.stat');
   const replaceBox = panel.querySelector('.replace');
