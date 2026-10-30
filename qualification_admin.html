@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="ko"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>자격인증평가 관리자 모드 · 1공장 가공</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;700&family=Space+Mono:wght@400;700&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{--bg:#0a0a0a;--bg2:#121212;--card:#161616;--line:#262626;--text:#ededed;--text2:#8a8a8a;--gold:#c9a84c;--green:#3ec98a;--red:#e8574f;--orange:#e6a23c;--blue:#5ba3e8;--teal:#2ec4b6;--purple:#9b7ee8}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-serif;font-size:13.5px;min-height:100vh}
+header{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.9rem 1.4rem;border-bottom:1px solid var(--line);background:var(--bg2);position:sticky;top:0;z-index:20}
+.ttl{font-family:'IBM Plex Sans KR',sans-serif;font-weight:700;font-size:1.25rem;letter-spacing:-.01em}
+.cap{font-family:'Space Mono',monospace;font-size:.68rem;color:var(--gold);letter-spacing:.08em;text-transform:uppercase}
+.hbtn{display:flex;gap:.5rem;align-items:center}
+.btn{border:1px solid var(--line);background:#1c1c1c;color:var(--text);border-radius:8px;padding:.5rem .9rem;font-size:.82rem;cursor:pointer;font-family:inherit;white-space:nowrap}
+.btn:hover{border-color:#444}
+.btn.gold{background:var(--gold);color:#111;border-color:var(--gold);font-weight:700}
+.btn.red{border-color:rgba(232,87,79,.5);color:var(--red)}
+.btn.sm{padding:.3rem .6rem;font-size:.75rem}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.tabs{display:flex;gap:.4rem;flex-wrap:wrap;padding:.8rem 1.4rem 0}
+.tab{border:1px solid var(--line);border-radius:999px;padding:.42rem .95rem;font-size:.82rem;color:var(--text2);cursor:pointer;background:transparent}
+.tab.on{border-color:var(--gold);color:var(--gold);background:rgba(201,168,76,.08)}
+main{padding:1rem 1.4rem 3rem;max-width:1500px;margin:0 auto}
+.panel{display:none}.panel.on{display:block}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:1rem 1.1rem;margin-bottom:1rem}
+.card h3{font-family:'IBM Plex Sans KR',sans-serif;font-size:.98rem;font-weight:700;margin-bottom:.6rem;display:flex;align-items:center;gap:.5rem}
+.grid{display:grid;gap:.8rem}
+.g2{grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:.6rem}
+.kpi{background:#101010;border:1px solid var(--line);border-radius:10px;padding:.7rem .8rem}
+.kpi .v{font-family:'Space Mono',monospace;font-size:1.3rem;font-weight:700}
+.kpi .l{font-size:.72rem;color:var(--text2);margin-top:.15rem}
+.kpi.bad .v{color:var(--red)}.kpi.warn .v{color:var(--orange)}.kpi.ok .v{color:var(--green)}
+table{width:100%;border-collapse:collapse;font-size:.8rem}
+th{font-size:.72rem;color:var(--text2);font-weight:500;text-align:left;padding:.45rem .5rem;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:.42rem .5rem;border-bottom:1px solid #1e1e1e;vertical-align:middle}
+tr:hover td{background:#141414}
+.mono{font-family:'Space Mono',monospace;font-size:.74rem}
+input,select,textarea{background:#0f0f0f;border:1px solid var(--line);color:var(--text);border-radius:7px;padding:.42rem .55rem;font-size:.84rem;font-family:inherit;width:100%}
+input[type=number]{width:90px}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--gold)}
+label.f{display:block;font-size:.72rem;color:var(--text2);margin-bottom:.25rem}
+.row{display:flex;gap:.6rem;flex-wrap:wrap;align-items:flex-end}
+.row>div{min-width:120px}
+.pill{display:inline-block;border-radius:5px;padding:.1rem .45rem;font-size:.72rem;font-weight:700;border:1px solid}
+.p-ok{color:var(--green);border-color:rgba(62,201,138,.4);background:rgba(62,201,138,.1)}
+.p-ng{color:var(--red);border-color:rgba(232,87,79,.4);background:rgba(232,87,79,.1)}
+.p-ing{color:var(--orange);border-color:rgba(230,162,60,.4);background:rgba(230,162,60,.1)}
+.p-g{color:var(--text2);border-color:var(--line)}
+.sev{font-size:.68rem;font-weight:700;border-radius:4px;padding:.08rem .4rem;font-family:'Space Mono',monospace}
+.s1{background:rgba(232,87,79,.15);color:var(--red)}.s2{background:rgba(230,162,60,.15);color:var(--orange)}.s3{background:rgba(91,163,232,.15);color:var(--blue)}
+.muted{color:var(--text2);font-size:.76rem}
+.note{font-size:.76rem;color:var(--text2);line-height:1.55}
+.diag li{padding:.55rem 0;border-bottom:1px solid #1e1e1e;line-height:1.55}
+.diag b{color:var(--text)}
+.diag .fix{display:block;color:var(--teal);font-size:.78rem;margin-top:.15rem}
+.wsum{font-family:'Space Mono',monospace;font-weight:700}
+.toast{position:fixed;bottom:1.2rem;left:50%;transform:translateX(-50%);background:#1d1d1d;border:1px solid var(--gold);color:var(--text);padding:.6rem 1rem;border-radius:10px;font-size:.82rem;z-index:99;display:none;max-width:90vw}
+.gate{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:50}
+.gate .box{width:320px;text-align:center}
+.gate input{text-align:center;font-size:1.4rem;letter-spacing:.4em;font-family:'Space Mono',monospace}
+.log{background:#0d0d0d;border:1px solid var(--line);border-radius:8px;padding:.6rem;max-height:220px;overflow:auto;font-family:'Space Mono',monospace;font-size:.7rem;line-height:1.6;white-space:pre-wrap}
+.chip{display:inline-flex;align-items:center;gap:.3rem;border:1px solid var(--line);border-radius:999px;padding:.2rem .6rem;font-size:.75rem;cursor:pointer;user-select:none}
+.chip.on{border-color:var(--teal);color:var(--teal);background:rgba(46,196,182,.08)}
+.scroll{overflow-x:auto}
+.bar{height:6px;background:#222;border-radius:3px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--gold)}
+@media(max-width:700px){header{padding:.7rem .9rem}.tabs,main{padding-left:.9rem;padding-right:.9rem}.ttl{font-size:1.05rem}}
+</style></head>
+<body>
+<div class="gate" id="gate"><div class="box">
+  <div class="cap">Admin · Plant 1 Machining</div>
+  <div class="ttl" style="margin:.4rem 0 1rem">관리자 모드</div>
+  <input id="pin" type="password" maxlength="8" placeholder="PIN" onkeydown="if(event.key==='Enter')gateIn()">
+  <div style="margin-top:.8rem"><button class="btn gold" onclick="gateIn()">입장</button></div>
+  <div class="muted" id="gateMsg" style="margin-top:.6rem">PIN은 exam_config.adminPin (기본 1234) · ② 배점 설계에서 변경</div>
+</div></div>
+
+<header>
+  <div><div class="cap">Qualification · Admin</div><div class="ttl">자격인증평가 관리자 모드 <span class="muted" style="font-family:'Noto Sans KR';font-weight:400">1공장 가공생산팀</span></div></div>
+  <div class="hbtn"><span class="muted" id="syncMsg"></span><button class="btn sm" onclick="loadAll(true)">↻ 새로고침</button><button class="btn sm" onclick="window.open('qualification.html','_blank')">자격인증 열기</button><button class="btn sm" onclick="window.close()" title="ESC">✕ 닫기</button></div>
+</header>
+<div class="tabs">
+  <div class="tab on" data-t="diag" onclick="go('diag')">① 시스템 진단</div>
+  <div class="tab" data-t="weights" onclick="go('weights')">② 배점·판정 설계</div>
+  <div class="tab" data-t="prof" onclick="go('prof')">③ 숙련도(생산성) 데이터</div>
+  <div class="tab" data-t="dummy" onclick="go('dummy')">④ 임의데이터 생성·적용</div>
+  <div class="tab" data-t="sim" onclick="go('sim')">⑤ 숙련도 반영 시뮬레이션</div>
+</div>
+<main>
+
+<!-- ───────── ① 진단 ───────── -->
+<section class="panel on" id="p-diag">
+  <div class="card"><h3>🩺 데이터 상태 점검 <span class="muted" id="diagAt"></span></h3>
+    <div class="kpis" id="kpis"><div class="muted">불러오는 중…</div></div>
+    <div class="note" id="diagSqlHint" style="margin-top:.6rem"></div>
+  </div>
+  <div class="grid g2">
+  <div class="card"><h3>🔴 구조적 문제 (우선 개선)</h3><ul class="diag" style="list-style:none">
+    <li><span class="sev s1">P1</span> <b>배점이 전역 1세트뿐</b> — theoryPct·perfPct·crimpPct·defectPct가 모든 평가구분(신입/정기/재평가)에 공통 적용. 정기평가에 숙련도를 넣으려면 평가구분(종류)별 배점이 필요.
+      <span class="fix">→ exam_config.trackWeights(new/regular) 도입(이번 SQL). 메인 앱은 회차 type에 따라 배점 세트를 선택하도록 패치 필요.</span></li>
+    <li><span class="sev s1">P1</span> <b>숙련도(생산성) 데이터 소스 부재</b> — ⑥ 숙련도 탭은 총점을 등급으로 바꿔 보여줄 뿐, 생산성 지표가 없음. 다기능 등급도 합격 공정 수로 하드코딩(3=다기능, 4=숙련, 5=최고수).
+      <span class="fix">→ exam_productivity(일자별 목표/실적/불량) + 달성률→점수 구간표(profBands) + 최소 실적일수(profRule). ③ 탭에서 MES/작업일보 붙여넣기.</span></li>
+    <li><span class="sev s1">P1</span> <b>과목별 과락 없음</b> — 합격 기준이 총점 60점 하나. 이론 0점이어도 작업수행 40+MSA 30=70점으로 합격 가능.
+      <span class="fix">→ 과목별 최소 득점률(minPct) 추가 — 예: 이론 50%·작업수행 60%·MSA 합격 필수. ②에서 설정, 시뮬레이션에서 확인.</span></li>
+    <li><span class="sev s1">P1</span> <b>기록 분리·중복</b> — 같은 사번·같은 평가구분 기록 중복 그룹, 평가구분 미지정(null)과 지정 기록이 동시에 있는 사번 다수(10-27 MSA 트리거가 activeRound 미설정 상태에서 생성). 결과 이력·숙련도 집계가 어느 기록을 쓸지 규칙(_latestResult)에 의존.
+      <span class="fix">→ 사번+평가구분 1행 원칙: DB unique 제약 또는 upsert RPC(exam_upsert_result)로 통일, 미지정 52건은 결과 이력 「일괄 지정」으로 NEW-2026-10에 귀속 후 병합.</span></li>
+  </ul></div>
+  <div class="card"><h3>🟠 판정·점수 로직</h3><ul class="diag" style="list-style:none">
+    <li><span class="sev s2">P2</span> <b>압착고 점수가 0/15 이분법</b> — GR&R 결과 Aprobado면 15점, 아니면 0점. 우수(%Study&lt;10)와 양호(≤30)가 같은 점수.
+      <span class="fix">→ 등급 연동: 우수 100% · 양호 80% · 부족 0% (또는 %Study 선형 환산). 재평가 합격은 상한 80% 등 차등 가능.</span></li>
+    <li><span class="sev s2">P2</span> <b>MSA는 조(組) 단위 판정</b> — 계량형 GR&R은 3인 1조 결과를 개인에게 동일 부여(10-27 결정). 조원 1명의 편차로 3명이 동시에 불합격/합격되므로, 개인 식별 지표(fault_ops·측정자별 편차)를 개인 점수에 반영할 여지.
+      <span class="fix">→ fault_ops에 포함된 측정자는 개인 감점(예 −5) 옵션.</span></li>
+    <li><span class="sev s2">P2</span> <b>이론 원점수 체계 불일치</b> — 모바일 응시는 raw=정답수/raw_max=문항수(20), 설정 pointsPerQ=5는 100점 기준. 레코드마다 raw_max가 다름(trg_normalize_theory가 보정).
+      <span class="fix">→ 원점수는 「정답수/문항수」로 고정하고 pointsPerQ 설정은 제거 또는 표시용으로만.</span></li>
+    <li><span class="sev s2">P2</span> <b>등급 기준 중복</b> — exam_grade_config에 S와 L0가 둘 다 95점(동점 2개 라벨). 정렬 순서에 따라 라벨이 달라짐.
+      <span class="fix">→ L0~L5 또는 S/A/B/C/D 중 하나로 통일. 정기평가는 숙련도 포함 총점 기준 L등급, 신입은 합격/불합격만.</span></li>
+    <li><span class="sev s2">P2</span> <b>항목 식별이 이름 정규식</b> — /작업수행|desempe/, /압착|altura/ 로 항목을 찾음. 항목명을 바꾸면 채점·집계·DB 트리거(exam_msa_sync의 n_perf 등)가 동시에 깨짐.
+      <span class="fix">→ exam_practical_items에 kind('perf'|'crimp'|'defect') 컬럼 추가, practical_item_scores에도 kind 저장.</span></li>
+  </ul></div>
+  <div class="card"><h3>🔵 운영·유지보수</h3><ul class="diag" style="list-style:none">
+    <li><span class="sev s3">P3</span> <b>테스트/실데이터 미구분</b> — 임의데이터를 넣으면 실 통계에 섞임. <span class="fix">→ is_dummy 컬럼(이번 SQL) + 임의 사번 규칙(M0YYMM99xx) + 일괄 삭제 RPC.</span></li>
+    <li><span class="sev s3">P3</span> <b>날짜가 text</b> — exam_results.date·hire_date·exam_students.hire_date 모두 text. 기간 필터·근속 계산이 문자열 비교. <span class="fix">→ date 타입 컬럼 병행 추가 후 전환.</span></li>
+    <li><span class="sev s3">P3</span> <b>평가자·근거 추적 부재</b> — 작업수행 체크시트에 평가자(조장/관리자)·평가일시·서명이 없음. 감사(IATF 7.2 역량 기록) 대응 시 근거 부족. <span class="fix">→ sheet에 evaluator·evaluated_at 추가, 결과 PDF 출력.</span></li>
+    <li><span class="sev s3">P3</span> <b>6개 파일 템플릿 재생성 구조</b> — 1공장 가공 수정 → 6파일 재생성. 숙련도 반영은 팀마다 지표가 달라(조립은 UPH→C/T 기준 L1~L5) 공통 템플릿에 분기 필요. <span class="fix">→ 팀별 설정(exam_config.track/prof)만 다르게 두고 로직은 공통 유지.</span></li>
+    <li><span class="sev s3">P3</span> <b>anon 키 전권</b> — 모든 exam_* 테이블에 anon 삭제·수정 허용(RLS true). 포털 로그인과 무관하게 URL만 알면 수정 가능. <span class="fix">→ 쓰기는 RPC로 모으고 portal_session 토큰 검증 또는 배점·설정 변경은 관리자 PIN 확인.</span></li>
+  </ul></div>
+  <div class="card"><h3>🧭 제안 운영 모델</h3>
+    <table><thead><tr><th>구분</th><th>대상</th><th>시기</th><th>구성 (기본 배점)</th><th>판정</th></tr></thead><tbody>
+    <tr><td><b>신입사원평가</b> (track=new)</td><td>입사월 코호트</td><td>입사 후 15~17일</td><td>이론 30 · 작업수행 40 · 압착고 15 · 불량판별 15</td><td>총점 ≥60 + MSA 조 합격 → 최종합격 / 불합격 시 재평가</td></tr>
+    <tr><td><b>정기평가</b> (track=regular)</td><td>합격 후 6개월 이상 재직자</td><td>반기 1회</td><td>이론 20 · 작업수행 30 · 압착고 10 · 불량판별 10 · <b style="color:var(--gold)">숙련도 30</b></td><td>총점으로 L등급(L0~L5) · 과목 과락 적용 · 등급 하락 시 재교육</td></tr>
+    <tr><td><b>재평가</b> (track=regular)</td><td>불합격·등급 하락자</td><td>1개월 내</td><td>정기와 동일(또는 미달 항목만)</td><td>미달 항목 재평가 결과로 대체</td></tr>
+    </tbody></table>
+    <div class="note" style="margin-top:.6rem">숙련도 = 평가기간(기본 30일, 최소 10 실적일) 평균 달성률(실적/목표) → 구간표로 배점 환산, 불량 ppm 상한 초과 시 −5%p. 배점·구간표·과락은 ② 탭에서 언제든 변경(저장 즉시 ⑤ 시뮬레이션과 메인 앱 설정에 반영).</div>
+  </div>
+  </div>
+</section>
+
+<!-- ───────── ② 배점 ───────── -->
+<section class="panel" id="p-weights">
+  <div class="grid g2">
+  <div class="card"><h3>🆕 신입사원평가 배점 (track=new)</h3>
+    <div class="row" id="wNew"></div>
+    <div class="muted" style="margin-top:.5rem">합계 <span class="wsum" id="wNewSum">-</span> · 메인 앱 theoryPct/perfPct/crimpPct/defectPct/practicalMax에 그대로 동기화됩니다.</div>
+  </div>
+  <div class="card"><h3>🔁 정기·재평가 배점 (track=regular)</h3>
+    <div class="row" id="wReg"></div>
+    <div class="muted" style="margin-top:.5rem">합계 <span class="wsum" id="wRegSum">-</span> · 숙련도 포함. 메인 앱 패치 전까지는 ⑤ 시뮬레이션에서만 사용.</div>
+  </div>
+  <div class="card"><h3>⛔ 과목별 과락 (배점 대비 최소 득점률 %)</h3>
+    <div class="row">
+      <div><label class="f">이론</label><input type="number" id="mpTheory" min="0" max="100"></div>
+      <div><label class="f">작업수행</label><input type="number" id="mpPerf" min="0" max="100"></div>
+      <div><label class="f">MSA(압착고+불량판별)</label><input type="number" id="mpMsa" min="0" max="100"></div>
+      <div><label class="f">숙련도</label><input type="number" id="mpProf" min="0" max="100"></div>
+      <div><label class="f">합격 총점</label><input type="number" id="passScore" min="0" max="100"></div>
+    </div>
+    <div class="muted" style="margin-top:.5rem">0 = 미적용. 예) 이론 50 → 이론 배점 30점 중 15점 미만이면 총점과 무관하게 불합격.</div>
+  </div>
+  <div class="card"><h3>📈 숙련도 환산 구간표 (달성률 % → 배점의 %)</h3>
+    <table><thead><tr><th>달성률 이상</th><th>배점 대비 %</th><th></th></tr></thead><tbody id="bandBody"></tbody></table>
+    <div class="row" style="margin-top:.5rem"><button class="btn sm" onclick="addBand()">＋ 구간 추가</button>
+      <div><label class="f">최소 실적일수</label><input type="number" id="prMinDays" min="1"></div>
+      <div><label class="f">평가기간(일)</label><input type="number" id="prPeriod" min="7"></div>
+      <div><label class="f">불량 상한 ppm</label><input type="number" id="prCap" min="0"></div>
+    </div>
+    <div class="muted" style="margin-top:.4rem">실적일수 미달 → 숙련도 「평가중」. 불량 상한 초과 → 달성률 −5%p 후 환산.</div>
+  </div>
+  <div class="card"><h3>🔐 관리자 PIN</h3><div class="row"><div><label class="f">새 PIN(4~8자)</label><input id="newPin" type="text" maxlength="8"></div><button class="btn sm" onclick="savePin()">PIN 변경</button></div></div>
+  </div>
+  <div class="row" style="margin-top:.4rem"><button class="btn gold" onclick="saveWeights()">💾 배점·판정 설정 저장</button><span class="muted" id="wMsg"></span></div>
+</section>
+
+<!-- ───────── ③ 숙련도 데이터 ───────── -->
+<section class="panel" id="p-prof">
+  <div class="card"><h3>📋 생산실적 붙여넣기 (엑셀 → 탭 구분)</h3>
+    <div class="note">열 순서: <b>사번 · 일자(YYYY-MM-DD) · 공정 · 목표수량 · 실적수량 · 작업시간(h) · 불량수</b> (머리글 포함해도 됨, 공정/작업시간/불량수는 비워도 됨). 같은 사번·일자·공정은 덮어씁니다.</div>
+    <textarea id="prodPaste" rows="6" style="margin-top:.5rem;font-family:'Space Mono',monospace;font-size:.72rem" placeholder="M026100865	2026-11-03	자동절단압착공정	6000	5820	8	6"></textarea>
+    <div class="row" style="margin-top:.5rem"><div><label class="f">평가구분(선택)</label><select id="prodRound"></select></div><button class="btn gold" onclick="importProd()">⬆ 등록</button><span class="muted" id="prodMsg"></span></div>
+  </div>
+  <div class="card"><h3>📊 사번별 숙련도 요약 <span class="muted" id="prodCnt"></span></h3>
+    <div class="row" style="margin-bottom:.5rem"><div><label class="f">검색</label><input id="prodQ" placeholder="사번/이름" oninput="renderProd()"></div><div><label class="f">임의데이터</label><select id="prodDummy" onchange="renderProd()"><option value="all">전체</option><option value="real">실데이터만</option><option value="dummy">임의만</option></select></div><button class="btn sm" onclick="exportProd()">⬇ 엑셀</button></div>
+    <div class="scroll" id="prodTable"><div class="muted">-</div></div>
+  </div>
+</section>
+
+<!-- ───────── ④ 임의데이터 ───────── -->
+<section class="panel" id="p-dummy">
+  <div class="grid g2">
+  <div class="card"><h3>🎛️ 생성 조건</h3>
+    <div class="row">
+      <div style="min-width:260px"><label class="f">평가구분(회차)</label><select id="dRound" onchange="dRoundChg()"></select></div>
+      <div><label class="f">종류</label><select id="dType" onchange="dTypeChg()"><option value="new">신입사원평가</option><option value="regular">정기평가</option><option value="re">재평가</option></select></div>
+      <div id="dCohortBox"><label class="f">입사월(코호트)</label><input type="month" id="dCohort"></div>
+      <div><label class="f">인원</label><input type="number" id="dN" value="24" min="2" max="99" oninput="dSyncTargets()"></div>
+      <div><label class="f">평가일</label><input type="date" id="dDate"></div>
+      <div><label class="f">난수 시드</label><input type="number" id="dSeed" value="7"></div>
+    </div>
+    <div style="margin-top:.7rem"><label class="f">공정 분배 (체크한 공정에 균등 배정)</label><div id="dProcs" style="display:flex;gap:.35rem;flex-wrap:wrap"></div></div>
+    <div class="note" style="margin-top:.6rem">사번은 <span class="mono">M0+YYMM+99+NN</span> (예 M026109901) — 실존 불가능한 일자 99라 실사번과 충돌하지 않으며 코호트 판별(M0YYMM)은 정상 동작합니다. 이름 끝에 ⟨TEST⟩ 표시, is_dummy=true.</div>
+  </div>
+  <div class="card"><h3>🎯 항목별 합격 수준 (인원)</h3>
+    <div class="row">
+      <div><label class="f">이론 합격 (≥60%)</label><input type="number" id="tTheory" min="0"></div>
+      <div><label class="f">작업수행 합격 (≥60%)</label><input type="number" id="tPerf" min="0"></div>
+      <div><label class="f">압착고 GR&R 합격</label><input type="number" id="tCrimp" min="0"><div class="muted">3인 1조 → 조 단위로 반올림</div></div>
+      <div><label class="f">불량판별 합격</label><input type="number" id="tDefect" min="0"></div>
+      <div id="tProfBox"><label class="f">숙련도 달성률 100%↑</label><input type="number" id="tProfHi" min="0"><label class="f" style="margin-top:.3rem">달성률 80% 미만</label><input type="number" id="tProfLo" min="0"></div>
+    </div>
+    <div class="row" style="margin-top:.6rem">
+      <div><label class="f">최종합격 목표 (비우면 자동)</label><input type="number" id="tFinal" min="0" placeholder="자동"></div>
+      <div><label class="f">숙련도 실적일수</label><input type="number" id="dProdDays" value="20" min="0" max="31"></div>
+      <label class="chip" style="align-self:center"><input type="checkbox" id="dGenProd" checked style="width:auto"> 생산실적 생성</label>
+      <label class="chip" style="align-self:center"><input type="checkbox" id="dGenMsa" checked style="width:auto"> MSA 세션·측정값 생성</label>
+    </div>
+    <div class="row" style="margin-top:.7rem"><button class="btn" onclick="dPreview()">👁 미리보기</button><button class="btn gold" id="dApplyBtn" onclick="dApply()" disabled>⬆ Supabase 적용</button><button class="btn red" onclick="dPurge()">🗑 임의데이터 전체 삭제</button><span class="muted" id="dMsg"></span></div>
+  </div>
+  </div>
+  <div class="card"><h3>👁 미리보기 <span class="muted" id="dSummary"></span></h3><div class="scroll" id="dTable"><div class="muted">조건을 정하고 「미리보기」를 누르세요.</div></div></div>
+  <div class="card"><h3>📜 적용 로그</h3><div class="log" id="dLog">-</div></div>
+</section>
+
+<!-- ───────── ⑤ 시뮬레이션 ───────── -->
+<section class="panel" id="p-sim">
+  <div class="card"><h3>🧮 평가구분별 결과 재계산 (현재 ② 설정 기준)</h3>
+    <div class="row">
+      <div style="min-width:260px"><label class="f">평가구분</label><select id="sRound" onchange="renderSim()"></select></div>
+      <div><label class="f">적용 배점</label><select id="sTrack" onchange="renderSim()"><option value="auto">회차 종류 자동</option><option value="new">신입(new)</option><option value="regular">정기(regular)</option></select></div>
+      <div><label class="f">숙련도 기간 시작</label><input type="date" id="sFrom" onchange="renderSim()"></div>
+      <div><label class="f">종료</label><input type="date" id="sTo" onchange="renderSim()"></div>
+      <div><label class="f">임의데이터</label><select id="sDummy" onchange="renderSim()"><option value="all">포함</option><option value="real">실데이터만</option><option value="dummy">임의만</option></select></div>
+      <button class="btn sm" onclick="exportSim()">⬇ 엑셀</button>
+      <button class="btn sm" onclick="saveSim()" title="exam_results에 track/prof_*/total/passed 반영">💾 결과 반영</button>
+    </div>
+    <div class="kpis" id="sKpis" style="margin-top:.7rem"></div>
+    <div class="scroll" id="sTable" style="margin-top:.7rem"></div>
+    <div class="note" style="margin-top:.5rem">이론·작업수행·압착고·불량판별은 저장된 득점률(점수/만점)에 선택 배점을 곱해 재환산. 숙련도는 exam_productivity 기간 평균 달성률 → 구간표. 「결과 반영」은 선택 회차의 exam_results에 track·prof_raw·prof_weighted·total_score·passed를 기록합니다(메인 앱은 재저장 시 숙련도를 모르므로 패치 전까지 참고용).</div>
+  </div>
+</section>
+</main>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ═══════════ Supabase ═══════════ */
+const SB_URL='https://lrjurjhavlalhlwaplxd.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxyanVyamhhdmxhbGhsd2FwbHhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNzUxNDAsImV4cCI6MjA5NTY1MTE0MH0.DVFmZaT37R9CXSMHdnLx4YAVNTnlBGijkOIaoUo7Qsk';
+async function sb(path,opt={}){
+  const o=Object.assign({method:'GET'},opt);
+  o.headers=Object.assign({'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':o.method==='GET'?'':'return=representation'},opt.headers||{});
+  const r=await fetch(`${SB_URL}/rest/v1/${path}`,o);
+  if(!r.ok){const t=await r.text();throw new Error(`${r.status} ${path.split('?')[0]}: ${t.slice(0,300)}`);}
+  const t=await r.text();return t?JSON.parse(t):null;
+}
+const chunk=(a,n)=>{const o=[];for(let i=0;i<a.length;i+=n)o.push(a.slice(i,i+n));return o;};
+async function sbInsertMany(table,rows,n=300){const out=[];for(const c of chunk(rows,n)){const r=await sb(table,{method:'POST',body:JSON.stringify(c)});if(Array.isArray(r))out.push(...r);}return out;}
+async function cfgSet(obj){for(const [k,v] of Object.entries(obj)){await sb('exam_config',{method:'POST',headers:{'Prefer':'resolution=merge-duplicates,return=minimal'},body:JSON.stringify({key:k,value:String(v)})});}}
+function toast(m,ms=2600){const t=document.getElementById('toast');t.textContent=m;t.style.display='block';clearTimeout(t._t);t._t=setTimeout(()=>t.style.display='none',ms);}
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const r1=v=>Math.round((+v||0)*10)/10;
+const today=()=>new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,10);
+const addDays=(d,n)=>{const x=new Date(d+'T00:00:00');x.setDate(x.getDate()+n);return x.toISOString().slice(0,10);};
+
+/* ═══════════ 상태 ═══════════ */
+let MIGRATED=true;
+let CFG={},ROUNDS=[],GRADES=[],PITEMS=[],QUESTIONS=[],STUDENTS=[],RESULTS=[],FINAL={},PROD=[],HEALTH=null,PERF=null;
+let W={new:{theory:30,perf:40,crimp:15,defect:15,prof:0},regular:{theory:20,perf:30,crimp:10,defect:10,prof:30}};
+let BANDS=[{min:100,pct:100},{min:95,pct:90},{min:90,pct:80},{min:85,pct:70},{min:80,pct:60},{min:70,pct:45},{min:0,pct:30}];
+let RULE={minDays:10,periodDays:30,defectCapPpm:3000}, MINP={theory:0,perf:0,msa:0,prof:0};
+const TYPE_KR={new:'신입사원평가',regular:'정기평가',re:'재평가',etc:'기타'};
+const trackOf=r=>r&&r.type==='new'?'new':'regular';
+const isDummyEmp=e=>/^M0\d{4}99\d{2}$/.test(String(e||''));
+const itemKind=n=>/작업\s*수행|desempe|ejecuci/i.test(n)?'perf':/압착|altura/i.test(n)?'crimp':/불량|판별|defect/i.test(n)?'defect':'other';
+function itemName(kind){const it=PITEMS.find(x=>itemKind(x.name)===kind);return it?it.name:({perf:'작업수행능력평가',crimp:'압착고측정능력 평가',defect:'불량판별능력 평가'})[kind];}
+
+/* ═══════════ PIN 게이트 ═══════════ */
+async function gateIn(){
+  const v=document.getElementById('pin').value.trim();
+  let pin='1234';
+  try{const r=await sb('exam_config?key=eq.adminPin&select=value');if(r&&r[0])pin=r[0].value;}catch(e){}
+  if(v===pin||sessionStorage.getItem('qa_ok')===pin){sessionStorage.setItem('qa_ok',pin);document.getElementById('gate').style.display='none';loadAll();}
+  else document.getElementById('gateMsg').textContent='PIN이 맞지 않습니다';
+}
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.getElementById('gate').style.display==='none')window.close();});
+(async()=>{try{const r=await sb('exam_config?key=eq.adminPin&select=value');const pin=r&&r[0]?r[0].value:'1234';if(sessionStorage.getItem('qa_ok')===pin){document.getElementById('gate').style.display='none';loadAll();}}catch(e){}})();
+
+/* ═══════════ 로드 ═══════════ */
+function go(t){document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on',x.dataset.t===t));document.querySelectorAll('.panel').forEach(x=>x.classList.toggle('on',x.id==='p-'+t));if(t==='sim')renderSim();if(t==='prof')renderProd();}
+async function loadAll(force){
+  const m=document.getElementById('syncMsg');m.textContent='불러오는 중…';
+  try{
+    const [cfg,grades,pitems,qs,students,results]=await Promise.all([
+      sb('exam_config?select=key,value'),
+      sb('exam_grade_config?select=label,min_score,color,description,sort_order&order=min_score.desc'),
+      sb('exam_practical_items?select=id,name,max_score,sort_order&order=sort_order.asc'),
+      sb('exam_questions?select=id,ans,sort_order&order=sort_order.asc,id.asc'),
+      sb('exam_students?select=id,emp_id,name,process,hire_date,sort_order,is_dummy&order=sort_order.asc').catch(()=>{MIGRATED=false;return sb('exam_students?select=id,emp_id,name,process,hire_date,sort_order&order=sort_order.asc');}),
+      sb('exam_results?select=id,emp_id,name,process,hire_date,date,theory_raw,theory_raw_max,theory_weighted,theory_pct,practical_raw,practical_max,practical_weighted,practical_pct,total_score,passed,practical_item_scores,eval_round,timestamp,is_dummy,track,prof_raw,prof_pct,prof_weighted&order=date.desc&limit=5000').catch(()=>{MIGRATED=false;return sb('exam_results?select=id,emp_id,name,process,hire_date,date,theory_raw,theory_raw_max,theory_weighted,theory_pct,practical_raw,practical_max,practical_weighted,practical_pct,total_score,passed,practical_item_scores,eval_round,timestamp&order=date.desc&limit=5000');})
+    ]);
+    if(!MIGRATED)toast('⚠️ qualification_admin.sql 미실행 — 조회만 가능',5000);
+    CFG={};cfg.forEach(x=>CFG[x.key]=x.value);
+    try{ROUNDS=JSON.parse(CFG.evalRounds||'[]');}catch(e){ROUNDS=[];}
+    try{if(CFG.trackWeights)W=JSON.parse(CFG.trackWeights);}catch(e){}
+    try{if(CFG.profBands)BANDS=JSON.parse(CFG.profBands);}catch(e){}
+    try{if(CFG.profRule)RULE=JSON.parse(CFG.profRule);}catch(e){}
+    try{if(CFG.minPct)MINP=JSON.parse(CFG.minPct);}catch(e){}
+    if(!CFG.trackWeights){W.new={theory:+CFG.theoryPct||30,perf:+CFG.perfPct||40,crimp:+CFG.crimpPct||15,defect:+CFG.defectPct||15,prof:0};}
+    GRADES=grades;PITEMS=pitems.map(x=>({name:x.name,max:+x.max_score}));QUESTIONS=qs;STUDENTS=students;RESULTS=results;
+    try{const f=await sb('v_qual_final_status?select=id,final_status,msa_result,msa_grade,msa_grr,msa_group,resigned');FINAL={};f.forEach(x=>FINAL[x.id]=x);}catch(e){FINAL={};}
+    try{PROD=await sb('v_qual_productivity?select=*&order=emp_id.asc');}catch(e){PROD=null;}
+    try{HEALTH=await sb('v_qual_health?select=k,v');}catch(e){HEALTH=null;}
+    if(!PERF)loadPerfSheets();
+    renderDiag();renderWeights();fillRoundSelects();renderProd();dInit();renderSim();
+    m.textContent=`☁️ ${new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})} · 결과 ${RESULTS.length} · 응시자 ${STUDENTS.length}`;
+  }catch(e){m.textContent='⚠️ '+e.message;console.error(e);}
+}
+/* 메인 앱의 공정별 체크시트(PERF_SHEETS)를 그대로 읽어옴 — 항목·배점이 항상 동일 */
+async function loadPerfSheets(){
+  try{
+    const t=await (await fetch('qualification.html',{cache:'no-store'})).text();
+    const a=t.indexOf('var PERF_CATS'),b=t.indexOf('function isPerfItem');
+    if(a<0||b<0)throw new Error('PERF_SHEETS not found');
+    const f=new Function(t.slice(a,b)+';return {PERF_CATS,PERF_SHEETS};');PERF=f();
+    PERF.PERF_SHEETS.forEach(s=>{s.max=s.items.reduce((x,y)=>x+y.pts,0);});
+    toast(`체크시트 ${PERF.PERF_SHEETS.length}종 로드 (qualification.html)`);
+  }catch(e){
+    console.warn(e);
+    const g=(pts)=>({c:1,kr:'항목',es:'',pts});
+    PERF={PERF_CATS:[{kr:'설비 작동 능력'},{kr:'작업 수행 능력'},{kr:'합부 판정 능력'},{kr:'불량유형 및 영향 이해'}],
+      PERF_SHEETS:[{key:'generic',kr:'공통',re:/./,items:[{c:0,kr:'설비 일상 점검',pts:10},{c:0,kr:'설비 이상 조치',pts:10},{c:1,kr:'작업 준비',pts:10},{c:1,kr:'작업지시 준수',pts:15},{c:1,kr:'작업 수행',pts:25},{c:2,kr:'자주 검사',pts:15},{c:3,kr:'불량유형별 영향',pts:15}],max:100}]};
+    toast('⚠️ 체크시트를 qualification.html에서 못 읽어 공통 시트로 대체');
+  }
+  dRenderProcs();
+}
+function perfSheetFor(proc){
+  const p=String(proc||'');const S=PERF.PERF_SHEETS;
+  const order=['sldhv','sldbraid','sldin','sldout','sldcut','taping','joint','heat','mstrip','seal','twist','manual','auto'];
+  for(const k of order){const s=S.find(x=>x.key===k);if(s&&s.re.test(p))return s;}
+  if(/sld/i.test(p))return S.find(x=>x.key==='sldcut')||S[0];
+  return S.find(x=>x.key==='auto')||S[0];
+}
+
+/* ═══════════ ① 진단 ═══════════ */
+function renderDiag(){
+  const el=document.getElementById('kpis');document.getElementById('diagAt').textContent=today();
+  if(!HEALTH){el.innerHTML='<div class="kpi bad"><div class="v">SQL</div><div class="l">v_qual_health 없음</div></div>';
+    document.getElementById('diagSqlHint').innerHTML='⚠️ <b>qualification_admin.sql</b>을 Supabase SQL Editor에서 먼저 실행하세요 (is_dummy·track·prof_* 컬럼, exam_productivity, 함수, 뷰). 실행 전에는 ③④⑤ 탭 일부가 동작하지 않습니다.';return;}
+  document.getElementById('diagSqlHint').textContent='';
+  const H={};HEALTH.forEach(x=>H[x.k]=+x.v);
+  const items=[
+    ['results_total','평가 기록','ok'],['results_unassigned_round','평가구분 미지정',H.results_unassigned_round>0?'warn':'ok'],
+    ['dup_emp_round','사번·회차 중복 그룹',H.dup_emp_round>0?'bad':'ok'],['split_null_and_round','미지정+지정 혼재 사번',H.split_null_and_round>0?'bad':'ok'],
+    ['results_emp_not_in_students','명단에 없는 사번(퇴사 등)','ok'],['students_total','응시자 명단','ok'],
+    ['students_no_hire','입사일 없음',H.students_no_hire>0?'warn':'ok'],['students_no_process','공정 없음',H.students_no_process>0?'warn':'ok'],
+    ['theory_rawmax_variants','이론 원점수 체계 종류',H.theory_rawmax_variants>1?'warn':'ok'],['grade_dup_minscore','등급 기준 동점 중복',H.grade_dup_minscore>0?'warn':'ok'],
+    ['evaluating_now','이론 미시행 기록(평가중)','warn'],['productivity_rows','생산실적 행',H.productivity_rows>0?'ok':'warn'],
+    ['msa_var_sessions_f1','MSA 계량형 세션','ok'],['msa_att_sessions_f1','MSA 계수형 세션','ok'],
+    ['dummy_results','임의 기록',H.dummy_results>0?'warn':'ok'],['dummy_students','임의 응시자',H.dummy_students>0?'warn':'ok']];
+  el.innerHTML=items.map(([k,l,c])=>`<div class="kpi ${c}"><div class="v">${H[k]??'-'}</div><div class="l">${l}</div></div>`).join('');
+}
+
+/* ═══════════ ② 배점 ═══════════ */
+const WKEYS=[['theory','이론'],['perf','작업수행'],['crimp','압착고'],['defect','불량판별'],['prof','숙련도']];
+function renderWeights(){
+  for(const [tk,id] of [['new','wNew'],['regular','wReg']]){
+    document.getElementById(id).innerHTML=WKEYS.map(([k,l])=>`<div><label class="f">${l}</label><input type="number" min="0" max="100" value="${W[tk][k]??0}" oninput="W.${tk}.${k}=+this.value||0;wSum()"></div>`).join('');
+  }
+  wSum();
+  document.getElementById('mpTheory').value=MINP.theory??0;document.getElementById('mpPerf').value=MINP.perf??0;document.getElementById('mpMsa').value=MINP.msa??0;document.getElementById('mpProf').value=MINP.prof??0;
+  document.getElementById('passScore').value=CFG.passingScore||60;
+  document.getElementById('prMinDays').value=RULE.minDays;document.getElementById('prPeriod').value=RULE.periodDays;document.getElementById('prCap').value=RULE.defectCapPpm;
+  renderBands();
+}
+function wSum(){for(const [tk,id] of [['new','wNewSum'],['regular','wRegSum']]){const s=Object.values(W[tk]).reduce((a,b)=>a+(+b||0),0);const e=document.getElementById(id);e.textContent=s+'%';e.style.color=s===100?'var(--green)':'var(--red)';}}
+function renderBands(){
+  BANDS.sort((a,b)=>b.min-a.min);
+  document.getElementById('bandBody').innerHTML=BANDS.map((b,i)=>`<tr><td><input type="number" value="${b.min}" style="width:90px" oninput="BANDS[${i}].min=+this.value||0">%</td><td><input type="number" value="${b.pct}" style="width:90px" oninput="BANDS[${i}].pct=+this.value||0">%</td><td><button class="btn sm red" onclick="BANDS.splice(${i},1);renderBands()">✕</button></td></tr>`).join('');
+}
+function addBand(){BANDS.push({min:0,pct:0});renderBands();}
+async function saveWeights(){
+  const sn=Object.values(W.new).reduce((a,b)=>a+b,0),sr=Object.values(W.regular).reduce((a,b)=>a+b,0);
+  if(sn!==100||sr!==100){if(!confirm(`배점 합계가 100이 아닙니다 (신입 ${sn} / 정기 ${sr}). 그래도 저장할까요?`))return;}
+  MINP={theory:+document.getElementById('mpTheory').value||0,perf:+document.getElementById('mpPerf').value||0,msa:+document.getElementById('mpMsa').value||0,prof:+document.getElementById('mpProf').value||0};
+  RULE={minDays:+document.getElementById('prMinDays').value||10,periodDays:+document.getElementById('prPeriod').value||30,defectCapPpm:+document.getElementById('prCap').value||3000};
+  const pass=+document.getElementById('passScore').value||60;
+  const n=W.new;
+  try{
+    await cfgSet({trackWeights:JSON.stringify(W),profBands:JSON.stringify(BANDS),profRule:JSON.stringify(RULE),minPct:JSON.stringify(MINP),passingScore:pass,
+      theoryPct:n.theory,perfPct:n.perf,crimpPct:n.crimp,defectPct:n.defect,practicalMax:n.perf+n.crimp+n.defect,practicalPct:n.perf+n.crimp+n.defect});
+    // 메인 앱 실습 항목 만점도 신입 배점에 맞춤
+    for(const it of PITEMS){const k=itemKind(it.name);if(n[k]!=null&&n[k]!==it.max){await sb(`exam_practical_items?name=eq.${encodeURIComponent(it.name)}`,{method:'PATCH',headers:{'Prefer':'return=minimal'},body:JSON.stringify({max_score:n[k]})});it.max=n[k];}}
+    CFG.passingScore=String(pass);document.getElementById('wMsg').textContent='✅ 저장 완료 — 메인 앱 설정(이론/작업수행/압착고/불량판별/실습만점)에도 반영';toast('배점·판정 설정 저장 완료');renderSim();
+  }catch(e){alert('저장 실패: '+e.message);}
+}
+async function savePin(){const v=document.getElementById('newPin').value.trim();if(!/^\w{4,8}$/.test(v)){alert('4~8자');return;}await cfgSet({adminPin:v});sessionStorage.setItem('qa_ok',v);toast('PIN 변경 완료');}
+
+/* ═══════════ 공통: 회차 셀렉트 ═══════════ */
+function roundOpts(withNone){
+  const ord={new:0,regular:1,re:2,etc:3};
+  const rs=[...ROUNDS].sort((a,b)=>(ord[a.type]??9)-(ord[b.type]??9)||String(b.cohort||b.id).localeCompare(String(a.cohort||a.id)));
+  const cnt={};RESULTS.forEach(r=>{const k=r.eval_round||'';cnt[k]=(cnt[k]||0)+1;});
+  return (withNone?`<option value="">(미지정 ${cnt['']||0}건)</option>`:'')+rs.map(r=>`<option value="${esc(r.id)}">${esc(r.name)} · ${cnt[r.id]||0}건</option>`).join('');
+}
+function fillRoundSelects(){
+  document.getElementById('prodRound').innerHTML='<option value="">-</option>'+roundOpts(false);
+  const s=document.getElementById('sRound');const keep=s.value;s.innerHTML=roundOpts(true);if(keep&&[...s.options].some(o=>o.value===keep))s.value=keep;else if(CFG.activeRound)s.value=CFG.activeRound;
+  const d=document.getElementById('dRound');const k2=d.value;d.innerHTML='<option value="__new__">＋ 새 평가구분 만들기</option>'+roundOpts(false);if(k2&&[...d.options].some(o=>o.value===k2))d.value=k2;
+}
+
+/* ═══════════ ③ 숙련도 데이터 ═══════════ */
+async function importProd(){
+  const txt=document.getElementById('prodPaste').value.trim();if(!txt){alert('붙여넣기 내용이 없습니다');return;}
+  const rows=[];const round=document.getElementById('prodRound').value||null;
+  const nameOf={};STUDENTS.forEach(s=>nameOf[s.emp_id]=s.name);
+  txt.split(/\r?\n/).forEach(line=>{const c=line.split('\t').map(x=>x.trim());if(c.length<4)return;
+    const emp=c[0].toUpperCase(),d=c[1].replace(/\./g,'-').replace(/\//g,'-');if(!/^[A-Z0-9]{5,}$/.test(emp)||!/^\d{4}-\d{1,2}-\d{1,2}$/.test(d))return;
+    const dt=d.split('-').map((x,i)=>i?x.padStart(2,'0'):x).join('-');
+    rows.push({factory:'1',emp_id:emp,emp_name:nameOf[emp]||null,work_date:dt,process:c[2]||'',target_qty:+c[3]||null,actual_qty:+c[4]||0,work_hours:c[5]?+c[5]:null,defect_qty:c[6]?+c[6]:0,source:'manual',eval_round:round,is_dummy:isDummyEmp(emp)});});
+  if(!rows.length){alert('인식된 행이 없습니다. 열 순서를 확인하세요.');return;}
+  try{let n=0;for(const c of chunk(rows,300)){await sb('exam_productivity?on_conflict=factory,emp_id,work_date,process',{method:'POST',headers:{'Prefer':'resolution=merge-duplicates,return=minimal'},body:JSON.stringify(c)});n+=c.length;}
+    document.getElementById('prodMsg').textContent=`✅ ${n}행 등록`;document.getElementById('prodPaste').value='';toast(`생산실적 ${n}행 등록`);await loadAll();}
+  catch(e){alert('등록 실패: '+e.message);}
+}
+function renderProd(){
+  const el=document.getElementById('prodTable');
+  if(PROD===null){el.innerHTML='<div class="muted">⚠️ v_qual_productivity 없음 — qualification_admin.sql 실행 필요</div>';return;}
+  const q=(document.getElementById('prodQ').value||'').toLowerCase(),dm=document.getElementById('prodDummy').value;
+  const nameOf={};STUDENTS.forEach(s=>nameOf[s.emp_id]=s.name);
+  let rows=PROD.filter(p=>(dm==='all'||(dm==='dummy')===!!p.is_dummy)&&(!q||p.emp_id.toLowerCase().includes(q)||String(p.emp_name||nameOf[p.emp_id]||'').toLowerCase().includes(q)));
+  document.getElementById('prodCnt').textContent=`${rows.length}행`;
+  if(!rows.length){el.innerHTML='<div class="muted">데이터 없음</div>';return;}
+  const rn=id=>{const r=ROUNDS.find(x=>x.id===id);return r?r.name:(id||'미지정');};
+  el.innerHTML=`<table><thead><tr><th>사번</th><th>이름</th><th>평가구분</th><th>기간</th><th>실적일</th><th>평균 달성률</th><th>불량 ppm</th><th>숙련도 점수(정기 ${W.regular.prof}점)</th><th></th></tr></thead><tbody>${rows.map(p=>{
+    const sc=profScore(p.eff_pct,p.days,p.defect_ppm,W.regular.prof);
+    return `<tr><td class="mono">${esc(p.emp_id)}${p.is_dummy?' <span class="pill p-g">TEST</span>':''}</td><td>${esc(p.emp_name||nameOf[p.emp_id]||'')}</td><td class="muted">${esc(rn(p.eval_round))}</td><td class="mono">${p.from_date}~${p.to_date}</td><td>${p.days}</td>
+      <td><b style="color:${p.eff_pct>=100?'var(--green)':p.eff_pct>=80?'var(--text)':'var(--red)'}">${p.eff_pct}%</b><div class="bar" style="width:110px"><i style="width:${Math.min(100,p.eff_pct)}%"></i></div></td><td>${p.defect_ppm??'-'}</td>
+      <td>${sc==null?'<span class="pill p-ing">일수부족</span>':`<b>${sc}</b> / ${W.regular.prof}`}</td>
+      <td><button class="btn sm red" onclick="delProd('${esc(p.emp_id)}','${esc(p.eval_round||'')}')">삭제</button></td></tr>`;}).join('')}</tbody></table>`;
+}
+async function delProd(emp,round){if(!confirm(`${emp} 의 생산실적(${round||'미지정'})을 삭제할까요?`))return;await sb(`exam_productivity?emp_id=eq.${encodeURIComponent(emp)}&eval_round=${round?'eq.'+encodeURIComponent(round):'is.null'}`,{method:'DELETE',headers:{'Prefer':'return=minimal'}});await loadAll();}
+function exportProd(){if(!PROD||!PROD.length)return;const ws=XLSX.utils.json_to_sheet(PROD.map(p=>({사번:p.emp_id,이름:p.emp_name,평가구분:p.eval_round,시작:p.from_date,종료:p.to_date,실적일:p.days,평균달성률:p.eff_pct,불량ppm:p.defect_ppm,임의데이터:p.is_dummy?'Y':''})));const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'숙련도');XLSX.writeFile(wb,`숙련도요약_${today()}.xlsx`);}
+function profScore(eff,days,ppm,weight){
+  if(eff==null||days==null||days<(RULE.minDays||10))return null;
+  let e=+eff;if(ppm!=null&&ppm>(RULE.defectCapPpm||3000))e-=5;
+  const bs=[...BANDS].sort((a,b)=>b.min-a.min);let pct=0;for(const b of bs){if(e>=b.min){pct=b.pct;break;}}
+  return r1(weight*pct/100);
+}
+
+/* ═══════════ ④ 임의데이터 ═══════════ */
+let RNG=null;function seed(s){let x=(s>>>0)||1;RNG=()=>{x^=x<<13;x>>>=0;x^=x>>>17;x^=x<<5;x>>>=0;return (x>>>0)/4294967296;};}
+const rnd=()=>RNG();const ri=(a,b)=>a+Math.floor(rnd()*(b-a+1));const rf=(a,b)=>a+rnd()*(b-a);
+function nrand(){let u=0,v=0;while(!u)u=rnd();while(!v)v=rnd();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(rnd()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+const FN=['Ana','María','Lucía','Sofía','Valeria','Camila','Ximena','Daniela','Fernanda','Paola','Karla','Brenda','Alondra','Yoselin','Guadalupe','Jimena','Itzel','Melany','Carolina','Norma','José','Luis','Carlos','Miguel','Jesús','Ángel','Diego','Alejandro','Fernando','Ricardo','Eduardo','Javier','Iván','Omar','Sergio'];
+const LN=['García','Hernández','Martínez','López','González','Pérez','Rodríguez','Sánchez','Ramírez','Torres','Flores','Rivera','Gómez','Díaz','Cruz','Morales','Reyes','Gutiérrez','Ortiz','Chávez','Ruiz','Mendoza','Castillo','Jiménez','Vargas','Romero','Herrera','Medina','Aguilar','Castro','Guerra','Padilla','Toscano','Reynaga','Neira'];
+const PROC_UPH={auto:750,manual:220,joint:180,taping:260,twist:300,mstrip:200,seal:240,heat:220,sldcut:120,sldout:110,sldin:110,sldbraid:100,sldhv:150,generic:200};
+function dInit(){
+  if(!document.getElementById('dDate').value)document.getElementById('dDate').value=today();
+  if(!document.getElementById('dCohort').value)document.getElementById('dCohort').value=today().slice(0,7);
+  dRoundChg();dRenderProcs();
+}
+function dRenderProcs(){
+  if(!PERF)return;const el=document.getElementById('dProcs');if(el.children.length)return;
+  const def=new Set(['auto','manual','joint','taping','twist','mstrip','seal']);
+  el.innerHTML=PERF.PERF_SHEETS.map(s=>`<label class="chip ${def.has(s.key)?'on':''}" onclick="this.classList.toggle('on')" data-k="${s.key}">${esc(s.kr)}</label>`).join('');
+}
+function dRoundChg(){
+  const v=document.getElementById('dRound').value;const r=ROUNDS.find(x=>x.id===v);
+  const tsel=document.getElementById('dType');
+  if(r){tsel.value=r.type==='new'?'new':(r.type==='re'?'re':'regular');tsel.disabled=true;if(r.cohort)document.getElementById('dCohort').value=r.cohort;}
+  else tsel.disabled=false;
+  dTypeChg();
+}
+function dTypeChg(){const t=document.getElementById('dType').value;document.getElementById('dCohortBox').style.display=t==='new'?'':'none';document.getElementById('tProfBox').style.display=t==='new'?'none':'';dSyncTargets();}
+function dSyncTargets(){
+  const n=+document.getElementById('dN').value||0;const t=document.getElementById('dType').value;
+  const set=(id,v)=>{const e=document.getElementById(id);if(!e.dataset.touched)e.value=v;};
+  set('tTheory',Math.round(n*.85));set('tPerf',Math.round(n*.8));set('tCrimp',Math.round(n*.75));set('tDefect',Math.round(n*.8));set('tProfHi',Math.round(n*.35));set('tProfLo',Math.round(n*.15));
+  ['tTheory','tPerf','tCrimp','tDefect','tProfHi','tProfLo'].forEach(id=>{const e=document.getElementById(id);e.oninput=()=>e.dataset.touched='1';});
+}
+let DPLAN=null;
+function pickN(arr,n){return new Set(shuffle([...arr]).slice(0,Math.max(0,Math.min(arr.length,n))));}
+/* GR&R 계산 (msa_1.html evalM 과 동일 수식) */
+const K1={2:0.8862,3:0.5908},K2={2:0.7071,3:0.5231},K3={10:0.3146};
+function grr(M,p,t,o,TOL){
+  const Rbars=[],Xbars=[],partSum=Array(p).fill(0);
+  M.forEach(tr=>{let rs=0,xs=0;for(let i=0;i<p;i++){const col=tr.map(x=>x[i]);rs+=Math.max(...col)-Math.min(...col);col.forEach(v=>{xs+=v;partSum[i]+=v;});}Rbars.push(rs/p);Xbars.push(xs/(p*t));});
+  const Rbb=Rbars.reduce((a,b)=>a+b,0)/o,XbarR=Math.max(...Xbars)-Math.min(...Xbars);
+  const partAvg=partSum.map(s=>s/(o*t)),Rp=Math.max(...partAvg)-Math.min(...partAvg);
+  const EV=Rbb*K1[t],AV=Math.sqrt(Math.max(0,Math.pow(XbarR*K2[o],2)-(EV*EV)/(p*t))),GRR=Math.sqrt(EV*EV+AV*AV),PV=Rp*K3[p],TV=Math.sqrt(GRR*GRR+PV*PV);
+  const pctC=TV?GRR*GRR/(TV*TV)*100:0,pctS=TV?GRR/TV*100:0,pctT=TOL?5.15*GRR/TOL*100:null,ndc=GRR>0?Math.floor(1.41*PV/GRR):0;
+  const lvl=(k,v)=>k==='c'?(v<1?'우수':v<=9?'양호':'부족'):k==='t'?(v<10?'우수':v<=30?'양호':'부족'):(v>10?'우수':v>=4?'양호':'부족');
+  const ord={'우수':0,'양호':1,'부족':2};const grade=[lvl('c',pctC),lvl('t',pctT),lvl('d',ndc)].sort((a,b)=>ord[b]-ord[a])[0];
+  return{EV,AV,GRR,PV,TV,pctC,pctS,pctT,ndc,grade,result:grade==='부족'?'No aprobado':'Aprobado'};
+}
+function genVarGroup(members,pass){
+  const p=10,t=3,o=members.length,TOL=0.1;
+  for(let attempt=0;attempt<40;attempt++){
+    const parts=Array.from({length:p},(_,i)=>0.955+i*0.01+rf(-.003,.003));
+    const sig=pass?rf(.0015,.004):rf(.012,.03);
+    const M=members.map(()=>{const bias=pass?rf(-.002,.002):rf(-.02,.02);return Array.from({length:t},()=>parts.map(v=>+(v+bias+nrand()*sig).toFixed(3)));});
+    const V=grr(M,p,t,o,TOL);
+    if((V.result==='Aprobado')===pass)return{M,V};
+  }
+  return null;
+}
+function genAttAnswers(refs,pass){
+  const okIdx=refs.map((r,i)=>r==='OK'?i:-1).filter(i=>i>=0),ngIdx=refs.map((r,i)=>r!=='OK'?i:-1).filter(i=>i>=0);
+  const trials=[];let fa=pass?ri(0,1):ri(2,5),ms=pass?0:ri(1,4);
+  for(let k=0;k<3;k++){const a=[...refs];trials.push(a);}
+  const flip=(idx,n,to)=>{for(let i=0;i<n;i++){const tr=trials[ri(0,2)],j=idx[ri(0,idx.length-1)];tr[j]=to;}};
+  flip(okIdx,fa,'NG');flip(ngIdx,ms,'OK');
+  return trials;
+}
+function dPreview(){
+  if(!PERF){alert('체크시트 로딩 중… 잠시 후 다시');return;}
+  seed(+document.getElementById('dSeed').value||7);
+  const n=Math.max(2,Math.min(99,+document.getElementById('dN').value||10)),type=document.getElementById('dType').value,track=type==='new'?'new':'regular';
+  const cohort=document.getElementById('dCohort').value||today().slice(0,7),evd=document.getElementById('dDate').value||today();
+  const procs=[...document.querySelectorAll('#dProcs .chip.on')].map(x=>PERF.PERF_SHEETS.find(s=>s.key===x.dataset.k)).filter(Boolean);
+  if(!procs.length){alert('공정을 1개 이상 선택');return;}
+  const Wt=W[track];const T={theory:+document.getElementById('tTheory').value||0,perf:+document.getElementById('tPerf').value||0,crimp:+document.getElementById('tCrimp').value||0,defect:+document.getElementById('tDefect').value||0,hi:+document.getElementById('tProfHi').value||0,lo:+document.getElementById('tProfLo').value||0};
+  const ym=cohort.replace('-','').slice(2);
+  const used=new Set(RESULTS.map(r=>r.emp_id).concat(STUDENTS.map(s=>s.emp_id)));
+  const people=[];let seq=1;
+  while(people.length<n&&seq<100){const emp=`M0${ym}99${String(seq).padStart(2,'0')}`;seq++;if(used.has(emp))continue;
+    const sheet=procs[people.length%procs.length];
+    const name=`${FN[ri(0,FN.length-1)]} ${LN[ri(0,LN.length-1)]} ${LN[ri(0,LN.length-1)]} ⟨TEST⟩`;
+    let hire;if(track==='new')hire=`${cohort}-${String(ri(1,Math.min(28,Math.max(1,new Date(evd+'T00:00:00').getDate()-15)))).padStart(2,'0')}`;else hire=addDays(evd,-ri(200,900));
+    people.push({emp,name,sheet,process:sheet.kr,hire,date:track==='new'?addDays(hire,ri(15,17)):evd});}
+  if(people.length<n)toast(`사번 중복으로 ${people.length}명만 생성`);
+  const N=people.length,idx=people.map((_,i)=>i);
+  const S={theory:pickN(idx,T.theory),perf:pickN(idx,T.perf),defect:pickN(idx,T.defect)};
+  // 압착고: 3인 1조 (마지막 2인조 허용)
+  const groups=[];const order=shuffle([...idx]);for(let i=0;i<order.length;i+=3){const g=order.slice(i,i+3);if(g.length===1&&groups.length){groups[groups.length-1].push(g[0]);}else groups.push(g);}
+  let gPass=Math.round(T.crimp/3);const gIdx=shuffle(groups.map((_,i)=>i));const passG=new Set(gIdx.slice(0,gPass));
+  const nQ=QUESTIONS.length||20,ppq=1;
+  const profHi=pickN(idx,T.hi),profLo=pickN(idx.filter(i=>!profHi.has(i)),T.lo);
+  const pf=itemName('perf'),cr=itemName('crimp'),df=itemName('defect');
+  people.forEach((p,i)=>{
+    // 이론
+    const correct=S.theory.has(i)?ri(Math.ceil(nQ*.6),nQ):ri(Math.floor(nQ*.25),Math.ceil(nQ*.6)-1);
+    const wrong=pickN(idx.length?QUESTIONS.map((_,k)=>k):[],nQ-correct);
+    const disp=shuffle(QUESTIONS.map((_,k)=>k+1));
+    p.details=QUESTIONS.map((q,k)=>{const ok=!wrong.has(k);let ua=q.ans;if(!ok){do{ua=ri(1,4);}while(ua===q.ans);}return{qNum:k+1,userAns:ua,isCorrect:ok,displayNum:disp[k]};});
+    p.theoryRaw=correct;p.theoryRawMax=nQ;p.theoryW=r1(correct/nQ*Wt.theory);
+    // 작업수행 체크시트
+    const lvl=S.perf.has(i)?rf(.62,.98):rf(.3,.58);
+    p.perfScores=p.sheet.items.map(it=>Math.max(0,Math.min(it.pts,Math.round(it.pts*(lvl+rf(-.15,.15))))));
+    p.perfSum=p.perfScores.reduce((a,b)=>a+b,0);p.perfW=r1(p.perfSum/p.sheet.max*Wt.perf);
+    // 압착고(조)
+    p.group=groups.findIndex(g=>g.includes(i));p.crimpPass=passG.has(p.group);p.crimpW=p.crimpPass?Wt.crimp:0;
+    // 불량판별
+    p.defectPass=S.defect.has(i);
+    // 숙련도
+    p.profLevel=profHi.has(i)?'hi':profLo.has(i)?'lo':'mid';
+  });
+  // MSA 계수형: 세션 1개(refs 20)
+  const refs=Array.from({length:20},()=>rnd()<.5?'OK':'NG');
+  const okn=refs.filter(x=>x==='OK').length,ngn=20-okn;
+  people.forEach(p=>{p.attTrials=genAttAnswers(refs,p.defectPass);let hit=0,tot=0,fa=0,ms=0;p.attTrials.forEach(tr=>tr.forEach((a,j)=>{tot++;if(a===refs[j])hit++;else if(refs[j]==='OK')fa++;else ms++;}));
+    const e=hit/tot,pfa=fa/(okn*3),pms=ms/(ngn*3);p.defectW=(e>=.9&&pfa<=.05&&pms<=.02)?Wt.defect:r1(e*Wt.defect);p.attE=e;});
+  // MSA 계량형 측정값
+  const varG=groups.map((g,gi)=>{const mem=g.map(i=>people[i]);const r=genVarGroup(mem,passG.has(gi));return{gi,members:g,data:r};});
+  varG.forEach(v=>{if(v.data)v.members.forEach(i=>{people[i].crimpPass=v.data.V.result==='Aprobado';people[i].crimpW=people[i].crimpPass?Wt.crimp:0;people[i].msaGrade=v.data.V.grade;people[i].msaGrr=v.data.V.pctS;});});
+  // 숙련도 실적
+  const days=+document.getElementById('dProdDays').value||0,genProd=document.getElementById('dGenProd').checked&&track!=='new'&&days>0;
+  const genProdFor=p=>{p.prod=[];if(!genProd)return;const mean=p.profLevel==='hi'?rf(1.0,1.08):p.profLevel==='lo'?rf(.68,.79):rf(.86,.99);const uph=PROC_UPH[p.sheet.key]||200;
+    let d=addDays(p.date,-1),k=0;while(p.prod.length<days&&k<60){k++;const dow=new Date(d+'T00:00:00').getDay();if(dow!==0&&dow!==6){const h=ri(0,10)<2?rf(6,7.5):8;const target=Math.round(uph*h),eff=Math.max(.4,mean+nrand()*.05),actual=Math.round(target*eff);const ppm=p.profLevel==='lo'?rf(2500,6000):rf(300,2000);p.prod.push({date:d,target,actual,hours:+h.toFixed(1),defect:Math.round(actual*ppm/1e6)});}d=addDays(d,-1);}
+    const eff=p.prod.length?p.prod.reduce((a,b)=>a+b.actual/b.target*100,0)/p.prod.length:null;const ppm=p.prod.length?Math.round(p.prod.reduce((a,b)=>a+b.defect,0)/p.prod.reduce((a,b)=>a+b.actual,0)*1e6):null;
+    p.profEff=eff==null?null:r1(eff);p.profPpm=ppm;p.profW=eff==null?null:profScore(eff,p.prod.length,ppm,Wt.prof);};
+  people.forEach(genProdFor);
+  const pass=+CFG.passingScore||60;
+  const calc=p=>{p.pracRaw=r1(p.perfW+p.crimpW+p.defectW);p.total=r1(p.theoryW+p.pracRaw+(p.profW||0));
+    let fail=[];if(MINP.theory&&p.theoryW<Wt.theory*MINP.theory/100)fail.push('이론');if(MINP.perf&&p.perfW<Wt.perf*MINP.perf/100)fail.push('작업수행');if(MINP.msa&&(p.crimpW+p.defectW)<(Wt.crimp+Wt.defect)*MINP.msa/100)fail.push('MSA');if(MINP.prof&&Wt.prof&&(p.profW||0)<Wt.prof*MINP.prof/100)fail.push('숙련도');
+    p.cutFail=fail;p.passed=p.total>=pass&&!fail.length;p.final=p.passed&&p.crimpPass?'최종합격':'불합격';};
+  people.forEach(calc);
+  // 최종합격 목표 맞춤 (이론·작업수행 점수를 합격선 쪽으로 조정)
+  const tf=document.getElementById('tFinal').value;
+  if(tf!==''){const target=Math.max(0,Math.min(N,+tf));for(let it=0;it<200;it++){const cur=people.filter(p=>p.final==='최종합격').length;if(cur===target)break;
+    if(cur<target){const c=people.filter(p=>p.final!=='최종합격'&&p.crimpPass).sort((a,b)=>b.total-a.total)[0];if(!c)break;
+      if(c.perfSum<c.sheet.max*.95){c.perfScores=c.sheet.items.map(x=>x.pts);c.perfSum=c.sheet.max;c.perfW=r1(Wt.perf);}
+      else if(c.theoryRaw<nQ){c.theoryRaw=nQ;c.details.forEach((d,k)=>{d.isCorrect=true;d.userAns=QUESTIONS[k].ans;});c.theoryW=r1(Wt.theory);}
+      else if(!c.defectPass){c.defectPass=true;c.attTrials=genAttAnswers(refs,true);c.defectW=Wt.defect;}
+      else break; calc(c);}
+    else{const c=people.filter(p=>p.final==='최종합격').sort((a,b)=>a.total-b.total)[0];if(!c)break;
+      const lvl=rf(.25,.45);c.perfScores=c.sheet.items.map(x=>Math.round(x.pts*lvl));c.perfSum=c.perfScores.reduce((a,b)=>a+b,0);c.perfW=r1(c.perfSum/c.sheet.max*Wt.perf);
+      c.theoryRaw=ri(Math.floor(nQ*.3),Math.floor(nQ*.5));const wrong=pickN(QUESTIONS.map((_,k)=>k),nQ-c.theoryRaw);c.details.forEach((d,k)=>{d.isCorrect=!wrong.has(k);d.userAns=d.isCorrect?QUESTIONS[k].ans:((QUESTIONS[k].ans%4)+1);});c.theoryW=r1(c.theoryRaw/nQ*Wt.theory);calc(c);
+      if(c.final==='최종합격'){c.defectPass=false;c.attTrials=genAttAnswers(refs,false);let hit=0,tot=0;c.attTrials.forEach(tr=>tr.forEach((a,j)=>{tot++;if(a===refs[j])hit++;}));c.attE=hit/tot;c.defectW=r1(c.attE*Wt.defect);calc(c);}
+      if(c.final==='최종합격'&&Wt.prof){c.profLevel='lo';genProdFor(c);calc(c);}
+      if(c.final==='최종합격')break;}}}
+  DPLAN={people,groups,varG,refs,okn,ngn,track,type,cohort,evd,Wt,round:document.getElementById('dRound').value,pf,cr,df,nQ};
+  renderPreview();document.getElementById('dApplyBtn').disabled=false;
+}
+function renderPreview(){
+  const P=DPLAN,ps=P.people;const cnt=f=>ps.filter(f).length;
+  document.getElementById('dSummary').textContent=`${ps.length}명 · 이론합격 ${cnt(p=>p.theoryW>=P.Wt.theory*.6)} · 작업수행합격 ${cnt(p=>p.perfW>=P.Wt.perf*.6)} · 압착고 ${cnt(p=>p.crimpPass)} · 불량판별 ${cnt(p=>p.defectW>=P.Wt.defect)} · ${P.track==='regular'?`숙련도100%↑ ${cnt(p=>p.profEff>=100)} · `:''}최종합격 ${cnt(p=>p.final==='최종합격')} / 불합격 ${cnt(p=>p.final!=='최종합격')}`;
+  const W_=P.Wt;
+  document.getElementById('dTable').innerHTML=`<table><thead><tr><th>No</th><th>사번</th><th>이름</th><th>공정</th><th>입사일</th><th>평가일</th><th>이론 /${W_.theory}</th><th>작업수행 /${W_.perf}</th><th>압착고 /${W_.crimp}</th><th>불량판별 /${W_.defect}</th>${P.track==='regular'?`<th>숙련도 /${W_.prof}</th>`:''}<th>총점</th><th>판정</th></tr></thead><tbody>${ps.map((p,i)=>`<tr><td class="muted">${i+1}</td><td class="mono">${p.emp}</td><td>${esc(p.name)}</td><td class="muted">${esc(p.process)}</td><td class="mono">${p.hire}</td><td class="mono">${p.date}</td>
+    <td>${p.theoryW} <span class="muted">(${p.theoryRaw}/${P.nQ})</span></td><td>${p.perfW} <span class="muted">(${p.perfSum}/${p.sheet.max})</span></td>
+    <td>${p.crimpW} <span class="muted">${p.group+1}조·${p.msaGrade||''} ${p.msaGrr!=null?p.msaGrr.toFixed(1)+'%':''}</span></td><td>${p.defectW} <span class="muted">${(p.attE*100).toFixed(0)}%</span></td>
+    ${P.track==='regular'?`<td>${p.profW==null?'<span class="pill p-ing">평가중</span>':p.profW} <span class="muted">${p.profEff!=null?p.profEff+'% · '+p.prod.length+'일':''}</span></td>`:''}
+    <td><b>${p.total}</b></td><td>${p.final==='최종합격'?'<span class="pill p-ok">최종합격</span>':'<span class="pill p-ng">불합격</span>'}${p.cutFail.length?`<div class="muted">과락: ${p.cutFail.join('·')}</div>`:''}</td></tr>`).join('')}</tbody></table>`;
+}
+function dlog(m){const e=document.getElementById('dLog');e.textContent=(e.textContent==='-'?'':e.textContent+'\n')+`[${new Date().toLocaleTimeString('ko-KR')}] ${m}`;e.scrollTop=e.scrollHeight;}
+async function dApply(){
+  if(!DPLAN){alert('먼저 미리보기');return;}const P=DPLAN;
+  if(!MIGRATED){alert('먼저 Supabase에서 qualification_admin.sql 을 실행하세요 (is_dummy·track 컬럼, exam_productivity 등).');return;}
+  if(!confirm(`${P.people.length}명의 임의데이터를 Supabase에 적용합니다.\n(응시자·평가결과${document.getElementById('dGenMsa').checked?'·MSA 세션/측정값':''}${P.track==='regular'&&document.getElementById('dGenProd').checked?'·생산실적':''})\n모든 데이터는 is_dummy / 사번 99 규칙으로 표시되어 「임의데이터 전체 삭제」로 한 번에 지울 수 있습니다.`))return;
+  const btn=document.getElementById('dApplyBtn');btn.disabled=true;document.getElementById('dLog').textContent='-';
+  const origActive=CFG.activeRound||'';let roundId=P.round;
+  try{
+    // 0) 평가구분 준비
+    if(roundId==='__new__'){
+      const t=P.type,d=today().replace(/-/g,'');
+      if(t==='new'){roundId='NEW-'+P.cohort;if(!ROUNDS.find(r=>r.id===roundId))ROUNDS.push({id:roundId,name:`신입사원평가 ${P.cohort.slice(0,4)}년 ${+P.cohort.slice(5)}월 입사자`,type:'new',cohort:P.cohort});}
+      else{roundId=(t==='re'?'RE':'REG')+'-'+d+'-T'+Math.random().toString(36).slice(2,5).toUpperCase();ROUNDS.push({id:roundId,name:(t==='re'?'재평가 ':'정기평가 ')+today()+' (TEST)',type:t});}
+      await cfgSet({evalRounds:JSON.stringify(ROUNDS)});dlog(`평가구분 생성: ${roundId}`);
+    }
+    // MSA 트리거(exam_msa_sync)가 올바른 회차 기록에 붙도록 적용 중에만 activeRound 전환
+    if(origActive!==roundId){await cfgSet({activeRound:roundId});dlog(`activeRound ${origActive||'(없음)'} → ${roundId} (임시)`);}
+    const Wt=P.Wt,team='가공생산팀(Produccion maquinado)';
+    // 1) 응시자
+    const maxSort=Math.max(0,...STUDENTS.map(s=>+s.sort_order||0));
+    await sbInsertMany('exam_students',P.people.map((p,i)=>({name:p.name,emp_id:p.emp,process:p.process,process_es:p.sheet.es||'',hire_date:p.hire,sort_order:maxSort+i+1,is_dummy:true})));dlog(`응시자 ${P.people.length}명`);
+    // 2) 평가결과
+    const mkRow=p=>({name:p.name,emp_id:p.emp,team,process:p.process,hire_date:p.hire,date:p.date,
+      theory_raw:p.theoryRaw,theory_raw_max:p.theoryRawMax,theory_weighted:p.theoryW,theory_pct:Wt.theory,
+      practical_raw:p.pracRaw,practical_max:Wt.perf+Wt.crimp+Wt.defect,practical_weighted:p.pracRaw,practical_pct:Wt.perf+Wt.crimp+Wt.defect,
+      total_score:p.total,correct:p.theoryRaw,details:p.details,
+      practical_item_scores:[{name:P.pf,score:p.perfW,max:Wt.perf,sheet:{key:p.sheet.key,process:p.sheet.kr,sum:p.perfSum,max:p.sheet.max,scores:p.perfScores,detail:p.sheet.items.map((x,j)=>({cat:PERF.PERF_CATS[x.c].kr,name:x.kr,pts:x.pts,score:p.perfScores[j]}))}},
+        {name:P.cr,score:p.crimpW,max:Wt.crimp},{name:P.df,score:p.defectW,max:Wt.defect}],
+      passed:p.passed,timestamp:Date.now(),eval_round:roundId,is_dummy:true,track:P.track,prof_raw:p.profEff,prof_pct:Wt.prof||null,prof_weighted:p.profW});
+    const res=await sbInsertMany('exam_results',P.people.map(mkRow));const idOf={};res.forEach(r=>idOf[r.emp_id]=r.id);dlog(`평가결과 ${res.length}건 (${roundId})`);
+    // 3) MSA
+    if(document.getElementById('dGenMsa').checked){
+      const period=`${P.evd.slice(0,4)}-Q${Math.ceil(+P.evd.slice(5,7)/3)}`;
+      for(const g of P.varG){if(!g.data)continue;const V=g.data.V,mem=g.members.map(i=>P.people[i]);
+        const s=await sb('msa_var_sessions',{method:'POST',body:JSON.stringify({factory:'1',team,title:'[TEST] 자격인증 실기 · 압착고측정능력 평가',group_name:`[TEST] ${g.gi+1}조`,eval_date:P.evd,period,usl:1.05,lsl:0.95,tolerance:0.1,n_parts:10,n_ops:mem.length,n_trials:3,ev:+V.EV.toFixed(6),av:+V.AV.toFixed(6),grr:+V.GRR.toFixed(6),pv:+V.PV.toFixed(6),tv:+V.TV.toFixed(6),pct_contrib:+V.pctC.toFixed(4),pct_study:+V.pctS.toFixed(4),pct_tol:+V.pctT.toFixed(4),ndc:V.ndc,grade:V.grade,result:V.result,fault_ops:[],retest_no:0,note:'임의데이터(관리자 모드)'})});
+        const sid=s[0].id;const ms=[];mem.forEach((p,oi)=>{for(let t=0;t<3;t++)ms.push({session_id:sid,employee_id:p.emp,employee_name:p.name,op_index:oi+1,trial:t+1,vals:g.data.M[oi][t]});});
+        await sbInsertMany('msa_var_measures',ms);}
+      dlog(`MSA 계량형 ${P.varG.filter(g=>g.data).length}조 세션·측정값`);
+      const a=await sb('msa_sessions',{method:'POST',body:JSON.stringify({factory:'1',team,title:'[TEST] 자격인증 실기 · 불량판별능력 평가',eval_date:P.evd,period,sample_count:20,trial_count:3,refs:P.refs,crit_e:0.9,crit_pfa:0.05,crit_pmiss:0.02,fault_ops:[],retest_no:0,note:'임의데이터(관리자 모드)'})});
+      const aid=a[0].id;const ev=[];P.people.forEach(p=>p.attTrials.forEach((tr,t)=>ev.push({session_id:aid,employee_id:p.emp,employee_name:p.name,trial:t+1,answers:tr})));
+      await sbInsertMany('msa_evaluations',ev);dlog(`MSA 계수형 세션 1 · 평가 ${ev.length}건`);
+    }
+    // 4) 생산실적
+    if(P.track==='regular'&&document.getElementById('dGenProd').checked){
+      const rows=[];P.people.forEach(p=>p.prod.forEach(d=>rows.push({factory:'1',emp_id:p.emp,emp_name:p.name,work_date:d.date,process:p.process,target_qty:d.target,actual_qty:d.actual,work_hours:d.hours,defect_qty:d.defect,source:'dummy',eval_round:roundId,is_dummy:true})));
+      if(rows.length){await sbInsertMany('exam_productivity',rows,400);dlog(`생산실적 ${rows.length}행`);}
+    }
+    // 5) 트리거가 덮어쓴 값 정합화 (최종 점수 재기록)
+    for(const c of chunk(P.people,40)){await Promise.all(c.map(p=>idOf[p.emp]?sb(`exam_results?id=eq.${idOf[p.emp]}`,{method:'PATCH',headers:{'Prefer':'return=minimal'},body:JSON.stringify(mkRow(p))}):null));}
+    dlog('점수 정합화 완료');
+  }catch(e){dlog('⚠️ 오류: '+e.message);alert('적용 중 오류: '+e.message+'\n「임의데이터 전체 삭제」로 정리 후 다시 시도하세요.');}
+  finally{
+    if(origActive!==roundId){try{await cfgSet({activeRound:origActive});dlog(`activeRound 복원 → ${origActive||'(없음)'}`);}catch(e){dlog('⚠️ activeRound 복원 실패: '+e.message);}}
+    btn.disabled=false;document.getElementById('dMsg').textContent='✅ 적용 완료 — 자격인증 앱 「④ 결과 이력」에서 확인';toast('임의데이터 적용 완료');
+    ['tTheory','tPerf','tCrimp','tDefect','tProfHi','tProfLo'].forEach(id=>delete document.getElementById(id).dataset.touched);
+    await loadAll();
+  }
+}
+async function dPurge(){
+  if(!confirm('임의데이터(사번 M0YYMM99xx · is_dummy · [TEST] MSA 세션 · 생산실적)를 전부 삭제할까요?\n실데이터는 건드리지 않습니다.'))return;
+  try{const r=await sb('rpc/qual_dummy_purge',{method:'POST',body:'{}'});dlog('삭제: '+JSON.stringify(r));toast('임의데이터 삭제 완료');
+    const dr=ROUNDS.filter(x=>/\(TEST\)$/.test(x.name));if(dr.length&&confirm(`TEST 평가구분 ${dr.length}개도 삭제할까요?`)){ROUNDS=ROUNDS.filter(x=>!dr.includes(x));await cfgSet({evalRounds:JSON.stringify(ROUNDS)});if(dr.some(x=>x.id===CFG.activeRound))await cfgSet({activeRound:''});}
+    await loadAll();}
+  catch(e){alert('삭제 실패: '+e.message+'\n(qualification_admin.sql 실행 여부 확인)');}
+}
+
+/* ═══════════ ⑤ 시뮬레이션 ═══════════ */
+let SIMROWS=[];
+function latestPerEmp(rs){const by={};rs.forEach(r=>{const k=r.emp_id;const pf=(r.practical_item_scores||[]).find(x=>itemKind(x.name)==='perf');const done=r.passed&&pf&&!pf.na;const cur=by[k];
+  if(!cur||(done&&!cur._done)||(done===cur._done&&String(r.date)>String(cur.date)))by[k]=Object.assign(r,{_done:done});});return Object.values(by);}
+function renderSim(){
+  const round=document.getElementById('sRound').value,tk0=document.getElementById('sTrack').value,dm=document.getElementById('sDummy').value;
+  const R=ROUNDS.find(x=>x.id===round);const track=tk0==='auto'?trackOf(R):tk0;const Wt=W[track];const pass=+CFG.passingScore||60;
+  let rs=RESULTS.filter(r=>(r.eval_round||'')===round&&(dm==='all'||(dm==='dummy')===!!(r.is_dummy||isDummyEmp(r.emp_id))));
+  rs=latestPerEmp(rs);
+  const dates=rs.map(r=>r.date).filter(Boolean).sort();
+  const fEl=document.getElementById('sFrom'),tEl=document.getElementById('sTo');
+  if(!tEl.value||tEl.dataset.round!==round){tEl.value=dates.length?dates[dates.length-1]:today();tEl.dataset.round=round;fEl.value=addDays(tEl.value,-(RULE.periodDays||30));}
+  const from=fEl.value,to=tEl.value;
+  const prodBy={};(PROD||[]).forEach(p=>{(prodBy[p.emp_id]=prodBy[p.emp_id]||[]).push(p);});
+  const gradeOf=t=>{for(const g of GRADES){if(t>=+g.min_score)return g;}return null;};
+  SIMROWS=rs.map(r=>{
+    const its=r.practical_item_scores||[];const g=k=>its.find(x=>itemKind(x.name)===k);
+    const th=(+r.theory_raw_max>0)?(+r.theory_raw/+r.theory_raw_max):(+r.theory_pct>0?+r.theory_weighted/+r.theory_pct:null);
+    const pf=g('perf'),cr=g('crimp'),df=g('defect');
+    const rate=x=>x&&!x.na&&+x.max>0?Math.min(1,+x.score/+x.max):null;
+    const pfR=pf&&pf.sheet&&pf.sheet.max?pf.sheet.sum/pf.sheet.max:rate(pf);
+    const fs=FINAL[r.id];const crR=rate(cr)??(fs&&fs.msa_result?(fs.msa_result==='Aprobado'?1:0):null),dfR=rate(df);
+    const T=th==null?null:r1(th*Wt.theory),Pf=pfR==null?null:r1(pfR*Wt.perf),C=crR==null?null:r1(crR*Wt.crimp),D=dfR==null?null:r1(dfR*Wt.defect);
+    let prof=null,profEff=null,profDays=0,profPpm=null;
+    if(Wt.prof>0){const pl=(prodBy[r.emp_id]||[]);// 기간 겹치는 요약 사용 (뷰는 회차별 집계) → 가장 많이 겹치는 것
+      const pick=pl.filter(p=>p.to_date>=from&&p.from_date<=to).sort((a,b)=>b.days-a.days)[0];
+      if(pick){profEff=+pick.eff_pct;profDays=+pick.days;profPpm=pick.defect_ppm==null?null:+pick.defect_ppm;prof=profScore(profEff,profDays,profPpm,Wt.prof);}}
+    const miss=[];if(T==null)miss.push('이론');if(Pf==null)miss.push('작업수행');if(C==null&&D==null)miss.push('MSA');if(Wt.prof>0&&prof==null)miss.push('숙련도');
+    const total=r1((T||0)+(Pf||0)+(C||0)+(D||0)+(prof||0));
+    const cut=[];if(MINP.theory&&T!=null&&T<Wt.theory*MINP.theory/100)cut.push('이론');if(MINP.perf&&Pf!=null&&Pf<Wt.perf*MINP.perf/100)cut.push('작업수행');if(MINP.msa&&(C!=null||D!=null)&&((C||0)+(D||0))<(Wt.crimp+Wt.defect)*MINP.msa/100)cut.push('MSA');if(MINP.prof&&Wt.prof&&prof!=null&&prof<Wt.prof*MINP.prof/100)cut.push('숙련도');
+    const msaOk=fs?fs.msa_result==='Aprobado':(crR===1);
+    const status=miss.length?'평가중':(total>=pass&&!cut.length&&msaOk)?'합격':'불합격';
+    return{r,T,Pf,C,D,prof,profEff,profDays,profPpm,total,miss,cut,status,grade:status==='합격'?gradeOf(total):null,oldTotal:+r.total_score,oldPassed:!!r.passed,fs};
+  }).sort((a,b)=>String(a.r.emp_id).localeCompare(String(b.r.emp_id),undefined,{numeric:true}));
+  const n=SIMROWS.length,p=SIMROWS.filter(x=>x.status==='합격').length,f=SIMROWS.filter(x=>x.status==='불합격').length,ing=n-p-f;
+  const changed=SIMROWS.filter(x=>x.status!=='평가중'&&(x.status==='합격')!==x.oldPassed).length;
+  document.getElementById('sKpis').innerHTML=`<div class="kpi"><div class="v">${n}</div><div class="l">대상 (${TYPE_KR[track==='new'?'new':'regular']} 배점)</div></div><div class="kpi ok"><div class="v">${p}</div><div class="l">합격</div></div><div class="kpi bad"><div class="v">${f}</div><div class="l">불합격</div></div><div class="kpi warn"><div class="v">${ing}</div><div class="l">평가중</div></div><div class="kpi ${changed?'warn':'ok'}"><div class="v">${changed}</div><div class="l">기존 판정과 달라짐</div></div>`;
+  const dash='<span class="muted">-</span>';
+  document.getElementById('sTable').innerHTML=n?`<table><thead><tr><th>No</th><th>사번</th><th>이름</th><th>공정</th><th>이론 /${Wt.theory}</th><th>작업수행 /${Wt.perf}</th><th>압착고 /${Wt.crimp}</th><th>불량판별 /${Wt.defect}</th>${Wt.prof?`<th>숙련도 /${Wt.prof}</th>`:''}<th>총점</th><th>기존</th><th>판정</th><th>등급</th></tr></thead><tbody>${SIMROWS.map((x,i)=>`<tr><td class="muted">${i+1}</td><td class="mono">${esc(x.r.emp_id)}${(x.r.is_dummy||isDummyEmp(x.r.emp_id))?' <span class="pill p-g">TEST</span>':''}</td><td>${esc(x.r.name)}</td><td class="muted">${esc(x.r.process)}</td>
+    <td>${x.T??dash}</td><td>${x.Pf??dash}</td><td>${x.C??dash} <span class="muted">${x.fs&&x.fs.msa_grade?x.fs.msa_grade:''}</span></td><td>${x.D??dash}</td>
+    ${Wt.prof?`<td>${x.prof==null?(x.profDays?`<span class="pill p-ing">일수 ${x.profDays}</span>`:dash):x.prof} <span class="muted">${x.profEff!=null?x.profEff+'%':''}</span></td>`:''}
+    <td><b>${x.miss.length?'-':x.total}</b></td><td class="muted">${x.oldTotal} ${x.oldPassed?'✅':'❌'}</td>
+    <td>${x.status==='평가중'?`<span class="pill p-ing">평가중</span><div class="muted">${x.miss.join('·')}</div>`:x.status==='합격'?'<span class="pill p-ok">합격</span>':`<span class="pill p-ng">불합격</span>${x.cut.length?`<div class="muted">과락 ${x.cut.join('·')}</div>`:''}`}</td>
+    <td>${x.grade?`<span class="pill" style="color:${x.grade.color};border-color:${x.grade.color}66">${esc(x.grade.label)}</span>`:dash}</td></tr>`).join('')}</tbody></table>`:'<div class="muted">해당 평가구분 기록 없음</div>';
+}
+function exportSim(){if(!SIMROWS.length)return;const ws=XLSX.utils.json_to_sheet(SIMROWS.map((x,i)=>({No:i+1,사번:x.r.emp_id,이름:x.r.name,공정:x.r.process,평가일:x.r.date,이론:x.T,작업수행:x.Pf,압착고:x.C,불량판별:x.D,숙련도:x.prof,달성률:x.profEff,실적일:x.profDays,총점:x.miss.length?'':x.total,기존총점:x.oldTotal,기존판정:x.oldPassed?'합격':'불합격',판정:x.status,과락:x.cut.join('·'),등급:x.grade?x.grade.label:''})));const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'시뮬레이션');XLSX.writeFile(wb,`숙련도반영_시뮬레이션_${today()}.xlsx`);}
+async function saveSim(){
+  const rows=SIMROWS.filter(x=>x.status!=='평가중');if(!rows.length){alert('반영할 행 없음');return;}
+  const round=document.getElementById('sRound').value,tk0=document.getElementById('sTrack').value;const track=tk0==='auto'?trackOf(ROUNDS.find(x=>x.id===round)):tk0;const Wt=W[track];
+  if(!confirm(`${rows.length}건의 exam_results에 track=${track}, 숙련도 점수, 총점·합격을 기록합니다.\n(메인 앱에서 해당 기록을 재저장하면 숙련도가 빠질 수 있음 — 패치 전까지 참고용)`))return;
+  let ok=0,fail=0;
+  for(const c of chunk(rows,40)){await Promise.all(c.map(async x=>{try{await sb(`exam_results?id=eq.${x.r.id}`,{method:'PATCH',headers:{'Prefer':'return=minimal'},body:JSON.stringify({track,prof_raw:x.profEff,prof_pct:Wt.prof||null,prof_weighted:x.prof,total_score:x.total,passed:x.status==='합격'})});ok++;}catch(e){fail++;}}));}
+  toast(`반영 ${ok}건${fail?' · 실패 '+fail:''}`);await loadAll();
+}
+</script>
+</body></html>
