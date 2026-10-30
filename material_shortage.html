@@ -174,7 +174,8 @@ table.cfg input{width:17px;height:17px}
 .hisk{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px}
 .hisk .kpi{cursor:default}
 .hisk .kpi small{display:block;margin-top:6px;font-size:12px;color:var(--mute);font-family:var(--body);letter-spacing:0;text-transform:none}
-.hisk .kpi.in b{color:var(--blue)}.hisk .kpi.out b{color:var(--amb)}
+.hisk .kpi.in b{color:var(--blue)}.hisk .kpi.out b{color:var(--amb)}.hisk .kpi.cnt b{color:var(--ac)}.hisk .kpi.roll b{color:var(--grn)}
+tr.hit td{background:rgba(201,168,76,.10)}tr.hit td:first-child{box-shadow:inset 3px 0 var(--ac)}
 .hisc{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
 .hisc button{background:rgba(255,255,255,.03);border:1px solid var(--line2);border-radius:999px;color:var(--ink2);padding:6px 12px;font-size:13px;text-align:left}
 .hisc button b{color:var(--ac);font-family:var(--code);font-size:15px;margin-right:6px}
@@ -390,9 +391,9 @@ tr.tot td{background:#101010;font-weight:700;color:#fff;position:sticky;bottom:0
 <section class="tab" id="t-his">
   <div class="card">
     <h3 data-t="his_h">자재 입고·사용 이력 조회</h3>
-    <div class="hint" data-t="his_hint">자재코드 또는 자재명 일부를 입력하고 조회하세요. 현장입고(30810)와 사용량(32040)에 저장된 내역에서 날짜별 입고수량·사용수량을 보여줍니다. 여러 자재가 검색되면 아래 목록에서 선택하세요.</div>
+    <div class="hint" data-t="his_hint">자재코드·자재명 일부 또는 바코드를 입력하고 조회하세요. 현장입고(30810)·사용량(32040)·실사·TML·WIRE 현장 롤 내역을 보여줍니다. 바코드를 넣으면 그 롤의 자재로 바로 조회합니다. 여러 자재가 검색되면 아래 목록에서 선택하세요.</div>
     <div class="row" style="margin-top:10px">
-      <label class="f"><span data-t="his_q">자재코드 / 자재명</span><input id="hQ" list="hList" autocomplete="off" style="width:280px" placeholder="예: 7116-4110 / TERMINAL"></label>
+      <label class="f"><span data-t="his_q">자재코드 / 자재명 / 바코드</span><input id="hQ" list="hList" autocomplete="off" style="width:300px" placeholder="예: 7116-4110 / TERMINAL / @26A12100325"></label>
       <datalist id="hList"></datalist>
       <label class="f"><span data-t="from">시작</span><input type="date" id="hFrom"></label>
       <label class="f"><span data-t="to">종료</span><input type="date" id="hTo"></label>
@@ -409,6 +410,8 @@ tr.tot td{background:#101010;font-weight:700;color:#fff;position:sticky;bottom:0
       <div class="kpi in"><span data-t="his_k_in">입고수량 합계</span><b id="hkIn">-</b><small id="hkInS"></small></div>
       <div class="kpi out"><span data-t="his_k_use">사용수량 합계</span><b id="hkUse">-</b><small id="hkUseS"></small></div>
       <div class="kpi"><span data-t="his_k_diff">입고 − 사용</span><b id="hkDiff">-</b><small id="hkDiffS"></small></div>
+      <div class="kpi cnt"><span data-t="his_k_cnt">실사 (최근)</span><b id="hkCnt">-</b><small id="hkCntS"></small></div>
+      <div class="kpi roll"><span data-t="his_k_roll">현장 보유 롤</span><b id="hkRoll">-</b><small id="hkRollS"></small></div>
     </div>
     <div class="card">
       <h3 data-t="his_day">날짜별 입고·사용</h3>
@@ -417,6 +420,10 @@ tr.tot td{background:#101010;font-weight:700;color:#fff;position:sticky;bottom:0
     <div class="grid3">
       <div class="card"><h3><span data-t="his_in_h">입고 내역 (30810)</span> <span class="hint" id="hInN"></span></h3><div class="tw m"><table id="hIn"></table></div></div>
       <div class="card"><h3><span data-t="his_use_h">사용 내역 (32040)</span> <span class="hint" id="hUseN"></span></h3><div class="tw m"><table id="hUse"></table></div></div>
+    </div>
+    <div class="grid3" style="margin-top:14px">
+      <div class="card"><h3><span data-t="his_cnt_h">실사 내역</span> <span class="hint" id="hCntN"></span></h3><div class="tw m"><table id="hCnt"></table></div></div>
+      <div class="card"><h3><span data-t="his_roll_h">TML·WIRE 현장 롤</span> <span class="hint" id="hRollN"></span> <label class="hint" style="float:right;cursor:pointer"><input type="checkbox" id="hZero" style="vertical-align:middle;margin-right:4px"><span data-t="his_zero_chk">0처리 롤 포함</span></label></h3><div class="tw m"><table id="hRoll"></table></div></div>
     </div>
   </div>
 </section>
@@ -523,7 +530,7 @@ mst_one:'Agregar / editar',del:'Eliminar',mst_click:'Haga clic en una fila para 
 date:'Fecha',useRowDate:'Usar fecha de cada fila (si falta, la seleccionada)',paste:'Pegar datos',savedDates:'Fechas guardadas',viewDel:'Eliminar fecha',
 tab_adj:'Ajuste de stock',adj_h:'Ajuste de stock',adj_hint:'Ingrese el código y la cantidad real; se guarda la diferencia para que el stock actual quede en esa cantidad. También puede tocar el número de Stock en la tabla de faltantes.',
 adj_code:'Código',adj_name:'Nombre',adj_cur:'Stock actual (calc.)',adj_roll:'Rollos piso',adj_after:'Cantidad real',adj_memo:'Motivo',adj_zero:'A cero',
-adj_auto_h:'Ajuste automático por cierre (0)',adj_auto_hint:'Si en el programa TML·WIRE se cierran (0) los códigos de barras y no queda ningún rollo en piso, el stock se ajusta a 0 automáticamente. Un ajuste manual guardado después del cierre tiene prioridad.',adj_list:'Historial de ajustes',tab_his:'Historial de material',his_h:'Historial de entrada y consumo',his_hint:'Escriba el código o parte del nombre y consulte. Muestra por fecha la entrada (30810) y el consumo (32040) guardados. Si hay varios materiales, elija uno de la lista.',his_q:'Código / nombre',his_all:'Todo el periodo',his_k_in:'Total entrada',his_k_use:'Total consumo',his_k_diff:'Entrada − consumo',his_day:'Entrada y consumo por fecha',his_in_h:'Detalle de entrada (30810)',his_use_h:'Detalle de consumo (32040)'};
+adj_auto_h:'Ajuste automático por cierre (0)',adj_auto_hint:'Si en el programa TML·WIRE se cierran (0) los códigos de barras y no queda ningún rollo en piso, el stock se ajusta a 0 automáticamente. Un ajuste manual guardado después del cierre tiene prioridad.',adj_list:'Historial de ajustes',tab_his:'Historial de material',his_h:'Historial de entrada y consumo',his_hint:'Escriba el código, parte del nombre o un código de barras y consulte. Muestra la entrada (30810), el consumo (32040), el inventario físico y los rollos en piso de TML·WIRE. Con un código de barras se consulta directamente su material. Si hay varios materiales, elija uno de la lista.',his_q:'Código / nombre / cód. barras',his_k_cnt:'Inventario físico (último)',his_k_roll:'Rollos en piso',his_cnt_h:'Detalle de inventario físico',his_roll_h:'Rollos en piso TML·WIRE',his_zero_chk:'Incluir rollos cerrados (0)',his_all:'Todo el periodo',his_k_in:'Total entrada',his_k_use:'Total consumo',his_k_diff:'Entrada − consumo',his_day:'Entrada y consumo por fecha',his_in_h:'Detalle de entrada (30810)',his_use_h:'Detalle de consumo (32040)'};
 let LANG=localStorage.getItem('mshort_lang')||'ko';
 const KO={};
 function applyLang(){
@@ -1143,7 +1150,7 @@ $('aQ').oninput=renderAdj;
 
 /* ---------- 자재이력조회 (입고 30810 · 사용 32040) ---------- */
 const HT={rec:'mshort_receipt',use:'mshort_usage'};
-let HIS=null,HCAND=[];
+let HIS=null,HCAND=[],HBC='',HZERO=null;
 const hNames=()=>{const m={};const put=(c,n)=>{c=String(c||'').toUpperCase();if(!c)return;if(n&&!m[c])m[c]=n;else if(!(c in m))m[c]=''};
   NEED.forEach(r=>put(r.code,r.name));MST.forEach(r=>put(r.code,r.name));(SUM&&SUM.list||[]).forEach(r=>put(r.code,r.name));return m};
 function hFillList(){const m=hNames();$('hList').innerHTML=Object.entries(m).slice(0,4000).map(([c,n])=>`<option value="${esc(c)}">${esc(n)}</option>`).join('')}
@@ -1152,18 +1159,24 @@ async function hFind(q){
   Object.entries(local).forEach(([c,n])=>{if(c.includes(Q)||String(n).toUpperCase().includes(Q))found[c]=n});
   const w=encodeURIComponent('*'+q.replace(/[(),*"]/g,' ').trim()+'*');
   const get=async url=>{const r=await fetch(SB+url,{headers:H});if(!r.ok)throw new Error(await r.text());return r.json()};
-  const [a,b]=await Promise.all([
-    get(`${HT.rec}?select=code,name&or=(code.ilike.${w},name.ilike.${w})&limit=5000`),
-    get(`${HT.use}?select=code,name&or=(code.ilike.${w},name.ilike.${w})&limit=5000`)]);
-  a.forEach(r=>{const c=String(r.code).toUpperCase();if(!found[c])found[c]=r.name||local[c]||''});
-  b.forEach(r=>{const c=String(r.code).toUpperCase();if(!found[c])found[c]=r.name||local[c]||''});
-  return Object.entries(found).map(([code,name])=>({code,name})).sort((x,y)=>x.code.localeCompare(y.code));
+  const [a,b,c_,d,e2]=await Promise.all([
+    get(`${HT.rec}?select=code,name,barcode&or=(code.ilike.${w},name.ilike.${w},barcode.ilike.${w},vbarcode.ilike.${w})&limit=5000`),
+    get(`${HT.use}?select=code,name&or=(code.ilike.${w},name.ilike.${w})&limit=5000`),
+    get(`mshort_count?select=code,barcode&or=(code.ilike.${w},barcode.ilike.${w})&limit=5000`),
+    get(`tmlwire_receipts?select=mat_code,mat_name,barcode&or=(mat_code.ilike.${w},mat_name.ilike.${w},barcode.ilike.${w})&limit=5000`),
+    get(`${HT.rec}?select=code&barcode=eq.${encodeURIComponent(q)}&limit=5`)]);
+  const add=(code,name)=>{const c=String(code||'').toUpperCase();if(!c)return;if(!found[c])found[c]=name||local[c]||''};
+  a.forEach(r=>add(r.code,r.name));b.forEach(r=>add(r.code,r.name));c_.forEach(r=>add(r.code,''));d.forEach(r=>add(r.mat_code,r.mat_name));e2.forEach(r=>add(r.code,''));
+  /* 바코드로 찾은 경우: 그 롤의 자재를 우선 */
+  const bcHit=new Set();[...a,...c_,...d].forEach(r=>{if(String(r.barcode||'').toUpperCase().includes(Q))bcHit.add(String(r.code||r.mat_code||'').toUpperCase())});e2.forEach(r=>bcHit.add(String(r.code).toUpperCase()));
+  HBC=q;
+  return Object.entries(found).map(([code,name])=>({code,name,bc:bcHit.has(code)})).sort((x,y)=>(y.bc-x.bc)||x.code.localeCompare(y.code));
 }
 function hRange(){const f=$('hFrom').value,t=$('hTo').value;return{f,t}}
 async function hRun(){
   const q=$('hQ').value.trim();if(q.length<2)return toast(tr('2글자 이상 입력하세요','Escriba al menos 2 caracteres'));
   busy(1);try{
-    const cand=await hFind(q),exact=cand.find(c=>c.code===q.toUpperCase());
+    const cand=await hFind(q),exact=cand.find(c=>c.code===q.toUpperCase())||(cand.filter(c=>c.bc).length===1?cand.find(c=>c.bc):null);
     HCAND=cand;
     if(!cand.length){$('hCand').innerHTML='';$('hBody').style.display='none';HIS=null;$('hInfo').textContent=tr('검색 결과가 없습니다.','Sin resultados.');busy(0);return}
     if(exact||cand.length===1){busy(0);return hLoad((exact||cand[0]).code)}
@@ -1178,11 +1191,16 @@ function hCandRender(cur){
 async function hLoad(code){
   const {f,t}=hRange(),c=encodeURIComponent(code);
   busy(1);try{
-    const [rec,use]=await Promise.all([
+    if(!HZERO)HZERO=sel('tmlwire_zero','select=barcode,zero_at').then(z=>new Map(z.map(r=>[r.barcode,r.zero_at||''])));
+    const [rec,use,cnt,rolls,ZM]=await Promise.all([
       sel(HT.rec,`select=rdate,qty,unit,name,barcode,used&code=eq.${c}${f?'&rdate=gte.'+f:''}${t?'&rdate=lte.'+t:''}&order=rdate,id`),
-      sel(HT.use,`select=udate,qty,grp,name&code=eq.${c}${f?'&udate=gte.'+f:''}${t?'&udate=lte.'+t:''}&order=udate,id`)]);
-    const nm=hNames()[code]||(rec.find(r=>r.name)||{}).name||(use.find(r=>r.name)||{}).name||'';
-    HIS={code,name:nm,unit:(rec.find(r=>r.unit)||{}).unit||'',rec,use,f,t};
+      sel(HT.use,`select=udate,qty,grp,name&code=eq.${c}${f?'&udate=gte.'+f:''}${t?'&udate=lte.'+t:''}&order=udate,id`),
+      sel('mshort_count',`select=cdate,barcode,qty&code=eq.${c}${f?'&cdate=gte.'+f:''}${t?'&cdate=lte.'+t:''}&order=cdate,id`),
+      sel('tmlwire_receipts',`select=barcode,recv_at,qty,unit,mat_name&mat_code=eq.${c}&order=seq,barcode`),
+      HZERO]);
+    rolls.forEach(r=>{r.zero=ZM.has(r.barcode)?(ZM.get(r.barcode)||'0'):''});
+    const nm=hNames()[code]||(rec.find(r=>r.name)||{}).name||(use.find(r=>r.name)||{}).name||(rolls.find(r=>r.mat_name)||{}).name||'';
+    HIS={code,name:nm,unit:(rec.find(r=>r.unit)||{}).unit||(rolls.find(r=>r.unit)||{}).unit||'',rec,use,cnt,rolls,f,t,bc:HBC};
     hCandRender(code);hRender();
   }catch(e){alert(e.message)}busy(0);
 }
@@ -1202,6 +1220,9 @@ function hRender(){
   $('hkIn').textContent=fmt(ti);$('hkInS').textContent=tr(`${di}일 · ${H_.rec.length}건(롤)`,`${di} días · ${H_.rec.length} rollos`);
   $('hkUse').textContent=fmt(tu);$('hkUseS').textContent=tr(`${du}일 · ${H_.use.length}건`,`${du} días · ${H_.use.length} filas`);
   $('hkDiff').textContent=fmt(ti-tu);$('hkDiff').style.color=ti-tu<0?'var(--red)':'';$('hkDiffS').textContent=tr('실사·반품·조정 미반영','Sin inventario/devol./ajuste');
+  const cnt=H_.cnt||[],rolls=H_.rolls||[],held=rolls.filter(r=>!r.zero),lastCd=cnt.length?cnt[cnt.length-1].cdate:'',lastRows=cnt.filter(r=>r.cdate===lastCd),lastQ=lastRows.reduce((a,r)=>a+(Number(r.qty)||0),0),lastBc=lastRows.filter(r=>r.barcode).length;
+  $('hkCnt').textContent=lastCd?fmt(lastQ):'-';$('hkCntS').textContent=lastCd?tr(`${lastCd} · 바코드 ${lastBc}건`,`${lastCd} · ${lastBc} cód. barras`):tr('기간 내 실사 없음','Sin inventario en el periodo');
+  $('hkRoll').textContent=held.length;$('hkRollS').textContent=tr(`수량합 ${fmt(held.reduce((a,r)=>a+(Number(r.qty)||0),0))} · 0처리 ${rolls.length-held.length}롤`,`Cant. ${fmt(held.reduce((a,r)=>a+(Number(r.qty)||0),0))} · cerrados ${rolls.length-held.length}`);
   $('hDay').innerHTML=`<tr><th>${tr('날짜','Fecha')}</th><th class="n">${tr('입고수량','Entrada')}</th><th class="n">${tr('입고 롤수','Rollos')}</th><th class="n">${tr('사용수량','Consumo')}</th><th class="n">${tr('입고−사용','Entrada−consumo')}</th><th class="n">${tr('누계','Acumulado')}</th></tr>`+
     (days.length?days.slice().reverse().map(o=>`<tr><td>${o.d}</td><td class="n ${o.iq?'in':'mute'}">${o.iq?fmt(o.iq):'-'}</td><td class="n mute">${o.ir||''}</td><td class="n ${o.uq?'out':'mute'}">${o.uq?fmt(o.uq):'-'}</td><td class="n ${o.iq-o.uq<0?'neg':''}">${fmt(o.iq-o.uq)}</td><td class="n ${o.acc<0?'neg':''}">${fmt(o.acc)}</td></tr>`).join('')+
       `<tr class="tot"><td>${tr('합계','Total')}</td><td class="n">${fmt(ti)}</td><td class="n">${H_.rec.length}</td><td class="n">${fmt(tu)}</td><td class="n">${fmt(ti-tu)}</td><td></td></tr>`
@@ -1213,7 +1234,19 @@ function hRender(){
   $('hUse').innerHTML=`<tr><th>#</th><th>${tr('사용날짜','Fecha')}</th><th class="n">${tr('사용수량','Cantidad')}</th><th>${tr('품목그룹','Grupo')}</th><th>${tr('자재명','Nombre')}</th></tr>`+
     (H_.use.length?H_.use.slice().reverse().map((r,i)=>`<tr><td class="mute">${H_.use.length-i}</td><td>${esc(r.udate)}</td><td class="n out">${fmt(r.qty)}</td><td>${esc(r.grp||'')}</td><td>${esc(r.name||'')}</td></tr>`).join('')
       :`<tr><td class="empty" colspan="5">-</td></tr>`);
+  const isHit=b=>H_.bc&&b&&String(b).toUpperCase()===H_.bc.toUpperCase();
+  $('hCntN').textContent=`${cnt.length}${tr('건','')}`;
+  $('hCnt').innerHTML=`<tr><th>#</th><th>${tr('실사일','Fecha')}</th><th>${tr('바코드','Cód. barras')}</th><th class="n">${tr('실사수량','Cantidad')}</th><th>${tr('비고','Nota')}</th></tr>`+
+    (cnt.length?cnt.slice().reverse().map((r,i)=>{const z=r.barcode?rolls.find(x=>x.barcode===r.barcode):null;const note=!r.barcode?tr('바코드 공란(코드 합산)','Sin cód. barras'):Number(r.qty)===0?(z&&!z.zero?tr('수량 0 · 현장 보유 롤','Cant. 0 · rollo en piso'):tr('수량 0','Cant. 0')):'';
+      return `<tr class="${isHit(r.barcode)?'hit':''}"><td class="mute">${cnt.length-i}</td><td>${esc(r.cdate)}</td><td>${esc(r.barcode||'')}</td><td class="n ${Number(r.qty)?'':'mute'}">${fmt(r.qty)}</td><td class="mute">${esc(note)}</td></tr>`}).join('')
+      :`<tr><td class="empty" colspan="5">${tr('기간 내 실사 내역이 없습니다','Sin inventario físico en el periodo')}</td></tr>`);
+  const showZ=$('hZero').checked,rl=showZ?rolls:held;
+  $('hRollN').textContent=tr(`보유 ${held.length}롤${showZ?` · 0처리 ${rolls.length-held.length}롤`:''}`,`${held.length} en piso${showZ?` · ${rolls.length-held.length} cerrados`:''}`);
+  $('hRoll').innerHTML=`<tr><th>#</th><th>${tr('바코드','Cód. barras')}</th><th>${tr('입고일시','Entrada')}</th><th class="n">${tr('수량','Cantidad')}</th><th>${tr('상태','Estado')}</th></tr>`+
+    (rl.length?rl.slice().reverse().map((r,i)=>`<tr class="${isHit(r.barcode)?'hit':''}"><td class="mute">${rl.length-i}</td><td>${esc(r.barcode)}</td><td>${esc(r.recv_at||'')}</td><td class="n ${r.zero?'mute':'in'}">${fmt(r.qty)}</td><td>${r.zero?`<span class="tag none">${tr('0처리','Cerrado')} ${esc(r.zero==='0'?'':r.zero)}</span>`:`<span class="tag ok">${tr('현장 보유','En piso')}</span>`}</td></tr>`).join('')
+      :`<tr><td class="empty" colspan="5">${tr('현장 보유 롤이 없습니다','Sin rollos en piso')}</td></tr>`);
 }
+$('hZero').onchange=()=>{if(HIS)hRender()};
 $('hRun').onclick=hRun;
 $('hQ').onkeydown=e=>{if(e.key==='Enter')hRun()};
 $('hAll').onclick=()=>{$('hFrom').value='';$('hTo').value='';if(HIS)hLoad(HIS.code);else if($('hQ').value.trim())hRun()};
@@ -1227,6 +1260,8 @@ $('hXlsx').onclick=()=>{
     days.map(o=>[o.d,o.iq,o.ir,o.uq,o.iq-o.uq,o.acc])),[12,14,10,14,16,14]);
   add(tr('입고내역','Entrada'),[[tr('입고날짜','Fecha'),tr('입고수량','Cantidad'),tr('단위','Unidad'),tr('바코드','Cód. barras'),tr('사용','Uso')]].concat(HIS.rec.map(r=>[r.rdate,Number(r.qty),r.unit||'',r.barcode||'',r.used||''])),[12,12,8,26,8]);
   add(tr('사용내역','Consumo'),[[tr('사용날짜','Fecha'),tr('사용수량','Cantidad'),tr('품목그룹','Grupo'),tr('자재명','Nombre')]].concat(HIS.use.map(r=>[r.udate,Number(r.qty),r.grp||'',r.name||''])),[12,12,10,24]);
+  add(tr('실사내역','Inventario'),[[tr('실사일','Fecha'),tr('바코드','Cód. barras'),tr('실사수량','Cantidad')]].concat((HIS.cnt||[]).map(r=>[r.cdate,r.barcode||'',Number(r.qty)])),[12,26,12]);
+  add(tr('현장롤','Rollos'),[[tr('바코드','Cód. barras'),tr('입고일시','Entrada'),tr('수량','Cantidad'),tr('단위','Unidad'),tr('상태','Estado'),tr('0처리일','Fecha cierre')]].concat((HIS.rolls||[]).map(r=>[r.barcode,r.recv_at||'',Number(r.qty)||0,r.unit||'',r.zero?tr('0처리','Cerrado'):tr('현장 보유','En piso'),r.zero==='0'?'':(r.zero||'')])),[26,16,10,8,10,12]);
   XLSX.writeFile(wb,`${tr('자재이력','Historial')}_${HIS.code}_${today()}.xlsx`);
 };
 document.querySelector('#nav button[data-tab="his"]').addEventListener('click',hFillList);
