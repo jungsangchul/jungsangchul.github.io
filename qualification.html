@@ -484,7 +484,7 @@ var msaSource={};
 const ROUND_TYPES={new:'신입사원평가',regular:'정기평가',re:'재평가',etc:'기타'};
 function _roundById(id){return evalRounds.find(x=>x.id===id)||null;}
 function roundName(id){if(!id)return'미지정';const r=_roundById(id);return r?r.name:id;}
-function roundShort(id){if(!id)return'미지정';const r=_roundById(id);if(!r)return id;if(r.type==='new'&&r.cohort)return'신입 '+r.cohort.slice(2).replace('-','.')+'월';return r.name.length>14?r.name.slice(0,13)+'…':r.name;}
+function roundShort(id){if(!id)return'미지정';const r=_roundById(id);if(!r)return id;if(r.type==='new'&&r.cohort)return'신입 '+r.cohort.slice(2).replace('-','.')+'월';if(r.type==='new')return'신입 전체';return r.name.length>14?r.name.slice(0,13)+'…':r.name;}
 function _sortedRounds(){
   const ord={new:0,regular:1,re:2,etc:3};
   return [...evalRounds].sort((a,b)=>(ord[a.type]??9)-(ord[b.type]??9)||String(b.cohort||b.id).localeCompare(String(a.cohort||a.id)));
@@ -549,22 +549,24 @@ function openRoundEditor(){
       <div class="rnd-grid">
         <label>종류</label>
         <select id="rndType" onchange="_rndTypeChg()">
-          <option value="new">신입사원평가 (입사월 지정)</option>
+          <option value="new">신입사원평가 (입사월 지정 / 전체 인원)</option>
           <option value="regular">정기평가</option>
           <option value="re">재평가</option>
           <option value="etc">기타</option>
         </select>
-        <label id="rndCohortLbl">입사월</label><input type="month" id="rndCohort" value="${ym}" oninput="_rndTypeChg(true)">
+        <label id="rndCohortLbl">대상</label><div id="rndCohortBox" style="display:flex;gap:.4rem">
+          <select id="rndScope" onchange="_rndTypeChg(true)" style="flex:0 0 42%"><option value="cohort">입사월 지정</option><option value="all">전체 인원</option></select>
+          <input type="month" id="rndCohort" value="${ym}" oninput="_rndTypeChg(true)" style="flex:1"></div>
         <label>이름</label><input type="text" id="rndName" placeholder="평가구분 이름">
       </div>
       <label style="display:flex;gap:.4rem;align-items:center;margin:.55rem 0 0;font-size:.8rem;color:var(--text2)"><input type="checkbox" id="rndActivate" checked style="width:auto"> 만든 뒤 현재 평가구분으로 설정</label>
       <div style="text-align:right;margin-top:.6rem"><button type="button" class="btn btn-primary btn-sm" onclick="createRound()">＋ 만들기</button></div>
-      <div style="font-size:.72rem;color:var(--text2);margin-top:.3rem">신입사원평가는 선택한 입사월(사번 M0YYMM…) 인원만 평가 대상에 표시됩니다. 정기평가 예: 정기평가 ${now.getFullYear()}년 ${half}</div>
+      <div style="font-size:.72rem;color:var(--text2);margin-top:.3rem">신입사원평가는 선택한 입사월(사번 M0YYMM…) 인원만 평가 대상에 표시됩니다. 「전체 인원」을 고르면 입사월과 관계없이 모든 인원이 대상입니다. 정기평가 예: 정기평가 ${now.getFullYear()}년 ${half}</div>
     </div>
     <div class="rnd-sec">
       <div class="rnd-title">등록된 평가구분</div>
       ${evalRounds.length?`<table class="results-table"><thead><tr><th>종류</th><th>이름</th><th>기록</th><th></th></tr></thead><tbody>
-      ${_sortedRounds().map(r=>`<tr><td style="font-size:.76rem;color:var(--text2)">${ROUND_TYPES[r.type]||r.type}${r.cohort?' · '+r.cohort:''}</td>
+      ${_sortedRounds().map(r=>`<tr><td style="font-size:.76rem;color:var(--text2)">${ROUND_TYPES[r.type]||r.type}${r.cohort?' · '+r.cohort:(r.type==='new'?' · 전체 인원':'')}</td>
         <td><input type="text" value="${_perfEsc(r.name)}" onchange="renameRound('${_perfEsc(r.id)}',this.value)" style="min-width:220px"></td>
         <td style="font-family:'JetBrains Mono',monospace">${cnt[r.id]||0}건</td>
         <td>${cnt[r.id]?'':`<button type="button" class="btn btn-danger btn-sm" onclick="deleteRound('${_perfEsc(r.id)}')">삭제</button>`}</td></tr>`).join('')}
@@ -575,20 +577,23 @@ function openRoundEditor(){
 }
 function _rndTypeChg(keepType){
   const t=document.getElementById('rndType').value, c=document.getElementById('rndCohort'), n=document.getElementById('rndName');
-  const isNew=t==='new';c.style.display=isNew?'':'none';document.getElementById('rndCohortLbl').style.display=isNew?'':'none';
+  const isNew=t==='new';document.getElementById('rndCohortBox').style.display=isNew?'flex':'none';document.getElementById('rndCohortLbl').style.display=isNew?'':'none';
+  const all=document.getElementById('rndScope').value==='all';c.style.display=all?'none':'';
   const now=new Date(),d=now.toISOString().slice(0,10);
-  if(isNew){const v=c.value||now.toISOString().slice(0,7);n.value=`신입사원평가 ${v.slice(0,4)}년 ${parseInt(v.slice(5,7),10)}월 입사자`;}
+  if(isNew&&all)n.value=`신입사원평가 전체 인원 ${d}`;
+  else if(isNew){const v=c.value||now.toISOString().slice(0,7);n.value=`신입사원평가 ${v.slice(0,4)}년 ${parseInt(v.slice(5,7),10)}월 입사자`;}
   else if(!keepType)n.value=t==='regular'?`정기평가 ${now.getFullYear()}년 ${now.getMonth()<6?'상반기':'하반기'}`:t==='re'?`재평가 ${d}`:'';
 }
 async function createRound(){
   if(!_hasRoundCol){alert('먼저 Supabase에서 qualification_eval_round.sql 을 실행해주세요.');return;}
   const t=document.getElementById('rndType').value, coh=document.getElementById('rndCohort').value, name=document.getElementById('rndName').value.trim();
   if(!name){alert('이름을 입력해주세요.');return;}
-  let id;
-  if(t==='new'){if(!/^\d{4}-\d{2}$/.test(coh)){alert('입사월을 선택해주세요.');return;}id='NEW-'+coh;}
+  let id;const allNew=t==='new'&&document.getElementById('rndScope').value==='all';
+  if(allNew)id='NEW-ALL-'+new Date().toISOString().slice(0,10).replace(/-/g,'')+'-'+Math.random().toString(36).slice(2,6).toUpperCase();
+  else if(t==='new'){if(!/^\d{4}-\d{2}$/.test(coh)){alert('입사월을 선택해주세요.');return;}id='NEW-'+coh;}
   else id=({regular:'REG',re:'RE',etc:'ETC'}[t])+'-'+new Date().toISOString().slice(0,10).replace(/-/g,'')+'-'+Math.random().toString(36).slice(2,6).toUpperCase();
   if(_roundById(id)){alert('이미 있는 평가구분입니다: '+roundName(id));return;}
-  evalRounds.push(t==='new'?{id,name,type:t,cohort:coh}:{id,name,type:t});
+  evalRounds.push(t==='new'&&!allNew?{id,name,type:t,cohort:coh}:{id,name,type:t});
   try{await _saveRounds();}catch(e){alert('⚠️ 서버 저장 실패: '+e.message);return;}
   if(document.getElementById('rndActivate').checked)await setActiveRound(id);else _roundRefreshAll();
   openRoundEditor();
