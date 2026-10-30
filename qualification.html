@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ko"><head>
+<script>try{window.__realLS=window.localStorage;}catch(e){}</script>
 <script>
 // ════ [작업수행평가 체크시트] 작업자 기량관리 매뉴얼 M-039-R4 공정별 실기평가 항목 (2026-10-26) ════
 // 배점 체계: 이론 30 + 작업수행평가 40 + 압착고측정 15 + 불량판별 15 = 100
@@ -4399,7 +4400,23 @@ document.addEventListener('DOMContentLoaded', renderExamQr);
 </head>
 <body>
 
-<!-- ============ LOGIN ============ -->
+<!-- ============ LOGIN (포털 계정 세션 확인 — index.html 로그인 필요) ============ -->
+<div id="portalGate" style="position:fixed;inset:0;z-index:9999;background:#0a0a0a;display:flex;align-items:center;justify-content:center;padding:1rem">
+  <div style="width:min(380px,100%);background:#141414;border:1px solid #262626;border-radius:14px;padding:1.6rem 1.5rem;text-align:center">
+    <div style="font-family:'Space Mono',monospace;font-size:.68rem;color:#c9a84c;letter-spacing:.14em;text-transform:uppercase">Yura Harness México</div>
+    <div style="font-family:'IBM Plex Sans KR','Noto Sans KR',sans-serif;font-weight:700;font-size:1.15rem;margin:.35rem 0 .2rem;color:#ededed">자격인증 시스템</div>
+    <div id="pgMsg" style="font-size:.8rem;color:#8a8a8a;min-height:1.2em;margin-bottom:1rem">세션 확인 중… / Verificando sesión…</div>
+    <div id="pgForm" style="display:none;text-align:left">
+      <div style="font-size:.78rem;color:#8a8a8a;margin-bottom:.7rem;line-height:1.5">이 페이지는 메인 포털(index) 계정으로 로그인해야 사용할 수 있습니다.<br>Inicie sesión con su cuenta del portal.</div>
+      <input id="pgId" type="text" placeholder="아이디 / Usuario" autocomplete="username" style="width:100%;margin-bottom:.5rem;background:#0f0f0f;border:1px solid #262626;color:#ededed;border-radius:8px;padding:.6rem .7rem;font-size:.9rem">
+      <input id="pgPw" type="password" placeholder="비밀번호 / Contraseña" autocomplete="current-password" style="width:100%;margin-bottom:.5rem;background:#0f0f0f;border:1px solid #262626;color:#ededed;border-radius:8px;padding:.6rem .7rem;font-size:.9rem">
+      <label style="display:flex;align-items:center;gap:.4rem;font-size:.76rem;color:#8a8a8a;margin-bottom:.8rem;text-transform:none;letter-spacing:0;font-family:'Noto Sans KR',sans-serif"><input id="pgRemember" type="checkbox" style="width:auto"> 자동 로그인 / Mantener sesión</label>
+      <div id="pgErr" style="color:#e8574f;font-size:.78rem;min-height:1.1em;margin-bottom:.5rem"></div>
+      <button id="pgBtn" type="button" onclick="portalGateLogin()" style="width:100%;background:#c9a84c;color:#111;border:none;border-radius:8px;padding:.65rem;font-weight:700;font-size:.9rem;cursor:pointer">로그인 / Entrar</button>
+      <a href="index.html" target="_top" style="display:block;text-align:center;margin-top:.7rem;font-size:.76rem;color:#8a8a8a">← 메인 포털로 이동 / Ir al portal</a>
+    </div>
+  </div>
+</div>
 
 
 <!-- ============ APP ============ -->
@@ -4424,7 +4441,7 @@ document.addEventListener('DOMContentLoaded', renderExamQr);
     <button class="tab-btn" onclick="switchTab('stats',this)"><span data-kr="⑤ 통계 분석" data-es="⑤ Estadísticas">⑤ 통계 분석</span></button>
     <button class="tab-btn" onclick="switchTab('skills',this)"><span data-kr="⑥ 숙련도·다기능" data-es="⑥ Habilidades">⑥ 숙련도·다기능</span></button>
     <button class="tab-btn" onclick="switchTab('criteria',this)"><span data-kr="⑦ 평가기준" data-es="⑦ Criterios">⑦ 평가기준</span></button>
-    <button class="tab-btn" onclick="switchTab('admin',this)" style="border-color:rgba(201,168,76,.5)"><span data-kr="⑧ 관리자" data-es="⑧ Admin">⑧ 관리자</span></button>
+    <button class="tab-btn" id="tabAdminBtn" onclick="switchTab('admin',this)" style="border-color:rgba(201,168,76,.5);display:none"><span data-kr="⑧ 관리자" data-es="⑧ Admin">⑧ 관리자</span></button>
   </nav>
   <div style="display:flex;align-items:center;gap:0.5rem;flex-shrink:0;padding-left:0.5rem">
     <button type="button" onclick="syncImagesToSupabase()" style="padding:5px 11px;background:#c0392b;color:#fff;border:none;border-radius:5px;cursor:pointer;font-family:inherit;font-size:0.75rem;font-weight:700;white-space:nowrap" title="로컬 이미지를 Supabase에 재업로드">🖼️ 이미지 복구</button>
@@ -9342,7 +9359,7 @@ async function gateIn(){
   else{document.getElementById('gateMsg').textContent='비밀번호가 맞지 않습니다';document.getElementById('pin').value='';}
 }
 let _entered=false;
-async function enter(){if(_entered){renderSim();return;}document.getElementById('gate').style.display='flex';setTimeout(()=>{try{document.getElementById('pin').focus();}catch(e){}},50);}
+async function enter(){if(!(window.PORTAL_USER&&window.PORTAL_USER.role==='admin')){alert('관리자 계정으로 로그인해야 사용할 수 있습니다.');try{switchTab('exam',document.querySelector('.tab-nav .tab-btn'));}catch(e){}return;}if(_entered){renderSim();return;}document.getElementById('gate').style.display='flex';setTimeout(()=>{try{document.getElementById('pin').focus();}catch(e){}},50);}
 async function sha256(t){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('');}
 
 /* ═══════════ 로드 ═══════════ */
@@ -9783,6 +9800,71 @@ async function saveSim(){
 }
 
 window.QA={addBand,cfgSet,dApply,dInit,dPreview,dPurge,dRenderProcs,dRoundChg,dSyncTargets,dTypeChg,delProd,dlog,enter,exportProd,exportSim,fillRoundSelects,gateIn,genAttAnswers,genVarGroup,go,grr,importProd,itemName,latestPerEmp,loadAll,loadPerfSheets,mainRefresh,nrand,perfSheetFor,pickN,profScore,renderBands,renderDiag,renderPreview,renderProd,renderSim,renderWeights,roundOpts,savePin,saveSim,saveWeights,sb,sbInsertMany,shuffle,toast,wSum,get W(){return W;},get BANDS(){return BANDS;}};
+})();
+</script>
+<script>
+// ════ 포털 계정 세션 게이트 (2026-10-30) ════
+//  · index.html 로그인 세션(yura_session_v3, localStorage=자동로그인 / sessionStorage=일반)을 확인해 유효할 때만 화면 표시
+//  · 새 창(noopener)으로 열리면 sessionStorage가 넘어오지 않으므로 같은 계정으로 다시 로그인하는 폼 제공
+//  · role==='admin' 인 계정만 ⑧ 관리자 탭 표시 (일반 사용자는 탭 자체가 안 보임)
+(function(){
+  const KEY='yura_session_v3';
+  const LS=window.__realLS||window.localStorage;   // 앱이 https 모드에서 localStorage를 noop으로 바꾸므로 원본 참조 사용
+  window.PORTAL_USER=null;
+  const $=id=>document.getElementById(id);
+  function load(){try{const r=LS.getItem(KEY)||sessionStorage.getItem(KEY);return r?JSON.parse(r):null;}catch(e){return null;}}
+  function save(u,remember){const raw=JSON.stringify(u);try{if(remember){LS.setItem(KEY,raw);sessionStorage.removeItem(KEY);}else{sessionStorage.setItem(KEY,raw);}}catch(e){}}
+  function clear(){try{LS.removeItem(KEY);sessionStorage.removeItem(KEY);}catch(e){}}
+  async function rpc(fn,body){
+    const r=await fetch(`${SB_URL}/rest/v1/rpc/${fn}`,{method:'POST',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json'},body:JSON.stringify(body||{})});
+    const t=await r.text();let j=null;try{j=t?JSON.parse(t):null;}catch(e){}
+    if(!r.ok){const e=new Error((j&&(j.message||j.hint))||t||('HTTP '+r.status));e.status=r.status;throw e;}
+    return j;
+  }
+  function showForm(msg){$('pgMsg').textContent=msg||'';$('pgForm').style.display='block';$('portalGate').style.display='flex';setTimeout(()=>{try{$('pgId').focus();}catch(e){}},50);}
+  function applyUser(u){
+    window.PORTAL_USER=u;
+    const isAdmin=u&&u.role==='admin';
+    const b=$('tabAdminBtn');if(b)b.style.display=isAdmin?'':'none';
+    if(!isAdmin){const pg=$('page-admin');if(pg&&pg.classList.contains('active')){try{switchTab('exam',document.querySelector('.tab-nav .tab-btn'));}catch(e){}}}
+    try{let chip=$('portalUserChip');if(!chip){chip=document.createElement('span');chip.id='portalUserChip';chip.style.cssText='font-size:.7rem;color:#8a8a8a;white-space:nowrap';const lb=$('langBtn');if(lb&&lb.parentNode)lb.parentNode.insertBefore(chip,lb);}
+      chip.innerHTML=`👤 ${String(u.name||u.id).replace(/[<>&]/g,'')} <span style="color:${isAdmin?'#c9a84c':'#666'}">${isAdmin?'관리자':'일반'}</span>`;}catch(e){}
+    $('portalGate').style.display='none';
+  }
+  window.portalGateLogin=async function(){
+    const id=$('pgId').value.trim(),pw=$('pgPw').value;$('pgErr').textContent='';
+    if(!id||!pw){$('pgErr').textContent='아이디와 비밀번호를 입력하세요 / Ingrese usuario y contraseña';return;}
+    $('pgBtn').disabled=true;
+    try{
+      const res=await rpc('portal_login',{p_user_id:id,p_password:pw,p_remember:$('pgRemember').checked,p_ua:navigator.userAgent});
+      if(!res||res.error){const m={locked:'잠김 — 잠시 후 다시 시도 / Bloqueado',invalid:'아이디 또는 비밀번호가 틀립니다 / Usuario o contraseña incorrectos'};$('pgErr').textContent=(res&&m[res.error])||('로그인 실패: '+(res&&res.error||''));$('pgPw').value='';return;}
+      const u={token:res.token,id:res.user_id,name:res.name,role:res.role};
+      save(u,$('pgRemember').checked);$('pgPw').value='';
+      if(res.must_change){$('pgErr').textContent='비밀번호 변경이 필요합니다. 메인 포털에서 변경 후 다시 접속하세요 / Cambie su contraseña en el portal';clear();return;}
+      applyUser(u);
+    }catch(e){$('pgErr').textContent='로그인 오류 / Error: '+e.message;}
+    finally{$('pgBtn').disabled=false;}
+  };
+  ['pgId','pgPw'].forEach(id=>{const el=$(id);if(el)el.addEventListener('keydown',e=>{if(e.key==='Enter')portalGateLogin();});});
+  async function verify(){
+    if(typeof _isLocalFile!=='undefined'&&_isLocalFile){$('portalGate').style.display='none';const b=$('tabAdminBtn');if(b)b.style.display='none';return;}   // file:// 로컬 모드: 서버 확인 불가 → 관리자 탭만 숨김
+    const u=load();
+    if(!u||!u.token){showForm('');return;}
+    try{
+      const r=await rpc('portal_session',{p_token:u.token});
+      if(!r||r.error){clear();showForm('세션이 만료되었습니다 / Sesión expirada');return;}
+      const fresh={token:u.token,id:r.user_id,name:r.name,role:r.role};
+      save(fresh,!!LS.getItem(KEY));
+      if(r.must_change){clear();showForm('비밀번호 변경 필요 — 메인 포털에서 변경하세요');return;}
+      applyUser(fresh);
+    }catch(e){
+      if(e.status&&e.status>=400&&e.status<500){clear();showForm('세션이 만료되었습니다. 다시 로그인하세요 / Sesión expirada');}
+      else{applyUser(u);}   // 네트워크 오류: 캐시 세션으로 진행
+    }
+  }
+  // 다른 탭/포털에서 로그아웃하면 즉시 차단
+  window.addEventListener('storage',e=>{if(e.key===KEY&&!e.newValue&&!sessionStorage.getItem(KEY)){window.PORTAL_USER=null;showForm('로그아웃되었습니다 / Sesión cerrada');}});
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',verify);else verify();
 })();
 </script>
 </body></html>
