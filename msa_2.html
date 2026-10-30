@@ -3136,15 +3136,18 @@ const SUB={
 const SUBK=Object.keys(SUB).sort((a,b)=>b.length-a.length);
 const RE_RULES=[[/(\d+)조/g,'Grupo $1'],[/(\d+)차/g,'$1ª'],[/(\d+)명/g,'$1 pers.']];
 
+/* 번역된 텍스트 노드의 한국어 원문 보관 → 한국어 전환 시 복원 */
+let TRN=[];
+function trSet(n,s,v){ TRN.push([n,s]); n.nodeValue=v; }
 function trText(n){
   const s=n.nodeValue;
   if(!s || !/[가-힣]/.test(s)) return;
   const k=s.trim();
-  if(EXACT[k]){ n.nodeValue=s.replace(k,EXACT[k]); return; }
+  if(EXACT[k]){ trSet(n,s,s.replace(k,EXACT[k])); return; }
   let out=s;
   for(const key of SUBK) if(out.indexOf(key)>=0) out=out.split(key).join(SUB[key]);
   RE_RULES.forEach(r=>{ out=out.replace(r[0],r[1]); });
-  if(out!==s) n.nodeValue=out;
+  if(out!==s) trSet(n,s,out);
 }
 function trNode(root){
   if(!root) return;
@@ -3182,6 +3185,8 @@ function toggleLang(){
   $('langBtn').textContent = LANG==='ko' ? 'ES' : '한국어';
   document.documentElement.lang = LANG==='ko' ? 'ko' : 'es';
   /* 정적 문구를 한국어 원본으로 되돌린 뒤 */
+  for(let i=TRN.length-1;i>=0;i--){ const a=TRN[i]; if(a[0].isConnected) a[0].nodeValue=a[1]; }
+  TRN=[];
   SNAP.forEach(a=>{ if(a[0].isConnected) a[0].nodeValue=a[1]; });
   SNAP_PH.forEach(a=>a[0].setAttribute('placeholder',a[1]));
   /* 동적 영역 재렌더 (항상 한국어로 생성됨) */
@@ -3190,6 +3195,8 @@ function toggleLang(){
   if(adminOK) admRender();
   if(LANG==='es') trNode(document.body);
   drawAll();
+  /* 이력 조회 결과도 현재 언어로 다시 그림 */
+  if((HV&&HV.length)||(HA&&HA.length)) loadHist();
 }
 /* 캔버스에 그려지는 제목용 */
 const tw = s => (LANG==='es' && SUB[s]) ? SUB[s] : s;
