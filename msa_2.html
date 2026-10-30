@@ -1347,7 +1347,7 @@ function calcVar(){
     '<div><b'+(V.pctT===null?' style="color:#e05c5c;font-size:13px"':'')+'>'+
       (V.pctT===null?'규격 미입력':V.pctT.toFixed(2)+'%')+'</b><span>% Tolerance (5.15σ)</span></div>'+
     '<div><b>'+V.ndc+'</b><span>distinct categories (ndc)</span></div>'+
-    '<div><b>'+V.grade+'</b><span>'+LVL_ES[V.grade]+' · '+V.result+'</span></div></div>';
+    '<div><b>'+V.grade+'</b><span>'+LVL_ES[V.grade]+' · '+resL(V.result)+'</span></div></div>';
 
   h+='<div class="scroll" style="margin-top:12px"><table><thead><tr>'+
      '<th>Source</th><th>St. Dev.</th><th>Variance</th><th>% Contribution</th>'+
@@ -1403,7 +1403,7 @@ function renderSummary(){
     h+='<td>'+esc(d.gage)+'</td><td>'+r.pctC.toFixed(3)+'%</td>'+
       '<td>'+(r.pctT===null?'—':r.pctT.toFixed(3)+'%')+'</td><td>'+r.ndc+'</td>'+
       '<td><span class="pill '+pc(r.grade)+'">'+r.grade+' / '+LVL_ES[r.grade]+'</span></td>'+
-      '<td>'+r.result+'</td><td style="text-align:left">'+esc(d.action)+'</td></tr>';
+      '<td>'+resL(r.result)+'</td><td style="text-align:left">'+esc(d.action)+'</td></tr>';
   });
   const avgC=rs.reduce((s,r)=>s+r.pctC,0)/rs.length;
   const tt=rs.filter(r=>r.pctT!==null);
@@ -2054,7 +2054,7 @@ function admPreview(out){
       '<td>'+r.GRR.toFixed(4)+'</td><td>'+r.PV.toFixed(4)+'</td>'+
       '<td>'+r.pctC.toFixed(2)+'%</td><td>'+(r.pctT==null?'—':r.pctT.toFixed(2)+'%')+'</td>'+
       '<td>'+r.ndc+'</td><td><span class="pill '+pc(r.grade)+'">'+r.grade+'</span></td>'+
-      '<td>'+r.result+'</td></tr>';
+      '<td>'+resL(r.result)+'</td></tr>';
   });
   $('admPreview').innerHTML=h+'</tbody></table>'+
     '<p class="note">계량형 탭에서 그래프와 상세 결과를 확인한 뒤 저장하세요.</p>';
@@ -2301,6 +2301,9 @@ function finalMap(rows){
   return m;
 }
 const passed = r => r && r.result==='Aprobado';
+/* 판정 표시: DB 값(Aprobado/No aprobado)을 현재 언어로 */
+function resL(v){ if(!v) return v||''; if(LANG==='es') return v;
+  return v==='Aprobado'?'합격':v==='No aprobado'?'불합격':v; }
 const gradeCls = g => g==='우수'?'p-ok':g==='양호'?'p-wa':'p-ng';
 
 /* 계량형 탭 — 재평가 대상(불합격 조) */
@@ -2456,9 +2459,9 @@ async function loadHist(){
           ? '<span class="pill '+c+' fin-old">'+esc(r.grade)+'</span><span class="fin-arrow">→</span><span class="pill '+gradeCls(f.grade)+'">'+esc(f.grade)+'</span>'
           : '<span class="pill '+c+'">'+esc(r.grade)+'</span>';
         const resHtml = f
-          ? '<span class="fin-old">'+esc(r.result)+'</span><span class="fin-arrow">→</span><b style="color:'+(passed(f)?'#4caf7d':'#ef9a9a')+'">'+esc(f.result)+'</b>'+
+          ? '<span class="fin-old">'+esc(resL(r.result))+'</span><span class="fin-arrow">→</span><b style="color:'+(passed(f)?'#4caf7d':'#ef9a9a')+'">'+esc(resL(f.result))+'</b>'+
             '<span class="fin-sub">'+retestLabel(f.retest_no)+' ('+esc(f.eval_date)+') 반영</span>'
-          : esc(r.result);
+          : esc(resL(r.result));
         const fo=r.fault_ops||[];
         const faultHtml = !fo.length ? ''
           : passed(r) ? '<br><span class="pill p-wa" style="font-size:11px">'+(r.retest_no>0?'🔁 재측정: ':'주의: ')+esc(fo.join(', '))+'</span>'
@@ -2634,7 +2637,7 @@ async function openVarDetail(id){
       ? '<span class="pill p-gold">'+retestLabel(r.retest_no)+'</span> '+
         (parent?'원평가: '+lnk(parent.id, esc(parent.eval_date)+' · '+esc(parent.group_name||'')+' ('+esc(parent.grade||'')+')'):'')
       : '<span class="pill p-mut">정기 평가</span>';
-    if(kids.length) rtInfo+='<br>재평가 이력: '+kids.map(k=>lnk(k.id, retestLabel(k.retest_no)+' '+esc(k.eval_date)+' → '+esc(k.grade||'')+' / '+esc(k.result||''))).join(' &nbsp;·&nbsp; ');
+    if(kids.length) rtInfo+='<br>재평가 이력: '+kids.map(k=>lnk(k.id, retestLabel(k.retest_no)+' '+esc(k.eval_date)+' → '+esc(k.grade||'')+' / '+esc(resL(k.result)))).join(' &nbsp;·&nbsp; ');
 
     let h='<div style="margin-bottom:12px"><span class="pill" style="background:var(--navy);'+
       'color:#fff;font-size:12px;padding:4px 12px">계량형 Gage R&amp;R · Variable (Método Xbar-R)</span>'+
@@ -2661,7 +2664,7 @@ async function openVarDetail(id){
         '<span style="color:#e05c5c">규격 미입력</span>')+'</td>'+
       '<td>'+(r.ndc==null?'—':r.ndc)+'</td>'+
       '<td><span class="pill '+gcls+'">'+esc(r.grade)+'</span></td>'+
-      '<td>'+esc(r.result)+'</td></tr></tbody></table></div>';
+      '<td>'+esc(resL(r.result))+'</td></tr></tbody></table></div>';
 
     const MV=rebuildFromMeasures(r,ms);
     let D=null;
@@ -2812,9 +2815,9 @@ function exportHistXlsx(){
     HV.forEach(r=>a.push([periodLabel(r.period),r.eval_date,r.title,r.retest_no>0?retestLabel(r.retest_no):'정기',
       (r.fault_ops||[]).join(', '),r.group_name,measurerNames(r).join(' / '),
       r.gage_no,r.n_parts,r.n_ops,r.n_trials,r.ev,r.av,r.grr,r.pv,r.tv,
-      r.pct_contrib,r.pct_tol,r.ndc,r.grade,r.result,
+      r.pct_contrib,r.pct_tol,r.ndc,r.grade,resL(r.result),
       ...(function(){ const f=(!(r.retest_no>0)&&HVF[r.id])?HVF[r.id]:r;
-        return [f.grade, f.result+(f.id!==r.id?' ('+retestLabel(f.retest_no)+')':'')]; })(),
+        return [f.grade, resL(f.result)+(f.id!==r.id?' ('+retestLabel(f.retest_no)+')':'')]; })(),
       r.action_plan]));
     sheets.push({name:'계량형이력',aoa:a,
       cols:[{wch:12},{wch:20},{wch:9},{wch:34},{wch:14}].concat(Array(14).fill({wch:11}))});
