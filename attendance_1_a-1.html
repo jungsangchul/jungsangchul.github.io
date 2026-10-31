@@ -2813,8 +2813,8 @@ async function init(){
 //  ③ 자동등록 후 다른 팀으로 바뀐 인원(14일 이내·결근기록 없음)은 목록에서 제외
 // 매칭: 사번(empno ↔ employee_id), 사번 없는 직원만 이름(악센트/공백 무시) 완전일치 보조
 var TRESS_ROSTER_TABLE='att_employees', TRESS_APP_EMP_TABLE='att2_1a_employees';
-// ⏸ TRESS 자동 입사·퇴사 반영 일시 중지 (2026-10-31) — 직접 관리 명단 기준으로 운영. 재개하려면 true
-var TRESS_SYNC_ENABLED=false;
+// TRESS 자동 입사·퇴사 반영 on/off 스위치 (2026-10-31 재개) — 중지하려면 false
+var TRESS_SYNC_ENABLED=true;
 var RESIGN_SYNC_DEFAULT_CODE = 3;
 var _resignSyncBusy=false, _newHireSyncBusy=false;
 function _rsNormName(s){

@@ -482,6 +482,8 @@ const MULTI_OK=['서브','포선','조립'];
 const PROC_ES={'서브':'Sub','포선':'Ruteo','조립':'Ensamble','구조':'Estructura','후공정':'Protector','수정':'Re-Work'};
 const WK_TBL='assy_eval_worker';
 const EMP_TBL=PLANT===2?'att_employees_2':'att_employees';
+// TRESS 직원 마스터 병합 on/off (2026-10-31 재개) — 중지하려면 false
+const TRESS_SYNC_ENABLED=true;
 // 평가 공정 → 명단의 담당 공정(작업자 배치 공정) 매칭
 const PROC_MATCH={'서브':['서브'],'포선':['포선'],'조립':['조립'],'구조':['구조검사'],'후공정':['후공정'],'수정':['수정']};
 const WK_PROCS=['서브','포선','조립','후공정','수정','구조검사','회로검사','반장','자재'];
@@ -532,7 +534,7 @@ const T={
  lvbase:['레벨 기준','Criterio'],over:['이상','≥'],under:['미만','<'],newbie:['신입사원\n배치 가능기준','Nuevo\n(asignable)'],
  prev:['이전 점수 (평가전)','Anterior'],after:['평가후','Después'],wtime:['작업시간(초)','Tiempo (s)'],level:['레벨','Nivel'],change:['평가결과','Cambio'],
  up:['▲ 향상','▲ Mejoró'],dn:['▼ 하락','▼ Bajó'],eq:['― 유지','― Igual'],first:['첫 평가','Primera'],
- pass:['평가 완료','Evaluado'],fail:['과락 · 재평가 필요','Reprobado · Reevaluar'],rep:['대표 레벨','Nivel'],need:['작업자·작업시간을 입력하세요','Capture operador y tiempo'],
+ pass:['평가 완료','Evaluado'],fail:['과락 · 재평가 필요','Reprobado · Reevaluar'],reevalDone:['재평가 완료','Reevaluado'],reevalPass:['재평가 합격','Aprobado en reevaluación'],rep:['대표 레벨','Nivel'],need:['작업자·작업시간을 입력하세요','Capture operador y tiempo'],
  saved:['저장했습니다','Guardado'],updated:['수정 저장했습니다','Actualizado'],deleted:['삭제했습니다','Eliminado'],editing:['✎ 저장된 평가 수정 중','✎ Editando evaluación guardada'],
  del:['삭제','Eliminar'],confirm_del:['이 평가 기록을 삭제할까요?','¿Eliminar esta evaluación?'],
  date:['평가일','Fecha'],evaluatorCol:['평가자','Evaluador'],result:['결과','Resultado'],cnt:['평가 건수','Evaluaciones'],ppl:['평가 인원','Operadores'],failc:['재평가 대상','A reevaluar'],
@@ -618,7 +620,7 @@ async function loadAll(){
     // 명단 = 조립 자격인증 응시자 명단 + 직원 마스터(TRESS) 조립생산팀 재직자 (사번 기준 병합)
     const rmap=new Map();
     ro.filter(r=>r.name).forEach(r=>rmap.set(String(r.emp_id||'').trim().toUpperCase()||('N:'+r.name),{emp_id:String(r.emp_id||'').trim(),name:r.name,hire_date:r.hire_date,process:r.process,active:true}));
-    em.forEach(e=>{const k=String(e.employee_id||'').trim().toUpperCase();if(!k||!e.name)return;const o=rmap.get(k);
+    (TRESS_SYNC_ENABLED?em:[]).forEach(e=>{const k=String(e.employee_id||'').trim().toUpperCase();if(!k||!e.name)return;const o=rmap.get(k);
       if(o){if(!o.hire_date&&e.hire_date)o.hire_date=e.hire_date;o.active=e.active!==false;}
       else rmap.set(k,{emp_id:String(e.employee_id).trim(),name:e.name,hire_date:e.hire_date,process:'',active:e.active!==false});});
     roster=[...rmap.values()].sort((a,b)=>String(a.emp_id).localeCompare(String(b.emp_id)));
@@ -990,9 +992,17 @@ function histFiltered(){
     return true;
   });
 }
+// 과락(재평가) 기록 → 이후 같은 사번의 합격 기록 찾기 / 합격 기록 → 이전 과락 기록 찾기 (전체 이력 기준)
+function reevalAfter(h){if(h.result!=='재평가')return null;const k=h.emp_id||h.name;return history.filter(x=>(x.emp_id||x.name)===k&&x.result==='합격'&&x.eval_date>h.eval_date).sort((a,b)=>a.eval_date<b.eval_date?-1:1)[0]||null;}
+function failBefore(h){if(h.result!=='합격')return null;const k=h.emp_id||h.name;return history.filter(x=>(x.emp_id||x.name)===k&&x.result==='재평가'&&x.eval_date<h.eval_date).sort((a,b)=>a.eval_date<b.eval_date?1:-1)[0]||null;}
+function resultCell(h){
+  if(h.result==='재평가'){const a=reevalAfter(h);return a?`<span class="pill ok" style="background:rgba(230,162,60,0.15);color:#e6a23c;border-color:rgba(230,162,60,0.5)" title="${esc(a.eval_date)} ${esc(a.level||'')}">🔄 ${t('reevalDone')} (${esc(a.eval_date)} · ${esc(lvName(a.level))})</span>`:`<span class="pill ng">${t('fail')}</span>`;}
+  if(h.result){const f=failBefore(h);return f?`<span class="pill ok" title="${esc(f.eval_date)} ${t('fail')}">✅ ${t('reevalPass')}</span>`:`<span class="pill ok">${t('pass')}</span>`;}
+  return '';
+}
 function renderHist(){
   const list=histFiltered();
-  const ppl=new Set(list.map(h=>h.emp_id||h.name)).size,fail=list.filter(h=>h.result==='재평가').length;
+  const ppl=new Set(list.map(h=>h.emp_id||h.name)).size,fail=list.filter(h=>h.result==='재평가'&&!reevalAfter(h)).length;
   const cnt={};list.forEach(h=>{if(h.level)cnt[h.level]=(cnt[h.level]||0)+1;});
   $('hKpi').innerHTML=`<div class="kpi"><span>${t('cnt')}</span><b>${list.length}</b></div><div class="kpi"><span>${t('ppl')}</span><b>${ppl}</b></div><div class="kpi"><span>${t('failc')}</span><b style="color:var(--red)">${fail}</b></div>`+
     LVS.map(l=>`<div class="kpi"><span>${lvName(l)}</span><b style="color:${LV_COLOR[l]}">${cnt[l]||0}</b></div>`).join('');
@@ -1001,7 +1011,7 @@ function renderHist(){
     list.map(h=>`<tr class="click" data-id="${h.id}"><td>${esc(h.eval_date)}</td><td style="color:#fff;font-weight:600">${esc(h.name)}</td><td>${esc(h.emp_id)}</td><td style="font-family:'Space Mono',monospace;font-size:12px">${esc(h.item)}</td>
       <td>${esc(procName(h.process))}${h.multi?` <span class="pill m">${t('multiShort')}</span>`:''}</td><td>${esc(h.line)}</td><td class="n">${esc(h.uph??'')}</td><td class="n">${r1(h.ct)}</td>
       <td>${(h.groups||[]).map(g=>`${g.g?'<small style="color:var(--mute)">'+g.g+'</small> ':''}${g.time??'-'}<small style="color:var(--mute)">s</small>`).join(' · ')}</td>
-      <td class="c">${lvTag(h.level)}</td><td class="c">${h.result==='재평가'?`<span class="pill ng">${t('fail')}</span>`:h.result?`<span class="pill ok">${t('pass')}</span>`:''}</td>
+      <td class="c">${lvTag(h.level)}</td><td class="c">${resultCell(h)}</td>
       <td>${esc(h.evaluator_name)}</td><td><button class="btn red sm" data-del="${h.id}">${t('del')}</button></td></tr>`).join('')+'</tbody>';
 }
 function fillHistFilters(){
