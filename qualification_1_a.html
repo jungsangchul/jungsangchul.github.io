@@ -18,7 +18,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>유라하네스멕시코 자격인증 시스템 - 조립생산팀 1공장</title>
-<script id="embeddedData" type="application/json">{"questions": [], "results": [], "students": [], "practicalItems": [{"name": "불량판별능력 평가", "max": 20, "_sbId": "2ac30a77-043c-4490-8f4d-5eededcf1a0d"}, {"name": "압착고측정능력 평가", "max": 30, "_sbId": "b751ce34-002f-4b3d-a2a9-00ca3ba85b78"}], "gradeConfig": [{"label": "L0", "minScore": 90, "color": "#f1c40f", "desc": "최우수"}, {"label": "L1", "minScore": 80, "color": "#2ecc71", "desc": "우수"}, {"label": "L2", "minScore": 70, "color": "#c9a84c", "desc": "양호"}, {"label": "L3", "minScore": 60, "color": "#9b7ee8", "desc": "보통"}, {"label": "L5", "minScore": 50, "color": "#e87a2a", "desc": "합격"}], "examCfg": {"title": "와이어링 하네스 기초 평가", "date": "2026-05-31", "team": "", "passingScore": "60", "examDuration": "60", "pointsPerQ": "5", "theoryPct": "50", "practicalPct": "50", "practicalMax": "100", "mobileExamTitle": "", "mobileExamLang": "ko"}, "exportedAt": "2026-06-02T23:50:34.708Z", "version": "4_all_data_embed"}</script>
+<script id="embeddedData" type="application/json">{"questions": [], "results": [], "students": [], "practicalItems": [{"name": "조립 작업수준 평가", "max": 100}], "gradeConfig": [{"label": "L0", "minScore": 90, "color": "#f1c40f", "desc": "최우수"}, {"label": "L1", "minScore": 80, "color": "#2ecc71", "desc": "우수"}, {"label": "L2", "minScore": 70, "color": "#c9a84c", "desc": "양호"}, {"label": "L3", "minScore": 60, "color": "#9b7ee8", "desc": "보통"}, {"label": "L5", "minScore": 50, "color": "#e87a2a", "desc": "합격"}], "examCfg": {"title": "와이어링 하네스 기초 평가", "date": "2026-05-31", "team": "", "passingScore": "60", "examDuration": "60", "pointsPerQ": "5", "theoryPct": "50", "practicalPct": "50", "practicalMax": "100", "mobileExamTitle": "", "mobileExamLang": "ko"}, "exportedAt": "2026-06-02T23:50:34.708Z", "version": "4_all_data_embed"}</script>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&amp;family=JetBrains+Mono:wght@400;700&amp;display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.11.5/JsBarcode.all.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -3375,17 +3375,10 @@ document.addEventListener('DOMContentLoaded', renderExamQr);
       <div id="practicalItemList">
     <div style="display:flex;gap:0.6rem;align-items:center;margin-bottom:0.5rem;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:0.5rem 0.7rem">
       <span style="font-size:0.75rem;color:var(--text2);min-width:20px;text-align:center;font-weight:700">1</span>
-      <input type="text" value="불량판별능력 평가" placeholder="항목명 입력" style="flex:2;font-size:0.85rem" oninput="practicalItems[0].name=this.value;_practicalDirty=true">
-      <input type="number" value="20" placeholder="만점" style="flex:0.6;text-align:center;font-size:0.85rem" oninput="practicalItems[0].max=parseFloat(this.value)||0;_practicalDirty=true">
+      <input type="text" value="조립 작업수준 평가" placeholder="항목명 입력" style="flex:2;font-size:0.85rem" oninput="practicalItems[0].name=this.value;_practicalDirty=true">
+      <input type="number" value="100" placeholder="만점" style="flex:0.6;text-align:center;font-size:0.85rem" oninput="practicalItems[0].max=parseFloat(this.value)||0;_practicalDirty=true">
       <span style="font-size:0.76rem;color:var(--text2)">점</span>
       <button class="btn btn-danger btn-sm" onclick="removePracticalItem(0)">✕</button>
-    </div>
-    <div style="display:flex;gap:0.6rem;align-items:center;margin-bottom:0.5rem;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:0.5rem 0.7rem">
-      <span style="font-size:0.75rem;color:var(--text2);min-width:20px;text-align:center;font-weight:700">2</span>
-      <input type="text" value="압착고측정능력 평가" placeholder="항목명 입력" style="flex:2;font-size:0.85rem" oninput="practicalItems[1].name=this.value;_practicalDirty=true">
-      <input type="number" value="30" placeholder="만점" style="flex:0.6;text-align:center;font-size:0.85rem" oninput="practicalItems[1].max=parseFloat(this.value)||0;_practicalDirty=true">
-      <span style="font-size:0.76rem;color:var(--text2)">점</span>
-      <button class="btn btn-danger btn-sm" onclick="removePracticalItem(1)">✕</button>
     </div></div>
     </div>
     <div class="score-total-bar">
@@ -5699,34 +5692,42 @@ function printSheets(){renderOMRPreview();setTimeout(()=>window.print(),400);}
 function renderResults(){
   const cfg=getConfig();
   const total=results.length;
-  if(!total){
+  // ✅ 조립 인원 리스트(응시자 명단) 자동 반영: 평가 이력이 전혀 없는 인원은 「평가대기중」 행으로 표시 (2026-10-31)
+  const _resEmp=new Set(results.map(r=>String(r.empId||'').trim().toUpperCase()).filter(Boolean));
+  const _seenP=new Set();
+  const pendingRows=students.filter(st=>{const k=String(st.empId||'').trim().toUpperCase();if(!k||_resEmp.has(k)||_seenP.has(k))return false;_seenP.add(k);return true;})
+    .map(st=>({_pending:true,name:st.name,empId:st.empId,process:st.process||'',hireDate:st.hireDate||'',date:'-',theoryWeighted:null,practicalWeighted:null,totalScore:null,passed:false}));
+  if(!total&&!pendingRows.length){
     document.getElementById('resultsContainer').innerHTML='<div class="empty-state"><div class="empty-icon">📊</div>아직 채점된 결과가 없습니다</div>';
     ['stat-total','stat-theory','stat-practical','stat-avg','stat-rate'].forEach(id=>document.getElementById(id).textContent='-');
     document.getElementById('stat-total').textContent='0';return;
   }
-  const avgT=(results.reduce((s,r)=>s+(r.theoryWeighted||0),0)/total).toFixed(1);
-  const avgP=(results.reduce((s,r)=>s+(r.practicalWeighted||0),0)/total).toFixed(1);
-  const avgAll=(results.reduce((s,r)=>s+(r.totalScore||0),0)/total).toFixed(1);
+  const avgT=total?(results.reduce((s,r)=>s+(r.theoryWeighted||0),0)/total).toFixed(1):'-';
+  const avgP=total?(results.reduce((s,r)=>s+(r.practicalWeighted||0),0)/total).toFixed(1):'-';
+  const avgAll=total?(results.reduce((s,r)=>s+(r.totalScore||0),0)/total).toFixed(1):'-';
   const passN=results.filter(r=>r.passed).length;
   document.getElementById('stat-total').textContent=total;
   document.getElementById('stat-theory').textContent=avgT;
   document.getElementById('stat-practical').textContent=avgP;
   document.getElementById('stat-avg').textContent=avgAll;
-  document.getElementById('stat-rate').textContent=((passN/total)*100).toFixed(0)+'%';
+  document.getElementById('stat-rate').textContent=total?((passN/total)*100).toFixed(0)+'%':'-';
   // ✅ 최종판정(퇴사·MSA 연계) 조회 헬퍼
   const getFS=r=>finalStatusMap[r._sbId]||null;
   // ✅ 사번순 정렬 (2026-10-27)
   const _empCmp=(a,b)=>String(a.empId||'').localeCompare(String(b.empId||''),undefined,{numeric:true})||(new Date(a.date||0)-new Date(b.date||0));
   // ✅ 최종합격한 사번의 불합격·판정대기 내역은 숨김 (2026-10-27)
-  const _stOf=r=>{const fs=getFS(r);return fs?fs.final_status:(r.passed?'최종합격':'불합격');};
+  const _passOf=r=>(parseFloat(r.totalScore)||0)>=(parseFloat(cfg.passingScore)||60);
+  const _noT=r=>(r.theoryRaw==null&&!(parseFloat(r.theoryWeighted)>0)),_noP=r=>(!(parseFloat(r.practicalWeighted)>0)&&!(r.practicalItemScores&&r.practicalItemScores.length));
+  const _stOf=r=>{if(r._pending)return '판정대기';const fs=getFS(r);if(fs)return fs.final_status;return _passOf(r)?'최종합격':(_noT(r)||_noP(r))?'판정대기':'불합격';};
   const _finalEmp=new Set(results.filter(r=>r.empId&&_stOf(r)==='최종합격').map(r=>String(r.empId)));
-  let sorted=results.filter(r=>!(r.empId&&_finalEmp.has(String(r.empId))&&_stOf(r)!=='최종합격'&&_stOf(r)!=='퇴사')).sort(_empCmp);
+  let sorted=results.concat(pendingRows).filter(r=>!(r.empId&&_finalEmp.has(String(r.empId))&&_stOf(r)!=='최종합격'&&_stOf(r)!=='퇴사')).sort(_empCmp);
   // ✅ 필터 적용: all(전체) | final(최종합격만) | fail(불합격만) | resigned(퇴사만)
   if(resultFilter!=='all'){
     sorted=sorted.filter(r=>{
-      const fs=getFS(r); const st=fs?fs.final_status:(r.passed?'최종합격':'불합격');
+      const fs=getFS(r); const st=_stOf(r);
       if(resultFilter==='final')return st==='최종합격';
       if(resultFilter==='fail')return st==='불합격'||st==='판정대기';
+      if(resultFilter==='pending')return st==='판정대기';
       if(resultFilter==='reeval')return !!(fs&&fs.msa_failed_before);
       if(resultFilter==='resigned')return st==='퇴사';
       return true;
@@ -5737,7 +5738,7 @@ function renderResults(){
     if(fs.final_status==='퇴사')return'<span style="background:rgba(150,150,150,0.18);color:#9aa4b2;border:1px solid rgba(150,150,150,0.4);border-radius:4px;padding:0.1rem 0.4rem;font-size:0.72rem;font-weight:700">🚪 퇴사</span>';
     if(fs.final_status==='최종합격')return'<span style="color:var(--green);font-weight:700;font-size:0.78rem">🏆 최종합격</span>';
     if(fs.final_status==='불합격')return'<span style="color:var(--red);font-weight:700;font-size:0.78rem">❌ 불합격</span>';
-    return'<span style="color:var(--orange,#e6a23c);font-size:0.76rem">⏳ 판정대기</span>';
+    return'<span style="color:var(--orange,#e6a23c);font-size:0.76rem;font-weight:700">⏳ 평가대기중</span>';
   };
   const msaBadge=fs=>{
     if(!fs||!fs.msa_result)return'<span style="color:var(--text2);font-size:0.72rem">-</span>';
@@ -5754,11 +5755,12 @@ function renderResults(){
       <select onchange="resultFilter=this.value;renderResults()" style="max-width:220px;font-size:0.8rem">
         <option value="all" ${resultFilter==='all'?'selected':''}>전체 보기 / Ver todo</option>
         <option value="final" ${resultFilter==='final'?'selected':''}>🏆 최종합격만 / Solo aprobados finales</option>
+        <option value="pending" ${resultFilter==='pending'?'selected':''}>⏳ 평가대기중만 / Pendientes</option>
         <option value="fail" ${resultFilter==='fail'?'selected':''}>❌ 불합격 포함 표시 / No aprobados</option>
         <option value="reeval" ${resultFilter==='reeval'?'selected':''}>🔄 MSA 재평가통과(개선) / Mejorados tras reeval</option>
         <option value="resigned" ${resultFilter==='resigned'?'selected':''}>🚪 퇴사자만 / Bajas</option>
       </select>
-      <span style="font-size:0.74rem;color:var(--text2)">${sorted.length}건 표시 / ${results.length}건 전체 · 사번순 (최종합격자의 불합격 내역 숨김)</span>
+      <span style="font-size:0.74rem;color:var(--text2)">${sorted.length}건 표시 / 평가 ${results.length}건 + 미평가 인원 ${pendingRows.length}명 · 사번순 (최종합격자의 불합격 내역 숨김 · 이론·실습 중 하나라도 없으면 평가대기중)</span>
     </div>
     <table class="results-table">
     <thead><tr>
@@ -5779,6 +5781,21 @@ function renderResults(){
       <th><span data-kr="상세" data-es="Detalle">상세</span></th>
     </tr></thead>
     <tbody>${sorted.map((r,i)=>{
+      if(r._pending){
+        return`<tr style="opacity:0.8">
+        <td></td>
+        <td style="font-family:'JetBrains Mono',monospace;color:var(--text2)">${i+1}</td>
+        <td style="font-weight:600">${r.name}</td>
+        <td style="font-family:'JetBrains Mono',monospace;font-size:0.73rem;color:var(--text2)">${r.empId||'-'}</td>
+        <td style="color:var(--text2);font-size:0.78rem">${r.process||'-'}</td>
+        <td style="color:var(--text2);font-size:0.76rem">-</td>
+        <td style="font-size:0.76rem;color:var(--teal)">${calcTenure(r.hireDate)}</td>
+        <td><span style="color:var(--text2);font-size:0.72rem">미평가</span></td>
+        <td><span style="color:var(--text2);font-size:0.72rem">미평가</span></td>
+        <td><span style="color:var(--text2)">-</span></td><td><span style="color:var(--text2)">-</span></td><td><span style="color:var(--text2)">-</span></td><td><span style="color:var(--text2);font-size:0.72rem">-</span></td>
+        <td>${fsBadge({final_status:'판정대기'})}</td>
+        <td></td>
+      </tr>`;}
       const oi=results.indexOf(r);
       const fs=getFS(r);
       const isResigned=fs&&fs.resigned;
@@ -5792,11 +5809,11 @@ function renderResults(){
         <td style="color:var(--text2);font-size:0.78rem">${r.process||'-'}</td>
         <td style="color:var(--text2);font-size:0.76rem">${r.date}</td>
         <td style="font-size:0.76rem;color:var(--teal)">${calcTenure(r.hireDate||lookupHireDate(r.empId))}</td>
-        <td><span class="score-t">${r.theoryWeighted||0}점</span></td>
-        <td><span class="score-p">${r.practicalWeighted||0}점</span></td>
+        <td>${_noT(r)?'<span style="color:var(--text2);font-size:0.72rem">미평가</span>':`<span class="score-t">${r.theoryWeighted||0}점</span>`}</td>
+        <td>${_noP(r)?'<span style="color:var(--text2);font-size:0.72rem">미평가</span>':`<span class="score-p">${r.practicalWeighted||0}점</span>`}</td>
         <td><span class="score-badge ${cls}">${r.totalScore}점</span></td>
-        <td>${r.passed?'<span style="color:var(--green)">✅ 합격</span>':'<span style="color:var(--red)">❌ 불합격</span>'}</td>
-        <td>${grade}</td>
+        <td>${_stOf(r)==='판정대기'?'<span style="color:var(--orange,#e6a23c);font-size:0.76rem">⏳ 대기</span>':r.passed?'<span style="color:var(--green)">✅ 합격</span>':'<span style="color:var(--red)">❌ 불합격</span>'}</td>
+        <td>${_stOf(r)==='판정대기'?'<span style="color:var(--text2)">-</span>':grade}</td>
         <td>${msaBadge(fs)}</td>
         <td>${fsBadge(fs)}</td>
         <td><button class="btn btn-outline btn-sm" onclick="showDetail(${oi})">보기</button></td>
