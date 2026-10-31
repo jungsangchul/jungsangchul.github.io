@@ -89,6 +89,22 @@ textarea{width:100%;min-height:90px;padding:10px 12px;line-height:1.5;resize:ver
 .toggle{display:inline-flex;align-items:center;gap:8px;height:44px;padding:0 16px;border-radius:999px;border:1px solid var(--line2);color:var(--ink2);font-weight:700;cursor:pointer;user-select:none}
 .toggle.on{border-color:rgba(124,92,191,.6);background:rgba(124,92,191,.14);color:#c3aef0}
 .toggle.dis{opacity:.35;pointer-events:none}
+.sw{display:inline-flex;align-items:center;gap:8px;height:48px;padding:0 10px 0 14px;border-radius:999px;border:1px solid var(--line2);background:#0f0f0f;margin-right:10px}
+.sw.running{border-color:rgba(76,175,125,.55);box-shadow:0 0 0 1px rgba(76,175,125,.15),0 0 18px rgba(76,175,125,.12)}
+.sw.paused{border-color:rgba(224,168,74,.55)}
+.sw-time{font-family:var(--mono);font-size:24px;font-weight:700;color:var(--ac2);min-width:108px;text-align:right;letter-spacing:.02em;font-variant-numeric:tabular-nums}
+.sw-time small{font-size:13px;color:var(--mute);margin-left:2px}
+.sw.running .sw-time{color:#7fd9a8}.sw.paused .sw-time{color:var(--amb)}
+.sw-btn{height:36px;padding:0 14px;border-radius:999px;border:1px solid var(--line2);background:#161616;color:var(--ink2);font-weight:800;font-size:14px;cursor:pointer;white-space:nowrap;transition:.15s}
+.sw-btn:disabled{opacity:.35;cursor:default}
+.sw-btn.start{border-color:rgba(76,175,125,.55);color:#7fd9a8;background:rgba(76,175,125,.12)}
+.sw-btn.pause{border-color:rgba(224,168,74,.55);color:var(--amb);background:rgba(224,168,74,.10)}
+.sw-btn.done{border-color:rgba(201,168,76,.7);color:#0a0a0a;background:linear-gradient(180deg,#d9b85c,#c9a84c);box-shadow:0 4px 14px var(--ac-glow)}
+.sw-btn.reset{width:36px;padding:0;font-size:16px}
+.sw-btn:not(:disabled):hover{filter:brightness(1.12)}
+.sw-target{height:36px;border-radius:8px;background:#161616;color:var(--ink);border:1px solid var(--line2);padding:0 8px;font-weight:700}
+.tm.sw-filled{box-shadow:0 0 0 2px rgba(201,168,76,.6);background:rgba(201,168,76,.10)}
+@media (max-width:900px){.sw{height:auto;flex-wrap:wrap;padding:8px 10px;border-radius:14px}}
 /* 작업자 명단 패널 */
 .wk-panel{border:1px solid var(--line2);border-radius:var(--r);background:#0f0f0f;padding:12px 14px;margin-top:4px}
 .wk-head{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
@@ -368,6 +384,14 @@ tbody tr:hover td{background:rgba(255,255,255,.025)}
     <div class="row" style="margin-bottom:12px">
       <span class="pick" id="pickLab"></span>
       <div class="sp"></div>
+      <div class="sw" id="sw">
+        <select id="swTarget" class="sw-target" style="display:none" title="측정값을 넣을 공정"></select>
+        <span class="sw-time" id="swTime">0.0<small>s</small></span>
+        <button class="sw-btn start" id="swStart" type="button">▶ <span data-t="swStart">평가 시작</span></button>
+        <button class="sw-btn pause" id="swPause" type="button" disabled>⏸ <span data-t="swPause">일시정지</span></button>
+        <button class="sw-btn done" id="swDone" type="button" disabled>■ <span data-t="swDone">평가완료</span></button>
+        <button class="sw-btn reset" id="swReset" type="button" title="0으로" disabled>↺</button>
+      </div>
       <div class="toggle" id="multiTg"><input type="checkbox" id="multiCk" style="pointer-events:none"><span data-t="multi">다기능공 적용 기준</span></div>
     </div>
     <div class="row" style="margin-bottom:14px">
@@ -534,6 +558,7 @@ const T={
  lvbase:['레벨 기준','Criterio'],over:['이상','≥'],under:['미만','<'],newbie:['신입사원\n배치 가능기준','Nuevo\n(asignable)'],
  prev:['이전 점수 (평가전)','Anterior'],after:['평가후','Después'],wtime:['작업시간(초)','Tiempo (s)'],level:['레벨','Nivel'],change:['평가결과','Cambio'],
  up:['▲ 향상','▲ Mejoró'],dn:['▼ 하락','▼ Bajó'],eq:['― 유지','― Igual'],first:['첫 평가','Primera'],
+ swStart:['평가 시작','Iniciar'],swResume:['계속','Continuar'],swPause:['일시정지','Pausa'],swDone:['평가완료','Terminar'],swSet:['작업시간 입력됨','Tiempo registrado'],swPick:['측정할 공정을 선택하세요','Elija el proceso a medir'],
  pass:['평가 완료','Evaluado'],fail:['과락 · 재평가 필요','Reprobado · Reevaluar'],reevalDone:['재평가 완료','Reevaluado'],reevalPass:['재평가 합격','Aprobado en reevaluación'],rep:['대표 레벨','Nivel'],need:['작업자·작업시간을 입력하세요','Capture operador y tiempo'],
  saved:['저장했습니다','Guardado'],updated:['수정 저장했습니다','Actualizado'],deleted:['삭제했습니다','Eliminado'],editing:['✎ 저장된 평가 수정 중','✎ Editando evaluación guardada'],
  del:['삭제','Eliminar'],confirm_del:['이 평가 기록을 삭제할까요?','¿Eliminar esta evaluación?'],
@@ -708,6 +733,40 @@ function renderRes(){
     <td class="c"><input class="tm" type="number" step="any" data-i="${i}" data-k="time" value="${esc(g.time)}" placeholder="0"></td>
     <td class="c" id="lvc${i}">${lvTag(g.level,true)}</td></tr>`).join('');
   $('resTbl').innerHTML=head+'<tbody>'+body+'</tbody>';
+  try{swUI();}catch(e){}
+}
+/* ── 스톱워치 (평가 시작 → 일시정지 → 평가완료 = 작업시간 자동 입력) ── */
+const SW={running:false,start:0,acc:0,timer:null};
+const swElapsed=()=>SW.acc+(SW.running?(performance.now()-SW.start):0);
+function swDraw(){const sec=swElapsed()/1000;$('swTime').innerHTML=`${sec.toFixed(1)}<small>s</small>`;}
+function swUI(){
+  const el=$('sw');el.classList.toggle('running',SW.running);el.classList.toggle('paused',!SW.running&&SW.acc>0);
+  const started=SW.running||SW.acc>0;
+  $('swStart').disabled=SW.running;$('swStart').innerHTML=`▶ <span>${!SW.running&&SW.acc>0?t('swResume'):t('swStart')}</span>`;
+  $('swPause').disabled=!SW.running;$('swDone').disabled=!started;$('swReset').disabled=!started;
+  // 다기능공(여러 조)일 때 대상 조 선택
+  const sel=$('swTarget');
+  if(S&&S.multi&&S.groups.length>1){
+    const cur=sel.value;sel.style.display='';
+    sel.innerHTML=S.groups.map((g,i)=>`<option value="${i}">${esc(procName(S.process))} ${esc(g.g||('#'+(i+1)))}</option>`).join('');
+    if(cur!==''&&+cur<S.groups.length)sel.value=cur;else{const k=S.groups.findIndex(g=>g.time===''||g.time==null);sel.value=k>=0?k:0;}
+  }else{sel.style.display='none';sel.innerHTML='';}
+}
+function swStart(){if(SW.running)return;SW.start=performance.now();SW.running=true;clearInterval(SW.timer);SW.timer=setInterval(swDraw,100);swDraw();swUI();}
+function swPause(){if(!SW.running)return;SW.acc+=performance.now()-SW.start;SW.running=false;clearInterval(SW.timer);swDraw();swUI();}
+function swReset(draw){SW.running=false;SW.acc=0;SW.start=0;clearInterval(SW.timer);if(draw!==false){swDraw();swUI();}}
+function swDone(){
+  if(!(SW.running||SW.acc>0))return;
+  const sec=Math.round(swElapsed()/100)/10;
+  if(SW.running){SW.acc+=performance.now()-SW.start;SW.running=false;clearInterval(SW.timer);}
+  let gi=0;if(S.multi&&S.groups.length>1){gi=+($('swTarget').value||0);}
+  const g=S.groups[gi];if(!g){toast(t('swPick'),true);return;}
+  g.time=sec;g.level=judge(sec,bounds(ctVal(),S.multi));
+  renderRes();renderStd();renderVerdict();
+  const inp=$('resTbl').querySelector(`input.tm[data-k="time"][data-i="${gi}"]`);
+  if(inp){inp.classList.add('sw-filled');inp.scrollIntoView({behavior:'smooth',block:'center'});setTimeout(()=>inp.classList.remove('sw-filled'),3000);}
+  toast(`${t('swSet')}: ${sec.toFixed(1)}s → ${g.level?lvName(g.level):'-'}`);
+  swReset(true);
 }
 function renderVerdict(){
   const fail=S.defect||S.omission;
@@ -923,6 +982,7 @@ async function save(){
   }catch(e){toast(e.message,true);}finally{btn.disabled=false;}
 }
 function newEval(keepEval=true){
+  try{swReset(false);}catch(e){}
   const prevItem=S&&S.item,prevProc=S&&S.process;
   S=blankState();if(keepEval){if(prevItem)S.item=prevItem;if(prevProc)S.process=prevProc;}
   ['wkSearch','wkName','wkEmp','wkCareer','wkFactory','wkCar','wkItem','wkLine','opinion'].forEach(k=>$(k).value='');$('wkShift').value='';
@@ -1157,6 +1217,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
   $('stdSet').addEventListener('input',e=>{const el=e.target.closest('[data-std]');if(!el)return;const v=num(el.value);if(v>0){stdDraft[el.dataset.std]=v;const tr=el.closest('tr'),[,p,m]=el.dataset.std.split('|'),b=bounds(3600/v,m==='1'),tds=tr.querySelectorAll('td');tds[4].textContent=r1(3600/v);b.u.forEach((x,i)=>{tds[5+i].textContent=r1(x);});$('stdDirty').textContent=t('dirty');}});
   $('stdDelItem').onclick=delItem;$('sItem').addEventListener('change',renderStat);
   $('multiTg').onclick=()=>setProcess(S.process,!S.multi);
+  $('swStart').onclick=swStart;$('swPause').onclick=swPause;$('swDone').onclick=swDone;$('swReset').onclick=()=>swReset(true);
   $('uph').addEventListener('input',()=>{S.uph=num($('uph').value);renderRes();renderStd();renderVerdict();});
   $('tt').addEventListener('input',()=>{S.tt=num($('tt').value);});
   $('resTbl').addEventListener('input',e=>{
