@@ -110,7 +110,7 @@ td.mute{color:var(--mute)}
 td.empty{text-align:center;color:var(--mute);padding:24px}
 td.nm{max-width:270px;overflow:hidden;text-overflow:ellipsis}td.vp{max-width:150px;overflow:hidden;text-overflow:ellipsis}td.gp{font-size:12.5px;line-height:1.5;color:#e6dcc0;padding-top:6px;padding-bottom:6px}td.gp div{white-space:nowrap}td.gp.car{color:var(--ac2);font-weight:700}
 table.gtbl td{padding:5px 10px}table.gtbl input{height:32px;width:100%;min-width:120px}table.gtbl tr.dirty td{background:rgba(201,168,76,.08)}table.gtbl tr.miss td:first-child b{color:var(--amb)}
-tr.click{cursor:pointer}
+tr.click{cursor:default}td.lnk{cursor:pointer;text-decoration:underline dotted var(--dim);text-underline-offset:3px}td.lnk:hover{color:var(--ac2)}
 tr.short td{background:var(--redbg)}tr.care td{background:var(--ambbg)}tr.ex td{color:var(--dim);text-decoration:line-through}
 tr.mutedr td{color:var(--dim)}
 .neg{color:var(--red);font-weight:700}
@@ -369,7 +369,7 @@ table.cfg input{width:17px;height:17px}
     <div class="kpi a" data-f="moved"><span data-t="k_last">최근 처리</span><b id="kLast" class="s">-</b></div>
   </div>
   <div class="tw"><table id="sTbl"></table></div>
-  <p class="hint" data-t="stk_formula">현재고 = 기초재고 + 입고 − SUB 차감 − 조립 차감 ± 조정 · 현재고 숫자를 누르면 재고조정, 다른 칸을 누르면 품목 입출 이력이 열립니다.</p>
+  <p class="hint" data-t="stk_formula">현재고 = 기초재고 + 입고 − SUB 차감 − 조립 차감 ± 조정 · 현재고 숫자를 누르면 재고조정, 자재코드를 누르면 품목 입출 이력이 열립니다. 나머지 칸은 드래그해서 복사할 수 있습니다. MM·M 자재 중 롤당 길이가 설정된 품목(단위 ROLL)은 모든 수량을 롤 개수로 표시·입력합니다 (BOM 마스터 → 롤 환산계수).</p>
 </section>
 
 <!-- ===== 기초재고 ===== -->
@@ -377,7 +377,7 @@ table.cfg input{width:17px;height:17px}
   <div class="grid2">
     <div class="card">
       <h3 data-t="init_h">기초재고 붙여넣기</h3>
-      <div class="hint" data-t="init_hint">자재코드·재고수량을 붙여넣으세요(머릿글 없어도 됨). 첫 열은 자재코드, 마지막 열은 수량으로 읽으며, 입력한 수량이 그 품목의 현재고가 됩니다(덮어쓰기). 전체 품목 양식을 내려받아 노란 열만 채워 붙여넣어도 됩니다. 수량이 빈 행은 건너뜁니다.</div>
+      <div class="hint" data-t="init_hint">자재코드·재고수량을 붙여넣으세요(머릿글 없어도 됨). 첫 열은 자재코드, 마지막 열은 수량으로 읽으며, 입력한 수량이 그 품목의 현재고가 됩니다(덮어쓰기). 단위가 ROLL인 자재(테이프 등)는 롤 개수로 입력합니다. 전체 품목 양식을 내려받아 노란 열만 채워 붙여넣어도 됩니다. 수량이 빈 행은 건너뜁니다.</div>
       <div class="row" style="margin:10px 0">
         <label class="f"><span data-t="base_date">기준일자</span><input type="date" id="iDate"></label>
         <label class="f" style="flex:1;min-width:140px"><span data-t="memo">메모</span><input id="iMemo"></label>
@@ -498,6 +498,14 @@ table.cfg input{width:17px;height:17px}
   </div>
   <div class="card">
     <div class="row hd">
+      <h3><span data-t="rl_h">롤 환산계수 (MM·M 자재)</span> <span class="hint" id="rlInfo"></span></h3>
+      <div class="row"><label class="chkl" style="padding:0"><input type="checkbox" id="rlOnly" checked><span data-t="rl_only">환산 품목만</span></label><button class="btn" id="rlSave" data-t="rl_save">환산계수 저장</button></div>
+    </div>
+    <div class="hint" data-t="rl_hint">현장에서 롤 개수로 세는 테이프·튜브류는 롤당 길이를 넣으면 재고·입고·실사·차감이 모두 <b>롤 개수(ROLL)</b>로 표시·입력되고, DB에는 길이(mm·m)로 저장됩니다. 자재명의 「25x25」「19x20」(뒷자리=m)·「길이 50m」 패턴은 BOM 업로드 시 자동으로 채워집니다. 비우거나 0이면 환산 없이 원래 단위(mm·m)로 관리합니다. 환산계수를 새로 넣은 품목은 기존 재고가 길이 기준이었는지 확인하고 필요하면 기초재고를 롤 수로 다시 등록하세요.</div>
+    <div class="tw m" style="margin-top:8px"><table id="rlTbl"></table></div>
+  </div>
+  <div class="card">
+    <div class="row hd">
       <h3><span data-t="grp_h">차종·품명 마스터 (품번 구분자)</span> <span class="hint" id="gInfo"></span></h3>
       <div class="row"><input id="gNew" data-tp="grp_new" placeholder="91500-FC" style="width:130px" autocomplete="off"><button class="btn sec" id="gAdd" data-t="grp_add">+ 구분자 추가</button><button class="btn" id="gSave" data-t="grp_save">차종·품명 저장</button></div>
     </div>
@@ -565,7 +573,7 @@ const ES={title:'Gestión de materiales · Ensamble',plant:'Planta 2 México · 
 tab_plan:'Plan de producción',tab_stk:'Inventario',tab_init:'Stock inicial',tab_in:'Entradas',tab_sub:'Prod. SUB (80230)',tab_assy:'Prod. ensamble (80350)',tab_adj:'Ajuste de stock',tab_bom:'Maestro BOM',tab_log:'Historial',
 product:'Producto (No. parte)',run:'Consultar',search:'Buscar',show:'Mostrar',o_all:'Todo',o_neg:'Faltante (negativo)',o_pos:'Con stock',o_zero:'Stock 0',o_moved:'Con movimientos',o_care:'Alerta (bajo mínimo)',o_chk2:'Faltante+alerta',thr:'Mínimo de alerta (stock <)',k_care:'Alerta',pl_h:'Registrar plan diario',pl_hint:'Elija la fecha y el No. parte-revisión y agregue la cantidad, o pegue desde Excel «parte-rev · cantidad» o «parte · rev · cantidad» (sin encabezado OK). 91500-GG920-46 se compara con código 91500-GG920 + revisión 46 del BOM. La misma fecha·parte·revisión sobrescribe la cantidad.',pl_date:'Fecha del plan',pl_qty:'Cantidad',pl_add:'Agregar',pl_fb:'Si la revisión no coincide, usar la del BOM',pl_dates:'Fechas con plan',pl_req_h:'Cálculo de necesidad · lista de solicitud',pl_calc:'Calcular',o_req:'A solicitar',o_chk:'Solicitar+alerta',o_ok:'Suficiente (OK)',k_plan:'Partes planeadas',k_planqty:'Cant. planeada',k_mat:'Materiales',k_req:'A solicitar',pl_formula:'Necesidad = Σ(cant. plan × consumo/u) · A solicitar = necesidad − stock (mín. 0) · Alerta = no se solicita pero el stock restante queda bajo el mínimo · el mínimo se configura en Inventario.',pl_list:'Planes registrados (periodo)',p_plan:'91500-GG920-46\t120  (o 91500-GG920\t46\t120)',
 proc:'Proceso (A·B ensamble · C corte)',copy:'Copiar',xlsx:'Excel',k_items:'Materiales',k_neg:'Faltante (<0)',k_pos:'Con stock',k_last:'Último registro',
-stk_formula:'Stock actual = Stock inicial + Entradas − Consumo SUB − Consumo ensamble ± Ajustes · Toque el número de Stock para ajustar; toque otra celda para ver el historial del material.',
+stk_formula:'Stock actual = Stock inicial + Entradas − Consumo SUB − Consumo ensamble ± Ajustes · Toque el número de Stock para ajustar; toque el código para ver el historial del material; las demás celdas se pueden seleccionar y copiar. Los materiales MM·M con largo por rollo definido (unidad ROLL) se muestran e ingresan en rollos.',
 init_h:'Pegar stock inicial',init_hint:'Pegue código y cantidad (sin encabezado OK). La primera columna es el código y la última la cantidad; la cantidad pasa a ser el stock actual (sobrescribe). También puede descargar la plantilla de todos los materiales y llenar solo la columna amarilla. Las filas sin cantidad se omiten.',
 base_date:'Fecha base',memo:'Nota',create_new:'Agregar como material nuevo los códigos que no existen',save:'Guardar',clear:'Limpiar',tpl:'Plantilla de materiales (Excel)',savedDates:'Fechas guardadas',
 in_h:'Pegar entradas del día',in_hint:'Pegue 5 columnas: código, nombre del material, nombre del proveedor, unidad, cantidad (sin encabezado OK). Si la unidad no coincide con el maestro se muestra una alerta. Se busca primero por código; si no hay o no coincide, por nombre → nombre del proveedor. Si no se encuentra o hay varios candidatos, puede elegir el código.',
@@ -584,7 +592,7 @@ bom_up_h:'Pegar datos BOM',bom_hint:'Copie la hoja «BOM 원수데이터» del E
 mode:'Modo',bm_part:'Reemplazar solo las partes pegadas',bm_all:'Reemplazar todo',
 cfg_h:'Configuración de descuento',cfg_sub:'Prod. SUB (80230)',cfg_assy:'Prod. ensamble (80350)',cfg_skip:'Tipos excluidos',
 cfg_hint:'Por defecto: SUB → C (corte), ensamble → A·B (ensamble), para que ningún material se descuente dos veces. HALB (semiterminado) y FERT (terminado, p. ej. arnés A/BAG) tienen su propia producción y no se descuentan.',
-recalc:'Recalcular stock (verificación)',prod_h:'Lista de productos',xlsx_bom_all:'Excel BOM completo',o_allproc:'Todos los procesos',
+recalc:'Recalcular stock (verificación)',rl_h:'Largo por rollo (materiales MM·M)',rl_only:'Solo con conversión',rl_save:'Guardar largos',rl_hint:'Para cintas y tubos que en piso se cuentan por rollos: al indicar el largo por rollo, stock, entradas, inventario y consumo se muestran e ingresan en <b>rollos (ROLL)</b> y en la base se guardan en largo (mm·m). Los patrones «25x25», «19x20» (segundo número = m) y «길이 50m» del nombre se completan solos al subir el BOM. Vacío o 0 = sin conversión. Si agrega un largo a un material ya cargado en mm·m, vuelva a registrar su stock inicial en rollos.',prod_h:'Lista de productos',xlsx_bom_all:'Excel BOM completo',o_allproc:'Todos los procesos',
 log_kind:'Tipo',log_status:'Estado',st_ok:'Vigente',st_cancel:'Cancelado',log_h:'Lotes',
 sel_all:'Seleccionar todo',del_sel:'Eliminar seleccionados',log_hint:'Historial por lote. Los lotes marcados se pueden eliminar definitivamente con [Eliminar seleccionados]. Si algo se cargó por error, [Cancelar] revierte exactamente el movimiento de ese lote. Si el mismo resultado se volvió a cargar después, primero cancele la carga posterior.',
 p_search:'Código/nombre/proveedor',p_search2:'Código/nombre/nota',p_search3:'LOT / No. parte',p_search_p:'Buscar parte/producto',p_search_c:'Buscar componente',p_adj_memo:'Ej.: medición en piso'};
@@ -611,6 +619,12 @@ const num=v=>{if(v==null)return NaN;if(typeof v==='number')return v;const s=Stri
 const r3=v=>Math.round(Number(v)*1000)/1000+0;
 const fmt=v=>{if(v==null||v===''||isNaN(v))return'';return r3(v).toLocaleString('en-US',{maximumFractionDigits:3})};
 const z0=v=>!Number(v)?'<span class="hint">0</span>':fmt(v);
+/* 롤 환산: MM·M 자재는 DB에는 길이로 저장되고, 화면·입력은 롤(개수)로 다룬다. RL[code]=롤당 길이(자재 단위 기준) */
+let RL={};const rl=c=>Number(RL[c])||0;
+const toR=(c,v)=>{const l=rl(c);v=Number(v)||0;return l?v/l:v};
+const fromR=(c,v)=>{const l=rl(c);v=Number(v)||0;return l?v*l:v};
+const RU='ROLL';
+function ledR(rows,code){(rows||[]).forEach(r=>{const c=code||r.code;if(!rl(c))return;['qty','input_qty','stock_after','stock_before'].forEach(k=>{if(r[k]!=null&&r[k]!=='')r[k]=toR(c,r[k])});if('unit' in r)r.unit=RU});return rows}
 const ymd=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 const today=()=>ymd(new Date());
 const addDay=(s,n)=>{const d=new Date(s+'T12:00:00');d.setDate(d.getDate()+n);return ymd(d)};
@@ -713,8 +727,9 @@ function tbl(id,cols,rows,o={}){
   el.innerHTML=h+'</tbody>';
   el.onclick=e=>{const th=e.target.closest('th');
     if(th&&o.sortable&&o.rerender){const i=+th.dataset.i;const cur=SORT[id];SORT[id]={i,d:cur&&cur.i===i?-cur.d:1};o.rerender();return}
+    const sel=window.getSelection&&window.getSelection();if(sel&&sel.toString().trim())return;
     const ad=e.target.closest('[data-adj]');if(ad&&o.onAdj){e.stopPropagation();o.onAdj(ad.dataset.adj);return}
-    if(o.onRow&&!e.target.closest('input,select,button,a')){const r=e.target.closest('tr[data-k]');if(r)o.onRow(r.dataset.k)}};
+    if(o.onRow&&e.target.closest('[data-row]')){const r=e.target.closest('tr[data-k]');if(r)o.onRow(r.dataset.k)}};
 }
 
 /* ================= 엑셀 (ExcelJS, 서식 적용) ================= */
@@ -820,8 +835,9 @@ function renderDates(k){const el=$(DATE_EL[k]);if(!el)return;const list=DATES[k]
 
 /* ================= 로딩 ================= */
 async function loadSettings(){const r=await sel('binv2_setting?select=key,value');SET={};r.forEach(x=>SET[x.key]=x.value);$('sThr').value=SET.threshold||'';renderCfg()}
-async function loadItems(){ITEMS=await sel('binv2_stock_v?select=*&order=code');ITEMS.forEach(it=>{['stock','q_init','q_in','q_sub','q_assy','q_adj'].forEach(k=>it[k]=Number(it[k])||0);applyGrp(it)});
-  buildIndex();renderStock();renderAdjBox();renderBomKpi()}
+async function loadItems(){ITEMS=await sel('binv2_stock_v?select=*&order=code');RL={};ITEMS.forEach(it=>{if(Number(it.roll_len)>0)RL[it.code]=Number(it.roll_len)});
+  ITEMS.forEach(it=>{['stock','q_init','q_in','q_sub','q_assy','q_adj'].forEach(k=>it[k]=toR(it.code,Number(it[k])||0));it.unit_raw=it.unit;if(rl(it.code))it.unit=RU;applyGrp(it)});Object.keys(PRODBOM).forEach(k=>delete PRODBOM[k]);
+  buildIndex();renderStock();renderAdjBox();renderBomKpi();renderRl()}
 async function loadProducts(){PRODS=await rpc('binv2_bom_products',{});buildProdIdx();renderProdSel();renderPlanProdSel();renderBomKpi();renderProds();await loadGroups()}
 async function loadLast(){try{const r=await sel('binv2_batch?select=id,kind,work_date,created_at,status&order=id.desc&limit=1');LAST=r[0]||null}catch(e){LAST=null}renderLast()}
 function renderLast(){$('kLast').innerHTML=LAST?`${kindTag(LAST.kind)} ${esc(dt(LAST.created_at))}`:'-'}
@@ -866,7 +882,7 @@ async function refreshAll(){await Promise.all([loadItems(),loadLast()])}
 let SPROD='';
 function stkCols(){const a=[
   {h:['공정','Proceso'],k:'procs',w:7},
-  {h:['자재코드','Código'],k:'code',w:16},
+  {h:['자재코드','Código'],k:'code',w:16,cls:'lnk',tdAttr:()=>`data-row title="${tr('눌러서 품목 입출 이력','Toque para ver historial')}"`},
   {h:['자재명','Nombre'],k:'name',w:30,cls:'nm',tdAttr:r=>`title="${esc(r.name||'')}"`,html:r=>esc(r.name||'')+(r.in_bom?'':`<span class="tag xt" style="margin-left:6px">${tr('BOM 외','Fuera BOM')}</span>`)},
   {h:['업체품명','Nombre proveedor'],k:'vendor_part',w:22,cls:'mute vp',tdAttr:r=>`title="${esc(r.vendor_part||'')}"`},
   {h:['단위','Unidad'],k:'unit',w:7}];
@@ -921,7 +937,7 @@ async function prodBom(key){
   if(PRODBOM[key])return PRODBOM[key];
   const [top,rev]=key.split('|');const skip=String(SET.skip_types||'').split(',').map(x=>x.trim()).filter(Boolean);
   const rows=await sel(`binv2_bom?select=comp_code,unit_qty,req_qty,mat_type&top_code=eq.${enc(top)}&rev=eq.${enc(rev)}`);
-  const m=new Map();rows.forEach(r=>{if(skip.includes(r.mat_type||''))return;m.set(r.comp_code,(m.get(r.comp_code)||0)+Number(r.unit_qty??r.req_qty??0))});
+  const m=new Map();rows.forEach(r=>{if(skip.includes(r.mat_type||''))return;m.set(r.comp_code,(m.get(r.comp_code)||0)+toR(r.comp_code,Number(r.unit_qty??r.req_qty??0)))});
   PRODBOM[key]=m;return m;
 }
 function stockCond(){return[SPROD?tr('품번 ','Parte ')+SPROD.replace('|','-'):'',$('sQ').value?tr('검색 ','Buscar ')+$('sQ').value:'',$('fCar').value?tr('차종 ','Modelo ')+$('fCar').value:'',$('fPn').value?tr('품명 ','Producto ')+$('fPn').value:'',
@@ -1000,7 +1016,7 @@ async function openItem(code){
   $('mTitle').textContent=code+' · '+(it.name||'');
   $('mBody').innerHTML=`<div class="adjbox">
     <div>${tr('업체품명','Nombre proveedor')}<b style="font-size:13px" title="${esc(it.vendor_part||'')}">${esc(it.vendor_part||'-')}</b></div>
-    <div>${tr('공정 / 단위','Proceso / unidad')}<b style="font-size:13px">${esc(it.procs||'-')} · ${esc(it.unit||'')}</b></div>
+    <div>${tr('공정 / 단위','Proceso / unidad')}<b style="font-size:13px">${esc(it.procs||'-')} · ${esc(it.unit||'')}${rl(it.code)?` <span class="hint">(1 ${RU} = ${fmt(rl(it.code))} ${esc(it.unit_raw||'')})</span>`:''}</b></div>
     <div>${tr('기초재고','Inicial')}<b>${fmt(it.q_init)}</b></div><div>${tr('입고','Entradas')}<b>${fmt(it.q_in)}</b></div>
     <div>${tr('SUB 차감','Consumo SUB')}<b>${fmt(-it.q_sub)}</b></div><div>${tr('조립 차감','Consumo ens.')}<b>${fmt(-it.q_assy)}</b></div>
     <div>${tr('조정','Ajuste')}<b>${fmt(it.q_adj)}</b></div><div>${tr('현재고','Stock actual')}<b class="${it.stock<0?'neg':''}">${fmt(it.stock)}</b></div></div>
@@ -1009,7 +1025,7 @@ async function openItem(code){
   $('mClose2').textContent=tr('닫기','Cerrar');$('mdl').classList.add('on');
   $('mAdj').onclick=()=>{closeModal();goAdj(code)};
   try{
-    const rows=await sel(`binv2_ledger?select=id,batch_id,kind,work_date,qty,input_qty,mode,stock_after,memo,cancelled,created_at,src_name,src_vendor,binv2_batch(worker)&code=eq.${enc(code)}&order=id.desc&limit=500`);
+    const rows=ledR(await sel(`binv2_ledger?select=id,batch_id,kind,work_date,qty,input_qty,mode,stock_after,memo,cancelled,created_at,src_name,src_vendor,binv2_batch(worker)&code=eq.${enc(code)}&order=id.desc&limit=500`),code);
     tbl('mHist',[{h:['일자','Fecha'],k:'work_date'},{h:['구분','Tipo'],v:r=>kindL(r.kind),html:r=>kindTag(r.kind)},
       {h:['변동','Movimiento'],k:'qty',t:'n',neg:1,cls:'b'},{h:['반영 후 재고','Stock después'],k:'stock_after',t:'n',neg:1},
       {h:['입력값','Valor ingresado'],v:r=>r.mode==='set'?r.input_qty:'',t:'n'},{h:['메모','Nota'],v:r=>r.memo||[r.src_name,r.src_vendor].filter(Boolean).join(' / '),cls:'mute'},
@@ -1023,6 +1039,7 @@ function closeModal(){$('mdl').classList.remove('on')}
 async function postStock(kind,date,lines,memo,create){
   if(!date){toast(tr('일자를 선택하세요','Seleccione la fecha'),1);return null}
   busy(true,tr('저장 중…','Guardando…'));
+  lines=lines.map(l=>rl(l.code)?{...l,qty:fromR(l.code,l.qty)}:l);
   try{const r=await rpc('binv2_stock_post',{p_kind:kind,p_date:date,p_lines:lines,p_memo:memo||null,p_worker:worker(),p_create:!!create});
     const sk=(r.skipped||[]).length;
     toast(tr(`${kindL(kind)} ${r.applied}건 저장 (배치 #${r.batch_id})`,`${kindL(kind)}: ${r.applied} filas guardadas (lote #${r.batch_id})`)+(sk?tr(` · 제외 ${sk}건`,` · omitidas ${sk}`):''));
@@ -1097,7 +1114,7 @@ function inRender(){
     {limit:3000,rowCls:r=>r.code&&IMAP[r.code]?(unitBad(r)?'care':''):(r.cands?'care':(cr?'':'short'))});
   const ub=P.rows.filter(unitBad).length;if(ub)$('nInfo').innerHTML+=` · <span class="neg">${tr('단위 다름','unidad distinta')} ${ub}</span>`;
 }
-const unitBad=r=>r.u&&r.code&&IMAP[r.code]&&IMAP[r.code].unit&&nz(r.u)!==nz(IMAP[r.code].unit);
+const unitBad=r=>{if(!(r.u&&r.code&&IMAP[r.code]))return false;const it=IMAP[r.code],mu=it.unit_raw||it.unit;return !!mu&&nz(r.u)!==nz(mu)&&nz(r.u)!==nz(RU)&&nz(r.u)!=='롤'};
 function inPick(e){const el=e.target.closest('.mc');if(!el||!NP)return;const r=NP.rows[+el.dataset.i];if(!r)return;
   const v=el.value.trim();const code=IMAP[v]?v:(IDX.code.get(nz(v))||'');
   if(code){r.code=code;r.how='manual';r.cands=null}else{r.code='';if(r.how==='manual')r.how='none';if(v)toast(tr('목록에 없는 자재코드입니다: ','Código inexistente: ')+v,1)}
@@ -1150,7 +1167,7 @@ async function histLoad(k){
   const f=$(`h${k}F`).value,t=$(`h${k}T`).value;
   let q=`binv2_ledger?select=id,batch_id,work_date,code,qty,input_qty,mode,stock_after,src_name,src_vendor,memo,cancelled,created_at,binv2_batch(worker)&kind=eq.${k}&order=work_date.desc,id.desc`;
   if(f)q+=`&work_date=gte.${f}`;if(t)q+=`&work_date=lte.${t}`;if(!$(`h${k}C`).checked)q+='&cancelled=is.false';
-  try{HIST[k]=await sel(q);histRender(k)}catch(e){toast(errMsg(e),1)}
+  try{HIST[k]=ledR(await sel(q));histRender(k)}catch(e){toast(errMsg(e),1)}
 }
 function histXlsx(k){
   const rows=sortRows(`h${k}Tb`,histCols(k),histRows(k));const name=kindL(k);
@@ -1248,7 +1265,7 @@ async function resPreview(k){
   $(`${k}-info`).textContent=tr('BOM 매칭 계산 중…','Calculando…');
   try{
     const r=await rpc('binv2_result_post',{p_kind:k,p_date:$(`${k}-date`).value,p_rows:P,p_fallback:$(`${k}-fb`).checked,p_commit:false});
-    if(seq!==R.seq)return;R.res=r;resRender(k);
+    if(seq!==R.seq)return;ledR(r.items);R.res=r;resRender(k);
   }catch(e){if(seq===R.seq){$(`${k}-info`).innerHTML=`<span class="tag short">${esc(errMsg(e))}</span>`;$(`${k}-commit`).disabled=true}}
 }
 function resRender(k){
@@ -1286,7 +1303,7 @@ async function resXlsx(k){
   const f=$(`${k}-hf`).value,t=$(`${k}-ht`).value,rows=sortRows(`${k}-htb`,RES_HIST_COLS,resHistRows(k)),name=kindL(k);
   busy(true,tr('차감 내역 집계 중…','Sumando consumo…'));
   let led=[];try{let q=`binv2_ledger?select=work_date,code,qty&kind=eq.${k}&cancelled=is.false&order=work_date`;if(f)q+=`&work_date=gte.${f}`;if(t)q+=`&work_date=lte.${t}`;led=await sel(q)}catch(e){toast(errMsg(e),1)}finally{busy(false)}
-  const agg=new Map();led.forEach(r=>{const key=r.work_date+'|'+r.code;const a=agg.get(key)||{work_date:r.work_date,code:r.code,qty:0};a.qty+=-Number(r.qty)||0;agg.set(key,a)});
+  const agg=new Map();led.forEach(r=>{const key=r.work_date+'|'+r.code;const a=agg.get(key)||{work_date:r.work_date,code:r.code,qty:0};a.qty+=-toR(r.code,r.qty)||0;agg.set(key,a)});
   const ar=[...agg.values()].sort((a,b)=>a.work_date.localeCompare(b.work_date)||a.code.localeCompare(b.code));
   const tot=new Map();ar.forEach(r=>tot.set(r.code,(tot.get(r.code)||0)+r.qty));
   const tr2=[...tot.entries()].map(([code,qty])=>({code,qty})).sort((a,b)=>a.code.localeCompare(b.code));
@@ -1391,7 +1408,7 @@ async function bomUpload(){
 }
 function renderBomKpi(){$('bkRows').textContent=PRODS.reduce((s,p)=>s+p.total,0).toLocaleString();$('bkProd').textContent=PRODS.length.toLocaleString();
   $('bkItems').textContent=ITEMS.filter(i=>i.in_bom).length.toLocaleString();$('bkUpd').textContent=SET.bom_updated_at||'-'}
-const PROD_COLS=[{h:['품번 (D)','Parte (D)'],k:'top_code'},{h:['개정 (F)','Rev. (F)'],k:'rev'},{h:['MES 품번','Parte MES'],v:r=>r.top_code+'-'+r.rev},{h:['품명','Producto'],k:'name'},{h:['차종','Modelo'],k:'car'},
+const PROD_COLS=[{h:['품번 (D)','Parte (D)'],k:'top_code',cls:'lnk',tdAttr:()=>'data-row'},{h:['개정 (F)','Rev. (F)'],k:'rev'},{h:['MES 품번','Parte MES'],v:r=>r.top_code+'-'+r.rev},{h:['품명','Producto'],k:'name'},{h:['차종','Modelo'],k:'car'},
   {h:['A행','Filas A'],k:'a',t:'n',sum:1},{h:['B행','Filas B'],k:'b',t:'n',sum:1},{h:['C행','Filas C'],k:'c',t:'n',sum:1},{h:['전체행','Total'],k:'total',t:'n',sum:1},{h:['자재 수','Materiales'],k:'items',t:'n'}];
 function renderProds(){const q=nz($('bQ').value);const rows=PRODS.filter(p=>!q||nz(p.top_code+'-'+p.rev+' '+(p.name||'')+' '+(p.car||'')).includes(q));
   tbl('bProd',PROD_COLS,rows,{sortable:1,rerender:renderProds,rowCls:()=>'click',rowAttr:r=>`data-k="${esc(r.top_code+'|'+r.rev)}"`,onRow:openProd});
@@ -1424,6 +1441,18 @@ async function cfgSave(){const v=k=>[...document.querySelectorAll(`[data-cfg="${
   const skip=$('cfgSkip').value.split(',').map(x=>x.trim().toUpperCase()).filter(Boolean).join(',');
   busy(true);try{await ins('binv2_setting',[{key:'map_SUB',value:sub},{key:'map_ASSY',value:assy},{key:'skip_types',value:skip}],'key');await loadSettings();renderStock();
     Object.keys(PRODBOM).forEach(k=>delete PRODBOM[k]);toast(tr('설정을 저장했습니다','Configuración guardada'));['SUB','ASSY'].forEach(k=>{if(RES[k].p)resPreview(k)})}catch(e){toast(errMsg(e),1)}finally{busy(false)}}
+function rlRows(){const only=$('rlOnly').checked;return ITEMS.filter(it=>['MM','M'].includes(String(it.unit_raw||'').trim().toUpperCase())).filter(it=>!only||rl(it.code)).sort((a,b)=>(rl(b.code)?1:0)-(rl(a.code)?1:0)||a.code.localeCompare(b.code))}
+function renderRl(){if(!$('rlTbl'))return;const rows=rlRows();
+  $('rlInfo').textContent=tr(`환산 ${ITEMS.filter(it=>rl(it.code)).length} / MM·M 자재 ${ITEMS.filter(it=>['MM','M'].includes(String(it.unit_raw||'').trim().toUpperCase())).length}`,`con conversión ${ITEMS.filter(it=>rl(it.code)).length} / MM·M ${ITEMS.filter(it=>['MM','M'].includes(String(it.unit_raw||'').trim().toUpperCase())).length}`);
+  tbl('rlTbl',[{h:['자재코드','Código'],k:'code'},{h:['자재명','Nombre'],k:'name',cls:'nm'},{h:['업체품명','Nombre proveedor'],k:'vendor_part',cls:'mute vp'},{h:['단위','Unidad'],k:'unit_raw'},
+    {h:['롤당 길이','Largo por rollo'],html:r=>`<input class="rlIn" data-code="${esc(r.code)}" type="number" min="0" step="any" value="${rl(r.code)||''}" placeholder="${r.unit_raw==='MM'?'mm':'m'}" style="width:110px;text-align:right">`},
+    {h:['현재고','Stock actual'],v:r=>r.stock,t:'n',neg:1,html:r=>fmt(r.stock)+(rl(r.code)?` <span class="hint">${RU}</span>`:` <span class="hint">${esc(r.unit_raw||'')}</span>`)},
+    {h:['길이 환산','En largo'],v:r=>rl(r.code)?fromR(r.code,r.stock):'',t:'n',cls:'mute'}],rows,{limit:2000})}
+async function rlSave(){const rows=[...document.querySelectorAll('#rlTbl .rlIn')].map(e=>({code:e.dataset.code,roll_len:e.value.trim()===''?0:Number(e.value)})).filter(x=>Number(x.roll_len||0)!==rl(x.code));
+  if(!rows.length){toast(tr('변경된 환산계수가 없습니다','Sin cambios'));return}
+  if(rows.some(x=>isNaN(x.roll_len)||x.roll_len<0)){toast(tr('롤당 길이는 0 이상 숫자여야 합니다','El largo debe ser un número ≥ 0'),1);return}
+  if(!confirm(tr(`${rows.length}개 품목의 롤당 길이를 저장합니다. 기존 재고 수치는 그대로 두고 표시 단위만 바뀝니다. 진행할까요?`,`¿Guardar el largo por rollo de ${rows.length} materiales? El stock guardado no cambia, solo la unidad mostrada.`)))return;
+  busy(true);try{await rpc('binv2_roll_len_set',{p_rows:rows});toast(tr(`${rows.length}건 저장`,`${rows.length} guardados`));await refreshAll();renderRl()}catch(e){toast(errMsg(e),1)}finally{busy(false)}}
 async function recalc(){if(!confirm(tr('원장(입출 이력) 합계로 모든 품목의 현재고를 다시 계산합니다. 진행할까요?','Se recalculará el stock de todos los materiales con la suma del historial. ¿Continuar?')))return;
   busy(true);try{const r=await rpc('binv2_recalc',{});toast(r.fixed?tr(`불일치 ${r.fixed}건을 바로잡았습니다`,`Se corrigieron ${r.fixed} diferencias`):tr('현재고와 이력 합계가 모두 일치합니다','El stock coincide con el historial'));await refreshAll()}catch(e){toast(errMsg(e),1)}finally{busy(false)}}
 
@@ -1449,7 +1478,7 @@ async function logAct(e){const b=e.target.closest('button[data-act]');if(!b)retu
   try{await rpc('binv2_cancel',{p_batch:id,p_worker:worker()});toast(tr(`배치 #${id} 취소 완료`,`Lote #${id} cancelado`));await Promise.all([logLoad(),refreshAll()]);loadDates(r.kind)}catch(er){toast(errMsg(er),1)}finally{busy(false)}}
 async function batchDetail(id){const b=LOG.find(x=>x.id===id)||{id};
   busy(true);let led=[],res=[];
-  try{led=await sel(`binv2_ledger?select=*&batch_id=eq.${id}&order=id`);if(b.kind==='SUB'||b.kind==='ASSY')res=await sel(`binv2_result?select=*&batch_id=eq.${id}&order=id`)}catch(e){toast(errMsg(e),1)}finally{busy(false)}
+  try{led=ledR(await sel(`binv2_ledger?select=*&batch_id=eq.${id}&order=id`));if(b.kind==='SUB'||b.kind==='ASSY')res=await sel(`binv2_result?select=*&batch_id=eq.${id}&order=id`)}catch(e){toast(errMsg(e),1)}finally{busy(false)}
   const LC=[{h:['자재코드','Código'],k:'code'},{h:['자재명','Nombre'],v:r=>(IMAP[r.code]||{}).name||''},{h:['업체품명','Nombre proveedor'],v:r=>(IMAP[r.code]||{}).vendor_part||r.src_vendor||'',cls:'mute'},
     {h:['단위','Unidad'],v:r=>(IMAP[r.code]||{}).unit||''},{h:['입력값','Valor ingresado'],k:'input_qty',t:'n'},{h:['변동','Movimiento'],k:'qty',t:'n',sum:1,neg:1,cls:'b'},
     {h:['반영 후 재고','Stock después'],k:'stock_after',t:'n',neg:1},{h:['메모','Nota'],v:r=>r.memo||r.src_name||'',cls:'mute'}];
@@ -1550,7 +1579,7 @@ function planListRender(){tbl('pTbl',[{h:['계획일자','Fecha'],k:'plan_date',
   $('pTbl').querySelectorAll('button[data-pdel]').forEach(b=>b.onclick=async()=>{const r=PLAN.find(x=>x.id==b.dataset.pdel);if(!r||!confirm(tr(`${r.plan_date} ${r.top_code}-${r.rev} 계획을 삭제할까요?`,`¿Eliminar el plan ${r.plan_date} ${r.top_code}-${r.rev}?`)))return;
     busy(true);try{await del('binv2_plan','id=eq.'+r.id);await Promise.all([planDates(),planDay(),planLoad()])}catch(e){toast(errMsg(e),1)}finally{busy(false)}})}
 function reqCols(){return[
-  {h:['공정','Proceso'],k:'procs',w:7},{h:['자재코드','Código'],k:'code',w:16},
+  {h:['공정','Proceso'],k:'procs',w:7},{h:['자재코드','Código'],k:'code',w:16,cls:'lnk',tdAttr:()=>`data-row title="${tr('눌러서 품목 입출 이력','Toque para ver historial')}"`},
   {h:['자재명','Nombre'],k:'name',w:30,html:r=>esc(r.name||'')+(r.missing?`<span class="tag short" style="margin-left:6px">${tr('미등록','No existe')}</span>`:'')},
   {h:['업체품명','Nombre proveedor'],k:'vendor_part',w:22,cls:'mute'},{h:['단위','Unidad'],k:'unit',w:7},
   {h:['필요량','Necesidad'],k:'need',t:'n',sum:1,w:12},{h:['현재고','Stock actual'],k:'stock',t:'n',neg:1,sum:1,w:12},
@@ -1626,7 +1655,7 @@ async function boot(){
   bindPaste('abPaste',abParse);document.querySelectorAll('input[name=abMode]').forEach(x=>x.onchange=abRender);$('abClear').onclick=()=>{clearPaste('abPaste');ABP=null;abRender()};$('abSave').onclick=abSave;
   // BOM
   bindPaste('bPaste',bomParse);$('bClear').onclick=()=>{clearPaste('bPaste');BOMP=null;bomInfo()};$('bUpload').onclick=bomUpload;$('bQ').addEventListener('input',renderProds);
-  $('bDetProc').onchange=renderProdDet;$('bDetQ').addEventListener('input',renderProdDet);$('bDetX').onclick=prodDetXlsx;$('bXAll').onclick=bomAllXlsx;$('cfgSave').onclick=cfgSave;$('recalc').onclick=recalc;
+  $('bDetProc').onchange=renderProdDet;$('bDetQ').addEventListener('input',renderProdDet);$('bDetX').onclick=prodDetXlsx;$('bXAll').onclick=bomAllXlsx;$('cfgSave').onclick=cfgSave;$('recalc').onclick=recalc;$('rlSave').onclick=rlSave;$('rlOnly').onchange=renderRl;
   $('gTbl').addEventListener('input',grpInput);$('gTbl').addEventListener('click',grpClick);$('gAdd').onclick=grpAdd;$('gNew').addEventListener('keydown',e=>{if(e.key==='Enter')grpAdd()});$('gSave').onclick=grpSave;
   // 처리이력
   $('lGo').onclick=logLoad;$('lK').onchange=logLoad;$('lS').onchange=logLoad;$('lTbl').addEventListener('click',logAct);$('lTbl').addEventListener('change',e=>{const c=e.target.closest('.lsel');if(!c)return;const id=+c.dataset.id;c.checked?LSEL.add(id):LSEL.delete(id);logInfo()});
