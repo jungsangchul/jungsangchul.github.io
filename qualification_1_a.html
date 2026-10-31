@@ -737,6 +737,7 @@ function applyExamCfgToInputs(cfg){
   const m={title:'examTitle',date:'examDate',team:'examTeam',passingScore:'passingScore',examDuration:'examDuration',pointsPerQ:'pointsPerQ',theoryPct:'theoryPct',practicalPct:'practicalPct',practicalMax:'practicalMax',mobileExamTitle:'mobileExamTitle',mobileExamLang:'mobileExamLang'};
   Object.keys(m).forEach(k=>{const el=document.getElementById(m[k]);if(el&&cfg[k]!=null&&cfg[k]!==''&&document.activeElement!==el)el.value=cfg[k];});
   if(typeof updateScoreSummary==='function')updateScoreSummary();
+  if(typeof applyPracLevelCfg==='function')applyPracLevelCfg(cfg);
 }
 // 시험설정 입력 변경 시 서버 자동저장 (1.5초 debounce)
 let _cfgSaveTimer=null;
@@ -3357,11 +3358,12 @@ document.addEventListener('DOMContentLoaded', renderExamQr);
         <div style="font-size:0.76rem;color:var(--text2)" id="theoryMaxInfo">문항 20개 × 5점 = 원점수 100점 → 가중 50점 반영</div>
       </div>
       <div class="score-block practical">
-        <div class="score-block-title p">🔧 <span data-kr="실습 평가 (수기 입력)" data-es="Evaluación Práctica">실습 평가 (수기 입력)</span></div>
+        <div class="score-block-title p">🔧 <span data-kr="실습 평가 (공정별 작업시간 측정 → 레벨 환산)" data-es="Evaluación Práctica (tiempo por proceso → nivel)">실습 평가 (공정별 작업시간 측정 → 레벨 환산)</span></div>
         <div class="form-row col2" style="margin-bottom:0.5rem">
           <div><label><span data-kr="배점 비율 (%)" data-es="Peso (%)">배점 비율 (%)</span></label><input type="number" id="practicalPct" value="50" min="0" max="100" onchange="updateScoreSummary()"></div>
           <div><label><span data-kr="실습 만점 기준" data-es="Máx. Práctica">실습 만점 기준</span></label><input type="number" id="practicalMax" value="100" min="1" onchange="updateScoreSummary()"></div>
         </div>
+        <div style="font-size:0.74rem;color:var(--text2);line-height:1.5" id="pracMethodNote">공정별 작업시간(초) 측정 → 기준 C/T(3600÷UPH) 대비 L1~L5·신입 레벨 → 레벨별 점수 환산(⑥ 숙련도·다기능 › 등급 기준 마스터) → 실습 배점 반영. 최종등급 = 이론+실습 총점 기준.</div>
       </div>
     </div>
     <div style="margin-bottom:1rem">
@@ -3864,8 +3866,8 @@ document.addEventListener('DOMContentLoaded', renderExamQr);
           </div>
           <div id="practicalDirectInputs"></div>
           <div style="display:flex;align-items:center;gap:0.8rem;margin-top:0.6rem;padding-top:0.6rem;border-top:1px solid var(--border)">
-            <label style="margin:0;min-width:80px"><span data-kr="실습 총점" data-es="Total Práctica">실습 총점</span></label>
-            <input type="number" id="practicalDirectTotal" min="0" placeholder="0" oninput="updatePracticalDirectWeighted()" style="max-width:110px;text-align:center;font-family:'JetBrains Mono',monospace;font-size:1.1rem;font-weight:700;color:var(--purple)">
+            <label style="margin:0;min-width:80px"><span data-kr="실습 점수(환산)" data-es="Puntaje práctico">실습 점수(환산)</span></label>
+            <input type="number" id="practicalDirectTotal" min="0" placeholder="0" readonly title="공정별 레벨에서 자동 환산됩니다" style="max-width:110px;text-align:center;font-family:'JetBrains Mono',monospace;font-size:1.1rem;font-weight:700;color:var(--purple);background:var(--bg)">
             <span style="font-size:0.83rem;color:var(--text2)">/ <span id="practicalDirectMaxDisp">100</span>점</span>
             <span id="practicalDirectWeightedDisp" style="font-size:0.78rem;color:var(--text2)"></span>
           </div>
@@ -4352,6 +4354,31 @@ document.addEventListener('DOMContentLoaded', renderExamQr);
         <tbody id="gradeCriteriaBody"></tbody>
       </table>
       <div style="font-size:0.76rem;color:var(--text2);margin-top:0.5rem">※ 합격 기준점 미달 시 → <span style="color:var(--red);font-weight:700">불합격(미달)</span></div>
+      <div style="margin-top:0.8rem;background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.3);border-radius:8px;padding:0.7rem 1rem;font-size:0.78rem;line-height:1.6" id="finalGradeFlowBox"></div>
+    </div>
+
+    <!-- 실습 레벨 → 점수 환산 기준 -->
+    <div class="card">
+      <div class="flex-between">
+        <div class="card-title purple">🔧 <span data-kr="실습 레벨 → 점수 환산 기준 (공정별 작업시간 측정)" data-es="Nivel práctico → puntaje (tiempo por proceso)">실습 레벨 → 점수 환산 기준 (공정별 작업시간 측정)</span></div>
+        <div style="display:flex;gap:0.5rem">
+          <button class="btn btn-primary btn-sm" onclick="savePracLevelCfg()"><span data-kr="💾 저장" data-es="💾 Guardar">💾 저장</span></button>
+        </div>
+      </div>
+      <div class="info-box">실습평가는 공정별로 작업시간(초)을 측정해 기준 C/T(3600 ÷ UPH) 대비 L1~L5·신입 레벨을 판정하고, 아래 표의 점수(실습 만점 기준 %)로 환산합니다. 기준 UPH는 「조립 작업자 정기 평가」(assy_eval_std, 1공장) 값을 공정·아이템별로 가져옵니다.</div>
+      <table class="grade-criteria-table">
+        <thead><tr><th><span data-kr="레벨" data-es="Nivel">레벨</span></th><th><span data-kr="판정 기준 (일반 시트)" data-es="Criterio (hoja normal)">판정 기준 (일반 시트)</span></th><th><span data-kr="판정 기준 (다기능공)" data-es="Criterio (multihabilidad)">판정 기준 (다기능공)</span></th><th><span data-kr="환산 점수 (%)" data-es="Puntaje (%)">환산 점수 (%)</span></th></tr></thead>
+        <tbody id="pracLevelBody"></tbody>
+      </table>
+      <div style="display:flex;align-items:center;gap:0.7rem;margin-top:0.7rem;font-size:0.8rem;flex-wrap:wrap">
+        <label style="margin:0"><span data-kr="공정을 2개 이상 측정했을 때 실습 점수" data-es="Puntaje con 2+ procesos">공정을 2개 이상 측정했을 때 실습 점수</span></label>
+        <select id="pracMultiRule" style="max-width:220px;font-size:0.8rem" onchange="pracLevelCfg.rule=this.value">
+          <option value="avg">평균 / Promedio</option>
+          <option value="min">최저 레벨 기준 / Nivel más bajo</option>
+          <option value="max">최고 레벨 기준 / Nivel más alto</option>
+        </select>
+      </div>
+      <div style="font-size:0.74rem;color:var(--text2);margin-top:0.5rem">※ 「-」(하한 미만·측정 오류)와 「기준외」는 0%로 처리. 부적합품 발생 또는 수행항목 누락 체크 시 해당 공정은 0%(재평가 대상).</div>
     </div>
   </div>
 </div>
@@ -4485,7 +4512,9 @@ function collectExamCfg(){
     passingScore:v('passingScore'), examDuration:v('examDuration'),
     pointsPerQ:v('pointsPerQ'), theoryPct:v('theoryPct'),
     practicalPct:v('practicalPct'), practicalMax:v('practicalMax'),
-    mobileExamTitle:v('mobileExamTitle'), mobileExamLang:v('mobileExamLang')
+    mobileExamTitle:v('mobileExamTitle'), mobileExamLang:v('mobileExamLang'),
+    practicalLevelScores:(typeof pracLevelCfg!=='undefined')?JSON.stringify(pracLevelCfg.scores):'',
+    practicalMultiRule:(typeof pracLevelCfg!=='undefined')?(pracLevelCfg.rule||'avg'):'avg'
   };
 }
 
@@ -4613,7 +4642,7 @@ function switchSkillsSubtab(sub,btn){
   document.getElementById('skills-sub-master').style.display=sub==='master'?'block':'none';
   if(sub==='grade'){renderSkillGrades();updateSkillProcessFilter();}
   if(sub==='multi')renderMultiFunction();
-  if(sub==='master')renderGradeCriteria();
+  if(sub==='master'){renderGradeCriteria();if(typeof renderPracLevelCfg==='function')renderPracLevelCfg();}
 }
 function updateSkillProcessFilter(){
   const sel=document.getElementById('skillFilterProcess');if(!sel)return;
@@ -5775,7 +5804,7 @@ function renderResults(){
       <th><span class="tag tag-p" data-kr="실습" data-es="Práctico">실습</span></th>
       <th><span data-kr="총점" data-es="Total">총점</span></th>
       <th><span data-kr="합격" data-es="Resultado">합격</span></th>
-      <th><span data-kr="등급" data-es="Nivel">등급</span></th>
+      <th><span data-kr="최종등급" data-es="Nivel final">최종등급</span></th>
       <th><span data-kr="MSA(계량형)" data-es="MSA(Variable)">MSA(계량형)</span></th>
       <th><span data-kr="최종판정" data-es="Veredicto Final">최종판정</span></th>
       <th><span data-kr="상세" data-es="Detalle">상세</span></th>
@@ -5810,7 +5839,7 @@ function renderResults(){
         <td style="color:var(--text2);font-size:0.76rem">${r.date}</td>
         <td style="font-size:0.76rem;color:var(--teal)">${calcTenure(r.hireDate||lookupHireDate(r.empId))}</td>
         <td>${_noT(r)?'<span style="color:var(--text2);font-size:0.72rem">미평가</span>':`<span class="score-t">${r.theoryWeighted||0}점</span>`}</td>
-        <td>${_noP(r)?'<span style="color:var(--text2);font-size:0.72rem">미평가</span>':`<span class="score-p">${r.practicalWeighted||0}점</span>`}</td>
+        <td>${_noP(r)?'<span style="color:var(--text2);font-size:0.72rem">미평가</span>':`<span class="score-p">${r.practicalWeighted||0}점</span>${pracSummaryHtml(r.practicalItemScores)}`}</td>
         <td><span class="score-badge ${cls}">${r.totalScore}점</span></td>
         <td>${_stOf(r)==='판정대기'?'<span style="color:var(--orange,#e6a23c);font-size:0.76rem">⏳ 대기</span>':r.passed?'<span style="color:var(--green)">✅ 합격</span>':'<span style="color:var(--red)">❌ 불합격</span>'}</td>
         <td>${_stOf(r)==='판정대기'?'<span style="color:var(--text2)">-</span>':grade}</td>
@@ -5864,7 +5893,7 @@ function showDetail(idx){
       <div class="score-box" style="border:1px solid rgba(155,126,232,0.3)"><div class="score-box-val" style="color:var(--purple)">${r.practicalWeighted||0}</div><div class="score-box-label">실습 점수</div><div class="score-box-sub" style="color:var(--text2)">${r.practicalRaw||0}/${r.practicalMax||'-'} 원점수<br>${r.practicalPct||0}% 반영</div></div>
       <div class="score-box" id="detailTotalBox" style="border:1px solid ${r.passed?'rgba(46,204,122,0.4)':'rgba(224,82,82,0.4)'}"><div class="score-box-val" style="color:${r.passed?'var(--green)':'var(--red)'}">${r.totalScore}</div><div class="score-box-label">총점 / 100점</div><div class="score-box-sub" style="color:${r.passed?'var(--green)':'var(--red)'}">${r.passed?'✅ 합격':'❌ 불합격'}</div></div>
     </div>
-    ${r.practicalItemScores?.length?`<div style="margin-bottom:0.9rem"><div style="font-size:0.76rem;font-weight:700;color:var(--purple);margin-bottom:0.5rem">실습 항목별 점수</div><div style="display:flex;gap:0.5rem;flex-wrap:wrap">${r.practicalItemScores.map(it=>`<div style="background:var(--bg);border:1px solid rgba(155,126,232,0.3);border-radius:6px;padding:0.5rem 0.8rem;font-size:0.78rem"><div style="color:var(--text2);margin-bottom:0.2rem">${it.name}</div><strong style="color:var(--purple)">${it.score}/${it.max}</strong></div>`).join('')}</div></div>`:''}
+    ${pracDetailHtml(r)}
     <div class="score-bar-wrap">
       <div class="score-bar-label"><span>점수 구성</span><span style="font-size:0.7rem"><span style="color:var(--blue)">■ 이론 ${r.theoryWeighted||0}점</span> + <span style="color:var(--purple)">■ 실습 ${r.practicalWeighted||0}점</span></span></div>
       <div class="score-bar"><div class="score-bar-t" style="width:${r.theoryWeighted||0}%"></div><div class="score-bar-p" style="width:${r.practicalWeighted||0}%"></div></div>
@@ -6945,7 +6974,7 @@ function renderPracticalCardList(){
       </div>
       <div style="display:flex;gap:0.4rem;flex-wrap:wrap;align-items:center">
         <span style="font-size:0.72rem;background:rgba(91,163,232,0.1);color:var(--sky);border-radius:4px;padding:0.1rem 0.4rem">${s.process||'공정미입력'}</span>
-        ${(pracRaw!==null&&pracRaw!==undefined)?`<span style="font-size:0.72rem;background:rgba(155,126,232,0.15);color:var(--purple);border-radius:4px;padding:0.1rem 0.45rem;font-weight:700">실습 ${pracRaw}/${pracMax}점 ✓</span>`:`<span style="font-size:0.72rem;color:var(--text2)">실습 미입력 →클릭</span>`}
+        ${(pracRaw!==null&&pracRaw!==undefined)?`<span style="font-size:0.72rem;background:rgba(155,126,232,0.15);color:var(--purple);border-radius:4px;padding:0.1rem 0.45rem;font-weight:700">실습 ${pracRaw}/${pracMax}점 ✓</span>${pracSummaryHtml(prac?prac.itemScores:(trPracDone?tr.practicalItemScores:[]))}`:`<span style="font-size:0.72rem;color:var(--text2)">실습 미입력 →클릭</span>`}
       </div>
     </div>`;
   }).join('')}
@@ -6968,39 +6997,28 @@ function openPracticalEntry(si){
   const badge=document.getElementById('pdi-theory-badge');
   if(tScore!==null){badge.style.display='inline';document.getElementById('pdi-theory-score').textContent=tScore;}
   else{badge.style.display='none';}
-  // 기존 실습 값 복원 (pending 우선, 없으면 저장된 results에서 복원)
+  // 기존 실습 값 복원 (pending 우선, 없으면 저장된 results에서 복원) — 공정별 측정 내역(measures) 포함
   const prac=pendingPractical[eid];
   const trPracDone=tr&&((parseFloat(tr.practicalRaw)||0)>0||(parseFloat(tr.practicalWeighted)||0)>0||(tr.practicalItemScores||[]).length>0);
-  const savedRaw=prac?prac.rawScore:(trPracDone?tr.practicalRaw:null);
   const savedItems=(prac?.itemScores?.length)?prac.itemScores:(trPracDone?(tr.practicalItemScores||[]):[]);
+  const savedMeasures=(savedItems.find(it=>Array.isArray(it.measures)&&it.measures.length)||{}).measures||[];
   document.getElementById('practicalDirectMaxDisp').textContent=cfg.practicalMax;
-  document.getElementById('practicalDirectTotal').value=(savedRaw!==null&&savedRaw!==undefined)?savedRaw:'';
   document.getElementById('practicalDirectTotal').max=cfg.practicalMax;
-  // 항목별 입력
-  const cont=document.getElementById('practicalDirectInputs');
-  if(practicalItems.length){
-    cont.innerHTML=`<div style="font-size:0.78rem;color:var(--text2);margin-bottom:0.5rem">항목별 입력 → 자동 합산</div>
-      <div class="practical-items-grid">${practicalItems.map((item,i)=>{
-        const ex=savedItems.find(s=>s.name===item.name);
-        return`<div class="practical-item-box">
-          <label>${item.name} <span style="color:var(--text2);font-size:0.72rem">(만점: ${item.max})</span></label>
-          <input type="number" id="pdi_item_${i}" min="0" placeholder="0" value="${ex?.score||''}" oninput="sumPracticalItems2()" style="font-size:1rem;width:100%">
-        </div>`;
-      }).join('')}</div>`;
-  }else{cont.innerHTML='';}
-  // 저장할 eid 임시 보관
+  // ✅ 공정별 작업시간 측정 패널 (2026-10-31): 저장된 측정이 있으면 복원, 없으면 응시자 공정으로 1행 생성
+  pracMeasures=savedMeasures.length
+    ?savedMeasures.map(m=>({process:m.process,item:m.item||pracDefaultItem(),multi:!!m.multi,uph:m.uph,time:m.time,defect:!!m.defect,omission:!!m.omission}))
+    :[pracNewRow(guessPracProcess(s.process))];
   document.getElementById('practicalDirectCard').dataset.eid=eid;
   document.getElementById('practicalDirectCard').style.display='block';
-  updatePracticalDirectWeighted();
+  renderPracMeasurePanel();
+  loadAssyStd().then(()=>{ // 기준 UPH 로드 후 UPH 비어 있는 행 채움
+    pracMeasures.forEach(m=>{ if(m.uph==null||m.uph===''){ m.uph=pracStdUph(m.process,m.multi,m.item); } });
+    renderPracMeasurePanel();
+  }).catch(()=>{});
   document.getElementById('practicalDirectCard').scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 
-function sumPracticalItems2(){
-  const cfg=getConfig();
-  const sum=practicalItems.reduce((s,item,i)=>s+(parseFloat(document.getElementById('pdi_item_'+i)?.value)||0),0);
-  document.getElementById('practicalDirectTotal').value=sum;
-  updatePracticalDirectWeighted();
-}
+function sumPracticalItems2(){ computePracScore(); }
 
 function updatePracticalDirectWeighted(){
   const cfg=getConfig();
@@ -7015,16 +7033,15 @@ function savePracticalEntry(){
   const eid=card.dataset.eid;
   if(!eid){alert('응시자를 먼저 선택해주세요.');return;}
   const cfg=getConfig();
-  const total=parseFloat(document.getElementById('practicalDirectTotal')?.value||0);
-  const itemScores=practicalItems.map((item,i)=>({
-    name:item.name,score:parseFloat(document.getElementById('pdi_item_'+i)?.value||0),max:item.max
-  }));
+  const calc=computePracScore();
+  if(!calc.measures.length||calc.measures.every(m=>m.level===''||m.level==null)){alert('공정별 작업시간(초)을 1개 이상 입력해주세요.');return;}
+  const total=calc.raw;
+  const itemName=(practicalItems[0]&&practicalItems[0].name)||'조립 작업수준 평가';
+  const itemScores=[{name:itemName,score:total,max:cfg.practicalMax,rule:pracLevelCfg.rule||'avg',measures:calc.measures}];
   if(!pendingPractical[eid])pendingPractical[eid]={rawScore:0,itemScores:[]};
   pendingPractical[eid].rawScore=total;
   pendingPractical[eid].itemScores=itemScores;
-  // 이론 결과가 이미 저장되어 있으면 즉시 합산
-  // ✅ FIX(2026-09-15): 같은 사번의 결과가 여러 건(재시험)일 때 첫 번째(가장 오래된) 결과가 아니라
-  //   가장 최근 시험일(동일하면 timestamp 최신)의 결과에 실습점수를 반영한다.
+  // 이론 결과가 이미 저장되어 있으면 즉시 합산 → 총점 → 최종등급
   const _cands=results.map((r,i)=>({r,i})).filter(x=>String(x.r.empId)===String(eid))
     .sort((a,b)=>(new Date(b.r.date||0)-new Date(a.r.date||0))||((b.r.timestamp||0)-(a.r.timestamp||0)));
   const trIdx=_cands.length?_cands[0].i:-1;
@@ -7033,7 +7050,7 @@ function savePracticalEntry(){
     const pw=(total/cfg.practicalMax)*cfg.practicalPct;
     r.practicalRaw=total;r.practicalMax=cfg.practicalMax;
     r.practicalWeighted=parseFloat(pw.toFixed(1));r.practicalPct=cfg.practicalPct;
-    r.totalScore=parseFloat((r.theoryWeighted+pw).toFixed(1));
+    r.totalScore=parseFloat(((r.theoryWeighted||0)+pw).toFixed(1));
     r.passed=r.totalScore>=cfg.passingScore;
     r.practicalItemScores=itemScores;
     save();
@@ -7041,14 +7058,233 @@ function savePracticalEntry(){
       .then(()=>{ try{ if(typeof renderResults==='function')renderResults(); }catch(_e){} })
       .catch(e=>{ console.warn('실습점수 Supabase 저장 실패:',e); alert('⚠️ 서버 저장 실패: '+e.message+'\n🔄 버튼으로 다시 불러온 뒤 재시도하세요.'); });
     try{ if(typeof renderResults==='function')renderResults(); }catch(_e){}
-    alert(`✅ 저장 완료!\n${r.name} (${r.date||''}) 실습 ${total}점 → 총점 ${r.totalScore}점 (${r.passed?'합격':'불합격'})`);
+    const gl=finalGradeLabel(r.totalScore,r.passed);
+    alert(`✅ 저장 완료!\n${r.name} (${r.date||''})\n실습: ${calc.measures.map(m=>`${m.process}${m.multi?'(다기능)':''} ${m.time}초 → ${m.level||'-'} (${m.pct}%)`).join(' / ')}\n실습 ${total}점(가중 ${r.practicalWeighted}) + 이론 ${r.theoryWeighted||0}점 → 총점 ${r.totalScore}점 → ${r.passed?'합격 · 최종등급 '+gl:'불합격(미달)'}`);
   }else{
-    alert('💾 실습점수 임시저장 완료.\n이론 채점 후 [전체 채점 저장]으로 최종 반영됩니다.');
+    alert('💾 실습점수 임시저장 완료.\n'+calc.measures.map(m=>`${m.process} ${m.time}초 → ${m.level||'-'} (${m.pct}%)`).join(' / ')+`\n→ 실습 ${total}점. 이론 채점 후 [전체 채점 저장]으로 최종 반영됩니다.`);
   }
   card.style.display='none';
   renderPracticalCardList();
   if(Object.keys(pendingTheory).length)renderPendingTheoryTable();
 }
+
+// =================== 공정별 작업시간 측정 → 레벨 → 점수 환산 (2026-10-31) ===================
+// 레벨 판정 수식은 「조립 작업자 정기 평가」(assy_eval.html, 엑셀 체크시트 V7-1)와 동일:
+//  · 일반 시트(서브·포선·테이핑·클립·후취): C/T = 3600÷UPH,
+//    L1 < C/T÷0.115×0.100 · L2 < C/T · L3 < C/T÷0.115×0.129 · L4 < C/T÷0.115×0.143 · L5 < C/T÷0.115×0.158 · 신입 < L5×5
+//  · 다기능공(서브·포선·테이핑): 하한 ROUNDUP(C/T×0.85), L1~신입 상한 ROUNDUP(C/T×0.90/0.95/1.05/1.10/1.15/1.25)
+//  하한 미만 = 「-」, 신입 상한 초과 = 「기준외」
+const PRAC_PROCS=['서브','포선','테이핑','클립','후취'];
+const PRAC_PROC_ES={'서브':'Sub-Ensamble','포선':'Ruteo','테이핑':'Encintado','클립':'Aplicación de clips','후취':'Post-proceso'};
+const PRAC_MULTI_OK=['서브','포선','테이핑'];
+const PRAC_LVS=['L1','L2','L3','L4','L5','신입'];
+const PRAC_LV_COLOR={'L1':'#4caf7d','L2':'#6fb8dd','L3':'#c9a84c','L4':'#e0a84a','L5':'#d4651a','신입':'#e05c5c','기준외':'#7a2f2f','-':'#7a7a7a'};
+const PRAC_LV_RANK={'L1':6,'L2':5,'L3':4,'L4':3,'L5':2,'신입':1,'기준외':0,'-':0};
+const PRAC_LV_DESC={'L1':'C/T 대비 115% 이상','L2':'100% 이상','L3':'89% 이상','L4':'80% 이상','L5':'72% 이상','신입':'72% 미만 (배치 가능기준)','기준외':'신입 상한 초과','-':'하한 미만(측정 확인)'};
+const PRAC_LV_DESC_M={'L1':'C/T×0.90 미만','L2':'C/T×0.95 미만','L3':'C/T×1.05 미만','L4':'C/T×1.10 미만','L5':'C/T×1.15 미만','신입':'C/T×1.25 미만','기준외':'C/T×1.25 이상','-':'C/T×0.85 미만'};
+const PRAC_DEFAULT_SCORES={'L1':100,'L2':90,'L3':80,'L4':70,'L5':60,'신입':40,'기준외':0,'-':0};
+let pracLevelCfg={scores:Object.assign({},PRAC_DEFAULT_SCORES),rule:'avg'};
+let pracMeasures=[];           // 현재 입력 중인 공정별 측정 행
+let assyStd={}, _assyStdLoaded=false, _assyStdItems=[];
+
+function applyPracLevelCfg(cfg){
+  try{ if(cfg&&cfg.practicalLevelScores){ const o=JSON.parse(cfg.practicalLevelScores); if(o&&typeof o==='object'){ pracLevelCfg.scores=Object.assign({},PRAC_DEFAULT_SCORES,o); } } }catch(e){}
+  if(cfg&&cfg.practicalMultiRule) pracLevelCfg.rule=cfg.practicalMultiRule;
+  if(document.getElementById('pracLevelBody')) renderPracLevelCfg();
+}
+const _rup=x=>Math.ceil(x-1e-9);
+function pracBounds(ct,multi){
+  if(!(ct>0))return null;
+  if(multi){const lo=_rup(ct*0.85),u=[0.9,0.95,1.05,1.1,1.15,1.25].map(k=>_rup(ct*k));return{lo,u};}
+  const u=[ct/0.115*0.1,ct,ct/0.115*0.129,ct/0.115*0.143,ct/0.115*0.158];u.push(u[4]*5);return{lo:1,u};
+}
+function pracJudge(time,b){
+  if(time==null||time===''||!b)return '';
+  const x=parseFloat(time);if(isNaN(x))return '';
+  if(x<b.lo)return '-';
+  for(let i=0;i<6;i++)if(x<b.u[i])return PRAC_LVS[i];
+  return '기준외';
+}
+function pracLevelPct(level){ if(!level)return 0; const v=pracLevelCfg.scores[level]; return (v==null||isNaN(parseFloat(v)))?0:parseFloat(v); }
+function pracLevelBadge(level,big){
+  if(!level)return '<span style="font-size:0.72rem;color:var(--text2)">·</span>';
+  const c=PRAC_LV_COLOR[level]||'#888';
+  return `<span style="display:inline-block;background:${c}22;color:${c};border:1px solid ${c}66;border-radius:5px;padding:${big?'0.15rem 0.6rem':'0.05rem 0.35rem'};font-size:${big?'0.9rem':'0.68rem'};font-weight:700;line-height:1.4">${level}</span>`;
+}
+function guessPracProcess(p){
+  const s=String(p||'').toLowerCase();
+  if(/sub|서브/.test(s))return '서브';
+  if(/ruteo|포선|rout/.test(s))return '포선';
+  if(/encint|테이핑|tap/.test(s))return '테이핑';
+  if(/clip|클립/.test(s))return '클립';
+  if(/후취|post|protector|inspec|re-?work|materiales|lider/.test(s))return '후취';
+  return '서브';
+}
+function pracDefaultItem(){ return _assyStdItems.includes('MAIN')?'MAIN':(_assyStdItems[0]||'MAIN'); }
+function pracNewRow(process){ return {process:process||'서브',item:pracDefaultItem(),multi:false,uph:pracStdUph(process||'서브',false,pracDefaultItem()),time:'',defect:false,omission:false}; }
+async function loadAssyStd(force){
+  if(_assyStdLoaded&&!force)return assyStd;
+  if(typeof _isLocalFile!=='undefined'&&_isLocalFile){_assyStdLoaded=true;return assyStd;}
+  let rows=[];
+  try{ rows=await sbFetch('assy_eval_std?select=process,multi,uph,tt,item&plant=eq.1'); }
+  catch(e){ try{ rows=await sbFetch('assy_eval_std?select=process,multi,uph,tt&plant=eq.1'); }catch(e2){ rows=[]; } }
+  assyStd={}; const items=new Set();
+  (rows||[]).forEach(r=>{ const it=r.item||'MAIN'; items.add(it); assyStd[r.process+'|'+(r.multi?1:0)+'|'+it]={uph:Number(r.uph),tt:r.tt!=null?Number(r.tt):null}; });
+  _assyStdItems=[...items]; if(!_assyStdItems.length)_assyStdItems=['MAIN'];
+  // 아이템 정렬: MAIN 먼저
+  _assyStdItems.sort((a,b)=>(a==='MAIN'?-1:b==='MAIN'?1:a.localeCompare(b)));
+  _assyStdLoaded=true; return assyStd;
+}
+function pracStdUph(process,multi,item){
+  const k=process+'|'+(multi?1:0)+'|'+(item||'MAIN');
+  if(assyStd[k]&&assyStd[k].uph>0)return assyStd[k].uph;
+  const k2=process+'|'+(multi?1:0)+'|MAIN';
+  if(assyStd[k2]&&assyStd[k2].uph>0)return assyStd[k2].uph;
+  return (multi||process==='후취')?40:12;   // assy_eval.html 기본값
+}
+function pracCt(uph){ uph=parseFloat(uph); return uph>0?3600/uph:null; }
+function pracRowCalc(m){
+  const ct=pracCt(m.uph), b=pracBounds(ct,m.multi);
+  let level=pracJudge(m.time,b);
+  let pct=pracLevelPct(level);
+  if((m.defect||m.omission)&&level){ pct=0; }
+  return {ct,b,level,pct};
+}
+function computePracScore(){
+  const cfg=getConfig();
+  const measures=pracMeasures.map(m=>{
+    const c=pracRowCalc(m);
+    return {process:m.process,item:m.item||'',multi:!!m.multi,uph:parseFloat(m.uph)||null,ct:c.ct?Math.round(c.ct*100)/100:null,
+            time:(m.time===''||m.time==null)?null:parseFloat(m.time),level:c.level,pct:c.pct,defect:!!m.defect,omission:!!m.omission};
+  });
+  const valid=measures.filter(m=>m.level);
+  let pct=0;
+  if(valid.length){
+    const rule=pracLevelCfg.rule||'avg';
+    if(rule==='min')pct=Math.min(...valid.map(m=>m.pct));
+    else if(rule==='max')pct=Math.max(...valid.map(m=>m.pct));
+    else pct=valid.reduce((s,m)=>s+m.pct,0)/valid.length;
+  }
+  const raw=parseFloat((pct/100*cfg.practicalMax).toFixed(1));
+  const totalEl=document.getElementById('practicalDirectTotal'); if(totalEl)totalEl.value=valid.length?raw:'';
+  updatePracticalDirectWeighted();
+  // 요약 표시
+  const sum=document.getElementById('pracMeasureSummary');
+  if(sum){
+    if(!valid.length){sum.innerHTML='<span style="color:var(--text2)">작업시간을 입력하면 레벨과 점수가 자동 계산됩니다.</span>';}
+    else{
+      const rule=pracLevelCfg.rule||'avg';
+      const ruleTxt=valid.length>1?(rule==='min'?' (최저 레벨 기준)':rule==='max'?' (최고 레벨 기준)':' (공정 평균)'):'';
+      const tr=results.filter(r=>r.empId===document.getElementById('practicalDirectCard').dataset.eid).sort((a,b)=>new Date(b.date)-new Date(a.date))[0];
+      const pt=pendingTheory[document.getElementById('practicalDirectCard').dataset.eid];
+      const tScore=tr?(parseFloat(tr.theoryWeighted)||0):(pt?(parseFloat(pt.weighted)||0):null);
+      const pw=raw/cfg.practicalMax*cfg.practicalPct;
+      let finalTxt='';
+      if(tScore!==null){ const total=parseFloat((tScore+pw).toFixed(1)); const passed=total>=cfg.passingScore; finalTxt=` &nbsp;·&nbsp; 이론 ${tScore} + 실습 ${pw.toFixed(1)} = <strong style="color:${passed?'var(--green)':'var(--red)'}">총점 ${total}</strong> → ${passed?finalGradeBadge(total,true):'<span class="grade-fail">미달</span>'}`; }
+      else finalTxt=' &nbsp;·&nbsp; <span style="color:var(--text2)">이론 채점 후 총점·최종등급 확정</span>';
+      sum.innerHTML=valid.map(m=>`${m.process}${m.multi?'(다기능)':''} ${pracLevelBadge(m.level)} ${m.pct}%`).join(' &nbsp;|&nbsp; ')+`${ruleTxt} → <strong style="color:var(--purple)">실습 ${raw}/${cfg.practicalMax}점</strong>${finalTxt}`;
+    }
+  }
+  return {raw,pct,measures};
+}
+function renderPracMeasurePanel(){
+  const cont=document.getElementById('practicalDirectInputs'); if(!cont)return;
+  const items=_assyStdItems.length?_assyStdItems:['MAIN'];
+  cont.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;flex-wrap:wrap;gap:0.4rem">
+      <div style="font-size:0.78rem;color:var(--text2)">공정별 작업시간(초) 측정 → 기준 C/T(3600÷UPH) 대비 레벨 판정 → 점수 환산</div>
+      <div style="display:flex;gap:0.4rem"><button class="btn btn-secondary btn-sm" onclick="addPracMeasureRow()">+ 공정 추가</button><button class="btn btn-outline btn-sm" onclick="loadAssyStd(true).then(()=>{pracMeasures.forEach(m=>m.uph=pracStdUph(m.process,m.multi,m.item));renderPracMeasurePanel();})" title="assy_eval_std 기준 UPH 다시 불러오기">🔄 기준 UPH</button></div>
+    </div>
+    <table class="results-table" style="font-size:0.8rem;width:100%;table-layout:auto">
+      <thead><tr style="white-space:nowrap"><th>공정</th><th>아이템</th><th>다기능</th><th>기준 UPH</th><th>C/T(초) · 레벨 구간</th><th>작업시간(초)</th><th>레벨</th><th>환산</th><th>부적합/누락</th><th></th></tr></thead>
+      <tbody>${pracMeasures.map((m,i)=>{
+        const c=pracRowCalc(m); const canMulti=PRAC_MULTI_OK.includes(m.process);
+        const rng=c.b?`<div style="font-size:0.64rem;color:var(--text2);margin-top:0.15rem;line-height:1.4;max-width:260px">${PRAC_LVS.map((l,k)=>`${l}&lt;${Math.round(c.b.u[k]*10)/10}`).join(' · ')}</div>`:'';
+        return `<tr>
+          <td><select onchange="onPracRow(${i},'process',this.value)" style="font-size:0.8rem;min-width:84px">${PRAC_PROCS.map(p=>`<option value="${p}" ${m.process===p?'selected':''}>${p}</option>`).join('')}</select></td>
+          <td><select onchange="onPracRow(${i},'item',this.value)" style="font-size:0.8rem;min-width:80px">${items.map(it=>`<option value="${it}" ${m.item===it?'selected':''}>${it}</option>`).join('')}</select></td>
+          <td style="text-align:center"><input type="checkbox" ${m.multi?'checked':''} ${canMulti?'':'disabled'} onchange="onPracRow(${i},'multi',this.checked)" style="width:auto" title="${canMulti?'다기능공 시트(1G~5G) 기준':'서브·포선·테이핑만 다기능 기준 적용'}"></td>
+          <td><input type="number" step="any" min="1" value="${m.uph??''}" onchange="onPracRow(${i},'uph',this.value)" style="width:76px;text-align:center;font-family:'JetBrains Mono',monospace"></td>
+          <td style="font-family:'JetBrains Mono',monospace;color:var(--text2)">${c.ct?(Math.round(c.ct*10)/10):'-'}${rng}</td>
+          <td><input type="number" step="any" min="0" value="${m.time??''}" placeholder="초" oninput="onPracRow(${i},'time',this.value)" style="width:90px;text-align:center;font-family:'JetBrains Mono',monospace;font-size:1rem;font-weight:700;color:var(--purple)"></td>
+          <td id="pracLv${i}">${pracLevelBadge(c.level,true)}</td>
+          <td id="pracPct${i}" style="font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--purple)">${c.level?c.pct+'%':'-'}</td>
+          <td style="white-space:nowrap;font-size:0.72rem"><label style="margin:0;display:inline-flex;align-items:center;gap:0.2rem"><input type="checkbox" ${m.defect?'checked':''} onchange="onPracRow(${i},'defect',this.checked)" style="width:auto">부적합</label> <label style="margin:0;display:inline-flex;align-items:center;gap:0.2rem"><input type="checkbox" ${m.omission?'checked':''} onchange="onPracRow(${i},'omission',this.checked)" style="width:auto">누락</label></td>
+          <td>${pracMeasures.length>1?`<button class="btn btn-danger btn-sm" onclick="removePracMeasureRow(${i})">✕</button>`:''}</td>
+        </tr>`;}).join('')}</tbody>
+    </table>
+    <div id="pracMeasureSummary" style="margin-top:0.6rem;background:rgba(155,126,232,0.08);border:1px solid rgba(155,126,232,0.3);border-radius:8px;padding:0.6rem 0.9rem;font-size:0.8rem;line-height:1.7"></div>`;
+  computePracScore();
+}
+function onPracRow(i,field,val){
+  const m=pracMeasures[i]; if(!m)return;
+  if(field==='process'){ m.process=val; if(!PRAC_MULTI_OK.includes(val))m.multi=false; m.uph=pracStdUph(m.process,m.multi,m.item); renderPracMeasurePanel(); return; }
+  if(field==='item'){ m.item=val; m.uph=pracStdUph(m.process,m.multi,m.item); renderPracMeasurePanel(); return; }
+  if(field==='multi'){ m.multi=!!val; m.uph=pracStdUph(m.process,m.multi,m.item); renderPracMeasurePanel(); return; }
+  if(field==='uph'){ m.uph=val; renderPracMeasurePanel(); return; }
+  if(field==='defect'||field==='omission'){ m[field]=!!val; renderPracMeasurePanel(); return; }
+  if(field==='time'){ m.time=val; const c=pracRowCalc(m); const lv=document.getElementById('pracLv'+i), pc=document.getElementById('pracPct'+i); if(lv)lv.innerHTML=pracLevelBadge(c.level,true); if(pc)pc.textContent=c.level?c.pct+'%':'-'; computePracScore(); }
+}
+function addPracMeasureRow(){ const used=pracMeasures.map(m=>m.process); const next=PRAC_PROCS.find(p=>!used.includes(p))||'서브'; pracMeasures.push(pracNewRow(next)); renderPracMeasurePanel(); }
+function removePracMeasureRow(i){ pracMeasures.splice(i,1); if(!pracMeasures.length)pracMeasures.push(pracNewRow('서브')); renderPracMeasurePanel(); }
+
+// 결과 이력·카드용 요약 (공정별 레벨 뱃지)
+function pracSummaryHtml(itemScores){
+  const it=(itemScores||[]).find(x=>Array.isArray(x.measures)&&x.measures.length); if(!it)return '';
+  return `<div style="margin-top:0.2rem;display:flex;gap:0.25rem;flex-wrap:wrap">${it.measures.filter(m=>m.level).map(m=>`<span style="font-size:0.66rem;color:var(--text2);white-space:nowrap" title="${m.process}${m.multi?'(다기능)':''} ${m.item||''} UPH ${m.uph??'-'} · C/T ${m.ct??'-'}초 · 작업시간 ${m.time??'-'}초 → ${m.level} ${m.pct}%">${m.process} ${pracLevelBadge(m.level)}</span>`).join('')}</div>`;
+}
+// 상세 모달용 — 공정별 측정 표 (측정 없으면 기존 항목별 점수 표시)
+function pracDetailHtml(r){
+  const items=r.practicalItemScores||[]; if(!items.length)return '';
+  const it=items.find(x=>Array.isArray(x.measures)&&x.measures.length);
+  if(!it){
+    return `<div style="margin-bottom:0.9rem"><div style="font-size:0.76rem;font-weight:700;color:var(--purple);margin-bottom:0.5rem">실습 항목별 점수</div><div style="display:flex;gap:0.5rem;flex-wrap:wrap">${items.map(x=>`<div style="background:var(--bg);border:1px solid rgba(155,126,232,0.3);border-radius:6px;padding:0.5rem 0.8rem;font-size:0.78rem"><div style="color:var(--text2);margin-bottom:0.2rem">${x.name}</div><strong style="color:var(--purple)">${x.score}/${x.max}</strong></div>`).join('')}</div></div>`;
+  }
+  const rule=it.rule||'avg', ruleTxt=it.measures.length>1?(rule==='min'?'최저 레벨 기준':rule==='max'?'최고 레벨 기준':'공정 평균'):'';
+  return `<div style="margin-bottom:0.9rem"><div style="font-size:0.76rem;font-weight:700;color:var(--purple);margin-bottom:0.5rem">실습 — 공정별 작업시간 측정 결과 ${ruleTxt?`<span style="font-weight:400;color:var(--text2)">(${ruleTxt})</span>`:''}</div>
+    <table class="results-table" style="font-size:0.78rem"><thead><tr><th>공정</th><th>아이템</th><th>다기능</th><th>기준 UPH</th><th>C/T(초)</th><th>작업시간(초)</th><th>레벨</th><th>환산</th><th>비고</th></tr></thead>
+    <tbody>${it.measures.map(m=>`<tr><td>${m.process}</td><td>${m.item||'-'}</td><td style="text-align:center">${m.multi?'✓':'-'}</td><td style="font-family:'JetBrains Mono',monospace">${m.uph??'-'}</td><td style="font-family:'JetBrains Mono',monospace">${m.ct??'-'}</td><td style="font-family:'JetBrains Mono',monospace;font-weight:700">${m.time??'-'}</td><td>${pracLevelBadge(m.level,true)}</td><td style="font-weight:700;color:var(--purple)">${m.pct}%</td><td style="font-size:0.72rem;color:var(--red)">${[m.defect?'부적합품':'',m.omission?'수행항목 누락':''].filter(Boolean).join(', ')}</td></tr>`).join('')}</tbody></table>
+    <div style="font-size:0.76rem;margin-top:0.4rem">→ 실습 <strong style="color:var(--purple)">${it.score}/${it.max}점</strong> (가중 ${r.practicalWeighted||0}점) &nbsp;+&nbsp; 이론 ${r.theoryWeighted||0}점 &nbsp;=&nbsp; 총점 <strong>${r.totalScore}</strong>점 → 최종등급 ${finalGradeBadge(r.totalScore,r.passed)}</div></div>`;
+}
+// 최종등급 (총점 → 등급 기준 마스터)
+function finalGradeLabel(score,passed){
+  if(!passed)return '미달';
+  const sorted=[...gradeConfig].sort((a,b)=>b.minScore-a.minScore);
+  for(const g of sorted){if(score>=g.minScore)return g.label;}
+  return '미달';
+}
+function finalGradeBadge(score,passed){ return calcGrade(score,passed); }
+
+// ⑥ 등급 기준 마스터 — 레벨→점수 환산표
+function renderPracLevelCfg(){
+  const body=document.getElementById('pracLevelBody'); if(!body)return;
+  const keys=['L1','L2','L3','L4','L5','신입','기준외','-'];
+  body.innerHTML=keys.map(k=>`<tr>
+      <td>${pracLevelBadge(k,true)}</td>
+      <td style="font-size:0.78rem;color:var(--text2)">${PRAC_LV_DESC[k]||''}</td>
+      <td style="font-size:0.78rem;color:var(--text2)">${PRAC_LV_DESC_M[k]||''}</td>
+      <td><input type="number" min="0" max="100" value="${pracLevelCfg.scores[k]??0}" style="width:80px;text-align:center" onchange="pracLevelCfg.scores['${k}']=parseFloat(this.value)||0"> %</td>
+    </tr>`).join('');
+  const sel=document.getElementById('pracMultiRule'); if(sel)sel.value=pracLevelCfg.rule||'avg';
+  const flow=document.getElementById('finalGradeFlowBox');
+  if(flow){
+    const cfg=getConfig();
+    const sorted=[...gradeConfig].sort((a,b)=>b.minScore-a.minScore);
+    flow.innerHTML=`<strong style="color:var(--accent)">최종등급 산출 방식</strong><br>
+      ① 이론: 객관식 ${questions.length}문항 → 가중 <strong>${cfg.theoryPct}%</strong> 반영<br>
+      ② 실습: 공정별 작업시간 측정 → L1~L5·신입 레벨 → 아래 환산표(%) × 실습 만점 ${cfg.practicalMax}점 → 가중 <strong>${cfg.practicalPct}%</strong> 반영<br>
+      ③ 총점 = 이론 + 실습 (100점 만점) → 합격 기준 <strong>${cfg.passingScore}점</strong> 이상이면 위 표에 따라 최종등급 부여: ${sorted.map(g=>`${g.label} ${g.minScore}↑`).join(' · ')} · 미달 → 불합격`;
+  }
+}
+function savePracLevelCfg(){
+  const sel=document.getElementById('pracMultiRule'); if(sel)pracLevelCfg.rule=sel.value;
+  save(); renderPracLevelCfg();
+  if(typeof _isLocalFile!=='undefined'&&_isLocalFile){alert('실습 레벨 환산 기준이 저장되었습니다. (로컬)');return;}
+  sbSaveConfig({practicalLevelScores:JSON.stringify(pracLevelCfg.scores),practicalMultiRule:pracLevelCfg.rule||'avg'})
+    .then(()=>alert('실습 레벨 환산 기준이 저장되었습니다. (서버 동기화 완료)'))
+    .catch(e=>alert('서버 저장 실패: '+e.message));
+}
+// 로컬 설정(localStorage exam_cfg_a1)에서 환산표 복원 — 서버 설정은 sbLoadAll → applyExamCfgToInputs 경유
+try{ const _lc=JSON.parse(localStorage.getItem('exam_cfg_a1')||'{}'); if(_lc&&(_lc.practicalLevelScores||_lc.practicalMultiRule)) applyPracLevelCfg(_lc); }catch(e){}
 
 // =================== MSA 실습평가 점수 불러오기 (msa.html 연동) ===================
 // msa.html이 Supabase에 저장한 Gage R&R 이력에서 응시자별 실기점수를 산출해 자동 입력한다.
