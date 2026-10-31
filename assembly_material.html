@@ -110,7 +110,7 @@ td.mute{color:var(--mute)}
 td.empty{text-align:center;color:var(--mute);padding:24px}
 td.nm{max-width:270px;overflow:hidden;text-overflow:ellipsis}td.vp{max-width:150px;overflow:hidden;text-overflow:ellipsis}td.gp{font-size:12.5px;line-height:1.5;color:#e6dcc0;padding-top:6px;padding-bottom:6px}td.gp div{white-space:nowrap}td.gp.car{color:var(--ac2);font-weight:700}
 table.gtbl td{padding:5px 10px}table.gtbl input{height:32px;width:100%;min-width:120px}table.gtbl tr.dirty td{background:rgba(201,168,76,.08)}table.gtbl tr.miss td:first-child b{color:var(--amb)}
-tr.click{cursor:pointer}
+tr.click{cursor:default}td.lnk{cursor:pointer;text-decoration:underline dotted var(--dim);text-underline-offset:3px}td.lnk:hover{color:var(--ac2)}
 tr.short td{background:var(--redbg)}tr.care td{background:var(--ambbg)}tr.ex td{color:var(--dim);text-decoration:line-through}
 tr.mutedr td{color:var(--dim)}
 .neg{color:var(--red);font-weight:700}
@@ -369,7 +369,7 @@ table.cfg input{width:17px;height:17px}
     <div class="kpi a" data-f="moved"><span data-t="k_last">최근 처리</span><b id="kLast" class="s">-</b></div>
   </div>
   <div class="tw"><table id="sTbl"></table></div>
-  <p class="hint" data-t="stk_formula">현재고 = 기초재고 + 입고 − SUB 차감 − 조립 차감 ± 조정 · 현재고 숫자를 누르면 재고조정, 다른 칸을 누르면 품목 입출 이력이 열립니다.</p>
+  <p class="hint" data-t="stk_formula">현재고 = 기초재고 + 입고 − SUB 차감 − 조립 차감 ± 조정 · 현재고 숫자를 누르면 재고조정, 자재코드를 누르면 품목 입출 이력이 열립니다. 나머지 칸은 드래그해서 복사할 수 있습니다.</p>
 </section>
 
 <!-- ===== 기초재고 ===== -->
@@ -565,7 +565,7 @@ const ES={title:'Gestión de materiales · Ensamble',plant:'Planta 1 México · 
 tab_plan:'Plan de producción',tab_stk:'Inventario',tab_init:'Stock inicial',tab_in:'Entradas',tab_sub:'Prod. SUB (80230)',tab_assy:'Prod. ensamble (80350)',tab_adj:'Ajuste de stock',tab_bom:'Maestro BOM',tab_log:'Historial',
 product:'Producto (No. parte)',run:'Consultar',search:'Buscar',show:'Mostrar',o_all:'Todo',o_neg:'Faltante (negativo)',o_pos:'Con stock',o_zero:'Stock 0',o_moved:'Con movimientos',o_care:'Alerta (bajo mínimo)',o_chk2:'Faltante+alerta',thr:'Mínimo de alerta (stock <)',k_care:'Alerta',pl_h:'Registrar plan diario',pl_hint:'Elija la fecha y el No. parte-revisión y agregue la cantidad, o pegue desde Excel «parte-rev · cantidad» o «parte · rev · cantidad» (sin encabezado OK). 91500-GG920-46 se compara con código 91500-GG920 + revisión 46 del BOM. La misma fecha·parte·revisión sobrescribe la cantidad.',pl_date:'Fecha del plan',pl_qty:'Cantidad',pl_add:'Agregar',pl_fb:'Si la revisión no coincide, usar la del BOM',pl_dates:'Fechas con plan',pl_req_h:'Cálculo de necesidad · lista de solicitud',pl_calc:'Calcular',o_req:'A solicitar',o_chk:'Solicitar+alerta',o_ok:'Suficiente (OK)',k_plan:'Partes planeadas',k_planqty:'Cant. planeada',k_mat:'Materiales',k_req:'A solicitar',pl_formula:'Necesidad = Σ(cant. plan × consumo/u) · A solicitar = necesidad − stock (mín. 0) · Alerta = no se solicita pero el stock restante queda bajo el mínimo · el mínimo se configura en Inventario.',pl_list:'Planes registrados (periodo)',p_plan:'91500-GG920-46\t120  (o 91500-GG920\t46\t120)',
 proc:'Proceso (A·B ensamble · C corte)',copy:'Copiar',xlsx:'Excel',k_items:'Materiales',k_neg:'Faltante (<0)',k_pos:'Con stock',k_last:'Último registro',
-stk_formula:'Stock actual = Stock inicial + Entradas − Consumo SUB − Consumo ensamble ± Ajustes · Toque el número de Stock para ajustar; toque otra celda para ver el historial del material.',
+stk_formula:'Stock actual = Stock inicial + Entradas − Consumo SUB − Consumo ensamble ± Ajustes · Toque el número de Stock para ajustar; toque el código para ver el historial del material; las demás celdas se pueden seleccionar y copiar.',
 init_h:'Pegar stock inicial',init_hint:'Pegue código y cantidad (sin encabezado OK). La primera columna es el código y la última la cantidad; la cantidad pasa a ser el stock actual (sobrescribe). También puede descargar la plantilla de todos los materiales y llenar solo la columna amarilla. Las filas sin cantidad se omiten.',
 base_date:'Fecha base',memo:'Nota',create_new:'Agregar como material nuevo los códigos que no existen',save:'Guardar',clear:'Limpiar',tpl:'Plantilla de materiales (Excel)',savedDates:'Fechas guardadas',
 in_h:'Pegar entradas del día',in_hint:'Pegue 5 columnas: código, nombre del material, nombre del proveedor, unidad, cantidad (sin encabezado OK). Si la unidad no coincide con el maestro se muestra una alerta. Se busca primero por código; si no hay o no coincide, por nombre → nombre del proveedor. Si no se encuentra o hay varios candidatos, puede elegir el código.',
@@ -713,8 +713,9 @@ function tbl(id,cols,rows,o={}){
   el.innerHTML=h+'</tbody>';
   el.onclick=e=>{const th=e.target.closest('th');
     if(th&&o.sortable&&o.rerender){const i=+th.dataset.i;const cur=SORT[id];SORT[id]={i,d:cur&&cur.i===i?-cur.d:1};o.rerender();return}
+    const sel=window.getSelection&&window.getSelection();if(sel&&sel.toString().trim())return;
     const ad=e.target.closest('[data-adj]');if(ad&&o.onAdj){e.stopPropagation();o.onAdj(ad.dataset.adj);return}
-    if(o.onRow&&!e.target.closest('input,select,button,a')){const r=e.target.closest('tr[data-k]');if(r)o.onRow(r.dataset.k)}};
+    if(o.onRow&&e.target.closest('[data-row]')){const r=e.target.closest('tr[data-k]');if(r)o.onRow(r.dataset.k)}};
 }
 
 /* ================= 엑셀 (ExcelJS, 서식 적용) ================= */
@@ -866,7 +867,7 @@ async function refreshAll(){await Promise.all([loadItems(),loadLast()])}
 let SPROD='';
 function stkCols(){const a=[
   {h:['공정','Proceso'],k:'procs',w:7},
-  {h:['자재코드','Código'],k:'code',w:16},
+  {h:['자재코드','Código'],k:'code',w:16,cls:'lnk',tdAttr:()=>`data-row title="${tr('눌러서 품목 입출 이력','Toque para ver historial')}"`},
   {h:['자재명','Nombre'],k:'name',w:30,cls:'nm',tdAttr:r=>`title="${esc(r.name||'')}"`,html:r=>esc(r.name||'')+(r.in_bom?'':`<span class="tag xt" style="margin-left:6px">${tr('BOM 외','Fuera BOM')}</span>`)},
   {h:['업체품명','Nombre proveedor'],k:'vendor_part',w:22,cls:'mute vp',tdAttr:r=>`title="${esc(r.vendor_part||'')}"`},
   {h:['단위','Unidad'],k:'unit',w:7}];
@@ -1391,7 +1392,7 @@ async function bomUpload(){
 }
 function renderBomKpi(){$('bkRows').textContent=PRODS.reduce((s,p)=>s+p.total,0).toLocaleString();$('bkProd').textContent=PRODS.length.toLocaleString();
   $('bkItems').textContent=ITEMS.filter(i=>i.in_bom).length.toLocaleString();$('bkUpd').textContent=SET.bom_updated_at||'-'}
-const PROD_COLS=[{h:['품번 (D)','Parte (D)'],k:'top_code'},{h:['개정 (F)','Rev. (F)'],k:'rev'},{h:['MES 품번','Parte MES'],v:r=>r.top_code+'-'+r.rev},{h:['품명','Producto'],k:'name'},{h:['차종','Modelo'],k:'car'},
+const PROD_COLS=[{h:['품번 (D)','Parte (D)'],k:'top_code',cls:'lnk',tdAttr:()=>'data-row'},{h:['개정 (F)','Rev. (F)'],k:'rev'},{h:['MES 품번','Parte MES'],v:r=>r.top_code+'-'+r.rev},{h:['품명','Producto'],k:'name'},{h:['차종','Modelo'],k:'car'},
   {h:['A행','Filas A'],k:'a',t:'n',sum:1},{h:['B행','Filas B'],k:'b',t:'n',sum:1},{h:['C행','Filas C'],k:'c',t:'n',sum:1},{h:['전체행','Total'],k:'total',t:'n',sum:1},{h:['자재 수','Materiales'],k:'items',t:'n'}];
 function renderProds(){const q=nz($('bQ').value);const rows=PRODS.filter(p=>!q||nz(p.top_code+'-'+p.rev+' '+(p.name||'')+' '+(p.car||'')).includes(q));
   tbl('bProd',PROD_COLS,rows,{sortable:1,rerender:renderProds,rowCls:()=>'click',rowAttr:r=>`data-k="${esc(r.top_code+'|'+r.rev)}"`,onRow:openProd});
@@ -1550,7 +1551,7 @@ function planListRender(){tbl('pTbl',[{h:['계획일자','Fecha'],k:'plan_date',
   $('pTbl').querySelectorAll('button[data-pdel]').forEach(b=>b.onclick=async()=>{const r=PLAN.find(x=>x.id==b.dataset.pdel);if(!r||!confirm(tr(`${r.plan_date} ${r.top_code}-${r.rev} 계획을 삭제할까요?`,`¿Eliminar el plan ${r.plan_date} ${r.top_code}-${r.rev}?`)))return;
     busy(true);try{await del('binv_plan','id=eq.'+r.id);await Promise.all([planDates(),planDay(),planLoad()])}catch(e){toast(errMsg(e),1)}finally{busy(false)}})}
 function reqCols(){return[
-  {h:['공정','Proceso'],k:'procs',w:7},{h:['자재코드','Código'],k:'code',w:16},
+  {h:['공정','Proceso'],k:'procs',w:7},{h:['자재코드','Código'],k:'code',w:16,cls:'lnk',tdAttr:()=>`data-row title="${tr('눌러서 품목 입출 이력','Toque para ver historial')}"`},
   {h:['자재명','Nombre'],k:'name',w:30,html:r=>esc(r.name||'')+(r.missing?`<span class="tag short" style="margin-left:6px">${tr('미등록','No existe')}</span>`:'')},
   {h:['업체품명','Nombre proveedor'],k:'vendor_part',w:22,cls:'mute'},{h:['단위','Unidad'],k:'unit',w:7},
   {h:['필요량','Necesidad'],k:'need',t:'n',sum:1,w:12},{h:['현재고','Stock actual'],k:'stock',t:'n',neg:1,sum:1,w:12},
