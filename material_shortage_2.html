@@ -174,7 +174,8 @@ table.cfg input{width:17px;height:17px}
 .hisk{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px}
 .hisk .kpi{cursor:default}
 .hisk .kpi small{display:block;margin-top:6px;font-size:12px;color:var(--mute);font-family:var(--body);letter-spacing:0;text-transform:none}
-.hisk .kpi.in b{color:var(--blue)}.hisk .kpi.out b{color:var(--amb)}
+.hisk .kpi.in b{color:var(--blue)}.hisk .kpi.out b{color:var(--amb)}.hisk .kpi.cnt b{color:var(--ac)}.hisk .kpi.roll b{color:var(--grn)}
+tr.hit td{background:rgba(201,168,76,.10)}tr.hit td:first-child{box-shadow:inset 3px 0 var(--ac)}
 .hisc{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
 .hisc button{background:rgba(255,255,255,.03);border:1px solid var(--line2);border-radius:999px;color:var(--ink2);padding:6px 12px;font-size:13px;text-align:left}
 .hisc button b{color:var(--ac);font-family:var(--code);font-size:15px;margin-right:6px}
@@ -184,6 +185,26 @@ table.cfg input{width:17px;height:17px}
 @media(max-width:900px){.grid3{grid-template-columns:1fr}}
 td.in{color:var(--blue);font-weight:700}td.out{color:var(--amb);font-weight:700}
 tr.tot td{background:#101010;font-weight:700;color:#fff;position:sticky;bottom:0}
+
+/* 적용차종 조회 */
+.cark{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px}
+.cark .kpi{cursor:default}.cark .kpi small{display:block;margin-top:6px;font-size:12px;color:var(--mute);font-family:var(--body);letter-spacing:0;text-transform:none}
+.cark .kpi.car b{color:var(--ac)}.cark .kpi.pn b{color:var(--blue)}.cark .kpi.wn b{color:var(--grn)}
+.carchips{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.carchips button{background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.35);border-radius:10px;color:var(--ink2);padding:8px 14px;font-size:13px;text-align:left;line-height:1.3}
+.carchips button b{display:block;color:var(--ac);font-family:var(--code);font-size:18px;letter-spacing:.02em}
+.carchips button small{color:var(--mute);font-size:12px}
+.carchips button:hover,.carchips button.on{background:rgba(201,168,76,.16);border-color:var(--ac);color:#fff}
+.role{display:inline-block;padding:1px 7px;border-radius:4px;font-size:11.5px;font-weight:700;margin-right:3px;border:1px solid transparent;white-space:nowrap}
+.role.wire{background:rgba(76,175,125,.14);color:var(--grn);border-color:rgba(76,175,125,.4)}
+.role.tL,.role.tR{background:rgba(111,184,221,.12);color:var(--blue);border-color:rgba(111,184,221,.35)}
+.role.pL,.role.pR{background:rgba(224,168,74,.12);color:var(--amb);border-color:rgba(224,168,74,.35)}
+.role.need{background:rgba(255,255,255,.05);color:var(--mute);border-color:var(--line2)}
+tr.pnrow{cursor:pointer}tr.pnrow:hover td{background:rgba(255,255,255,.03)}tr.pnrow.on td{background:rgba(201,168,76,.10)}tr.pnrow.on td:first-child{box-shadow:inset 3px 0 var(--ac)}
+td.hl{color:var(--ac);font-weight:700}
+.codelink{cursor:pointer;border-bottom:1px dotted rgba(201,168,76,.5)}.codelink:hover{color:var(--ac)}
+.carbtn{background:rgba(201,168,76,.10);border:1px solid rgba(201,168,76,.4);color:var(--ac2);border-radius:999px;padding:4px 12px;font-size:12.5px;font-weight:700;cursor:pointer;margin-left:10px;vertical-align:middle}
+.carbtn:hover{background:rgba(201,168,76,.2);color:#fff}
 </style>
 
 <!-- ═══ 포털 공통 (yh-common-v2): 제목 서체 · 닫기 버튼 · 최소 글자 크기 ═══ -->
@@ -307,6 +328,7 @@ tr.tot td{background:#101010;font-weight:700;color:#fff;position:sticky;bottom:0
   <button data-tab="use"><svg viewBox="0 0 24 24"><path d="M12 20V8M6 14l6-6 6 6"/><path d="M4 4h16"/></svg><span data-t="tab_use">사용량 (32040)</span></button>
   <button data-tab="ret"><svg viewBox="0 0 24 24"><path d="M9 14l-4-4 4-4"/><path d="M5 10h11a4 4 0 0 1 0 8h-3"/></svg><span data-t="tab_ret">반품현황 (24170)</span></button>
   <button data-tab="his"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4.3-4.3"/><path d="M11 8v3l2 1.5"/></svg><span data-t="tab_his">자재이력조회</span></button>
+  <button data-tab="car"><svg viewBox="0 0 24 24"><path d="M3 13l2-5a2 2 0 0 1 2-1h10a2 2 0 0 1 2 1l2 5v5H3z"/><circle cx="7.5" cy="17" r="1.5"/><circle cx="16.5" cy="17" r="1.5"/><path d="M5 13h14"/></svg><span data-t="tab_car">적용차종 조회</span></button>
   <button data-tab="mst"><svg viewBox="0 0 24 24"><path d="M3 9l9-5 9 5v11H3z"/><path d="M9 20v-6h6v6"/></svg><span data-t="tab_mst">창고보유자재 (25010)</span></button>
   <button data-tab="adj"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1.2l2-1.6-2-3.4-2.4.9a7 7 0 0 0-2-1.2L14 3h-4l-.5 2.5a7 7 0 0 0-2 1.2l-2.4-.9-2 3.4 2 1.6A7 7 0 0 0 5 12a7 7 0 0 0 .1 1.2l-2 1.6 2 3.4 2.4-.9a7 7 0 0 0 2 1.2L10 21h4l.5-2.5a7 7 0 0 0 2-1.2l2.4.9 2-3.4-2-1.6A7 7 0 0 0 19 12z"/></svg><span data-t="tab_adj">재고조정</span></button>
 </nav>
@@ -326,7 +348,7 @@ tr.tot td{background:#101010;font-weight:700;color:#fff;position:sticky;bottom:0
       <label class="f"><span data-t="search">검색</span><input id="sQ" placeholder="코드/자재명" style="width:170px"></label><label class="f"><span id="fCarL">차종</span><select id="fCar" style="width:110px"></select></label><label class="f"><span id="fPnL">품명</span><select id="fPn" style="width:130px"></select></label>
       <label class="f"><span data-t="filter">표시</span><select id="sF">
         <option value="all" data-t="f_all">전체</option><option value="short" data-t="f_short">부족</option>
-        <option value="care" data-t="f_care">주의</option><option value="chk" data-t="f_chk">부족+주의</option></select></label>
+        <option value="care" data-t="f_care">주의</option><option value="chk" data-t="f_chk">부족+주의</option><option value="need" data-t="f_need">17000 자재만</option><option value="extra" data-t="f_extra">17000 외 가공보유</option></select></label>
       <div class="f tyf" id="sType"><span data-t="type">구분</span><div class="tyc"><label><input type="checkbox" value="Terminal" checked>Terminal <b data-tc="Terminal"></b></label><label><input type="checkbox" value="Wire" checked>Wire <b data-tc="Wire"></b></label><label><input type="checkbox" value="Seal" checked>Seal <b data-tc="Seal"></b></label><label><input type="checkbox" value="Other" checked>Other <b data-tc="Other"></b></label></div></div>
       <button class="btn sec" id="sCopy" data-t="copy">복사</button>
       <button class="btn sec" id="sXlsx" data-t="xlsx">엑셀</button>
@@ -340,7 +362,7 @@ tr.tot td{background:#101010;font-weight:700;color:#fff;position:sticky;bottom:0
     <div class="kpi g" data-f="all"><span data-t="k_ex">제외 LOT 행</span><b id="kEx">-</b></div>
   </div>
   <div class="tw"><table id="sTbl"></table></div>
-  <p class="hint" data-t="formula">현재고 = 실사 − 사용량 + 입고량 − 반납(24170) + 조정 · 부족예상 = 현재고 + 창고재고 − 필요량 · 필요량은 같은 자재코드 합산(제외 LOT 제외)</p>
+  <p class="hint" data-t="formula">현재고 = 실사 − 사용량 + 입고량 − 반납(24170) + 조정 (0처리로 현장롤이 0이 되면 자동 0) · 부족예상 = 현재고 + 창고재고 − 필요량 · 필요량은 같은 자재코드 합산(제외 LOT 제외) · 현장롤수 = TML·WIRE 입고 바코드 중 0처리 안 된 롤 수 (현재고를 0으로 조정하면 그 전에 입고된 롤은 0) (숫자에 마우스를 올리면 롤 수량합) · 창고롤수 = 창고보유자재(25010)의 개수</p>
 </section>
 
 <!-- ===== 17000 ===== -->
@@ -390,9 +412,9 @@ tr.tot td{background:#101010;font-weight:700;color:#fff;position:sticky;bottom:0
 <section class="tab" id="t-his">
   <div class="card">
     <h3 data-t="his_h">자재 입고·사용 이력 조회</h3>
-    <div class="hint" data-t="his_hint">자재코드 또는 자재명 일부를 입력하고 조회하세요. 현장입고(30810)와 사용량(32040)에 저장된 내역에서 날짜별 입고수량·사용수량을 보여줍니다. 여러 자재가 검색되면 아래 목록에서 선택하세요.</div>
+    <div class="hint" data-t="his_hint">자재코드·자재명 일부 또는 바코드를 입력하고 조회하세요. 현장입고(30810)·사용량(32040)·실사·TML·WIRE 현장 롤 내역을 보여줍니다. 바코드를 넣으면 그 롤의 자재로 바로 조회합니다. 여러 자재가 검색되면 아래 목록에서 선택하세요.</div>
     <div class="row" style="margin-top:10px">
-      <label class="f"><span data-t="his_q">자재코드 / 자재명</span><input id="hQ" list="hList" autocomplete="off" style="width:280px" placeholder="예: 7116-4110 / TERMINAL"></label>
+      <label class="f"><span data-t="his_q">자재코드 / 자재명 / 바코드</span><input id="hQ" list="hList" autocomplete="off" style="width:300px" placeholder="예: 7116-4110 / TERMINAL / @26A12100325"></label>
       <datalist id="hList"></datalist>
       <label class="f"><span data-t="from">시작</span><input type="date" id="hFrom"></label>
       <label class="f"><span data-t="to">종료</span><input type="date" id="hTo"></label>
@@ -409,6 +431,8 @@ tr.tot td{background:#101010;font-weight:700;color:#fff;position:sticky;bottom:0
       <div class="kpi in"><span data-t="his_k_in">입고수량 합계</span><b id="hkIn">-</b><small id="hkInS"></small></div>
       <div class="kpi out"><span data-t="his_k_use">사용수량 합계</span><b id="hkUse">-</b><small id="hkUseS"></small></div>
       <div class="kpi"><span data-t="his_k_diff">입고 − 사용</span><b id="hkDiff">-</b><small id="hkDiffS"></small></div>
+      <div class="kpi cnt"><span data-t="his_k_cnt">실사 (최근)</span><b id="hkCnt">-</b><small id="hkCntS"></small></div>
+      <div class="kpi roll"><span data-t="his_k_roll">현장 보유 롤</span><b id="hkRoll">-</b><small id="hkRollS"></small></div>
     </div>
     <div class="card">
       <h3 data-t="his_day">날짜별 입고·사용</h3>
@@ -417,6 +441,47 @@ tr.tot td{background:#101010;font-weight:700;color:#fff;position:sticky;bottom:0
     <div class="grid3">
       <div class="card"><h3><span data-t="his_in_h">입고 내역 (30810)</span> <span class="hint" id="hInN"></span></h3><div class="tw m"><table id="hIn"></table></div></div>
       <div class="card"><h3><span data-t="his_use_h">사용 내역 (32040)</span> <span class="hint" id="hUseN"></span></h3><div class="tw m"><table id="hUse"></table></div></div>
+    </div>
+    <div class="grid3" style="margin-top:14px">
+      <div class="card"><h3><span data-t="his_cnt_h">실사 내역</span> <span class="hint" id="hCntN"></span></h3><div class="tw m"><table id="hCnt"></table></div></div>
+      <div class="card"><h3><span data-t="his_roll_h">TML·WIRE 현장 롤</span> <span class="hint" id="hRollN"></span> <label class="hint" style="float:right;cursor:pointer"><input type="checkbox" id="hZero" style="vertical-align:middle;margin-right:4px"><span data-t="his_zero_chk">0처리 롤 포함</span></label></h3><div class="tw m"><table id="hRoll"></table></div></div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ===== 적용차종 조회 (회로 마스터) ===== -->
+<section class="tab" id="t-car">
+  <div class="card">
+    <h3 data-t="car_h">자재 적용 차종 · 품번 조회</h3>
+    <div class="hint" data-t="car_hint">현장에 없는 자재가 어느 차종·품번에 쓰이는지 회로 마스터(회로 조회 프로그램)에서 찾습니다. 자재코드(단자·와이어·씰·압착전부품)를 입력하거나 바코드를 스캔하세요. 회로 마스터에 없는 자재(튜브 등)는 17000 선번으로 품번을 찾습니다. 자재명 일부로도 검색됩니다.</div>
+    <div class="row" style="margin-top:10px">
+      <label class="f"><span data-t="car_q">자재코드 / 자재명 / 바코드</span><input id="cQ" list="hList" autocomplete="off" style="width:320px" placeholder="예: TKY1207002SN / THR1202505SN"></label>
+      <button class="btn" id="cRun" data-t="run">조회</button>
+      <span class="sp"></span>
+      <button class="btn sec" id="cXlsx" data-t="xlsx">엑셀</button>
+    </div>
+    <div class="hisc" id="cCand"></div>
+    <div class="hint" id="cInfo" style="margin-top:8px"></div>
+  </div>
+  <div id="cBody" style="display:none">
+    <div class="cark">
+      <div class="kpi car"><span data-t="car_k_car">적용 차종</span><b id="ckCar">-</b><small id="ckCarS"></small></div>
+      <div class="kpi pn"><span data-t="car_k_pn">적용 품번</span><b id="ckPn">-</b><small id="ckPnS"></small></div>
+      <div class="kpi wn"><span data-t="car_k_wn">사용 회로</span><b id="ckWn">-</b><small id="ckWnS"></small></div>
+      <div class="kpi"><span data-t="car_k_role">사용 위치</span><b class="s" id="ckRole">-</b><small data-t="car_k_role_s">회로 마스터에서 이 자재가 들어간 열</small></div>
+    </div>
+    <div class="card">
+      <h3 data-t="car_cars">차종별 요약 <span class="hint" data-t="car_cars_s">(누르면 아래 품번 목록이 그 차종만 보입니다)</span></h3>
+      <div class="carchips" id="cChips"></div>
+    </div>
+    <div class="card">
+      <h3><span data-t="car_pn_h">품번별 사용 현황</span> <span class="hint" id="cPnN"></span></h3>
+      <div class="tw m"><table id="cPn"></table></div>
+    </div>
+    <div class="card">
+      <h3><span data-t="car_wn_h">회로 상세</span> <span class="hint" id="cWnN"></span></h3>
+      <div class="tw m"><table id="cWn"></table></div>
     </div>
   </div>
 </section>
@@ -487,8 +552,9 @@ tr.tot td{background:#101010;font-weight:700;color:#fff;position:sticky;bottom:0
       <div class="hint" id="aDiff" style="margin-top:6px"></div>
     </div>
     <div class="card">
-      <h3 data-t="adj_help_h">사용 방법</h3>
-      <div class="hint" data-t="adj_help">1) 부족예상 탭에서 조회 → 2) 현재고 숫자를 누르거나 자재코드 입력 → 3) 실제 수량 입력 후 저장. 조정은 사용·입고 조회기간 안의 일자만 반영됩니다.</div>
+      <h3 data-t="adj_auto_h">0처리 자동조정</h3>
+      <div class="hint" data-t="adj_auto_hint">현재고를 0으로 조정하면 남은 현장롤도 TML·WIRE 프로그램에서 0처리됩니다(조정 삭제 시 취소). 반대로 TML·WIRE 프로그램에서 바코드를 0처리해서 그 자재의 현장 롤이 하나도 남지 않으면, 현재고를 자동으로 0으로 맞춥니다. 0처리 이후에 수동 조정을 저장하면 수동 조정이 우선합니다.</div>
+      <div class="hint" id="aAutoInfo" style="margin-top:8px;color:var(--ink)"></div>
     </div>
   </div>
   <div class="card">
@@ -511,9 +577,9 @@ const H={apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json
 /* ---------- i18n ---------- */
 const ES={title:'Gestión de materiales · Corte',plant:'Planta 2 México · Torreón',tab_sum:'Faltantes',tab_need:'Material requerido (17000)',tab_cnt:'Inventario físico',
 tab_rec:'Entrada a piso (30810)',tab_use:'Consumo (32040)',tab_ret:'Devoluciones (24170)',tab_mst:'Material en almacén (25010)',cntDate:'Fecha inventario',from:'Desde',to:'Hasta',
-thr:'Umbral alerta (<)',run:'Consultar',search:'Buscar',filter:'Mostrar',type:'Tipo',f_all:'Todo',f_short:'Faltante',f_care:'Alerta',f_chk:'Faltante+Alerta',
+thr:'Umbral alerta (<)',run:'Consultar',search:'Buscar',filter:'Mostrar',type:'Tipo',f_all:'Todo',f_short:'Faltante',f_care:'Alerta',f_chk:'Faltante+Alerta',f_need:'Solo 17000',f_extra:'Fuera de 17000 (piso)',
 copy:'Copiar',xlsx:'Excel',k_mat:'Materiales',k_short:'Faltante (<0)',k_care:'Alerta',k_ex:'Filas LOT excluidas',
-formula:'Stock actual = Inventario − Consumo + Entrada − Devoluciones (24170) + Ajuste · Pronóstico = Stock actual + Almacén − Requerido',
+formula:'Stock actual = Inventario − Consumo + Entrada − Devoluciones (24170) + Ajuste (sin rollos en piso tras cierre 0 → 0) · Pronóstico = Stock actual + Almacén − Requerido · Rollos piso = rollos recibidos (TML·WIRE) sin cierre (0); ajuste a 0 → rollos previos = 0 · Rollos alm. = Piezas de almacén (25010)',
 need_h:'Pegar material requerido (col. A~F)',need_hint:'Copie columnas A~F (código, nombre, cantidad, unidad, LOTNO, línea) y péguelas aquí.',
 mode:'Modo',m_replace:'Reemplazar todo',m_append:'Agregar a la lista',save:'Guardar',clearAll:'Borrar todo',ex_h:'LOT excluidos',
 ex_hint:'Las filas cuyo LOTNO contenga estos números no se suman.',add:'Agregar',need_list:'Lista guardada',mst_h:'Pegar material en almacén',
@@ -522,7 +588,7 @@ mst_one:'Agregar / editar',del:'Eliminar',mst_click:'Haga clic en una fila para 
 date:'Fecha',useRowDate:'Usar fecha de cada fila (si falta, la seleccionada)',paste:'Pegar datos',savedDates:'Fechas guardadas',viewDel:'Eliminar fecha',
 tab_adj:'Ajuste de stock',adj_h:'Ajuste de stock',adj_hint:'Ingrese el código y la cantidad real; se guarda la diferencia para que el stock actual quede en esa cantidad. También puede tocar el número de Stock en la tabla de faltantes.',
 adj_code:'Código',adj_name:'Nombre',adj_cur:'Stock actual (calc.)',adj_roll:'Rollos piso',adj_after:'Cantidad real',adj_memo:'Motivo',adj_zero:'A cero',
-adj_help_h:'Cómo usar',adj_help:'1) Consulte en Faltantes → 2) toque el Stock o escriba el código → 3) ingrese la cantidad real y guarde. Solo cuentan los ajustes dentro del periodo consultado.',adj_list:'Historial de ajustes',tab_his:'Historial de material',his_h:'Historial de entrada y consumo',his_hint:'Escriba el código o parte del nombre y consulte. Muestra por fecha la entrada (30810) y el consumo (32040) guardados. Si hay varios materiales, elija uno de la lista.',his_q:'Código / nombre',his_all:'Todo el periodo',his_k_in:'Total entrada',his_k_use:'Total consumo',his_k_diff:'Entrada − consumo',his_day:'Entrada y consumo por fecha',his_in_h:'Detalle de entrada (30810)',his_use_h:'Detalle de consumo (32040)'};
+adj_auto_h:'Ajuste automático por cierre (0)',adj_auto_hint:'Si en el programa TML·WIRE se cierran (0) los códigos de barras y no queda ningún rollo en piso, el stock se ajusta a 0 automáticamente. Un ajuste manual guardado después del cierre tiene prioridad.',adj_list:'Historial de ajustes',tab_car:'Modelo de aplicación',car_h:'Modelo y No. de parte donde se usa el material',car_hint:'Busca en el maestro de circuitos (Consulta de circuitos) en qué modelos y números de parte se usa un material que no está en piso. Escriba el código (terminal, cable, sello, pieza pre-crimpada) o escanee el código de barras. Para materiales que no están en el maestro (tubos, etc.) se usa el No. de circuito del 17000. También se puede buscar por parte del nombre.',car_q:'Código / nombre / cód. barras',car_k_car:'Modelos',car_k_pn:'Números de parte',car_k_wn:'Circuitos',car_k_role:'Posición de uso',car_k_role_s:'Columnas del maestro donde aparece este material',car_cars:'Resumen por modelo',car_cars_s:'(toque un modelo para filtrar la lista de abajo)',car_pn_h:'Uso por No. de parte',car_wn_h:'Detalle de circuitos',tab_his:'Historial de material',his_h:'Historial de entrada y consumo',his_hint:'Escriba el código, parte del nombre o un código de barras y consulte. Muestra la entrada (30810), el consumo (32040), el inventario físico y los rollos en piso de TML·WIRE. Con un código de barras se consulta directamente su material. Si hay varios materiales, elija uno de la lista.',his_q:'Código / nombre / cód. barras',his_k_cnt:'Inventario físico (último)',his_k_roll:'Rollos en piso',his_cnt_h:'Detalle de inventario físico',his_roll_h:'Rollos en piso TML·WIRE',his_zero_chk:'Incluir rollos cerrados (0)',his_all:'Todo el periodo',his_k_in:'Total entrada',his_k_use:'Total consumo',his_k_diff:'Entrada − consumo',his_day:'Entrada y consumo por fecha',his_in_h:'Detalle de entrada (30810)',his_use_h:'Detalle de consumo (32040)'};
 let LANG=localStorage.getItem('mshort_lang_2')||'ko';
 const KO={};
 function applyLang(){
@@ -568,7 +634,7 @@ async function ins(table,data,upsertKey){
 async function del(table,q){const r=await fetch(SB+table+'?'+q,{method:'DELETE',headers:H});if(!r.ok)throw new Error(await r.text())}
 
 /* ---------- state ---------- */
-let ADJ=[],NEED=[],EX=[],MST=[],DATES=[],CFG={threshold:'2000'},SUM=null,sortK=null,sortD=1;
+let ROLLB={},ADJ=[],NEED=[],EX=[],MST=[],DATES=[],CFG={threshold:'2000'},SUM=null,sortK=null,sortD=1;
 
 /* ---------- tabs ---------- */
 document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>{
@@ -632,11 +698,48 @@ function toDate(v){
 }
 const rowDate=(c,ci)=>{for(let i=0;i<ci;i++){const d=toDate(c[i]);if(d)return d}return''};
 
-/* 실사: 코드 + 수량(코드 뒤 마지막 숫자) */
+/* 실사: 바코드 · 유라코드 · 실사수량 (바코드 없이 코드 · 수량도 인식) */
+const isBcCell=v=>/^@[A-Za-z0-9]{6,}$/.test(String(v||'').trim());
+/* 바코드는 공란 가능, 유라코드·실사수량 필수. 머릿글(바코드·유라코드·실사수량)이 있으면 그 열 위치를 사용 */
 function parseCount(txt){
-  return rows(txt).map(c=>{const ci=findCode(c);if(ci<0)return null;
-    let q=NaN;for(let i=c.length-1;i>ci;i--)if(isNum(c[i])){q=num(c[i]);break}
-    return{code:c[ci].toUpperCase(),qty:q,_rd:rowDate(c,ci)}}).filter(r=>r&&!isNaN(r.qty));
+  const R=txt.replace(/\r/g,'').split('\n').filter(l=>l.trim()!=='').map(l=>l.split('\t').map(c=>c.trim()));
+  let pos=null,start=0;
+  const hi=R.findIndex(r=>r.some(c=>/유라코드|율하코드|자재코드|실사수량/.test(c)));
+  if(hi>=0&&hi<5){const h=R[hi].map(c=>c.replace(/\s/g,''));const f=(...n)=>h.findIndex(c=>n.includes(c));
+    pos={b:f('바코드'),c:f('유라코드','율하코드','자재코드','코드'),q:f('실사수량','수량')};start=hi+1}
+  const seen=new Set(),out=[];let bad=0,dup=0;
+  R.slice(start).forEach(c=>{
+    let bc='',code='',qs='';
+    if(pos&&pos.c>=0&&pos.q>=0){bc=pos.b>=0?(c[pos.b]||''):'';code=c[pos.c]||'';qs=c[pos.q]||''}
+    else{const bi=c.findIndex(isBcCell);bc=bi>=0?c[bi]:'';
+      const ci=c.findIndex((v,i)=>i!==bi&&isCodeCell(v));
+      if(ci>=0){code=c[ci];for(let i=c.length-1;i>ci;i--)if(i!==bi&&isNum(c[i])){qs=c[i];break}}
+      else if(c.length>=3&&!isNum(c[1])){bc=bc||c[0];code=c[1];qs=c[2]}}   // 바코드(공란)·유라코드·수량 고정 위치
+    bc=String(bc||'').trim();code=String(code||'').trim().toUpperCase();
+    if(!code||!codeOk(code)||!isNum(qs)){bad++;return}
+    if(bc){if(seen.has(bc)){dup++;return}seen.add(bc)}
+    out.push({barcode:bc||null,code,qty:num(qs),_rd:''})});
+  parseCount.bad=bad;parseCount.dup=dup;
+  return out;
+}
+const recvMs=v=>{v=String(v||'').trim();let m=v.match(/^(\d{4})-(\d{1,2})-(\d{1,2})(?:[ T](\d{1,2}):(\d{2}))?/);if(m)return new Date(+m[1],m[2]-1,+m[3],+(m[4]||0),+(m[5]||0)).getTime();
+  m=v.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})(?:\s+(\d{1,2}):(\d{2}))?/);if(m){const y=+m[3]<100?2000+ +m[3]:+m[3];return new Date(y,m[1]-1,+m[2],+(m[4]||0),+(m[5]||0)).getTime()}return 0};
+/* 실사 바코드 기준 TML·WIRE 0처리 계획: 실사(수량>0) 바코드 외 현장 롤은 0처리, 실사에 있는데 0처리된 롤은 복원 */
+async function cntZeroPlan(cd,p){
+  const bcRows=p.filter(r=>r.barcode);
+  const keep=new Map(),nbc=new Map();
+  (await sel('mshort_count_2',`select=barcode,code,qty&cdate=eq.${cd}`)).forEach(o=>{if(o.barcode)keep.set(o.barcode,Number(o.qty)||0);else nbc.set(String(o.code).toUpperCase(),Number(o.qty)||0)});
+  bcRows.forEach(r=>keep.set(r.barcode,Number(r.qty)||0));
+  p.filter(r=>!r.barcode).forEach(r=>nbc.set(r.code,(nbc.get(r.code)||0)+(Number(r.qty)||0)));
+  /* 바코드 공란으로 수량>0 입력한 자재는 어느 롤인지 알 수 없으므로 그 자재의 롤은 0처리하지 않음 */
+  const prot=new Set([...nbc].filter(([c,q])=>q>0).map(([c])=>c));
+  const [rr,zz]=await Promise.all([sel('tmlwire2_receipts','select=barcode,mat_code,recv_at'),sel('tmlwire2_zero','select=barcode')]);
+  const Z=new Set(zz.map(z=>z.barcode)),cut=new Date(cd+'T00:00:00').getTime(),RB=new Set();
+  const zero=[];rr.forEach(r=>{if(!r.barcode)return;RB.add(r.barcode);if(Z.has(r.barcode))return;
+    if(keep.has(r.barcode))return;if(prot.has(String(r.mat_code||'').toUpperCase()))return;const t=recvMs(r.recv_at);if(t&&t>=cut)return;zero.push(r.barcode)});
+  const restore=[...keep.keys()].filter(b=>Z.has(b));
+  const unknown=[...keep.keys()].filter(b=>!RB.has(b)).length;
+  return{zero,restore,unknown,prot:prot.size};
 }
 /* 사용량: 코드 · 업체명 · 품목그룹 · 사용량 — 머릿글/빈열/앞쪽 날짜열 있어도 인식 */
 function parseUsage(txt){
@@ -714,8 +817,9 @@ function parseRet(txt){
   return out;
 }
 const DAILY=[
- {key:'cnt',kind:'count',table:'mshort_count_2',dcol:'cdate',ko:'실사',es:'Inventario físico',parser:parseCount,
-  hint:['월말 실사한 순수 원자재 수량. 유라코드·실사수량을 붙여넣으세요(머릿글 없어도 됨). 같은 코드는 합산됩니다.','Código y cantidad contada (sin encabezado OK). Códigos repetidos se suman.']},
+ {key:'cnt',kind:'count',table:'mshort_count_2',dcol:'cdate',ko:'실사',es:'Inventario físico',parser:parseCount,bcd:true,
+  hint:['월말 실사 결과를 바코드·유라코드·실사수량 순서로 붙여넣으세요(머릿글 없어도 됨). 저장하면 실사 목록에 있는 바코드를 제외한 현장 롤은 모두 TML·WIRE에서 0처리됩니다(실사일 당일·이후 입고분 제외). 실사수량이 0이어도 스캔된 바코드는 현장 롤로 남고(재고 0·롤수 표시), 실사에 있는데 0처리돼 있던 바코드는 복원됩니다. 바코드는 공란이어도 되며(유라코드·실사수량은 필수), 바코드 공란으로 수량을 입력한 자재의 롤은 0처리하지 않습니다. 같은 날짜·코드의 공란 행은 합산됩니다. 실사 날짜를 삭제하면 0처리도 되돌립니다.',
+        'Pegue código de barras, código y cantidad contada (sin encabezado OK). Al guardar, todos los rollos en piso cuyo código de barras no esté en el inventario se cierran (0) en TML·WIRE (excepto entradas desde la fecha del inventario). Los escaneados con cantidad 0 siguen como rollos en piso (stock 0, se cuentan los rollos) y los que estaban cerrados pero aparecen en el inventario se reabren. El código de barras puede quedar vacío (código y cantidad obligatorios); los rollos de materiales capturados sin código de barras no se cierran. Al eliminar la fecha se revierte.']},
  {key:'rec',kind:'receipt',table:'mshort_receipt_2',dcol:'rdate',ko:'현장입고',es:'Entrada a piso',parser:parseErp,erp:true,bc:true,
   hint:['ERP 30810 형식(실사일자·유라코드·업체품명·단위·실사수량·바코드·업체바코드·사용)을 붙여넣으세요. 머릿글이 없어도 인식합니다. 같은 바코드는 1번만 반영되며, 재업로드 시 바코드가 같고 수량이 다르면 수정됩니다.',
         'Pegue el formato ERP 30810 (fecha, código, nombre, unidad, cantidad, código de barras, cód. proveedor, uso), con o sin encabezado. Códigos de barras repetidos se cuentan una vez; al recargar, si la cantidad cambia se actualiza.']},
@@ -748,26 +852,35 @@ DAILY.forEach(d=>{
     $(d.key+'Warn').textContent=ex.length?tr(`※ 기존 데이터와 병합: ${ex.map(x=>x.d+'('+x.n+'행)').join(', ')} — 수량이 다른 항목만 갱신, 새 항목 추가`,`※ Se combinará con: ${ex.map(x=>x.d).join(', ')} (solo cambios)`):''};
   $(d.key+'Txt').oninput=()=>{const p=parse();const g=groups(p);const ds=Object.keys(g).sort();
     $(d.key+'Prev').textContent=p.length?tr(`인식 ${p.length}행 · 합계 ${fmt(p.reduce((a,r)=>a+r.qty,0))} · 날짜: ${ds.map(x=>x+'('+g[x].length+')').join(', ')}`,
-      `${p.length} filas · total ${fmt(p.reduce((a,r)=>a+r.qty,0))} · fechas: ${ds.join(', ')}`):'';warn()};
+      `${p.length} filas · total ${fmt(p.reduce((a,r)=>a+r.qty,0))} · fechas: ${ds.join(', ')}`):'';
+    if(d.key==='cnt'&&$(d.key+'Txt').value.trim()){const nb=p.filter(r=>r.barcode).length,bad=parseCount.bad||0,dup=parseCount.dup||0;
+      $(d.key+'Prev').textContent+=(p.length?tr(` · 바코드 ${nb} · 바코드 공란 ${p.length-nb}`,` · con cód. barras ${nb} · sin ${p.length-nb}`):'')+
+        (bad?tr(` · ⚠ 유라코드/실사수량 누락 ${bad}행 제외`,` · ⚠ ${bad} filas sin código/cantidad (omitidas)`):'')+(dup?tr(` · 중복 바코드 ${dup}행 제외`,` · ${dup} cód. barras repetidos`):'')}
+    warn()};
   $(d.key+'Date').onchange=()=>$(d.key+'Txt').oninput();
   if(d.erp)$(d.key+'UseRowDate').onchange=()=>$(d.key+'Txt').oninput();
   $(d.key+'Save').onclick=async()=>{
     const p=parse();if(!p.length)return toast(tr('인식된 행이 없습니다','Sin filas'));
     if(p.some(r=>!r._d))return toast(tr('날짜를 지정하세요','Seleccione fecha'));
     const ds=Object.keys(groups(p)).sort();
+    let zp=null;
+    if(d.key==='cnt'){busy(1);try{zp=await cntZeroPlan(ds[0],p)}catch(e){busy(0);return alert(e.message)}busy(0);
+      if(zp&&!confirm(tr(`실사 ${ds[0]} 저장\n\n· 실사 목록에 없는 현장 롤 ${zp.zero.length}개 → TML·WIRE 0처리\n· 0처리돼 있던 실사 롤 ${zp.restore.length}개 → 복원`+(zp.unknown?`\n· TML·WIRE 입고이력에 없는 바코드 ${zp.unknown}개 (수량은 그대로 저장)`:'')+(zp.prot?`\n· 바코드 공란으로 입력한 자재 ${zp.prot}종의 롤은 0처리 안 함`:'')+`\n\n계속할까요?`,
+        `Guardar inventario ${ds[0]}\n\n· ${zp.zero.length} rollos fuera del inventario → cierre (0) en TML·WIRE\n· ${zp.restore.length} rollos cerrados que aparecen → reabrir`+(zp.unknown?`\n· ${zp.unknown} códigos de barras sin entrada en TML·WIRE`:'')+(zp.prot?`\n· ${zp.prot} materiales sin cód. barras: sus rollos no se cierran`:'')+`\n\n¿Continuar?`)))return}
     busy(1);try{
       const res=await mergeSave(d,p);
+      let zr=null;if(zp&&(zp.zero.length||zp.restore.length))zr=await rpc('mshort_cnt_zero_apply_2',{p_cdate:ds[0],p_zero:zp.zero,p_restore:zp.restore,p_zero_at:ds[0]});
       $(d.key+'Txt').value='';$(d.key+'Prev').textContent='';$(d.key+'Warn').textContent='';
       await loadDates();viewDate(d,ds[ds.length-1]);
-      toast(tr(`저장 완료 · 신규 ${res.add} · 수정 ${res.upd} · 동일 ${res.same}`,`Guardado · nuevos ${res.add} · actualizados ${res.upd} · iguales ${res.same}`))}catch(e){alert(e.message)}busy(0)};
+      toast(tr(`저장 완료 · 신규 ${res.add} · 수정 ${res.upd} · 동일 ${res.same}`,`Guardado · nuevos ${res.add} · actualizados ${res.upd} · iguales ${res.same}`)+(zr?tr(` · 0처리 ${zr.zero} · 복원 ${zr.restore}`,` · cierre ${zr.zero} · reabiertos ${zr.restore}`):''))}catch(e){alert(e.message)}busy(0)};
 });
 /* 병합 저장: 입고는 바코드 기준(바코드 없으면 날짜+코드), 사용량은 날짜+코드+품목그룹, 실사는 날짜+코드
    같은 키가 이미 있으면 수량(입고는 날짜 포함)이 다를 때만 갱신, 없으면 추가, 기존 다른 항목은 유지 */
-const mkey=(d,r,dt)=>d.bc&&r.barcode?'B:'+r.barcode:dt+'|'+String(r.code).toUpperCase()+(d.kind==='usage'?'|'+(r.grp||''):'');
+const mkey=(d,r,dt)=>d.bc&&r.barcode?'B:'+r.barcode:d.bcd&&r.barcode?dt+'|B:'+r.barcode:dt+'|'+String(r.code).toUpperCase()+(d.kind==='usage'?'|'+(r.grp||''):'');
 async function mergeSave(d,p){
   const up={};
   p.forEach(({_d,...r})=>{const k=mkey(d,r,_d);
-    if(up[k]){if(!(d.bc&&r.barcode))up[k].qty+=Number(r.qty)||0}
+    if(up[k]){if(!((d.bc||d.bcd)&&r.barcode))up[k].qty+=Number(r.qty)||0}
     else up[k]={...r,qty:Number(r.qty)||0,[d.dcol]:_d}});
   const ds=[...new Set(Object.values(up).map(r=>r[d.dcol]))];
   let old=[];
@@ -800,8 +913,8 @@ function renderDates(d){
     <button class="btn red sm" data-del="${x.d}">×</button></div>`).join('')||'<span class="hint">-</span>';
   $(d.key+'Dates').querySelectorAll('[data-d] span').forEach(s=>s.onclick=()=>viewDate(d,s.parentNode.dataset.d));
   $(d.key+'Dates').querySelectorAll('[data-del]').forEach(b=>b.onclick=async()=>{
-    if(!confirm(tr(`${b.dataset.del} 데이터 삭제?`,`¿Eliminar ${b.dataset.del}?`)))return;
-    busy(1);try{await del(d.table,d.dcol+'=eq.'+b.dataset.del);if(d.cur===b.dataset.del){d.cur=null;$(d.key+'Tbl').innerHTML='';$(d.key+'VH').textContent=''}await loadDates()}catch(e){alert(e.message)}busy(0)});
+    if(!confirm(tr(`${b.dataset.del} 데이터 삭제?`,`¿Eliminar ${b.dataset.del}?`)+(d.key==='cnt'?tr('\n이 실사로 0처리·복원한 TML·WIRE 롤도 원래대로 되돌립니다.','\nTambién se revierten los cierres/reaperturas de TML·WIRE hechos por este inventario.'):'')))return;
+    busy(1);try{if(d.key==='cnt')await rpc('mshort_cnt_zero_undo_2',{p_cdate:b.dataset.del});await del(d.table,d.dcol+'=eq.'+b.dataset.del);if(d.cur===b.dataset.del){d.cur=null;$(d.key+'Tbl').innerHTML='';$(d.key+'VH').textContent=''}await loadDates()}catch(e){alert(e.message)}busy(0)});
 }
 async function viewDate(d,dt){
   d.cur=dt;renderDates(d);busy(1);
@@ -813,6 +926,9 @@ async function viewDate(d,dt){
     }else if(d.erp){
       $(d.key+'Tbl').innerHTML=`<tr><th>#</th><th>${tr('실사일자','Fecha')}</th><th>${tr('유라코드','Código')}</th><th>${tr('업체품명','Nombre')}</th><th>${tr('단위','Unidad')}</th><th class="n">${tr('실사수량','Cantidad')}</th><th>${tr('바코드','Cód. barras')}</th><th>${tr('업체바코드','Cód. proveedor')}</th><th>${tr('사용','Uso')}</th></tr>`+
         r.map((x,i)=>`<tr><td>${i+1}</td><td>${esc(x.rdate)}</td><td>${esc(x.code)}</td><td>${esc(x.name)}</td><td>${esc(x.unit)}</td><td class="n">${fmt(x.qty)}</td><td>${esc(x.barcode)}</td><td>${esc(x.vbarcode)}</td><td>${esc(x.used)}</td></tr>`).join('');
+    }else if(d.key==='cnt'&&r.some(x=>x.barcode)){
+      $(d.key+'Tbl').innerHTML=`<tr><th>#</th><th>${tr('바코드','Cód. barras')}</th><th>${tr('유라코드','Código')}</th><th class="n">${tr('실사수량','Cantidad')}</th></tr>`+
+        r.map((x,i)=>`<tr><td>${i+1}</td><td>${esc(x.barcode||'')}</td><td>${esc(x.code)}</td><td class="n">${fmt(x.qty)}</td></tr>`).join('');
     }else
     $(d.key+'Tbl').innerHTML=`<tr><th>#</th><th>${tr('자재코드','Código')}</th>${d.key!=='cnt'?`<th>${tr('자재명','Nombre')}</th>`:''}${d.key==='use'?`<th>${tr('품목그룹','Grupo')}</th>`:''}<th class="n">${tr('수량','Cant.')}</th></tr>`+
       r.map((x,i)=>`<tr><td>${i+1}</td><td>${esc(x.code)}</td>${d.key!=='cnt'?`<td>${esc(x.name)}</td>`:''}${d.key==='use'?`<td>${esc(x.grp)}</td>`:''}<td class="n">${fmt(x.qty)}</td></tr>`).join('');
@@ -825,9 +941,9 @@ async function loadDates(){
   const cs=DATES.filter(x=>x.kind==='count').map(x=>x.d).sort().reverse();
   $('sCnt').innerHTML=cs.length?cs.map(d=>`<option>${d}</option>`).join(''):`<option value="">(${tr('실사 없음','sin inventario')})</option>`;
   if(cs.includes(cur))$('sCnt').value=cur;
-  if(!$('sFrom').value&&cs[0])$('sFrom').value=addDay(cs[0],1);
+  if(cs[0]&&(!$('sFrom').value||$('sFrom').value===addDay(cs[0],1)||!cs.includes(cur)))$('sFrom').value=$('sCnt').value||cs[0];
 }
-$('sCnt').onchange=()=>{if($('sCnt').value)$('sFrom').value=addDay($('sCnt').value,1)};
+$('sCnt').onchange=()=>{if($('sCnt').value)$('sFrom').value=$('sCnt').value};
 
 /* ---------- 창고보유자재 (25010) ---------- */
 function parseMst(txt){
@@ -873,19 +989,47 @@ async function calc(fresh=true){
     if(fresh)await Promise.all([loadNeed(),loadMst(),loadAdj(),loadCars()]);else if(!Object.keys(CARS).length)await loadCars();
     const [cnt,use,rec]=await Promise.all([
       cd?sel('mshort_count_2',`select=code,qty&cdate=eq.${cd}`):[],
-      f&&t?sel('mshort_usage_2',`select=code,qty&udate=gte.${f}&udate=lte.${t}`):[],
-      f&&t?sel('mshort_receipt_2',`select=code,qty&rdate=gte.${f}&rdate=lte.${t}`):[]]);
-    const ret=f&&t?await sel('mshort_return_2',`select=code,qty&rtdate=gte.${f}&rtdate=lte.${t}`):[];
+      f&&t?sel('mshort_usage_2',`select=code,name,qty&udate=gte.${f}&udate=lte.${t}`):[],
+      f&&t?sel('mshort_receipt_2',`select=code,name,unit,qty&rdate=gte.${f}&rdate=lte.${t}`):[]]);
+    const ret=f&&t?await sel('mshort_return_2',`select=code,name,unit,qty&rtdate=gte.${f}&rtdate=lte.${t}`):[];
+    /* 현장 보유 롤수: TML·WIRE 입고 바코드 − 0처리(사용완료) 바코드 */
+    let RL={},RQ={},zAt='',HB={},LZ={},RX={};const RB={};
+    /* 마지막 수동조정이 0이면 그 시각 이전에 입고된 롤은 현장롤수에서 제외 */
+    const ZA={};{const last={};if(f&&t)ADJ.forEach(a=>{if(a.adj_date<f||a.adj_date>t)return;const c=String(a.code).toUpperCase(),tm=new Date(a.created_at).getTime()||0;
+      if(!last[c]||tm>last[c].tm)last[c]={tm,z:Number(a.after_qty)===0}});Object.keys(last).forEach(c=>{if(last[c].z)ZA[c]=last[c].tm})}
+    const rcvMs=v=>{v=String(v||'').trim();let m=v.match(/^(\d{4})-(\d{1,2})-(\d{1,2})[ T](\d{1,2}):(\d{2})/);if(m)return new Date(+m[1],m[2]-1,+m[3],+m[4],+m[5]).getTime();
+      m=v.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})\s+(\d{1,2}):(\d{2})/);if(m){const y=+m[3]<100?2000+ +m[3]:+m[3];return new Date(y,m[1]-1,+m[2],+m[4],+m[5]).getTime()}return 0};const NM={};const nm=(c,n,u)=>{c=String(c||'').toUpperCase();if(!c)return;const o=NM[c]||(NM[c]={});if(n&&!o.name)o.name=n;if(u&&!o.unit)o.unit=u};
+    try{const [rr,zz]=await Promise.all([sel('tmlwire2_receipts','select=barcode,mat_code,mat_name,unit,qty,recv_at'),sel('tmlwire2_zero','select=barcode,uploaded_at')]);
+      const Z=new Map(zz.map(z=>[z.barcode,z.uploaded_at||'']));zz.forEach(z=>{if((z.uploaded_at||'')>zAt)zAt=z.uploaded_at});
+      rr.forEach(r=>{nm(r.mat_code,r.mat_name,r.unit);const c0=String(r.mat_code||'').toUpperCase();if(c0&&r.barcode)HB[c0]=1;
+        if(r.barcode&&Z.has(r.barcode)){const t=new Date(Z.get(r.barcode)).getTime()||0;if(t>(LZ[c0]||0))LZ[c0]=t}
+        if(!r.barcode||Z.has(r.barcode))return;
+        (RB[c0]||(RB[c0]=[])).push(r.barcode);
+        if(ZA[c0]&&rcvMs(r.recv_at)<=ZA[c0]){RX[c0]=(RX[c0]||0)+1;return}const c=String(r.mat_code||'').toUpperCase();RL[c]=(RL[c]||0)+1;RQ[c]=(RQ[c]||0)+(Number(r.qty)||0)});
+      ROLLB=RB;
+    }catch(e){console.warn('roll',e)}
     const sum=a=>{const m={};a.forEach(r=>{const c=String(r.code).toUpperCase();m[c]=(m[c]||0)+Number(r.qty)});return m};
-    const A={};if(f&&t)ADJ.forEach(a=>{if(a.adj_date<f||a.adj_date>t)return;const c=String(a.code).toUpperCase();A[c]=(A[c]||0)+(Number(a.qty)||0)});
-    const C=sum(cnt),U=sum(use),R=sum(rec),RT=sum(ret),W={};MST.forEach(r=>W[r.code]=Number(r.qty)||0);
+    /* 수동 재고조정 (사용·입고 기간 내) */
+    const A={},LA={};if(f&&t)ADJ.forEach(a=>{if(a.adj_date<f||a.adj_date>t)return;const c=String(a.code).toUpperCase();A[c]=(A[c]||0)+(Number(a.qty)||0);
+      const tm=new Date(a.created_at).getTime()||0;if(tm>(LA[c]||0))LA[c]=tm});
+    /* 0처리 자동조정: 바코드 관리 자재인데 현장롤 0 + 마지막 0처리가 마지막 수동조정보다 나중 → 현재고 0 */
+    const fin0=(c,base)=>{const auto=(HB[c]&&!(RL[c])&&(LZ[c]||0)>(LA[c]||0)&&Math.abs(base)>1e-9)?-base:0;return{adj:(A[c]||0)+auto,auto,base,cur:base+auto,lz:LZ[c]||0,rollx:RX[c]||0}};
+    const fin=fin0;
+    const C=sum(cnt),U=sum(use),R=sum(rec),RT=sum(ret),W={},WR={};MST.forEach(r=>{const k=String(r.code||'').toUpperCase();W[k]=(W[k]||0)+(Number(r.qty)||0);WR[k]=(WR[k]||0)+(Number(r.cnt)||0);nm(r.code,r.name,r.unit)});
+    use.forEach(r=>nm(r.code,r.name));rec.forEach(r=>nm(r.code,r.name,r.unit));ret.forEach(r=>nm(r.code,r.name,r.unit));
     const agg={},order=[];let exRows=0;
     NEED.forEach(r=>{if(isEx(r.lotno)){exRows++;return}
       if(!agg[r.code]){agg[r.code]={code:r.code,name:r.name,unit:r.unit,need:0};order.push(r.code)}
       agg[r.code].need+=Number(r.qty)||0});
-    const list=order.map((c,i)=>{const a=agg[c];const cnt_=C[c]||0,u=U[c]||0,rc=R[c]||0,rt=RT[c]||0,w=W[c]||0;
-      const ad=A[String(c).toUpperCase()]||0,cur=cnt_-u+rc-rt+ad,sh=cur+w-a.need;return{...a,i,cnt:cnt_,use:u,rec:rc,ret:rt,adj:ad,base:cur,auto:0,cur,wh:w,short:sh}});
-    SUM={list,exRows,cd,f,t};fillAdjCodes();
+    const list=order.map((c,i)=>{const a=agg[c];c=String(c).toUpperCase();const cnt_=C[c]||0,u=U[c]||0,rc=R[c]||0,rt=RT[c]||0,w=W[c]||0;
+      const F=fin(c=String(c).toUpperCase(),cnt_-u+rc-rt+(A[c]||0)),cur=F.cur,sh=cur+w-a.need;return{...a,i,cnt:cnt_,use:u,rec:rc,ret:rt,...F,roll:RL[c]||0,rollq:RQ[c]||0,wh:w,whroll:WR[c]||0,short:sh}});
+    /* 17000에 없는 가공 보유 자재 — 실사·사용·입고·반납·현장롤·조정·창고보유 중 하나라도 있으면 전부 표시 (현재고 0 포함) */
+    const inNeed=new Set(order.map(c=>String(c).toUpperCase()));
+    const xs=new Set([...Object.keys(C),...Object.keys(U),...Object.keys(R),...Object.keys(RT),...Object.keys(RL),...Object.keys(A),...Object.keys(W).map(k=>String(k).toUpperCase())]);
+    [...xs].filter(c=>c&&!inNeed.has(c)).sort().forEach(c=>{const cnt_=C[c]||0,u=U[c]||0,rc=R[c]||0,rt=RT[c]||0,F=fin(c,cnt_-u+rc-rt+(A[c]||0)),cur=F.cur,rl=RL[c]||0;
+      const w=W[c]||0,o=NM[c]||{};
+      list.push({code:c,name:o.name||'',unit:o.unit||'',need:0,i:list.length,cnt:cnt_,use:u,rec:rc,ret:rt,...F,roll:rl,rollq:RQ[c]||0,wh:w,whroll:WR[c]||0,short:cur+w,extra:1})});
+    SUM={list,exRows,cd,f,t,zAt};fillAdjCodes();
   }catch(e){alert(e.message)}
   busy(0);renderSum();
 }
@@ -905,7 +1049,7 @@ function viewList(){
   if(!SUM)return[];
   const q=$('sQ').value.trim().toUpperCase(),f=$('sF').value,ty=selTypes();
   SUM.list.forEach(r=>{r.type=mtype(r.code);r.car=CARS[String(r.code).toUpperCase()]||CARS[r.code]||'';r.cpairs=r.car?r.car.split(', ').flatMap(x=>{const i=x.indexOf(' '),c=i<0?x:x.slice(0,i);return(i<0?['']:x.slice(i+1).split('·')).map(p=>[c,p])}):[]});
-  let l=SUM.list.filter(r=>{if(!ty.has(r.type))return false;const s=status(r);if(f==='short'&&s!=='short')return false;if(f==='care'&&s!=='care')return false;if(f==='chk'&&s==='ok')return false;
+  let l=SUM.list.filter(r=>{if(!ty.has(r.type))return false;const s=status(r);if(f==='short'&&s!=='short')return false;if(f==='care'&&s!=='care')return false;if(f==='chk'&&s==='ok')return false;if(f==='need'&&r.extra)return false;if(f==='extra'&&!r.extra)return false;
     if(!cfOk(r.cpairs))return false;return!q||(r.code+' '+r.name+' '+r.type+' '+(r.car||'')).toUpperCase().includes(q)});
   if(sortK)l=[...l].sort((a,b)=>{const x=a[sortK],y=b[sortK];return(typeof x==='string'?x.localeCompare(y):x-y)*sortD});
   return l;
@@ -914,7 +1058,7 @@ function cols(){
   const cd=SUM?SUM.cd:'',rng=SUM&&SUM.f?`${md(SUM.f)}~${md(SUM.t)}`:'';
   return[['type',tr('구분','Tipo')],['code',tr('자재코드','Código')],['name',tr('자재명','Nombre')],['unit',tr('단위','Unid.')],['need',tr('필요량','Requerido'),1],
    ['cnt',tr('실사','Inv.')+(cd?`<br><small>${md(cd)}</small>`:''),1],['use',tr('사용량','Consumo')+`<br><small>${rng}</small>`,1],['rec',tr('입고량','Entrada')+`<br><small>${rng}</small>`,1],['ret',tr('반납','Devol.')+`<br><small>${rng}</small>`,1],['adj',tr('조정','Ajuste'),1],
-   ['cur',tr('현재고','Stock')+(SUM&&SUM.t?`<br><small>${md(SUM.t)}</small>`:''),1],['wh',tr('창고재고','Almacén'),1],['short',tr('부족예상','Pronóstico'),1],['chk','CHECK'],['car',tr('적용차종','Modelo')]];
+   ['cur',tr('현재고','Stock')+(SUM&&SUM.t?`<br><small>${md(SUM.t)}</small>`:''),1],['roll',tr('현장롤수','Rollos piso'),1],['wh',tr('창고재고','Almacén'),1],['whroll',tr('창고롤수','Rollos alm.'),1],['short',tr('부족예상','Pronóstico'),1],['chk','CHECK'],['car',tr('적용차종','Modelo')]];
 }
 function renderSum(){
   $('sThr').value=CFG.threshold;
@@ -923,20 +1067,24 @@ function renderSum(){
   {const f=$('sF').value,q=$('sQ').value.trim().toUpperCase();TYPES.forEach(t=>{const e=document.querySelector(`#sType b[data-tc="${t}"]`);if(e)e.textContent=SUM.list.filter(r=>{if(r.type!==t)return false;const s=status(r);if(f==='short'&&s!=='short')return false;if(f==='care'&&s!=='care')return false;if(f==='chk'&&s==='ok')return false;if(f==='need'&&r.extra)return false;if(f==='extra'&&!r.extra)return false;if(!cfOk(r.cpairs))return false;return!q||(r.code+' '+r.name+' '+r.type+' '+(r.car||'')).toUpperCase().includes(q)}).length})}
   cfOpts(SUM.list.flatMap(r=>r.cpairs||[]));
   const all=SUM.list.filter(r=>selTypes().has(r.type)&&cfOk(r.cpairs)),st=all.map(status);
-  $('kAll').textContent=all.length;$('kShort').textContent=st.filter(s=>s==='short').length;
+  $('kAll').textContent=all.length;$('kAll').title=tr(`17000 ${all.filter(r=>!r.extra).length} + 현장보유 ${all.filter(r=>r.extra).length}`,'');$('kShort').textContent=st.filter(s=>s==='short').length;
   $('kCare').textContent=st.filter(s=>s==='care').length;$('kEx').textContent=SUM.exRows;
   $('sInfo').textContent=tr(`실사 ${SUM.cd||'-'} · 사용/입고 ${SUM.f||'-'} ~ ${SUM.t||'-'} · 제외 LOT: ${EX.map(e=>e.lotno).join(', ')||'없음'}`,
-    `Inventario ${SUM.cd||'-'} · ${SUM.f||'-'} ~ ${SUM.t||'-'} · LOT excluidos: ${EX.map(e=>e.lotno).join(', ')||'ninguno'}`);
+    `Inventario ${SUM.cd||'-'} · ${SUM.f||'-'} ~ ${SUM.t||'-'} · LOT excluidos: ${EX.map(e=>e.lotno).join(', ')||'ninguno'}`)+
+    tr(` · 롤수: TML·WIRE 입고 − 0처리 (0처리 업로드 ${SUM.zAt?SUM.zAt.slice(0,16).replace('T',' '):'-'})`,` · Rollos: entradas TML·WIRE − cerrados (${SUM.zAt?SUM.zAt.slice(0,10):'-'})`);
   const C=cols(),l=viewList();
   const lab={short:tr('부족','Faltante'),care:tr('주의','Alerta'),ok:'OK'};
   $('sTbl').innerHTML='<tr>'+C.map(([k,h,n])=>`<th class="${n?'n':''}" data-k="${k}">${h}${sortK===k?(sortD>0?' ▲':' ▼'):''}</th>`).join('')+'</tr>'+
-    l.map(r=>{const s=status(r);return`<tr class="${s==='ok'?'':s}">`+C.map(([k,h,n])=>{
+    l.map(r=>{const s=status(r);return`<tr class="${s==='ok'?'':s}" data-code="${esc(r.code)}">`+C.map(([k,h,n])=>{
       if(k==='chk')return`<td><span class="tag ${s}">${lab[s]}</span></td>`;
-      if(k==='car')return`<td class="carc">${r.car?r.car.split(', ').flatMap(x=>{const i=x.indexOf(' '),c=i<0?x:x.slice(0,i),ps=i<0?['']:x.slice(i+1).split('·');return ps.map(p=>`<span class="cl"><b>${esc(c)}</b>${esc(p)}</span>`)}).join(''):'<span class="hint">-</span>'}</td>`;
+      if(k==='car')return`<td class="carc" title="${tr('눌러서 적용차종 조회','Toque para ver modelos')}" style="cursor:pointer">${r.car?r.car.split(', ').flatMap(x=>{const i=x.indexOf(' '),c=i<0?x:x.slice(0,i),ps=i<0?['']:x.slice(i+1).split('·');return ps.map(p=>`<span class="cl"><b>${esc(c)}</b>${esc(p)}</span>`)}).join(''):'<span class="hint">-</span>'}</td>`;
       const v=r[k];
-      if(k==='adj')return`<td class="n ${v<0?'neg':''}">${v?fmt(v):'<span class="hint">0</span>'}</td>`;
+      if(k==='adj')return`<td class="n ${v<0?'neg':''}" title="${r.auto?tr('0처리 자동조정 포함: ','Incluye ajuste por cierre: ')+fmt(r.auto):''}">${v?fmt(v):'<span class="hint">0</span>'}${r.auto?'<span class="tag az">0</span>':''}</td>`;
       if(k==='ret')return`<td class="n">${v?fmt(v):'<span class="hint">0</span>'}</td>`;
       if(k==='cur')return`<td class="n adjc ${v<0?'neg':''}" data-adj="${esc(r.code)}" title="${tr('눌러서 재고조정','Toque para ajustar')}">${fmt(v)}</td>`;
+      if(k==='whroll')return`<td class="n">${v?fmt(v):'<span class="hint">0</span>'}</td>`;
+      if(k==='roll')return`<td class="n" title="${tr('현장 보유 롤 수량합','Cant. en rollos')}: ${fmt(r.rollq)}${r.rollx?tr(` · 재고조정 0으로 ${r.rollx}롤 제외`,` · ${r.rollx} rollos excluidos por ajuste a 0`):''}">${v?fmt(v):'<span class="hint">0</span>'}${r.rollx?'<span class="tag az">0</span>':''}</td>`;
+      if(k==='code')return`<td class="codelink" title="${tr('눌러서 적용차종 조회','Toque para ver modelos')}">${esc(v)}${r.extra?`<span class="tag xt" title="${tr('17000 작업필요자재에 없음','No está en 17000')}">${tr('현장','Piso')}</span>`:''}</td>`;
       return n?`<td class="n ${v<0?'neg':''}">${fmt(v)}</td>`:`<td>${esc(v)}</td>`}).join('')+'</tr>'}).join('');
   $('sTbl').querySelectorAll('td[data-adj]').forEach(td=>td.onclick=e=>{e.stopPropagation();openAdj(td.dataset.adj)});
   $('sTbl').querySelectorAll('th').forEach(th=>th.onclick=()=>{const k=th.dataset.k==='chk'?'short':th.dataset.k;
@@ -1016,9 +1164,13 @@ async function buildXlsx(){
   a.download=`재고부족예상_${PL}_${SUM.t||today()}.xlsx`;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1500)}
 
 /* ---------- 재고조정 ---------- */
+async function rpc(fn,body){const r=await fetch(SB+'rpc/'+fn,{method:'POST',headers:H,body:JSON.stringify(body)});if(!r.ok)throw new Error(await r.text());return r.json()}
+const nowLocal=()=>{const d=new Date();return today()+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')};
 async function loadAdj(){ADJ=await sel('mshort_adjust_2','select=*&order=created_at.desc');renderAdj()}
 const findSum=c=>SUM?SUM.list.find(r=>String(r.code).toUpperCase()===c):null;
 function fillAdjCodes(){if(!SUM)return;$('aCodes').innerHTML=SUM.list.map(r=>`<option value="${esc(r.code)}">${esc(r.name||'')}</option>`).join('');
+  const n=SUM.list.filter(r=>r.auto).length;
+  $('aAutoInfo').textContent=tr(`현재 자동 0조정 적용 자재: ${n}종`,`Materiales con ajuste automático: ${n}`)+(n?' — '+SUM.list.filter(r=>r.auto).map(r=>r.code).slice(0,30).join(', '):'');
   showAdj()}
 function openAdj(c){document.querySelector('#nav button[data-tab="adj"]').click();$('aCode').value=c;$('aAfter').value='';$('aMemo').value='';showAdj();setTimeout(()=>$('aAfter').focus(),50)}
 function showAdj(){
@@ -1038,21 +1190,25 @@ $('aSave').onclick=async()=>{
   if(SUM.f&&(d<SUM.f||d>SUM.t)&&!confirm(tr(`일자 ${d}가 조회기간(${SUM.f}~${SUM.t}) 밖이라 현재 계산에는 반영되지 않습니다. 저장할까요?`,`La fecha ${d} está fuera del periodo. ¿Guardar?`)))return;
   const base=r?r.base:0,dq=a-base;
   if(!r&&!confirm(tr(`${c}는 조회 결과에 없습니다. 현재고 0 기준으로 ${fmt(a)} 저장할까요?`,`${c} no está en la consulta. ¿Guardar ${fmt(a)}?`)))return;
-  busy(1);try{await ins('mshort_adjust_2',[{adj_date:d,code:c,before_qty:r?r.cur:0,after_qty:a,qty:dq,memo:$('aMemo').value.trim()||null}]);
+  const zb=a===0?(ROLLB[c]||[]):[];
+  if(zb.length&&!confirm(tr(`현장롤 ${zb.length}개를 TML·WIRE 프로그램에서도 0처리(사용완료)합니다. 계속할까요?`,`Se cerrarán (0) ${zb.length} rollos también en TML·WIRE. ¿Continuar?`)))return;
+  busy(1);try{await ins('mshort_adjust_2',[{adj_date:d,code:c,before_qty:r?r.cur:0,after_qty:a,qty:dq,memo:$('aMemo').value.trim()||null,zero_barcodes:zb.length?zb:null}]);
+    if(zb.length){const za=nowLocal();await rpc('tmlwire2_upload',{p_target:'zero',p_rows:zb.map(b=>({barcode:b,zero_at:za})),p_clear:false})}
     $('aAfter').value='';$('aMemo').value='';await calc();toast(tr('조정 저장','Ajuste guardado'))}catch(e){alert(e.message)}busy(0)};
 function renderAdj(){
   const q=$('aQ').value.trim().toUpperCase(),l=ADJ.filter(a=>!q||(a.code+' '+(a.memo||'')).toUpperCase().includes(q));
   $('aInfo').textContent=tr(`${ADJ.length}건`,`${ADJ.length} registros`);
   $('aTbl').innerHTML=`<tr><th>${tr('일자','Fecha')}</th><th>${tr('자재코드','Código')}</th><th class="n">${tr('조정전','Antes')}</th><th class="n">${tr('조정후','Después')}</th><th class="n">${tr('조정량','Ajuste')}</th><th>${tr('사유','Motivo')}</th><th>${tr('저장시각','Registrado')}</th><th></th></tr>`+
-    (l.map(a=>`<tr><td>${esc(a.adj_date)}</td><td>${esc(a.code)}</td><td class="n">${fmt(a.before_qty)}</td><td class="n">${fmt(a.after_qty)}</td><td class="n ${a.qty<0?'neg':''}">${a.qty>0?'+':''}${fmt(a.qty)}</td><td>${esc(a.memo||'')}</td><td class="hint">${lastUpd([a],'created_at')}</td><td><button class="btn red sm" data-id="${a.id}">${tr('삭제','Eliminar')}</button></td></tr>`).join('')||`<tr><td colspan="8" class="hint" style="padding:16px">-</td></tr>`);
-  $('aTbl').querySelectorAll('button[data-id]').forEach(b=>b.onclick=async()=>{if(!confirm(tr('이 조정을 삭제할까요?','¿Eliminar este ajuste?')))return;
-    busy(1);try{await del('mshort_adjust_2','id=eq.'+b.dataset.id);await calc();toast('OK')}catch(e){alert(e.message)}busy(0)});
+    (l.map(a=>`<tr><td>${esc(a.adj_date)}</td><td>${esc(a.code)}</td><td class="n">${fmt(a.before_qty)}</td><td class="n">${fmt(a.after_qty)}</td><td class="n ${a.qty<0?'neg':''}">${a.qty>0?'+':''}${fmt(a.qty)}</td><td>${esc(a.memo||'')}${a.zero_barcodes&&a.zero_barcodes.length?`<span class="tag az" title="${esc(a.zero_barcodes.join(', '))}">${tr('롤 '+a.zero_barcodes.length+'개 0처리','0: '+a.zero_barcodes.length+' rollos')}</span>`:''}</td><td class="hint">${lastUpd([a],'created_at')}</td><td><button class="btn red sm" data-id="${a.id}">${tr('삭제','Eliminar')}</button></td></tr>`).join('')||`<tr><td colspan="8" class="hint" style="padding:16px">-</td></tr>`);
+  $('aTbl').querySelectorAll('button[data-id]').forEach(b=>b.onclick=async()=>{const a=ADJ.find(x=>String(x.id)===b.dataset.id),zb=(a&&a.zero_barcodes)||[];
+    if(!confirm(tr('이 조정을 삭제할까요?','¿Eliminar este ajuste?')+(zb.length?tr(`\n이 조정으로 0처리한 롤 ${zb.length}개도 TML·WIRE에서 0처리 취소됩니다.`,`\nTambién se revierte el cierre de ${zb.length} rollos en TML·WIRE.`):'')))return;
+    busy(1);try{for(const bc of zb)await rpc('tmlwire2_zero_undo',{p_barcode:bc});await del('mshort_adjust_2','id=eq.'+b.dataset.id);await calc();toast('OK')}catch(e){alert(e.message)}busy(0)});
 }
 $('aQ').oninput=renderAdj;
 
 /* ---------- 자재이력조회 (입고 30810 · 사용 32040) ---------- */
 const HT={rec:'mshort_receipt_2',use:'mshort_usage_2'};
-let HIS=null,HCAND=[];
+let HIS=null,HCAND=[],HBC='',HZERO=null;
 const hNames=()=>{const m={};const put=(c,n)=>{c=String(c||'').toUpperCase();if(!c)return;if(n&&!m[c])m[c]=n;else if(!(c in m))m[c]=''};
   NEED.forEach(r=>put(r.code,r.name));MST.forEach(r=>put(r.code,r.name));(SUM&&SUM.list||[]).forEach(r=>put(r.code,r.name));return m};
 function hFillList(){const m=hNames();$('hList').innerHTML=Object.entries(m).slice(0,4000).map(([c,n])=>`<option value="${esc(c)}">${esc(n)}</option>`).join('')}
@@ -1061,18 +1217,24 @@ async function hFind(q){
   Object.entries(local).forEach(([c,n])=>{if(c.includes(Q)||String(n).toUpperCase().includes(Q))found[c]=n});
   const w=encodeURIComponent('*'+q.replace(/[(),*"]/g,' ').trim()+'*');
   const get=async url=>{const r=await fetch(SB+url,{headers:H});if(!r.ok)throw new Error(await r.text());return r.json()};
-  const [a,b]=await Promise.all([
-    get(`${HT.rec}?select=code,name&or=(code.ilike.${w},name.ilike.${w})&limit=5000`),
-    get(`${HT.use}?select=code,name&or=(code.ilike.${w},name.ilike.${w})&limit=5000`)]);
-  a.forEach(r=>{const c=String(r.code).toUpperCase();if(!found[c])found[c]=r.name||local[c]||''});
-  b.forEach(r=>{const c=String(r.code).toUpperCase();if(!found[c])found[c]=r.name||local[c]||''});
-  return Object.entries(found).map(([code,name])=>({code,name})).sort((x,y)=>x.code.localeCompare(y.code));
+  const [a,b,c_,d,e2]=await Promise.all([
+    get(`${HT.rec}?select=code,name,barcode&or=(code.ilike.${w},name.ilike.${w},barcode.ilike.${w},vbarcode.ilike.${w})&limit=5000`),
+    get(`${HT.use}?select=code,name&or=(code.ilike.${w},name.ilike.${w})&limit=5000`),
+    get(`mshort_count_2?select=code,barcode&or=(code.ilike.${w},barcode.ilike.${w})&limit=5000`),
+    get(`tmlwire2_receipts?select=mat_code,mat_name,barcode&or=(mat_code.ilike.${w},mat_name.ilike.${w},barcode.ilike.${w})&limit=5000`),
+    get(`${HT.rec}?select=code&barcode=eq.${encodeURIComponent(q)}&limit=5`)]);
+  const add=(code,name)=>{const c=String(code||'').toUpperCase();if(!c)return;if(!found[c])found[c]=name||local[c]||''};
+  a.forEach(r=>add(r.code,r.name));b.forEach(r=>add(r.code,r.name));c_.forEach(r=>add(r.code,''));d.forEach(r=>add(r.mat_code,r.mat_name));e2.forEach(r=>add(r.code,''));
+  /* 바코드로 찾은 경우: 그 롤의 자재를 우선 */
+  const bcHit=new Set();[...a,...c_,...d].forEach(r=>{if(String(r.barcode||'').toUpperCase().includes(Q))bcHit.add(String(r.code||r.mat_code||'').toUpperCase())});e2.forEach(r=>bcHit.add(String(r.code).toUpperCase()));
+  HBC=q;
+  return Object.entries(found).map(([code,name])=>({code,name,bc:bcHit.has(code)})).sort((x,y)=>(y.bc-x.bc)||x.code.localeCompare(y.code));
 }
 function hRange(){const f=$('hFrom').value,t=$('hTo').value;return{f,t}}
 async function hRun(){
   const q=$('hQ').value.trim();if(q.length<2)return toast(tr('2글자 이상 입력하세요','Escriba al menos 2 caracteres'));
   busy(1);try{
-    const cand=await hFind(q),exact=cand.find(c=>c.code===q.toUpperCase());
+    const cand=await hFind(q),exact=cand.find(c=>c.code===q.toUpperCase())||(cand.filter(c=>c.bc).length===1?cand.find(c=>c.bc):null);
     HCAND=cand;
     if(!cand.length){$('hCand').innerHTML='';$('hBody').style.display='none';HIS=null;$('hInfo').textContent=tr('검색 결과가 없습니다.','Sin resultados.');busy(0);return}
     if(exact||cand.length===1){busy(0);return hLoad((exact||cand[0]).code)}
@@ -1087,11 +1249,16 @@ function hCandRender(cur){
 async function hLoad(code){
   const {f,t}=hRange(),c=encodeURIComponent(code);
   busy(1);try{
-    const [rec,use]=await Promise.all([
+    if(!HZERO)HZERO=sel('tmlwire2_zero','select=barcode,zero_at').then(z=>new Map(z.map(r=>[r.barcode,r.zero_at||''])));
+    const [rec,use,cnt,rolls,ZM]=await Promise.all([
       sel(HT.rec,`select=rdate,qty,unit,name,barcode,used&code=eq.${c}${f?'&rdate=gte.'+f:''}${t?'&rdate=lte.'+t:''}&order=rdate,id`),
-      sel(HT.use,`select=udate,qty,grp,name&code=eq.${c}${f?'&udate=gte.'+f:''}${t?'&udate=lte.'+t:''}&order=udate,id`)]);
-    const nm=hNames()[code]||(rec.find(r=>r.name)||{}).name||(use.find(r=>r.name)||{}).name||'';
-    HIS={code,name:nm,unit:(rec.find(r=>r.unit)||{}).unit||'',rec,use,f,t};
+      sel(HT.use,`select=udate,qty,grp,name&code=eq.${c}${f?'&udate=gte.'+f:''}${t?'&udate=lte.'+t:''}&order=udate,id`),
+      sel('mshort_count_2',`select=cdate,barcode,qty&code=eq.${c}${f?'&cdate=gte.'+f:''}${t?'&cdate=lte.'+t:''}&order=cdate,id`),
+      sel('tmlwire2_receipts',`select=barcode,recv_at,qty,unit,mat_name&mat_code=eq.${c}&order=seq,barcode`),
+      HZERO]);
+    rolls.forEach(r=>{r.zero=ZM.has(r.barcode)?(ZM.get(r.barcode)||'0'):''});
+    const nm=hNames()[code]||(rec.find(r=>r.name)||{}).name||(use.find(r=>r.name)||{}).name||(rolls.find(r=>r.mat_name)||{}).name||'';
+    HIS={code,name:nm,unit:(rec.find(r=>r.unit)||{}).unit||(rolls.find(r=>r.unit)||{}).unit||'',rec,use,cnt,rolls,f,t,bc:HBC};
     hCandRender(code);hRender();
   }catch(e){alert(e.message)}busy(0);
 }
@@ -1107,10 +1274,13 @@ function hRender(){
   const H_=HIS,days=hDays(),ti=H_.rec.reduce((a,r)=>a+(Number(r.qty)||0),0),tu=H_.use.reduce((a,r)=>a+(Number(r.qty)||0),0);
   const di=new Set(H_.rec.map(r=>r.rdate)).size,du=new Set(H_.use.map(r=>r.udate)).size;
   const per=(H_.f||H_.t)?`${H_.f||'…'} ~ ${H_.t||'…'}`:tr('전체 기간','Todo el periodo');
-  $('hInfo').innerHTML=`<b style="color:var(--ac);font-family:var(--code);font-size:17px">${esc(H_.code)}</b> ${esc(H_.name)} ${H_.unit?`<span class="tag none">${esc(H_.unit)}</span>`:''} · ${per}`;
+  $('hInfo').innerHTML=`<b style="color:var(--ac);font-family:var(--code);font-size:17px">${esc(H_.code)}</b> ${esc(H_.name)} ${H_.unit?`<span class="tag none">${esc(H_.unit)}</span>`:''} · ${per} <button class="carbtn" onclick="openCar('${esc(H_.code)}')">${tr('적용차종 조회 →','Ver modelos →')}</button>`;
   $('hkIn').textContent=fmt(ti);$('hkInS').textContent=tr(`${di}일 · ${H_.rec.length}건(롤)`,`${di} días · ${H_.rec.length} rollos`);
   $('hkUse').textContent=fmt(tu);$('hkUseS').textContent=tr(`${du}일 · ${H_.use.length}건`,`${du} días · ${H_.use.length} filas`);
   $('hkDiff').textContent=fmt(ti-tu);$('hkDiff').style.color=ti-tu<0?'var(--red)':'';$('hkDiffS').textContent=tr('실사·반품·조정 미반영','Sin inventario/devol./ajuste');
+  const cnt=H_.cnt||[],rolls=H_.rolls||[],held=rolls.filter(r=>!r.zero),lastCd=cnt.length?cnt[cnt.length-1].cdate:'',lastRows=cnt.filter(r=>r.cdate===lastCd),lastQ=lastRows.reduce((a,r)=>a+(Number(r.qty)||0),0),lastBc=lastRows.filter(r=>r.barcode).length;
+  $('hkCnt').textContent=lastCd?fmt(lastQ):'-';$('hkCntS').textContent=lastCd?tr(`${lastCd} · 바코드 ${lastBc}건`,`${lastCd} · ${lastBc} cód. barras`):tr('기간 내 실사 없음','Sin inventario en el periodo');
+  $('hkRoll').textContent=held.length;$('hkRollS').textContent=tr(`수량합 ${fmt(held.reduce((a,r)=>a+(Number(r.qty)||0),0))} · 0처리 ${rolls.length-held.length}롤`,`Cant. ${fmt(held.reduce((a,r)=>a+(Number(r.qty)||0),0))} · cerrados ${rolls.length-held.length}`);
   $('hDay').innerHTML=`<tr><th>${tr('날짜','Fecha')}</th><th class="n">${tr('입고수량','Entrada')}</th><th class="n">${tr('입고 롤수','Rollos')}</th><th class="n">${tr('사용수량','Consumo')}</th><th class="n">${tr('입고−사용','Entrada−consumo')}</th><th class="n">${tr('누계','Acumulado')}</th></tr>`+
     (days.length?days.slice().reverse().map(o=>`<tr><td>${o.d}</td><td class="n ${o.iq?'in':'mute'}">${o.iq?fmt(o.iq):'-'}</td><td class="n mute">${o.ir||''}</td><td class="n ${o.uq?'out':'mute'}">${o.uq?fmt(o.uq):'-'}</td><td class="n ${o.iq-o.uq<0?'neg':''}">${fmt(o.iq-o.uq)}</td><td class="n ${o.acc<0?'neg':''}">${fmt(o.acc)}</td></tr>`).join('')+
       `<tr class="tot"><td>${tr('합계','Total')}</td><td class="n">${fmt(ti)}</td><td class="n">${H_.rec.length}</td><td class="n">${fmt(tu)}</td><td class="n">${fmt(ti-tu)}</td><td></td></tr>`
@@ -1122,7 +1292,19 @@ function hRender(){
   $('hUse').innerHTML=`<tr><th>#</th><th>${tr('사용날짜','Fecha')}</th><th class="n">${tr('사용수량','Cantidad')}</th><th>${tr('품목그룹','Grupo')}</th><th>${tr('자재명','Nombre')}</th></tr>`+
     (H_.use.length?H_.use.slice().reverse().map((r,i)=>`<tr><td class="mute">${H_.use.length-i}</td><td>${esc(r.udate)}</td><td class="n out">${fmt(r.qty)}</td><td>${esc(r.grp||'')}</td><td>${esc(r.name||'')}</td></tr>`).join('')
       :`<tr><td class="empty" colspan="5">-</td></tr>`);
+  const isHit=b=>H_.bc&&b&&String(b).toUpperCase()===H_.bc.toUpperCase();
+  $('hCntN').textContent=`${cnt.length}${tr('건','')}`;
+  $('hCnt').innerHTML=`<tr><th>#</th><th>${tr('실사일','Fecha')}</th><th>${tr('바코드','Cód. barras')}</th><th class="n">${tr('실사수량','Cantidad')}</th><th>${tr('비고','Nota')}</th></tr>`+
+    (cnt.length?cnt.slice().reverse().map((r,i)=>{const z=r.barcode?rolls.find(x=>x.barcode===r.barcode):null;const note=!r.barcode?tr('바코드 공란(코드 합산)','Sin cód. barras'):Number(r.qty)===0?(z&&!z.zero?tr('수량 0 · 현장 보유 롤','Cant. 0 · rollo en piso'):tr('수량 0','Cant. 0')):'';
+      return `<tr class="${isHit(r.barcode)?'hit':''}"><td class="mute">${cnt.length-i}</td><td>${esc(r.cdate)}</td><td>${esc(r.barcode||'')}</td><td class="n ${Number(r.qty)?'':'mute'}">${fmt(r.qty)}</td><td class="mute">${esc(note)}</td></tr>`}).join('')
+      :`<tr><td class="empty" colspan="5">${tr('기간 내 실사 내역이 없습니다','Sin inventario físico en el periodo')}</td></tr>`);
+  const showZ=$('hZero').checked,rl=showZ?rolls:held;
+  $('hRollN').textContent=tr(`보유 ${held.length}롤${showZ?` · 0처리 ${rolls.length-held.length}롤`:''}`,`${held.length} en piso${showZ?` · ${rolls.length-held.length} cerrados`:''}`);
+  $('hRoll').innerHTML=`<tr><th>#</th><th>${tr('바코드','Cód. barras')}</th><th>${tr('입고일시','Entrada')}</th><th class="n">${tr('수량','Cantidad')}</th><th>${tr('상태','Estado')}</th></tr>`+
+    (rl.length?rl.slice().reverse().map((r,i)=>`<tr class="${isHit(r.barcode)?'hit':''}"><td class="mute">${rl.length-i}</td><td>${esc(r.barcode)}</td><td>${esc(r.recv_at||'')}</td><td class="n ${r.zero?'mute':'in'}">${fmt(r.qty)}</td><td>${r.zero?`<span class="tag none">${tr('0처리','Cerrado')} ${esc(r.zero==='0'?'':r.zero)}</span>`:`<span class="tag ok">${tr('현장 보유','En piso')}</span>`}</td></tr>`).join('')
+      :`<tr><td class="empty" colspan="5">${tr('현장 보유 롤이 없습니다','Sin rollos en piso')}</td></tr>`);
 }
+$('hZero').onchange=()=>{if(HIS)hRender()};
 $('hRun').onclick=hRun;
 $('hQ').onkeydown=e=>{if(e.key==='Enter')hRun()};
 $('hAll').onclick=()=>{$('hFrom').value='';$('hTo').value='';if(HIS)hLoad(HIS.code);else if($('hQ').value.trim())hRun()};
@@ -1136,10 +1318,91 @@ $('hXlsx').onclick=()=>{
     days.map(o=>[o.d,o.iq,o.ir,o.uq,o.iq-o.uq,o.acc])),[12,14,10,14,16,14]);
   add(tr('입고내역','Entrada'),[[tr('입고날짜','Fecha'),tr('입고수량','Cantidad'),tr('단위','Unidad'),tr('바코드','Cód. barras'),tr('사용','Uso')]].concat(HIS.rec.map(r=>[r.rdate,Number(r.qty),r.unit||'',r.barcode||'',r.used||''])),[12,12,8,26,8]);
   add(tr('사용내역','Consumo'),[[tr('사용날짜','Fecha'),tr('사용수량','Cantidad'),tr('품목그룹','Grupo'),tr('자재명','Nombre')]].concat(HIS.use.map(r=>[r.udate,Number(r.qty),r.grp||'',r.name||''])),[12,12,10,24]);
+  add(tr('실사내역','Inventario'),[[tr('실사일','Fecha'),tr('바코드','Cód. barras'),tr('실사수량','Cantidad')]].concat((HIS.cnt||[]).map(r=>[r.cdate,r.barcode||'',Number(r.qty)])),[12,26,12]);
+  add(tr('현장롤','Rollos'),[[tr('바코드','Cód. barras'),tr('입고일시','Entrada'),tr('수량','Cantidad'),tr('단위','Unidad'),tr('상태','Estado'),tr('0처리일','Fecha cierre')]].concat((HIS.rolls||[]).map(r=>[r.barcode,r.recv_at||'',Number(r.qty)||0,r.unit||'',r.zero?tr('0처리','Cerrado'):tr('현장 보유','En piso'),r.zero==='0'?'':(r.zero||'')])),[26,16,10,8,10,12]);
   XLSX.writeFile(wb,`${tr('자재이력','Historial')}_${HIS.code}_${today()}.xlsx`);
 };
 document.querySelector('#nav button[data-tab="his"]').addEventListener('click',hFillList);
 document.getElementById('langBtn').addEventListener('click',()=>{hRender();if(HIS)hCandRender(HIS.code)});
+
+
+/* ---------- 적용차종 조회 (회로 마스터 circuit_master → 차종·품번·회로) ---------- */
+let CAR=null,CCAND=[],CSEL={car:null,pn:null};
+const ROLE_L={wire:['와이어','Cable'],tL:['좌단자','Term. izq.'],tR:['우단자','Term. der.'],pL:['압착전부품 좌','Pieza izq.'],pR:['압착전부품 우','Pieza der.'],need:['17000 선번','Circuito 17000']};
+const roleTag=r=>`<span class="role ${r}">${esc(tr(...(ROLE_L[r]||[r,r])))}</span>`;
+async function carRpc(code){const r=await fetch(SB+'rpc/mshort_car_usage',{method:'POST',headers:H,body:JSON.stringify({p_plant:2,p_code:code})});if(!r.ok)throw new Error(await r.text());return r.json()}
+function openCar(code){document.querySelector('#nav button[data-tab="car"]').click();$('cQ').value=code;cLoad(code)}
+async function cRun(){
+  const q=$('cQ').value.trim();if(q.length<2)return toast(tr('2글자 이상 입력하세요','Escriba al menos 2 caracteres'));
+  busy(1);try{
+    /* 1) 입력값 자체를 자재코드로 보고 회로 마스터에서 바로 찾기 (30810·17000 등에 없는 자재도 조회) */
+    if(!/\s/.test(q)){const d=await carRpc(q);if(d&&Number(d.n)>0){CCAND=[];$('cCand').innerHTML='';busy(0);return cShow(q.toUpperCase(),d)}}
+    /* 2) 자재명·바코드로 후보 검색 */
+    const cand=await hFind(q);CCAND=cand;
+    const exact=cand.find(c=>c.code===q.toUpperCase())||(cand.filter(c=>c.bc).length===1?cand.find(c=>c.bc):null);
+    if(!cand.length){$('cCand').innerHTML='';$('cBody').style.display='none';CAR=null;$('cInfo').textContent=tr('회로 마스터·자재 데이터에서 찾지 못했습니다. 자재코드를 확인하세요.','No se encontró en el maestro de circuitos ni en los datos de material.');busy(0);return}
+    if(exact||cand.length===1){busy(0);return cLoad((exact||cand[0]).code)}
+    cCandRender(null);$('cBody').style.display='none';CAR=null;
+    $('cInfo').textContent=tr(`${cand.length}개 자재가 검색되었습니다. 조회할 자재를 선택하세요.`,`${cand.length} materiales encontrados. Elija uno.`);
+  }catch(e){alert(e.message)}busy(0);
+}
+function cCandRender(cur){
+  $('cCand').innerHTML=CCAND.length>1?CCAND.slice(0,200).map(c=>`<button data-c="${esc(c.code)}" class="${c.code===cur?'on':''}"><b>${esc(c.code)}</b>${esc(c.name||'')}</button>`).join('')+(CCAND.length>200?`<span class="hint">… +${CCAND.length-200}</span>`:''):'';
+  $('cCand').querySelectorAll('button').forEach(b=>b.onclick=()=>cLoad(b.dataset.c));
+}
+async function cLoad(code){
+  busy(1);try{const d=await carRpc(code);cCandRender(code.toUpperCase());cShow(code.toUpperCase(),d)}catch(e){alert(e.message)}busy(0);
+}
+function cShow(code,d){
+  const rows=(d&&d.rows)||[];const nm=hNames()[code]||(CCAND.find(c=>c.code===code)||{}).name||'';
+  CAR={code,name:nm,n:Number(d&&d.n)||0,rows};CSEL={car:null,pn:null};cRender();
+}
+const carKey=r=>[r.car,r.pname].filter(Boolean).join(' · ')||tr('(차종 미등록)','(sin modelo)');
+function cGroups(){
+  const byCar={},byPn={};
+  CAR.rows.forEach(r=>{const ck=carKey(r);const c=byCar[ck]||(byCar[ck]={key:ck,car:r.car,pname:r.pname,pns:new Set(),wns:new Set(),n:0});c.pns.add(r.pn);c.wns.add(r.pn+'|'+r.wn);c.n++;
+    const p=byPn[r.pn]||(byPn[r.pn]={pn:r.pn,car:r.car,pname:r.pname,key:ck,wns:new Set(),roles:{},n:0});p.wns.add(r.wn);p.roles[r.role]=(p.roles[r.role]||0)+1;p.n++});
+  return{cars:Object.values(byCar).sort((a,b)=>a.key.localeCompare(b.key)),pns:Object.values(byPn).sort((a,b)=>a.key.localeCompare(b.key)||a.pn.localeCompare(b.pn))};
+}
+function cRender(){
+  if(!CAR){$('cBody').style.display='none';return}
+  $('cBody').style.display='block';
+  const {cars,pns}=cGroups(),wnAll=new Set(CAR.rows.map(r=>r.pn+'|'+r.wn)),roles={};CAR.rows.forEach(r=>roles[r.role]=(roles[r.role]||0)+1);
+  $('cInfo').innerHTML=`<b style="color:var(--ac);font-family:var(--code);font-size:17px">${esc(CAR.code)}</b> ${esc(CAR.name)}`+(CAR.n?'':` · <span style="color:var(--red)">${tr('회로 마스터에 없는 자재입니다','No está en el maestro de circuitos')}</span>`)+(CAR.n>CAR.rows.length?` · <span class="hint">${tr(`앞 ${CAR.rows.length}건만 표시 (전체 ${CAR.n})`,`Mostrando ${CAR.rows.length} de ${CAR.n}`)}</span>`:'');
+  $('ckCar').textContent=cars.length;$('ckCarS').textContent=cars.map(c=>c.car||'?').filter((v,i,a)=>a.indexOf(v)===i).join(', ');
+  $('ckPn').textContent=pns.length;$('ckPnS').textContent=tr(`회로 마스터 품번 기준`,`según maestro de circuitos`);
+  $('ckWn').textContent=wnAll.size;$('ckWnS').textContent=tr(`${CAR.rows.length}곳에서 사용`,`${CAR.rows.length} usos`);
+  $('ckRole').innerHTML=Object.keys(roles).length?Object.entries(roles).map(([r,n])=>`${roleTag(r)}<span class="hint">${n}</span> `).join(''):'-';
+  $('cChips').innerHTML=cars.length?cars.map(c=>`<button data-k="${esc(c.key)}" class="${CSEL.car===c.key?'on':''}"><b>${esc(c.car||'?')}</b>${esc(c.pname||'')}<br><small>${tr(`품번 ${c.pns.size} · 회로 ${c.wns.size}`,`${c.pns.size} partes · ${c.wns.size} circuitos`)}</small></button>`).join(''):`<span class="hint">${tr('적용 차종이 없습니다','Sin modelos')}</span>`;
+  $('cChips').querySelectorAll('button').forEach(b=>b.onclick=()=>{CSEL.car=CSEL.car===b.dataset.k?null:b.dataset.k;CSEL.pn=null;cRender()});
+  const pl=pns.filter(p=>!CSEL.car||p.key===CSEL.car);
+  $('cPnN').textContent=tr(`${pl.length}개 품번${CSEL.car?' · '+CSEL.car:''}`,`${pl.length} partes${CSEL.car?' · '+CSEL.car:''}`);
+  $('cPn').innerHTML=`<tr><th>#</th><th>${tr('차종','Modelo')}</th><th>${tr('품명','Producto')}</th><th>${tr('품번','No. de parte')}</th><th class="n">${tr('회로 수','Circuitos')}</th><th>${tr('사용 위치','Posición')}</th><th>${tr('선번 (예)','Circuitos (ej.)')}</th></tr>`+
+    (pl.length?pl.map((p,i)=>{const w=[...p.wns];return`<tr class="pnrow ${CSEL.pn===p.pn?'on':''}" data-pn="${esc(p.pn)}"><td class="mute">${i+1}</td><td class="hl">${esc(p.car||'-')}</td><td>${esc(p.pname||'-')}</td><td style="font-family:var(--code)">${esc(p.pn)}</td><td class="n">${w.length}</td><td>${Object.entries(p.roles).map(([r,n])=>roleTag(r)+(n>1?`<span class="hint">${n}</span> `:' ')).join('')}</td><td class="hint">${esc(w.slice(0,8).join(', '))}${w.length>8?` … +${w.length-8}`:''}</td></tr>`}).join('')
+      :`<tr><td class="empty" colspan="7">${tr('이 자재가 들어가는 품번이 없습니다','Sin números de parte')}</td></tr>`);
+  $('cPn').querySelectorAll('tr.pnrow').forEach(t=>t.onclick=()=>{CSEL.pn=CSEL.pn===t.dataset.pn?null:t.dataset.pn;cRender();});
+  const wl=CAR.rows.filter(r=>(!CSEL.car||carKey(r)===CSEL.car)&&(!CSEL.pn||r.pn===CSEL.pn));
+  $('cWnN').textContent=tr(`${wl.length}건${CSEL.pn?' · '+CSEL.pn:CSEL.car?' · '+CSEL.car:''}`,`${wl.length} filas${CSEL.pn?' · '+CSEL.pn:CSEL.car?' · '+CSEL.car:''}`);
+  const hit=v=>String(v||'').toUpperCase()===CAR.code?' class="hl"':'';
+  $('cWn').innerHTML=`<tr><th>#</th><th>${tr('차종','Modelo')}</th><th>${tr('품번','No. de parte')}</th><th>${tr('선번','Circuito')}</th><th>${tr('위치','Posición')}</th><th>${tr('재질','Material')}</th><th>SQ</th><th>${tr('색상','Color')}</th><th class="n">${tr('길이','Long.')}</th><th>${tr('좌단자','Term. izq.')}</th><th>${tr('우단자','Term. der.')}</th><th>${tr('압착전부품 좌','Pieza izq.')}</th><th>${tr('압착전부품 우','Pieza der.')}</th></tr>`+
+    (wl.length?wl.slice(0,1500).map((r,i)=>`<tr><td class="mute">${i+1}</td><td>${esc(r.car||'-')}</td><td style="font-family:var(--code)">${esc(r.pn)}</td><td style="font-family:var(--code);font-weight:700">${esc(r.wn)}</td><td>${roleTag(r.role)}</td><td>${esc(r.mat||'')}</td><td>${esc(r.sq||'')}</td><td>${esc(r.col||'')}</td><td class="n">${esc(r.len||'')}</td><td${hit(r.tl)}>${esc(r.tl||'')}</td><td${hit(r.tr_)}>${esc(r.tr_||'')}</td><td${hit(r.pl)}>${esc(r.pl||'')}</td><td${hit(r.pr)}>${esc(r.pr||'')}</td></tr>`).join('')+(wl.length>1500?`<tr><td class="hint" colspan="13">${tr(`앞 1500건만 표시`,`Mostrando 1500`)}</td></tr>`:'')
+      :`<tr><td class="empty" colspan="13">-</td></tr>`);
+}
+$('cRun').onclick=cRun;$('cQ').onkeydown=e=>{if(e.key==='Enter')cRun()};
+$('cXlsx').onclick=()=>{
+  if(!CAR)return toast(tr('먼저 자재를 조회하세요','Consulte un material primero'));
+  const {cars,pns}=cGroups(),wb=XLSX.utils.book_new();
+  const add=(name,aoa,w)=>{const ws=XLSX.utils.aoa_to_sheet(aoa);ws['!cols']=w.map(x=>({wch:x}));XLSX.utils.book_append_sheet(wb,ws,name)};
+  const head=[[tr('자재코드','Código'),CAR.code],[tr('자재명','Nombre'),CAR.name],[tr('조회일','Fecha'),today()],[]];
+  add(tr('차종별','Por modelo'),head.concat([[tr('차종','Modelo'),tr('품명','Producto'),tr('품번 수','Partes'),tr('회로 수','Circuitos'),tr('사용 횟수','Usos')]],cars.map(c=>[c.car,c.pname,c.pns.size,c.wns.size,c.n])),[12,16,10,10,10]);
+  add(tr('품번별','Por parte'),[[tr('차종','Modelo'),tr('품명','Producto'),tr('품번','No. de parte'),tr('회로 수','Circuitos'),tr('사용 위치','Posición'),tr('선번','Circuitos')]].concat(pns.map(p=>[p.car,p.pname,p.pn,p.wns.size,Object.entries(p.roles).map(([r,n])=>tr(...(ROLE_L[r]||[r,r]))+(n>1?' x'+n:'')).join(', '),[...p.wns].join(', ')])),[12,16,18,10,24,60]);
+  add(tr('회로상세','Circuitos'),[[tr('차종','Modelo'),tr('품명','Producto'),tr('품번','No. de parte'),tr('선번','Circuito'),tr('위치','Posición'),tr('재질','Material'),'SQ',tr('색상','Color'),tr('길이','Long.'),tr('좌단자','Term. izq.'),tr('우단자','Term. der.'),tr('압착전부품 좌','Pieza izq.'),tr('압착전부품 우','Pieza der.')]].concat(CAR.rows.map(r=>[r.car,r.pname,r.pn,r.wn,tr(...(ROLE_L[r.role]||[r.role,r.role])),r.mat,r.sq,r.col,r.len,r.tl,r.tr_,r.pl,r.pr])),[10,14,18,10,14,8,6,6,8,16,16,16,16]);
+  XLSX.writeFile(wb,`${tr('적용차종','Modelo')}_${CAR.code}_${today()}.xlsx`);
+};
+document.querySelector('#nav button[data-tab="car"]').addEventListener('click',()=>{hFillList();setTimeout(()=>$('cQ').focus(),50)});
+document.getElementById('langBtn').addEventListener('click',()=>{if(CAR)cRender()});
+/* 부족예상 표 · 자재이력조회에서 바로 열기 */
+$('sTbl').addEventListener('click',e=>{const c=e.target.closest('td.codelink,td.carc');if(!c)return;const tr_=c.closest('tr');const code=tr_&&tr_.dataset.code;if(code)openCar(code)});
 
 /* ---------- init ---------- */
 (async()=>{
