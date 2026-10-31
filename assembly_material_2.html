@@ -399,11 +399,12 @@ table.cfg input{width:17px;height:17px}
   <div class="grid2">
     <div class="card">
       <h3 data-t="in_h">일별 입고 붙여넣기</h3>
-      <div class="hint" data-t="in_hint">자재코드·자재명·업체품명·단위·수량 5열을 붙여넣으세요(머릿글 없어도 됨). 단위가 마스터와 다르면 경고로 표시합니다. 자재코드로 먼저 찾고, 코드가 없거나 맞지 않으면 자재명 → 업체품명 순서로 찾습니다. 찾지 못했거나 후보가 여러 개인 행은 자재코드를 직접 고를 수 있습니다.</div>
+      <div class="hint" data-t="in_hint">자재코드·자재명·업체품명·단위·수량 순서가 기본이지만, 열 순서·개수가 달라도 됩니다(머릿글 없어도 됨): 수량은 숫자 칸, 단위는 EA·MM·M 같은 칸을 자동으로 찾고 첫 칸을 자재코드로 읽습니다. 단위가 마스터와 다르면 경고로 표시합니다. 자재코드로 먼저 찾고, 코드가 없거나 맞지 않으면 자재명 → 업체품명 순서로 찾습니다. 찾지 못했거나 후보가 여러 개인 행은 자재코드를 직접 고를 수 있습니다.</div>
       <div class="row" style="margin:10px 0">
         <label class="f"><span data-t="in_date">입고일자</span><input type="date" id="nDate"></label>
         <label class="f" style="flex:1;min-width:140px"><span data-t="memo">메모</span><input id="nMemo"></label>
         <label class="chkl"><input type="checkbox" id="nCreate"><span data-t="create_new2">찾지 못한 행은 신규 품목으로 추가 (붙여넣은 자재코드 사용)</span></label>
+        <label class="chkl"><input type="checkbox" id="nLen"><span data-t="in_len">ROLL 자재 수량이 길이(mm·m)로 적혀 있음 → 롤로 환산해 등록</span></label>
       </div>
       <textarea id="nPaste"></textarea><div class="prev" id="nInfo"></div>
       <div class="row"><button class="btn" id="nSave" data-t="save" disabled>저장</button><button class="btn sec" id="nClear" data-t="clear">지우기</button></div>
@@ -576,8 +577,8 @@ proc:'Proceso (A·B ensamble · C corte)',copy:'Copiar',xlsx:'Excel',k_items:'Ma
 stk_formula:'Stock actual = Stock inicial + Entradas − Consumo SUB − Consumo ensamble ± Ajustes · Toque el número de Stock para ajustar; toque el código para ver el historial del material; las demás celdas se pueden seleccionar y copiar. Los materiales MM·M con largo por rollo definido (unidad ROLL) se muestran e ingresan en rollos.',
 init_h:'Pegar stock inicial',init_hint:'Pegue código y cantidad (sin encabezado OK). La primera columna es el código y la última la cantidad; la cantidad pasa a ser el stock actual (sobrescribe). También puede descargar la plantilla de todos los materiales y llenar solo la columna amarilla. Las filas sin cantidad se omiten.',
 base_date:'Fecha base',memo:'Nota',create_new:'Agregar como material nuevo los códigos que no existen',save:'Guardar',clear:'Limpiar',tpl:'Plantilla de materiales (Excel)',savedDates:'Fechas guardadas',
-in_h:'Pegar entradas del día',in_hint:'Pegue 5 columnas: código, nombre del material, nombre del proveedor, unidad, cantidad (sin encabezado OK). Si la unidad no coincide con el maestro se muestra una alerta. Se busca primero por código; si no hay o no coincide, por nombre → nombre del proveedor. Si no se encuentra o hay varios candidatos, puede elegir el código.',
-in_date:'Fecha de entrada',create_new2:'Agregar como material nuevo las filas no encontradas (usa el código pegado)',
+in_h:'Pegar entradas del día',in_hint:'El orden básico es código, nombre, nombre del proveedor, unidad, cantidad, pero el orden y el número de columnas pueden variar (sin encabezado OK): la cantidad se detecta como celda numérica, la unidad como EA·MM·M y la primera celda es el código. Si la unidad no coincide con el maestro se muestra una alerta. Se busca primero por código; si no hay o no coincide, por nombre → nombre del proveedor. Si no se encuentra o hay varios candidatos, puede elegir el código.',
+in_date:'Fecha de entrada',in_len:'La cantidad de materiales ROLL está en largo (mm·m) → convertir a rollos',create_new2:'Agregar como material nuevo las filas no encontradas (usa el código pegado)',
 kind_INIT:'Stock inicial',kind_IN:'Entrada',kind_SUB:'Prod. SUB',kind_ASSY:'Prod. ensamble',kind_ADJ:'Ajuste',hist_h:'Historial',from:'Desde',to:'Hasta',inc_cancel:'Incluir cancelados',
 res_h_SUB:'Pegar resultados SUB (80230)',res_h_ASSY:'Pegar resultados de ensamble (80350)',
 res_hint:'Copie el resultado de MES con encabezado y péguelo (línea, modelo, producto, LOTNO, No. parte, cant. orden, cant. terminada, turno, LOT conv.). El No. parte 91500-GG920-46 se compara con la col. D (código 91500-GG920, incl. semiterminados # y +) + col. F (revisión 46) del BOM y se descuenta cant. terminada × consumo por unidad. Si vuelve a pegar la misma fecha·línea·LOT·parte·turno, solo se aplica la diferencia.',
@@ -1088,22 +1089,37 @@ function initTemplate(){
 let NP=null;
 function inParse(t){
   const rows=parseTSV(t);const out=[];let skip=0;
-  rows.forEach(r=>{let c='',a='',b='',u='',q;
-    if(r.length>=5){c=r[0];a=r[1];b=r[2];u=r[3];q=num(r[4])}else if(r.length===4){c=r[0];a=r[1];b=r[2];q=num(r[3])}else if(r.length===3){a=r[0];b=r[1];q=num(r[2])}else if(r.length===2){c=r[0];q=num(r[1])}else{skip++;return}
+  const UNIT_RE=/^(EA|PC|PCS|SET|MM|CM|M|KG|G|L|ML|ROLL|RL|롤|개|EA\.)$/i;
+  rows.forEach(r=>{let c='',a='',b='',u='',q=NaN;
+    const cells=r.map(x=>String(x??'').trim());
+    if(cells.filter(Boolean).length<2){skip++;return}
+    // 수량: 오른쪽에서부터 첫 숫자 칸(단위 칸은 건너뜀) · 단위: 단위 토큰 칸 · 자재코드: 첫 칸 · 나머지 글자 칸: 자재명·업체품명
+    let qi=-1;for(let i=cells.length-1;i>=1;i--){if(!cells[i]||UNIT_RE.test(cells[i]))continue;if(!isNaN(num(cells[i]))){qi=i;break}}
+    if(qi<0){skip++;return}
+    q=num(cells[qi]);
+    const ui=cells.findIndex((x,i)=>i!==qi&&UNIT_RE.test(x));if(ui>=0)u=cells[ui];
+    const txt=cells.map((x,i)=>({x,i})).filter(o=>o.x&&o.i!==qi&&o.i!==ui).map(o=>o.x);
+    if(cells.length>=5&&qi===4){c=cells[0];a=cells[1];b=cells[2]}
+    else if(txt.length>=3){c=txt[0];a=txt[1];b=txt[2]}
+    else if(txt.length===2){c=txt[0];const t=txt[1];if(IDX.vendor.has(nz(t))&&!IDX.name.has(nz(t)))b=t;else a=t}
+    else if(txt.length===1){const t=txt[0];if(IDX.code.has(nz(t)))c=t;else if(IDX.vendor.has(nz(t)))b=t;else a=t}
     if(isNaN(q)||q===0||!(c||a||b)){skip++;return}
     let m=c&&IDX.code.has(nz(c))?{code:IDX.code.get(nz(c)),how:'code'}:((a||b)?matchItem(a,b):null);
     out.push({n:out.length,c,a,b,u,q,code:m&&m.code?m.code:'',how:m?m.how:'none',cands:m&&m.cands?m.cands:null})});
   NP={rows:out,skip};inRender();
 }
+const nLenOn=()=>!!($('nLen')&&$('nLen').checked);
+const nQ=r=>(nLenOn()&&r.code&&rl(r.code))?toR(r.code,r.q):r.q;
 function inRender(){
   const P=NP;$('nPrevW').hidden=!(P&&P.rows.length);
   if(!P){$('nInfo').innerHTML='';$('nSave').disabled=true;return}
   const cr=$('nCreate').checked;
   const ok=P.rows.filter(r=>r.code&&IMAP[r.code]).length,amb=P.rows.filter(r=>!r.code&&r.cands).length,none=P.rows.filter(r=>!r.code&&!r.cands).length;
-  const tot=P.rows.filter(r=>r.code&&IMAP[r.code]).reduce((s,r)=>s+r.q,0);
+  const tot=P.rows.filter(r=>r.code&&IMAP[r.code]).reduce((s,r)=>s+nQ(r),0);
   $('nInfo').innerHTML=tr(`인식 <b>${P.rows.length}</b> · 매칭 <b>${ok}</b> (수량 ${fmt(tot)}) · 후보선택 ${amb} · 미등록 ${none}`,`Leídas <b>${P.rows.length}</b> · encontradas <b>${ok}</b> (cant. ${fmt(tot)}) · por elegir ${amb} · sin material ${none}`)+(P.skip?tr(` · 제외 ${P.skip}`,` · omitidas ${P.skip}`):'');
   $('nSave').disabled=!(ok+(cr?none:0));
-  tbl('nPrev',[{h:['#','#'],v:r=>r.n+1,t:'n'},{h:['자재코드 (원본)','Código (original)'],k:'c'},{h:['자재명 (원본)','Material (original)'],k:'a'},{h:['업체품명 (원본)','Proveedor (original)'],k:'b',cls:'mute'},{h:['단위 (원본)','Unidad (original)'],k:'u'},{h:['수량','Cantidad'],k:'q',t:'n',cls:'b'},
+  tbl('nPrev',[{h:['#','#'],v:r=>r.n+1,t:'n'},{h:['자재코드 (원본)','Código (original)'],k:'c'},{h:['자재명 (원본)','Material (original)'],k:'a'},{h:['업체품명 (원본)','Proveedor (original)'],k:'b',cls:'mute'},{h:['단위 (원본)','Unidad (original)'],k:'u'},{h:['수량 (원본)','Cantidad (original)'],k:'q',t:'n'},
+    {h:['등록수량','A registrar'],v:r=>r.code&&IMAP[r.code]?nQ(r):r.q,t:'n',cls:'b',html:r=>{const c=r.code;if(!(c&&IMAP[c]))return fmt(r.q);const q=nQ(r);return fmt(q)+(rl(c)?` <span class="hint">${RU}${nLenOn()?' ← '+fmt(r.q)+' '+esc(IMAP[c].unit_raw||''):''}</span>`:'')}},
     {h:['매칭 자재코드','Código asignado'],html:r=>{const i=r.n;
       if(r.cands&&!r.code)return `<select class="mc" data-i="${i}"><option value="">${tr('— 선택 —','— elegir —')}</option>${r.cands.map(c=>`<option value="${esc(c)}">${esc(c)} · ${esc(IMAP[c].vendor_part||IMAP[c].name||'')}</option>`).join('')}</select>`;
       if(!r.code||r.how==='manual')return `<input class="mc" data-i="${i}" list="itemList" value="${esc(r.code)}" placeholder="${tr('코드 입력','código')}">`;
@@ -1122,7 +1138,7 @@ function inPick(e){const el=e.target.closest('.mc');if(!el||!NP)return;const r=N
 async function inSave(){
   const P=NP;if(!P)return;const cr=$('nCreate').checked;
   const lines=[];let skipped=0;
-  P.rows.forEach(r=>{if(r.code&&IMAP[r.code])lines.push({code:r.code,qty:r.q,mode:'delta',src_name:r.a,src_vendor:r.b});
+  P.rows.forEach(r=>{if(r.code&&IMAP[r.code])lines.push({code:r.code,qty:nQ(r),mode:'delta',src_name:r.a,src_vendor:r.b});
     else if(!r.cands&&cr&&(r.c||r.a))lines.push({code:(r.c||r.a).trim(),qty:r.q,mode:'delta',create:true,name:r.a||r.c,vendor:r.b,unit:r.u,src_name:r.a,src_vendor:r.b});else skipped++});
   if(!lines.length)return;
   if(!confirm(tr(`${$('nDate').value} 입고 ${lines.length}건 (수량 합계 ${fmt(lines.reduce((s,l)=>s+l.qty,0))})을 저장합니다.`+(skipped?` 매칭되지 않은 ${skipped}건은 제외됩니다.`:'')+' 진행할까요?',
@@ -1642,7 +1658,7 @@ async function boot(){
   // 기초재고
   bindPaste('iPaste',initParse);$('iCreate').onchange=initRender;$('iClear').onclick=()=>{clearPaste('iPaste');IP=null;initRender()};$('iSave').onclick=initSave;$('iTpl').onclick=initTemplate;
   // 입고
-  bindPaste('nPaste',inParse);$('nCreate').onchange=inRender;$('nClear').onclick=()=>{clearPaste('nPaste');NP=null;inRender()};$('nSave').onclick=inSave;$('nPrev').addEventListener('change',inPick);
+  bindPaste('nPaste',inParse);$('nCreate').onchange=inRender;$('nLen').onchange=inRender;$('nClear').onclick=()=>{clearPaste('nPaste');NP=null;inRender()};$('nSave').onclick=inSave;$('nPrev').addEventListener('change',inPick);
   // 이력 카드
   ['INIT','IN','ADJ'].forEach(k=>{$(`h${k}Go`).onclick=()=>{SELD[k]=null;renderDates(k);histLoad(k)};$(`h${k}Q`).addEventListener('input',()=>histRender(k));$(`h${k}C`).onchange=()=>histLoad(k);$(`h${k}X`).onclick=()=>histXlsx(k)});
   // 실적
