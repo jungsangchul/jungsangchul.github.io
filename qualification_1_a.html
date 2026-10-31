@@ -158,6 +158,13 @@ label{font-size:0.78rem;color:var(--text2);margin-bottom:0.3rem;display:block;}
 #resultsContainer .results-table tr.row-rework td:first-child{box-shadow:inset 3px 0 0 #ff8c00;}
 .chip-reeval{display:inline-block;margin-left:0.35rem;background:rgba(230,162,60,0.16);color:var(--orange,#e6a23c);border:1px solid rgba(230,162,60,0.45);border-radius:10px;padding:0.02rem 0.4rem;font-size:0.64rem;font-weight:700;vertical-align:middle;}
 .chip-first{display:inline-block;margin-left:0.35rem;background:rgba(150,150,150,0.15);color:#9aa4b2;border:1px solid rgba(150,150,150,0.35);border-radius:10px;padding:0.02rem 0.4rem;font-size:0.64rem;font-weight:700;vertical-align:middle;}
+.lvdist{margin:0.2rem 0 0.9rem;padding:0.7rem 0.9rem;border:1px solid var(--border);border-radius:10px;background:var(--surface2)}
+.lvdist-title{font-size:0.82rem;font-weight:800;color:var(--accent,#c9a84c);margin-bottom:0.5rem;letter-spacing:.3px}.lvdist-title small{font-weight:500;color:var(--text2);margin-left:0.4rem}
+.lvdist-tbl{border-collapse:separate;border-spacing:3px;width:100%;max-width:780px;table-layout:fixed}
+.lvdist-tbl th{padding:0.45rem 0.3rem;font-size:0.95rem;font-weight:900;text-align:center;border-radius:4px}
+.lvdist-tbl td{padding:0.4rem 0.3rem;text-align:center;background:#fff;color:#111;border-radius:4px;font-size:0.95rem}.lvdist-tbl td small{display:block;font-size:0.66rem;color:#555}
+.lvdist-tbl .lvdist-h{background:#1f3864;color:#fff;font-weight:800;font-size:0.85rem}
+.lvdist-bar{display:flex;height:22px;margin-top:0.6rem;border-radius:6px;overflow:hidden;border:1px solid var(--border);max-width:780px}.lvdist-bar span{display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:800;white-space:nowrap;overflow:hidden}
 .hist-table{width:100%;border-collapse:collapse;font-size:0.78rem;margin:0.4rem 0 0.8rem}.hist-table th,.hist-table td{padding:0.4rem 0.55rem;border-bottom:1px solid var(--border);text-align:center;white-space:nowrap}.hist-table th{color:var(--sky);font-size:0.7rem;letter-spacing:0.5px;background:var(--surface2)}.hist-table tr.cur td{background:rgba(201,168,76,0.08)}
 .results-table thead{background:var(--surface2);}
 .results-table th{color:var(--sky);font-size:.75rem;text-transform:uppercase;letter-spacing:1px;font-weight:700;}
@@ -3590,8 +3597,6 @@ document.addEventListener('DOMContentLoaded', renderExamQr);
   <!-- 상단: 서브탭 -->
   <div class="subtab-nav">
     <button class="subtab-btn active" onclick="switchDistSubtab('roster',this)">👥 응시자 명단</button>
-    <button class="subtab-btn" onclick="switchDistSubtab('mobile',this)">📱 모바일 시험 발송</button>
-    <button class="subtab-btn" onclick="switchDistSubtab('print',this)">🖨️ 종이 답안지 출력</button>
     <button class="subtab-btn" style="border-color:var(--purple);color:var(--purple)" onclick="window.open('assy_eval.html?plant=1','_blank')" title="조립 작업자 정기 평가 체크시트 (1공장) 열기"><span data-kr="🔧 실습평가 시작" data-es="🔧 Iniciar Evaluación Práctica">🔧 실습평가 시작</span></button>
   </div>
 
@@ -5802,6 +5807,21 @@ function renderResults(){
     }
     return`<span style="color:${ok?'var(--green)':'var(--red)'};font-size:0.74rem;font-weight:600">${ok?'✅':'❌'} ${fs.msa_grade||''}<br><span style="font-size:0.66rem;color:var(--text2)">%GRR ${fs.msa_grr!=null?Number(fs.msa_grr).toFixed(1):'-'}%</span></span>`;
   };
+  // ✅ 숙련도(실습 레벨) 그룹별 분포 — 현재 표시 중인 결과(사번당 최신 1건) 기준 (2026-10-31)
+  const lvDistHtml=(()=>{
+    const seen=new Set();const cnt={L1:0,L2:0,L3:0,L4:0,L5:0,'신입':0};let tot=0;
+    [...sorted].filter(r=>!r._pending).sort((a,b)=>(new Date(b.date||0)-new Date(a.date||0))||((b.timestamp||0)-(a.timestamp||0))).forEach(r=>{
+      const k=String(r.empId||'').trim().toUpperCase()||('N:'+r.name);if(seen.has(k))return;seen.add(k);
+      const it=(r.practicalItemScores||[]).find(x=>Array.isArray(x.measures)&&x.measures.length);const m=it&&it.measures.find(mm=>mm.level);
+      if(!m)return;const lv=(m.omission||m.defect)?'신입':(m.level||'');if(cnt[lv]==null)return;cnt[lv]++;tot++;});
+    if(!tot)return '';
+    const cols=[['L5','#ff2a2a','#fff'],['L4','#ffb000','#1a1a1a'],['L3','#ffe600','#1a1a1a'],['L2','#92d050','#1a1a1a'],['L1','#00b050','#fff'],['신입','#888','#fff']];
+    const pct=v=>tot?Math.round(v/tot*1000)/10:0;
+    return `<div class="lvdist"><div class="lvdist-title"><span data-kr="숙련도 그룹별 분포 (실습 레벨 · 재직 ${tot}명)" data-es="Distribución por nivel (práctico · ${tot} activos)">숙련도 그룹별 분포 <small>실습 레벨 · ${tot}명 기준</small></span></div>
+      <table class="lvdist-tbl"><tr><th class="lvdist-h" data-kr="일정" data-es="Nivel">레벨</th>${cols.map(c=>`<th style="background:${c[1]};color:${c[2]}">${c[0]==='신입'?'신입/과락':c[0]}</th>`).join('')}</tr>
+      <tr><td class="lvdist-h" data-kr="현수준" data-es="Actual">현수준</td>${cols.map(c=>`<td><b>${cnt[c[0]]?pct(cnt[c[0]])+'%':'-'}</b><small>${cnt[c[0]]?cnt[c[0]]+'명':''}</small></td>`).join('')}</tr></table>
+      <div class="lvdist-bar">${cols.filter(c=>cnt[c[0]]).map(c=>`<span style="width:${pct(cnt[c[0]])}%;background:${c[1]};color:${c[2]}" title="${c[0]} ${cnt[c[0]]}명 (${pct(cnt[c[0]])}%)">${pct(cnt[c[0]])>=6?c[0]+' '+pct(cnt[c[0]])+'%':''}</span>`).join('')}</div></div>`;
+  })();
   document.getElementById('resultsContainer').innerHTML=`
     <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.6rem;flex-wrap:wrap">
       <span style="font-size:0.78rem;color:var(--text2)" data-kr="최종판정 필터:" data-es="Filtro veredicto:">최종판정 필터:</span>
@@ -5816,6 +5836,7 @@ function renderResults(){
       </select>
       <span style="font-size:0.74rem;color:var(--text2)">${sorted.length}건 표시 / 평가 ${results.length}건 + 미평가 인원 ${pendingRows.length}명 · 사번순 (최종합격자의 불합격 내역 숨김 · 이론·실습 중 하나라도 없으면 평가대기중)</span>
     </div>
+    ${lvDistHtml}
     <div class="results-wrap"><table class="results-table">
     <thead><tr>
       <th><input type="checkbox" id="chkAll" onchange="toggleAllCheck(this)" style="width:auto;cursor:pointer"></th>
