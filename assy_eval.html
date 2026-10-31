@@ -453,7 +453,7 @@ tbody tr:hover td{background:rgba(255,255,255,.025)}
   </div>
   <div class="card">
     <h3 data-t="wk_title">작업자 명단 (아이템 · 공정)</h3>
-    <div class="hint" style="margin-bottom:10px" data-t="wk_hint">엑셀에서 「사번 · ITEM · 공정」 열을 복사해 붙여넣고 저장하면 명단이 병합됩니다 (같은 사번은 덮어쓰기, 공정은 Sub/Ruteo/Ensamble 같은 스페인어도 자동 변환). 평가 입력 화면에서는 아이템·공정을 고르면 이 명단이 나옵니다: 서브→서브, 포선→포선, 조립→조립, 구조→구조검사 인원, 후고정→후공정 인원, 수정→수정 인원.</div>
+    <div class="hint" style="margin-bottom:10px" data-t="wk_hint">엑셀에서 「사번 · ITEM · 공정」 열을 복사해 붙여넣고 저장하면 명단이 병합됩니다 (같은 사번은 덮어쓰기, 공정은 Sub/Ruteo/Ensamble 같은 스페인어도 자동 변환). 평가 입력 화면에서는 아이템·공정을 고르면 이 명단이 나옵니다: 서브→서브, 포선→포선, 조립→조립, 구조→구조검사 인원, 후공정→후공정 인원, 수정→수정 인원.</div>
     <textarea id="wkPaste" style="min-height:110px;font-family:var(--code);font-size:13px" placeholder="M026060149	MAIN	Ensamble	조립&#10;M026060154	FLOOR	Sub	서브"></textarea>
     <div class="row" style="margin-top:8px"><span class="hint" id="wkPasteInfo"></span><div class="sp"></div><button class="btn sec" id="wkPasteClear" data-t="clear">입력 지우기</button><button class="btn" id="wkPasteSave" data-t="wk_save">명단 저장 (병합)</button></div>
     <div class="wk-sum" id="wkSum"></div>
@@ -477,13 +477,13 @@ const SB_URL='https://lrjurjhavlalhlwaplxd.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxyanVyamhhdmxhbGhsd2FwbHhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNzUxNDAsImV4cCI6MjA5NTY1MTE0MH0.DVFmZaT37R9CXSMHdnLx4YAVNTnlBGijkOIaoUo7Qsk';
 const PLANT=(new URLSearchParams(location.search).get('plant')==='2')?2:1;
 const ROSTER=PLANT===2?'exam_students_a2':'exam_students_a1';
-const PROCS=['서브','포선','조립','구조','후고정','수정'];
+const PROCS=['서브','포선','조립','구조','후공정','수정'];
 const MULTI_OK=['서브','포선','조립'];
-const PROC_ES={'서브':'Sub','포선':'Ruteo','조립':'Ensamble','구조':'Estructura','후고정':'Fijación posterior','수정':'Re-Work'};
+const PROC_ES={'서브':'Sub','포선':'Ruteo','조립':'Ensamble','구조':'Estructura','후공정':'Protector','수정':'Re-Work'};
 const WK_TBL='assy_eval_worker';
 const EMP_TBL=PLANT===2?'att_employees_2':'att_employees';
 // 평가 공정 → 명단의 담당 공정(작업자 배치 공정) 매칭
-const PROC_MATCH={'서브':['서브'],'포선':['포선'],'조립':['조립'],'구조':['구조검사'],'후고정':['후공정'],'수정':['수정']};
+const PROC_MATCH={'서브':['서브'],'포선':['포선'],'조립':['조립'],'구조':['구조검사'],'후공정':['후공정'],'수정':['수정']};
 const WK_PROCS=['서브','포선','조립','후공정','수정','구조검사','회로검사','반장','자재'];
 const WK_PROC_ES={'서브':'Sub','포선':'Ruteo','조립':'Ensamble','후공정':'Protector','수정':'Re-Work','구조검사':'Insp. estructura','회로검사':'Insp. circuito','반장':'Líder','자재':'Materiales'};
 const PROC_ALIAS={'sub':'서브','sub-ensamble':'서브','subensamble':'서브','sub ensamble':'서브','ruteo':'포선','ensamble':'조립','produccion de ensamble':'조립','producción de ensamble':'조립','encintado':'조립','clip':'조립','clips':'조립','aplicación de clips':'조립','aplicacion de clips':'조립','테이핑':'조립','클립':'조립','protector':'후공정','protectores':'후공정','aplicación de protector':'후공정','aplicacion de protector':'후공정','post-proceso':'후공정','후취':'후공정','re-work':'수정','rework':'수정','lider':'반장','líder':'반장','inspección de estructura':'구조검사','inspeccion de estructura':'구조검사','inspección circuito':'회로검사','inspeccion circuito':'회로검사','inspección de circuito':'회로검사','materiales':'자재'};
@@ -491,7 +491,7 @@ const ITEM_ALIAS={'AIRBAG':'A/BAG','AIR-BAG':'A/BAG','A/BAG':'A/BAG','A-BAG':'A/
 function normProc(v){const s=String(v||'').trim();if(!s||s==='#N/A'||s==='-')return '';const k=s.toLowerCase().replace(/\s+/g,' ');return PROC_ALIAS[k]||(WK_PROCS.includes(s)?s:s);}
 function normItem(v){const s=String(v||'').trim().toUpperCase().replace(/\s+/g,'');if(!s||s==='#N/A'||s==='-')return '';return ITEM_ALIAS[s]||s;}
 const wkProcName=p=>p?(LANG==='es'?(WK_PROC_ES[p]||p):p):'';
-const assignProc=p=>p==='구조'?'구조검사':p==='후고정'?'후공정':p;
+const assignProc=p=>p==='구조'?'구조검사':p;
 const GROUPS_M=['1G','2G','3G','4G','5G'];
 const LVS=['L1','L2','L3','L4','L5','신입'];
 const LV_RANK={'L1':6,'L2':5,'L3':4,'L4':3,'L5':2,'신입':1,'기준외':0,'-':-1,'':-2};
@@ -509,7 +509,7 @@ const T={
  target:['평가 대상 선택','Seleccionar operador a evaluar'],proc_lab:['공정','PROCESO'],show_all:['아이템 전체 인원','Todos del artículo'],ph_filter:['이름·사번 필터','Filtrar nombre/N°'],
  add_wk:['+ 명단에 추가','+ Agregar a lista'],add:['추가','Agregar'],cancel:['취소','Cancelar'],clear:['입력 지우기','Limpiar'],
  wk_title:['작업자 명단 (아이템 · 공정)','Lista de operadores (artículo · proceso)'],wk_save:['명단 저장 (병합)','Guardar lista (fusionar)'],
- wk_hint:['엑셀에서 「사번 · ITEM · 공정」 열을 복사해 붙여넣고 저장하면 명단이 병합됩니다 (같은 사번은 덮어쓰기, 공정은 Sub/Ruteo/Ensamble 같은 스페인어도 자동 변환). 평가 입력 화면에서는 아이템·공정을 고르면 이 명단이 나옵니다: 서브→서브, 포선→포선, 조립→조립, 구조→구조검사 인원, 후고정→후공정 인원, 수정→수정 인원.','Pegue desde Excel las columnas «N° emp. · ITEM · proceso» y guarde: la lista se fusiona (mismo N° se sobrescribe; Sub/Ruteo/Ensamble se reconocen). En Evaluar, al elegir artículo y proceso aparece esta lista: Sub→Sub, Ruteo→Ruteo, Ensamble→Ensamble, Estructura→Insp. estructura, Fijación posterior→Protector, Re-Work→Re-Work.'],
+ wk_hint:['엑셀에서 「사번 · ITEM · 공정」 열을 복사해 붙여넣고 저장하면 명단이 병합됩니다 (같은 사번은 덮어쓰기, 공정은 Sub/Ruteo/Ensamble 같은 스페인어도 자동 변환). 평가 입력 화면에서는 아이템·공정을 고르면 이 명단이 나옵니다: 서브→서브, 포선→포선, 조립→조립, 구조→구조검사 인원, 후공정→후공정 인원, 수정→수정 인원.','Pegue desde Excel las columnas «N° emp. · ITEM · proceso» y guarde: la lista se fusiona (mismo N° se sobrescribe; Sub/Ruteo/Ensamble se reconocen). En Evaluar, al elegir artículo y proceso aparece esta lista: Sub→Sub, Ruteo→Ruteo, Ensamble→Ensamble, Estructura→Insp. estructura, Protector→Protector, Re-Work→Re-Work.'],
  wk_none:['이 아이템·공정에 등록된 작업자가 없습니다. 「+ 명단에 추가」로 등록하거나, 기준 설정 탭에서 명단을 붙여넣으세요.','No hay operadores registrados para este artículo y proceso. Use «+ Agregar a lista» o pegue la lista en Estándares.'],
  wk_nomatch:['필터에 맞는 작업자가 없습니다','Sin coincidencias'],wk_tbl:['⚠️ 명단 테이블 없음 — assy_eval_worker.sql 실행 후 전체 명단으로 표시 중','⚠️ Falta tabla de lista — ejecute SQL; mostrando todo el personal'],
  wk_added:['명단에 추가했습니다','Agregado a la lista'],wk_removed:['명단에서 제외했습니다','Quitado de la lista'],confirm_wk_rm:['이 작업자를 명단에서 제외할까요? (평가 이력은 유지)','¿Quitar a este operador de la lista? (se conserva el historial)'],
@@ -646,7 +646,7 @@ function fillDatalists(){
 }
 
 /* ── 평가 입력 렌더 ── */
-function stdFor(p,m,it){it=it||S.item||DEF_ITEM;return stdMap[skey(it,p,m)]||stdMap[skey(DEF_ITEM,p,m)]||{uph:(m||p==='후고정')?40:12,tt:null};}
+function stdFor(p,m,it){it=it||S.item||DEF_ITEM;return stdMap[skey(it,p,m)]||stdMap[skey(DEF_ITEM,p,m)]||{uph:(m||p==='후공정')?40:12,tt:null};}
 function fillItemSelects(){
   const cur=$('wkItem').value;
   $('wkItem').innerHTML=ITEMS.map(i=>`<option value="${esc(i)}">${esc(i)}</option>`).join('');
@@ -1072,8 +1072,8 @@ function renderStdSet(){
     rows.map(([p,m])=>{const u=draftUph(stdItem,p,m),b=bounds(u>0?3600/u:0,!!m);return `<tr><td style="font-family:'Space Mono',monospace;font-size:12px;color:#9fd3ef">${esc(stdItem)}</td><td style="font-weight:700;color:#fff">${esc(procName(p))}</td><td>${m?'<span class="pill m">'+t('multiShort')+'</span>':''}</td>
       <td class="n"><input type="number" min="1" step="any" data-std="${esc(stdItem)}|${p}|${m}" value="${u??''}" style="width:90px;text-align:right;height:32px"></td><td class="n">${u>0?r1(3600/u):''}</td>${(b?b.u:[0,0,0,0,0,0]).map(x=>`<td class="n">${x?r1(x):''}</td>`).join('')}</tr>`;}).join('')+'</tbody>';
   $('ruleText').innerHTML=LANG==='es'
-   ?`<b>Hoja normal</b> (Sub · Ruteo · Ensamble · Estructura · Fijación posterior · Re-Work): C/T = 3600 ÷ UPH. L1 &lt; C/T÷0.115×0.100 · L2 &lt; C/T · L3 &lt; C/T÷0.115×0.129 · L4 &lt; C/T÷0.115×0.143 · L5 &lt; C/T÷0.115×0.158 · Nuevo &lt; L5×5.<br><b>Multihabilidad</b> (1G–5G): mínimo ROUNDUP(C/T×0.85); L1 &lt; ×0.90 · L2 &lt; ×0.95 · L3 &lt; ×1.05 · L4 &lt; ×1.10 · L5 &lt; ×1.15 · Nuevo &lt; ×1.25 (redondeo hacia arriba).<br>Menor al mínimo = «-»; 1 pieza no conforme o 1 paso omitido = reprobado (reevaluar).`
-   :`<b>일반 시트</b> (서브·포선·조립·구조·후고정·수정): C/T = 3600 ÷ UPH. L1 &lt; C/T÷0.115×0.100 · L2 &lt; C/T · L3 &lt; C/T÷0.115×0.129 · L4 &lt; C/T÷0.115×0.143 · L5 &lt; C/T÷0.115×0.158 · 신입 &lt; L5×5.<br><b>다기능공 시트</b> (1G~5G): 하한 ROUNDUP(C/T×0.85), L1 &lt; ×0.90 · L2 &lt; ×0.95 · L3 &lt; ×1.05 · L4 &lt; ×1.10 · L5 &lt; ×1.15 · 신입 &lt; ×1.25 (올림).<br>하한 미만은 「-」, 부적합품 1개 또는 수행항목 1개 누락 시 과락(재평가).<br><span style="color:var(--amb)">※ 원본 엑셀 일반 시트의 L4 상한(P5)이 L3 값을 참조해 L5 구간이 비어 있던 오류는 C/T 기준(÷0.115×0.143)으로 바로잡았습니다.</span>`;
+   ?`<b>Hoja normal</b> (Sub · Ruteo · Ensamble · Estructura · Protector · Re-Work): C/T = 3600 ÷ UPH. L1 &lt; C/T÷0.115×0.100 · L2 &lt; C/T · L3 &lt; C/T÷0.115×0.129 · L4 &lt; C/T÷0.115×0.143 · L5 &lt; C/T÷0.115×0.158 · Nuevo &lt; L5×5.<br><b>Multihabilidad</b> (1G–5G): mínimo ROUNDUP(C/T×0.85); L1 &lt; ×0.90 · L2 &lt; ×0.95 · L3 &lt; ×1.05 · L4 &lt; ×1.10 · L5 &lt; ×1.15 · Nuevo &lt; ×1.25 (redondeo hacia arriba).<br>Menor al mínimo = «-»; 1 pieza no conforme o 1 paso omitido = reprobado (reevaluar).`
+   :`<b>일반 시트</b> (서브·포선·조립·구조·후공정·수정): C/T = 3600 ÷ UPH. L1 &lt; C/T÷0.115×0.100 · L2 &lt; C/T · L3 &lt; C/T÷0.115×0.129 · L4 &lt; C/T÷0.115×0.143 · L5 &lt; C/T÷0.115×0.158 · 신입 &lt; L5×5.<br><b>다기능공 시트</b> (1G~5G): 하한 ROUNDUP(C/T×0.85), L1 &lt; ×0.90 · L2 &lt; ×0.95 · L3 &lt; ×1.05 · L4 &lt; ×1.10 · L5 &lt; ×1.15 · 신입 &lt; ×1.25 (올림).<br>하한 미만은 「-」, 부적합품 1개 또는 수행항목 1개 누락 시 과락(재평가).<br><span style="color:var(--amb)">※ 원본 엑셀 일반 시트의 L4 상한(P5)이 L3 값을 참조해 L5 구간이 비어 있던 오류는 C/T 기준(÷0.115×0.143)으로 바로잡았습니다.</span>`;
 }
 async function saveStd(){
   if(!TBL_OK){toast(t('db_tbl'),true);return;}
