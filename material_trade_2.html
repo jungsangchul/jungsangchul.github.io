@@ -193,6 +193,10 @@ table.cfg input{width:17px;height:17px}
   .fs-dl button:disabled{opacity:.4;cursor:not-allowed}
   .fs-tw{border:1px solid var(--line2);border-radius:8px;overflow:auto;max-height:64vh;min-height:160px;background:var(--panel)}
   .fs-tw table{width:100%;border-collapse:collapse;font-size:13px}
+  .fs-tw.fx table{table-layout:fixed}
+  .fs-tw th.w-no{width:40px}.fs-tw th.w-tp{width:78px}.fs-tw th.w-cd{width:132px}.fs-tw th.w-un{width:52px}.fs-tw th.w-pr{width:52px}.fs-tw th.w-mt{width:70px}.fs-tw th.n{width:104px}.fs-tw th.w-vp{width:20%}
+  .fs-tw td.tx{overflow:hidden;text-overflow:ellipsis}
+  .fs-tw td b{overflow:hidden;text-overflow:ellipsis;display:block}
   .fs-tw th{position:sticky;top:0;background:#1a1a1a;color:var(--ac);font-weight:700;text-align:left;padding:8px 10px;border-bottom:1px solid #333;white-space:nowrap;z-index:1}
   .fs-tw td{padding:6px 10px;border-bottom:1px solid #1d1d1d;color:var(--ink);white-space:nowrap}
   .fs-tw tr:hover td{background:#151515}
@@ -512,19 +516,19 @@ function fsRender(){
   const busy=D.loading,ok=!busy&&(md||ad);
   const V=FS.view,seg=[['cls',fsL('분류 (가공·조립)','Por tipo')],['m',fsL('가공','Corte')+` ${R.m.length}`],['a',fsL('조립','Ensamble')+` ${R.a.length}`],['u',fsL('통합 (한 시트)','Unificado')+` ${R.u.length}`]];
   let tbl='';
-  const mT=()=>`<tr><th>#</th><th>${fsL('구분','Tipo')}</th><th>${fsL('자재코드','Código')}</th><th>${fsL('자재명','Nombre')}</th><th>${fsL('단위','Unid.')}</th><th class="n">${fsL('현장재고','Stock piso')}</th><th class="n">${fsL('현장롤수','Rollos piso')}</th></tr>`+
-    R.m.map((r,i)=>`<tr><td class="mu">${i+1}</td><td>${r.type}</td><td><b>${fsEsc(r.code)}</b></td><td>${fsEsc(r.name)}</td><td>${fsEsc(r.unit)}</td>${fsN(r.cur)}${fsN(r.roll)}</tr>`).join('');
-  const aT=()=>`<tr><th>#</th><th>${fsL('자재코드','Código')}</th><th>${fsL('자재명','Nombre')}</th><th>${fsL('업체품명','Parte proveedor')}</th><th>${fsL('단위','Unid.')}</th><th>${fsL('공정','Proc.')}</th><th>${fsL('자재유형','Tipo mat.')}</th><th class="n">${fsL('현장재고','Stock piso')}</th></tr>`+
-    R.a.map((r,i)=>`<tr><td class="mu">${i+1}</td><td><b>${fsEsc(r.code)}</b></td><td>${fsEsc(r.name)}</td><td>${fsEsc(r.vpart)}</td><td>${fsEsc(r.unit)}</td><td>${fsEsc(r.procs)}</td><td>${fsEsc(r.mtype)}</td>${fsN(r.stock)}</tr>`).join('');
-  const uT=()=>`<tr><th>#</th><th>${fsL('구분','Origen')}</th><th>${fsL('자재코드','Código')}</th><th>${fsL('자재명','Nombre')}</th><th>${fsL('단위','Unid.')}</th><th class="n">${fsL('가공 현장재고','Stock corte')}</th><th class="n">${fsL('조립 현장재고','Stock ensamble')}</th><th class="n">${fsL('합계','Total')}</th></tr>`+
-    R.u.map((r,i)=>`<tr><td class="mu">${i+1}</td><td>${fsSrcTag(r.src)}</td><td><b>${fsEsc(r.code)}</b></td><td>${fsEsc(r.name)}</td><td>${fsEsc(r.unit)}</td>${fsN(r.mq)}${fsN(r.aq)}<td class="n${r.tot<0?' neg':''}"><b>${fsNum(r.tot)}</b></td></tr>`).join('');
+  const mT=()=>`<tr><th class="w-no">#</th><th class="w-tp">${fsL('구분','Tipo')}</th><th class="w-cd">${fsL('자재코드','Código')}</th><th>${fsL('자재명','Nombre')}</th><th class="w-un">${fsL('단위','Unid.')}</th><th class="n">${fsL('현장재고','Stock piso')}</th><th class="n">${fsL('현장롤수','Rollos piso')}</th></tr>`+
+    R.m.map((r,i)=>`<tr><td class="mu">${i+1}</td><td>${r.type}</td><td><b>${fsEsc(r.code)}</b></td><td class="tx" title="${fsEsc(r.name)}">${fsEsc(r.name)}</td><td>${fsEsc(r.unit)}</td>${fsN(r.cur)}${fsN(r.roll)}</tr>`).join('');
+  const aT=()=>`<tr><th class="w-no">#</th><th class="w-cd">${fsL('자재코드','Código')}</th><th>${fsL('자재명','Nombre')}</th><th class="w-vp">${fsL('업체품명','Parte proveedor')}</th><th class="w-un">${fsL('단위','Unid.')}</th><th class="w-pr">${fsL('공정','Proc.')}</th><th class="w-mt">${fsL('자재유형','Tipo mat.')}</th><th class="n">${fsL('현장재고','Stock piso')}</th></tr>`+
+    R.a.map((r,i)=>`<tr><td class="mu">${i+1}</td><td><b>${fsEsc(r.code)}</b></td><td class="tx" title="${fsEsc(r.name)}">${fsEsc(r.name)}</td><td class="tx" title="${fsEsc(r.vpart)}">${fsEsc(r.vpart)}</td><td>${fsEsc(r.unit)}</td><td>${fsEsc(r.procs)}</td><td>${fsEsc(r.mtype)}</td>${fsN(r.stock)}</tr>`).join('');
+  const uT=()=>`<tr><th class="w-no">#</th><th class="w-tp">${fsL('구분','Origen')}</th><th class="w-cd">${fsL('자재코드','Código')}</th><th>${fsL('자재명','Nombre')}</th><th class="w-un">${fsL('단위','Unid.')}</th><th class="n">${fsL('가공 현장재고','Stock corte')}</th><th class="n">${fsL('조립 현장재고','Stock ensamble')}</th><th class="n">${fsL('합계','Total')}</th></tr>`+
+    R.u.map((r,i)=>`<tr><td class="mu">${i+1}</td><td>${fsSrcTag(r.src)}</td><td><b>${fsEsc(r.code)}</b></td><td class="tx" title="${fsEsc(r.name)}">${fsEsc(r.name)}</td><td>${fsEsc(r.unit)}</td>${fsN(r.mq)}${fsN(r.aq)}<td class="n${r.tot<0?' neg':''}"><b>${fsNum(r.tot)}</b></td></tr>`).join('');
   const empty=`<tr><td class="fs-empty" colspan="9">${busy?'<span class="fs-spin"></span>'+fsL('불러오는 중…','Cargando…'):fsL('표시할 자재가 없습니다','Sin datos')}</td></tr>`;
-  if(V==='m')tbl=`<div class="fs-tw"><table>${R.m.length?mT():empty}</table></div>`;
-  else if(V==='a')tbl=`<div class="fs-tw"><table>${R.a.length?aT():empty}</table></div>`;
-  else if(V==='u')tbl=`<div class="fs-tw"><table>${R.u.length?uT():empty}</table></div>`;
+  if(V==='m')tbl=`<div class="fs-tw fx"><table>${R.m.length?mT():empty}</table></div>`;
+  else if(V==='a')tbl=`<div class="fs-tw fx"><table>${R.a.length?aT():empty}</table></div>`;
+  else if(V==='u')tbl=`<div class="fs-tw fx"><table>${R.u.length?uT():empty}</table></div>`;
   else tbl=`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(420px,1fr));gap:10px">
-      <div><div class="fs-note" style="margin-bottom:5px"><span class="fs-tag m">${fsL('가공','Corte')}</span> ${R.m.length.toLocaleString()} ${fsL('품목','mat.')}</div><div class="fs-tw" style="max-height:46vh"><table>${R.m.length?mT():empty}</table></div></div>
-      <div><div class="fs-note" style="margin-bottom:5px"><span class="fs-tag a">${fsL('조립','Ensamble')}</span> ${R.a.length.toLocaleString()} ${fsL('품목','mat.')}</div><div class="fs-tw" style="max-height:46vh"><table>${R.a.length?aT():empty}</table></div></div></div>`;
+      <div><div class="fs-note" style="margin-bottom:5px"><span class="fs-tag m">${fsL('가공','Corte')}</span> ${R.m.length.toLocaleString()} ${fsL('품목','mat.')}</div><div class="fs-tw fx" style="max-height:46vh"><table>${R.m.length?mT():empty}</table></div></div>
+      <div><div class="fs-note" style="margin-bottom:5px"><span class="fs-tag a">${fsL('조립','Ensamble')}</span> ${R.a.length.toLocaleString()} ${fsL('품목','mat.')}</div><div class="fs-tw fx" style="max-height:46vh"><table>${R.a.length?aT():empty}</table></div></div></div>`;
   const qv=fsEsc(FS.q);
   document.getElementById('fs-body').innerHTML=`
     <div class="fs-src">${mCard}${aCard}</div>
