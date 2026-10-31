@@ -89,6 +89,34 @@ textarea{width:100%;min-height:90px;padding:10px 12px;line-height:1.5;resize:ver
 .toggle{display:inline-flex;align-items:center;gap:8px;height:44px;padding:0 16px;border-radius:999px;border:1px solid var(--line2);color:var(--ink2);font-weight:700;cursor:pointer;user-select:none}
 .toggle.on{border-color:rgba(124,92,191,.6);background:rgba(124,92,191,.14);color:#c3aef0}
 .toggle.dis{opacity:.35;pointer-events:none}
+/* 작업자 명단 패널 */
+.wk-panel{border:1px solid var(--line2);border-radius:var(--r);background:#0f0f0f;padding:12px 14px;margin-top:4px}
+.wk-head{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+.wk-title{font-family:'Space Mono',monospace;font-size:12px;letter-spacing:.12em;color:var(--ac);font-weight:700;white-space:nowrap}
+.wk-cnt{font-family:var(--code);font-size:13px;color:var(--mute)}
+.wk-all{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--ink2);cursor:pointer;user-select:none;white-space:nowrap}
+.wk-add{display:flex;gap:8px;align-items:center;margin-bottom:10px;padding:10px;border:1px dashed rgba(201,168,76,.45);border-radius:8px;background:rgba(201,168,76,.05)}
+.wk-add input{flex:1;min-width:200px}
+.wk-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px;max-height:46vh;overflow:auto;padding:2px}
+.wk-chip{position:relative;display:flex;flex-direction:column;gap:3px;padding:9px 30px 9px 12px;border:1px solid var(--line2);border-radius:8px;background:rgba(255,255,255,.02);cursor:pointer;min-width:0;transition:.12s}
+.wk-chip:hover{border-color:#555;background:rgba(255,255,255,.05)}
+.wk-chip.on{border-color:rgba(201,168,76,.65);background:rgba(201,168,76,.13);box-shadow:0 0 0 1px rgba(201,168,76,.18)}
+.wk-chip .nm{font-weight:700;color:#fff;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wk-chip .id{font-family:var(--code);font-size:12.5px;color:var(--ac2);letter-spacing:.03em}
+.wk-chip .mt{display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:11.5px;color:var(--mute)}
+.wk-chip .mt .lv{min-width:0;height:20px;font-size:12px;padding:0 7px}
+.wk-chip .tg{display:inline-block;padding:1px 6px;border-radius:999px;border:1px solid var(--line2);font-size:11px;color:var(--mute);font-family:'Space Mono',monospace}
+.wk-chip .tg.warn{color:var(--amb);border-color:rgba(224,168,74,.5)}
+.wk-chip .rm{position:absolute;top:6px;right:6px;width:20px;height:20px;border-radius:50%;border:0;background:transparent;color:var(--mute);font-size:13px;line-height:20px;text-align:center;opacity:.5}
+.wk-chip .rm:hover{opacity:1;color:var(--red);background:rgba(224,92,92,.12)}
+.wk-empty{grid-column:1/-1;padding:26px;text-align:center;color:var(--mute);font-size:13px;line-height:1.7}
+.pick{font-family:'Space Mono',monospace;font-size:12px;letter-spacing:.1em;color:var(--mute)}
+.pick b{color:var(--ac2);font-size:15px;letter-spacing:.02em;font-family:var(--body)}
+.wk-sum{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.wk-sum span{padding:4px 10px;border-radius:999px;border:1px solid var(--line2);font-size:12.5px;color:var(--ink2)}
+.wk-sum span b{color:var(--ac2);font-family:var(--code)}
+#wkTbl td .btn.sm{height:24px;padding:0 8px;font-size:12px}
+@media(max-width:760px){.wk-list{grid-template-columns:repeat(auto-fill,minmax(160px,1fr))}}
 /* 기준표 / 결과표 */
 table{border-collapse:separate;border-spacing:0;width:100%;font-size:14px}
 th,td{padding:8px;border-bottom:1px solid var(--line);color:var(--ink2);vertical-align:middle}
@@ -299,9 +327,30 @@ tbody tr:hover td{background:rgba(255,255,255,.025)}
       <label class="f"><span data-t="evDate">평가 날짜</span><input id="evDate" type="date"></label>
       <div></div>
     </div>
+    <div class="sub-h" style="margin-top:14px" data-t="target">평가 대상 선택</div>
+    <div class="row" style="margin-bottom:10px">
+      <span class="ilab" data-t="item_lab">ITEM</span><div class="procs" id="items"></div>
+    </div>
+    <div class="row" style="margin-bottom:10px">
+      <span class="ilab" data-t="proc_lab">공정</span><div class="procs" id="procs"></div>
+    </div>
+    <div class="wk-panel">
+      <div class="wk-head">
+        <span class="wk-title" id="wkTitle"></span><span class="wk-cnt" id="wkCnt"></span>
+        <div class="sp"></div>
+        <label class="wk-all"><input type="checkbox" id="wkAll"><span data-t="show_all">아이템 전체 인원</span></label>
+        <input id="wkFilter" autocomplete="off" data-ph="ph_filter" placeholder="이름·사번 필터" style="width:170px;height:34px">
+        <button class="btn sec sm" id="wkAddBtn" data-t="add_wk">+ 명단에 추가</button>
+      </div>
+      <div class="wk-add" id="wkAdd" style="display:none">
+        <input id="wkSearch" list="dlWk" autocomplete="off" data-ph="ph_search" placeholder="이름·사번 입력 후 목록에서 선택">
+        <button class="btn sm" id="wkAddOk" data-t="add">추가</button><button class="btn sec sm" id="wkAddCancel" data-t="cancel">취소</button>
+      </div>
+      <div class="hint" id="wkHint" style="margin-bottom:8px"></div>
+      <div class="wk-list" id="wkList"></div>
+    </div>
     <div class="sub-h" style="margin-top:14px" data-t="worker">작업자 정보</div>
     <div class="g4">
-      <label class="f" style="grid-column:span 2"><span data-t="search">작업자 검색 (이름 또는 사번)</span><input id="wkSearch" list="dlWk" autocomplete="off" data-ph="ph_search" placeholder="이름·사번 입력 후 목록에서 선택"></label>
       <label class="f"><span data-t="name">성명</span><input id="wkName"></label>
       <label class="f"><span data-t="emp">사번</span><input id="wkEmp"></label>
       <label class="f"><span data-t="career">경력</span><input id="wkCareer"></label>
@@ -316,11 +365,8 @@ tbody tr:hover td{background:rgba(255,255,255,.025)}
 
   <div class="card">
     <h3><span class="no">2)</span> <span data-t="s2">평가 내역</span></h3>
-    <div class="row" style="margin-bottom:10px">
-      <span class="ilab" data-t="item_lab">ITEM</span><div class="procs" id="items"></div>
-    </div>
     <div class="row" style="margin-bottom:12px">
-      <div class="procs" id="procs"></div>
+      <span class="pick" id="pickLab"></span>
       <div class="sp"></div>
       <div class="toggle" id="multiTg"><input type="checkbox" id="multiCk" style="pointer-events:none"><span data-t="multi">다기능공 적용 기준</span></div>
     </div>
@@ -406,6 +452,15 @@ tbody tr:hover td{background:rgba(255,255,255,.025)}
     <div class="row" style="margin-top:12px"><span class="hint" id="stdDirty"></span><div class="sp"></div><button class="btn" id="stdSave" data-t="save_std">기준 저장</button></div>
   </div>
   <div class="card">
+    <h3 data-t="wk_title">작업자 명단 (아이템 · 공정)</h3>
+    <div class="hint" style="margin-bottom:10px" data-t="wk_hint">엑셀에서 「사번 · ITEM · 공정」 열을 복사해 붙여넣고 저장하면 명단이 병합됩니다 (같은 사번은 덮어쓰기, 공정은 Sub/Ruteo/Ensamble 같은 스페인어도 자동 변환). 평가 입력 화면에서는 아이템·공정을 고르면 이 명단이 나옵니다: 서브→서브, 포선→포선, 테이핑·클립→조립 인원, 후취→후공정 인원.</div>
+    <textarea id="wkPaste" style="min-height:110px;font-family:var(--code);font-size:13px" placeholder="M026060149	MAIN	Ensamble	조립&#10;M026060154	FLOOR	Sub	서브"></textarea>
+    <div class="row" style="margin-top:8px"><span class="hint" id="wkPasteInfo"></span><div class="sp"></div><button class="btn sec" id="wkPasteClear" data-t="clear">입력 지우기</button><button class="btn" id="wkPasteSave" data-t="wk_save">명단 저장 (병합)</button></div>
+    <div class="wk-sum" id="wkSum"></div>
+    <div class="row" style="margin-bottom:8px"><label class="f"><span data-t="item">아이템</span><select id="wkTItem"></select></label><label class="f"><span data-t="proc">공정</span><select id="wkTProc"></select></label><label class="f" style="flex:1;min-width:160px"><span data-t="q">검색</span><input id="wkTQ" data-ph="ph_q2" placeholder="이름·사번"></label><button class="btn sec" id="wkXls" data-t="xls">엑셀 다운로드</button></div>
+    <div class="tw" style="max-height:52vh"><table id="wkTbl"></table></div>
+  </div>
+  <div class="card">
     <h3 data-t="rule_title">레벨 판정 기준</h3>
     <div class="hint" id="ruleText"></div>
   </div>
@@ -425,6 +480,18 @@ const ROSTER=PLANT===2?'exam_students_a2':'exam_students_a1';
 const PROCS=['서브','포선','테이핑','클립','후취'];
 const MULTI_OK=['서브','포선','테이핑'];
 const PROC_ES={'서브':'Sub','포선':'Ruteo','테이핑':'Encintado','클립':'Clip','후취':'Post-proceso'};
+const WK_TBL='assy_eval_worker';
+const EMP_TBL=PLANT===2?'att_employees_2':'att_employees';
+// 평가 공정 → 명단의 담당 공정(작업자 배치 공정) 매칭
+const PROC_MATCH={'서브':['서브'],'포선':['포선'],'테이핑':['조립'],'클립':['조립'],'후취':['후공정','후취']};
+const WK_PROCS=['서브','포선','조립','후공정','테이핑','클립','후취','수정','구조검사','회로검사','반장','자재'];
+const WK_PROC_ES={'서브':'Sub','포선':'Ruteo','조립':'Ensamble','후공정':'Protector','테이핑':'Encintado','클립':'Clip','후취':'Post-proceso','수정':'Re-Work','구조검사':'Insp. estructura','회로검사':'Insp. circuito','반장':'Líder','자재':'Materiales'};
+const PROC_ALIAS={'sub':'서브','sub-ensamble':'서브','subensamble':'서브','sub ensamble':'서브','ruteo':'포선','ensamble':'조립','produccion de ensamble':'조립','producción de ensamble':'조립','encintado':'테이핑','clip':'클립','clips':'클립','aplicación de clips':'클립','aplicacion de clips':'클립','protector':'후공정','protectores':'후공정','aplicación de protector':'후공정','aplicacion de protector':'후공정','post-proceso':'후취','re-work':'수정','rework':'수정','lider':'반장','líder':'반장','inspección de estructura':'구조검사','inspeccion de estructura':'구조검사','inspección circuito':'회로검사','inspeccion circuito':'회로검사','inspección de circuito':'회로검사','materiales':'자재'};
+const ITEM_ALIAS={'AIRBAG':'A/BAG','AIR-BAG':'A/BAG','A/BAG':'A/BAG','A-BAG':'A/BAG','ABAG':'A/BAG','A/B':'A/BAG'};
+function normProc(v){const s=String(v||'').trim();if(!s||s==='#N/A'||s==='-')return '';const k=s.toLowerCase().replace(/\s+/g,' ');return PROC_ALIAS[k]||(WK_PROCS.includes(s)?s:s);}
+function normItem(v){const s=String(v||'').trim().toUpperCase().replace(/\s+/g,'');if(!s||s==='#N/A'||s==='-')return '';return ITEM_ALIAS[s]||s;}
+const wkProcName=p=>p?(LANG==='es'?(WK_PROC_ES[p]||p):p):'';
+const assignProc=p=>(p==='테이핑'||p==='클립')?'조립':p;
 const GROUPS_M=['1G','2G','3G','4G','5G'];
 const LVS=['L1','L2','L3','L4','L5','신입'];
 const LV_RANK={'L1':6,'L2':5,'L3':4,'L4':3,'L5':2,'신입':1,'기준외':0,'-':-1,'':-2};
@@ -439,6 +506,16 @@ const T={
  s1:['인적사항','Datos personales'],s2:['평가 내역','Criterios de evaluación'],s3:['평가 결과','Resultado'],s4:['실행항목 누락 / 부적합 발생 유무','Omisión de pasos / No conformidad'],s5:['평가 의견','Comentarios'],
  evaluator:['평가자 정보','Evaluador'],worker:['작업자 정보','Operador'],dept:['부서','Depto.'],evName:['성명','Nombre'],evDate:['평가 날짜','Fecha'],
  search:['작업자 검색 (이름 또는 사번)','Buscar operador (nombre o N° emp.)'],ph_search:['이름·사번 입력 후 목록에서 선택','Escriba nombre o N° y elija'],
+ target:['평가 대상 선택','Seleccionar operador a evaluar'],proc_lab:['공정','PROCESO'],show_all:['아이템 전체 인원','Todos del artículo'],ph_filter:['이름·사번 필터','Filtrar nombre/N°'],
+ add_wk:['+ 명단에 추가','+ Agregar a lista'],add:['추가','Agregar'],cancel:['취소','Cancelar'],clear:['입력 지우기','Limpiar'],
+ wk_title:['작업자 명단 (아이템 · 공정)','Lista de operadores (artículo · proceso)'],wk_save:['명단 저장 (병합)','Guardar lista (fusionar)'],
+ wk_hint:['엑셀에서 「사번 · ITEM · 공정」 열을 복사해 붙여넣고 저장하면 명단이 병합됩니다 (같은 사번은 덮어쓰기, 공정은 Sub/Ruteo/Ensamble 같은 스페인어도 자동 변환). 평가 입력 화면에서는 아이템·공정을 고르면 이 명단이 나옵니다: 서브→서브, 포선→포선, 테이핑·클립→조립 인원, 후취→후공정 인원.','Pegue desde Excel las columnas «N° emp. · ITEM · proceso» y guarde: la lista se fusiona (mismo N° se sobrescribe; Sub/Ruteo/Ensamble se reconocen). En Evaluar, al elegir artículo y proceso aparece esta lista: Sub→Sub, Ruteo→Ruteo, Encintado·Clip→personal de Ensamble, Post-proceso→Protector.'],
+ wk_none:['이 아이템·공정에 등록된 작업자가 없습니다. 「+ 명단에 추가」로 등록하거나, 기준 설정 탭에서 명단을 붙여넣으세요.','No hay operadores registrados para este artículo y proceso. Use «+ Agregar a lista» o pegue la lista en Estándares.'],
+ wk_nomatch:['필터에 맞는 작업자가 없습니다','Sin coincidencias'],wk_tbl:['⚠️ 명단 테이블 없음 — assy_eval_worker.sql 실행 후 전체 명단으로 표시 중','⚠️ Falta tabla de lista — ejecute SQL; mostrando todo el personal'],
+ wk_added:['명단에 추가했습니다','Agregado a la lista'],wk_removed:['명단에서 제외했습니다','Quitado de la lista'],confirm_wk_rm:['이 작업자를 명단에서 제외할까요? (평가 이력은 유지)','¿Quitar a este operador de la lista? (se conserva el historial)'],
+ wk_noitem:['아이템 미지정','Sin artículo'],wk_last:['최근','Últ.'],wk_saved:['명단을 저장했습니다','Lista guardada'],wk_parse:['인식','reconocidos'],wk_bad:['사번 누락 행','filas sin N°'],
+ wk_all_hint:['아이템 전체 인원 표시 중 (공정 무관)','Mostrando todo el artículo (sin filtrar proceso)'],wk_noemp:['명단에서 작업자를 찾을 수 없습니다','Operador no encontrado'],
+ assigned:['배치 공정','Proceso asignado'],wk_total:['전체','Total'],
  name:['성명','Nombre'],emp:['사번','N° Emp.'],career:['경력','Antigüedad'],factory:['법인/공장','Planta'],car:['차종','Vehículo'],item:['아이템','Artículo'],line:['라인명','Línea'],shift:['교대','Turno'],day:['주간','Día'],night:['야간','Noche'],
  multi:['다기능공 적용 기준','Multihabilidad'],ct:['C/T(초)','C/T (s)'],tt:['T/T(초)','T/T (s)'],
  res_hint:['작업시간(초)을 입력하면 레벨이 자동 판정됩니다. 이전 점수는 같은 작업자·공정의 직전 평가에서 자동으로 불러오며 수정할 수 있습니다.','Al capturar el tiempo (s) el nivel se calcula automáticamente. El puntaje anterior se toma de la última evaluación del mismo operador y proceso (editable).'],
@@ -519,6 +596,7 @@ function worst(list){let w='';list.forEach(l=>{if(!l||l==='-')return;if(!w||LV_R
 
 /* ── 상태 ── */
 let roster=[],history=[],stdMap={},TBL_OK=true,ITEMS=['MAIN'],stdItem='MAIN',stdDraft={};
+let workers=[],WK_OK=true,wkSel='';   // 명단: {emp_id,item,process,process_es}
 const DEF_ITEM='MAIN';
 const skey=(it,p,m)=>(it||DEF_ITEM)+'|'+p+'|'+(m?1:0);
 let S=null; // 현재 평가
@@ -530,12 +608,21 @@ function blankState(){
 async function loadAll(){
   const tag=$('dbtag');
   try{
-    const [ro,st,it]=await Promise.all([
+    const [ro,st,it,em,wk]=await Promise.all([
       sb(`${ROSTER}?select=emp_id,name,process,hire_date&order=name.asc`).catch(()=>[]),
       sb(`assy_eval_std?select=item,process,multi,uph,tt&plant=eq.${PLANT}`).catch(e=>{if(e.status===404||/relation|schema cache/i.test(e.body||''))TBL_OK=false;return [];}),
-      sb(`assy_eval_item?select=name,sort_no&plant=eq.${PLANT}&order=sort_no.asc,name.asc`).catch(()=>[])
+      sb(`assy_eval_item?select=name,sort_no&plant=eq.${PLANT}&order=sort_no.asc,name.asc`).catch(()=>[]),
+      sb(`${EMP_TBL}?select=employee_id,name,hire_date,active&team=ilike.*ensamble*${PLANT===1?'&factory=eq.1':''}&order=employee_id.asc`).catch(()=>[]),
+      sb(`${WK_TBL}?select=emp_id,item,process,process_es&plant=eq.${PLANT}&order=emp_id.asc`).catch(e=>{if(e.status===404||/relation|schema cache/i.test(e.body||''))WK_OK=false;return [];})
     ]);
-    roster=ro.filter(r=>r.name);
+    // 명단 = 조립 자격인증 응시자 명단 + 직원 마스터(TRESS) 조립생산팀 재직자 (사번 기준 병합)
+    const rmap=new Map();
+    ro.filter(r=>r.name).forEach(r=>rmap.set(String(r.emp_id||'').trim().toUpperCase()||('N:'+r.name),{emp_id:String(r.emp_id||'').trim(),name:r.name,hire_date:r.hire_date,process:r.process,active:true}));
+    em.forEach(e=>{const k=String(e.employee_id||'').trim().toUpperCase();if(!k||!e.name)return;const o=rmap.get(k);
+      if(o){if(!o.hire_date&&e.hire_date)o.hire_date=e.hire_date;o.active=e.active!==false;}
+      else rmap.set(k,{emp_id:String(e.employee_id).trim(),name:e.name,hire_date:e.hire_date,process:'',active:e.active!==false});});
+    roster=[...rmap.values()].sort((a,b)=>String(a.emp_id).localeCompare(String(b.emp_id)));
+    workers=wk.map(w=>({emp_id:String(w.emp_id||'').trim(),item:w.item||'',process:w.process||'',process_es:w.process_es||''}));
     stdMap={};st.forEach(s=>stdMap[skey(s.item,s.process,s.multi)]={uph:Number(s.uph),tt:s.tt!=null?Number(s.tt):null});
     const names=it.map(x=>x.name).filter(Boolean);
     st.forEach(s=>{if(s.item&&!names.includes(s.item))names.push(s.item);});
@@ -546,14 +633,14 @@ async function loadAll(){
     if(TBL_OK)await loadHistory();
     tag.className='dbtag '+(TBL_OK?'ok':'err');tag.textContent=TBL_OK?t('db_ok'):t('db_tbl');
   }catch(e){console.warn(e);tag.className='dbtag err';tag.textContent=t('db_err');}
-  fillDatalists();
+  fillDatalists();renderWorkers();renderWkTable();
 }
 async function loadHistory(){
   try{history=await sb(`assy_eval?select=*&plant=eq.${PLANT}&order=eval_date.desc,created_at.desc&limit=5000`);}
   catch(e){if(/relation|schema cache|404/i.test(e.message))TBL_OK=false;history=[];}
 }
 function fillDatalists(){
-  $('dlWk').innerHTML=roster.map(r=>`<option value="${esc(r.name)} · ${esc(r.emp_id||'')}">`).join('');
+  $('dlWk').innerHTML=roster.filter(r=>r.active!==false).map(r=>`<option value="${esc(r.name)} · ${esc(r.emp_id||'')}">`).join('');
   const uniq=k=>[...new Set(history.map(h=>h[k]).filter(Boolean))].slice(0,80).map(v=>`<option value="${esc(v)}">`).join('');
   $('dlDept').innerHTML=uniq('evaluator_dept');$('dlCar').innerHTML=uniq('car');$('dlLine').innerHTML=uniq('line');
 }
@@ -630,7 +717,154 @@ function renderVerdict(){
   $('ckOmit').classList.toggle('on',S.omission);$('ckOmit').querySelector('input').checked=S.omission;
   $('editing').textContent=S.id?t('editing'):'';
 }
-function renderEval(){renderItems();renderProcs();renderRes();renderStd();renderVerdict();}
+function renderEval(){renderItems();renderProcs();renderRes();renderStd();renderVerdict();renderPick();renderWorkers();}
+function renderPick(){$('pickLab').innerHTML=`<b>${esc(S.item||DEF_ITEM)}</b> · <b>${esc(procName(S.process))}</b>${S.multi?` <span style="color:#c3aef0">(${t('multiShort')})</span>`:''}`;}
+
+/* ── 작업자 명단 (아이템·공정별) ── */
+const rosterOf=emp=>roster.find(x=>String(x.emp_id||'').toUpperCase()===String(emp||'').toUpperCase());
+const workerOf=emp=>workers.find(x=>x.emp_id.toUpperCase()===String(emp||'').toUpperCase());
+function wkMatchProc(w){const m=PROC_MATCH[S.process]||[S.process];return m.includes(w.process)||w.process===S.process;}
+function lastEval(emp){const e=String(emp||'').toUpperCase();return history.find(h=>String(h.emp_id||'').toUpperCase()===e&&h.process===S.process&&(h.item||DEF_ITEM)===(S.item||DEF_ITEM))||history.find(h=>String(h.emp_id||'').toUpperCase()===e&&h.process===S.process)||history.find(h=>String(h.emp_id||'').toUpperCase()===e);}
+function wkCandidates(){
+  const all=$('wkAll').checked,item=S.item||DEF_ITEM;
+  if(!WK_OK||!workers.length){ // 명단 테이블 없음/비어있음 → 전체 인원
+    return roster.filter(r=>r.active!==false).map(r=>({emp_id:r.emp_id,name:r.name,hire_date:r.hire_date,item:'',process:'',fallback:true}));
+  }
+  return workers.filter(w=>(!w.item||w.item===item)&&(all||wkMatchProc(w))).map(w=>{const r=rosterOf(w.emp_id);return{...w,name:r?r.name:'',hire_date:r?r.hire_date:null,active:r?r.active!==false:true};});
+}
+function renderWorkers(){
+  const list=$('wkList');if(!list)return;
+  const q=normName($('wkFilter').value),all=$('wkAll').checked;
+  let cand=wkCandidates();
+  const total=cand.length;
+  if(q)cand=cand.filter(w=>normName(w.name).includes(q)||String(w.emp_id).toLowerCase().includes(q));
+  cand.sort((a,b)=>String(a.emp_id).localeCompare(String(b.emp_id)));
+  $('wkTitle').textContent=`${S.item||DEF_ITEM} · ${procName(S.process)}`;
+  $('wkCnt').textContent=`${cand.length}${q||cand.length!==total?' / '+total:''}${LANG==='es'?' pers.':'명'}`;
+  const hint=$('wkHint');
+  if(!WK_OK)hint.innerHTML=`<span style="color:var(--amb)">${t('wk_tbl')}</span>`;
+  else if(all)hint.textContent=t('wk_all_hint');
+  else{const m=PROC_MATCH[S.process]||[];const extra=m.filter(p=>p!==S.process);hint.textContent=extra.length?`${t('assigned')}: ${extra.map(wkProcName).join(', ')} → ${procName(S.process)}`:'';}
+  const selEmp=($('wkEmp').value||'').trim().toUpperCase();
+  if(!cand.length){list.innerHTML=`<div class="wk-empty">${total?t('wk_nomatch'):t('wk_none')}</div>`;return;}
+  list.innerHTML=cand.map(w=>{
+    const le=lastEval(w.emp_id);
+    const tags=[];
+    if(!w.fallback&&!w.item)tags.push(`<span class="tg warn">${t('wk_noitem')}</span>`);
+    if(w.process&&w.process!==S.process)tags.push(`<span class="tg">${esc(wkProcName(w.process))}</span>`);
+    if(w.active===false)tags.push(`<span class="tg warn">${LANG==='es'?'Baja':'퇴사'}</span>`);
+    const lv=le?lvTag(le.level||''):'';
+    const dt=le?`<span>${esc(String(le.eval_date).slice(5))}</span>`:'';
+    return `<div class="wk-chip${selEmp&&String(w.emp_id).toUpperCase()===selEmp?' on':''}" data-emp="${esc(w.emp_id)}" title="${esc(w.name)} · ${esc(w.emp_id)}">
+      <span class="nm">${esc(w.name||'—')}</span><span class="id">${esc(w.emp_id)}</span>
+      <span class="mt">${lv}${dt}${tags.join('')}</span>${w.fallback?'':`<button class="rm" data-rm="${esc(w.emp_id)}" title="${t('del')}">✕</button>`}</div>`;
+  }).join('');
+}
+async function upsertWorker(emp,item,process,process_es){
+  if(!WK_OK)return;
+  const row={plant:PLANT,emp_id:emp,item:item||null,process:process||null,process_es:process_es||null,updated_at:new Date().toISOString()};
+  await sb(WK_TBL,{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify(row)});
+  const w=workerOf(emp);if(w){w.item=item||'';w.process=process||'';w.process_es=process_es||'';}else workers.push({emp_id:emp,item:item||'',process:process||'',process_es:process_es||''});
+}
+async function addWorkerFromSearch(){
+  const v=$('wkSearch').value;const r=findRoster(v);
+  if(!r||!r.emp_id){toast(t('wk_noemp'),true);return;}
+  const w=workerOf(r.emp_id);
+  try{
+    await upsertWorker(r.emp_id,S.item||DEF_ITEM,w&&w.process?w.process:assignProc(S.process),w&&w.process_es?w.process_es:(WK_PROC_ES[assignProc(S.process)]||''));
+    $('wkAdd').style.display='none';$('wkSearch').value='';toast(t('wk_added'));pickWorker(r.emp_id);renderWkTable();
+  }catch(e){toast(e.message,true);}
+}
+async function removeWorker(emp){
+  if(!confirm(t('confirm_wk_rm')))return;
+  try{await sb(`${WK_TBL}?plant=eq.${PLANT}&emp_id=eq.${encodeURIComponent(emp)}`,{method:'DELETE',headers:{Prefer:'return=minimal'}});
+    workers=workers.filter(w=>w.emp_id.toUpperCase()!==String(emp).toUpperCase());renderWorkers();renderWkTable();toast(t('wk_removed'));}
+  catch(e){toast(e.message,true);}
+}
+// 평가 저장 시 명단 자동 보완: 없으면 등록, 아이템 미지정이면 아이템 채움
+async function ensureWorker(emp,item){
+  if(!WK_OK||!emp)return;
+  const w=workerOf(emp);
+  try{
+    if(!w)await upsertWorker(emp,item,assignProc(S.process),WK_PROC_ES[assignProc(S.process)]||'');
+    else if(!w.item&&item)await upsertWorker(emp,item,w.process,w.process_es);
+    else return;
+    renderWkTable();
+  }catch(e){console.warn(e);}
+}
+
+/* ── 명단 붙여넣기 (기준 설정 탭) ── */
+function parseWkPaste(txt){
+  const out=new Map(),bad=[];
+  String(txt||'').split(/\r?\n/).forEach(line=>{
+    if(!line.trim())return;
+    let cells=line.split('\t');if(cells.length<2)cells=line.split(/\s{2,}|,|;/);
+    cells=cells.map(c=>c.trim());
+    const emp=(cells[0]||'').toUpperCase();
+    if(!emp||!/^[A-Z]{0,2}\d{3,}$/.test(emp)&&!rosterOf(emp)){bad.push(line);return;}
+    let item='',proc='',procEs='';
+    cells.slice(1).forEach(c=>{
+      if(!c||c==='#N/A')return;
+      const ni=normItem(c);
+      if(ITEMS.includes(ni)||ITEM_ALIAS[ni]||/^(MAIN|FLOOR|DOOR|A\/BAG)$/.test(ni)){item=ni;return;}
+      const np=normProc(c);
+      if(np){proc=np;if(!/[가-힣]/.test(c))procEs=c;}
+    });
+    const prev=out.get(emp);
+    out.set(emp,{emp_id:emp,item:item||(prev?prev.item:''),process:proc||(prev?prev.process:''),process_es:procEs||(prev?prev.process_es:'')||(WK_PROC_ES[proc]||'')});
+  });
+  return{rows:[...out.values()],bad};
+}
+function showWkParse(){
+  const {rows,bad}=parseWkPaste($('wkPaste').value);
+  const el=$('wkPasteInfo');
+  if(!rows.length&&!bad.length){el.textContent='';return;}
+  const noItem=rows.filter(r=>!r.item).length,noProc=rows.filter(r=>!r.process).length;
+  el.innerHTML=`${t('wk_parse')} <b>${rows.length}</b>${noItem?` · ${t('wk_noitem')} ${noItem}`:''}${noProc?` · ${LANG==='es'?'sin proceso':'공정 없음'} ${noProc}`:''}${bad.length?` · <span style="color:var(--red)">${t('wk_bad')} ${bad.length}</span>`:''}`;
+}
+async function saveWkPaste(){
+  if(!WK_OK){toast(t('wk_tbl'),true);return;}
+  const {rows}=parseWkPaste($('wkPaste').value);
+  if(!rows.length){toast(t('wk_noemp'),true);return;}
+  const btn=$('wkPasteSave');btn.disabled=true;
+  try{
+    const now=new Date().toISOString();
+    for(let i=0;i<rows.length;i+=200){
+      const chunk=rows.slice(i,i+200).map(r=>({plant:PLANT,emp_id:r.emp_id,item:r.item||null,process:r.process||null,process_es:r.process_es||null,updated_at:now}));
+      await sb(WK_TBL,{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify(chunk)});
+    }
+    rows.forEach(r=>{const w=workerOf(r.emp_id);if(w)Object.assign(w,{item:r.item,process:r.process,process_es:r.process_es});else workers.push({...r});});
+    $('wkPaste').value='';$('wkPasteInfo').textContent='';toast(`${t('wk_saved')} (${rows.length})`);renderWkTable();renderWorkers();
+  }catch(e){toast(e.message,true);}finally{btn.disabled=false;}
+}
+function renderWkTable(){
+  const tb=$('wkTbl');if(!tb)return;
+  // 필터 셀렉트
+  const curI=$('wkTItem').value,curP=$('wkTProc').value;
+  const procsUsed=[...new Set(workers.map(w=>w.process).filter(Boolean))].sort((a,b)=>WK_PROCS.indexOf(a)-WK_PROCS.indexOf(b));
+  $('wkTItem').innerHTML=`<option value="">${t('all')}</option>`+ITEMS.map(i=>`<option value="${esc(i)}">${esc(i)}</option>`).join('')+`<option value="__none">${t('wk_noitem')}</option>`;$('wkTItem').value=curI||'';
+  $('wkTProc').innerHTML=`<option value="">${t('all')}</option>`+procsUsed.map(p=>`<option value="${esc(p)}">${esc(wkProcName(p))}</option>`).join('')+`<option value="__none">${LANG==='es'?'Sin proceso':'공정 없음'}</option>`;$('wkTProc').value=curP||'';
+  // 요약
+  const sum={};workers.forEach(w=>{const k=(w.item||'—')+' · '+(wkProcName(w.process)||'—');sum[k]=(sum[k]||0)+1;});
+  $('wkSum').innerHTML=`<span>${t('wk_total')} <b>${workers.length}</b></span>`+Object.keys(sum).sort().map(k=>`<span>${esc(k)} <b>${sum[k]}</b></span>`).join('');
+  if(!WK_OK){tb.innerHTML=`<tbody><tr><td class="empty" style="padding:22px;text-align:center;color:var(--amb)">${t('wk_tbl')}</td></tr></tbody>`;return;}
+  const q=normName($('wkTQ').value);
+  let rows=workers.filter(w=>(!curI||(curI==='__none'?!w.item:w.item===curI))&&(!curP||(curP==='__none'?!w.process:w.process===curP)));
+  if(q)rows=rows.filter(w=>{const r=rosterOf(w.emp_id);return String(w.emp_id).toLowerCase().includes(q)||(r&&normName(r.name).includes(q));});
+  rows.sort((a,b)=>a.emp_id.localeCompare(b.emp_id));
+  const head=`<thead><tr><th>#</th><th>${t('emp')}</th><th>${t('name')}</th><th>${t('item')}</th><th>${t('proc')}</th><th>${t('career')}</th><th>${t('latest')}</th><th></th></tr></thead>`;
+  if(!rows.length){tb.innerHTML=head+`<tbody><tr><td colspan="8" style="padding:22px;text-align:center;color:var(--mute)">${t('none')}</td></tr></tbody>`;return;}
+  tb.innerHTML=head+'<tbody>'+rows.map((w,i)=>{const r=rosterOf(w.emp_id);const le=history.find(h=>String(h.emp_id||'').toUpperCase()===w.emp_id.toUpperCase());
+    return `<tr><td class="n" style="color:var(--mute)">${i+1}</td><td style="font-family:var(--code);color:var(--ac2)">${esc(w.emp_id)}</td><td style="font-weight:700;color:#fff">${esc(r?r.name:'')}${r&&r.active===false?` <span class="tg warn" style="font-size:11px;color:var(--amb)">${LANG==='es'?'Baja':'퇴사'}</span>`:''}</td>
+      <td>${w.item?esc(w.item):`<span style="color:var(--amb)">${t('wk_noitem')}</span>`}</td><td>${esc(wkProcName(w.process))||'—'}${w.process_es&&LANG==='ko'?` <small style="color:var(--mute)">${esc(w.process_es)}</small>`:''}</td>
+      <td>${esc(career(r?r.hire_date:null))}</td><td>${le?`${esc(le.eval_date)} ${lvTag(le.level||'')}`:'—'}</td><td><button class="btn red sm" data-wrm="${esc(w.emp_id)}">${t('del')}</button></td></tr>`;}).join('')+'</tbody>';
+}
+function exportWk(){
+  if(!window.XLSX){toast('XLSX',true);return;}
+  const rows=workers.slice().sort((a,b)=>a.emp_id.localeCompare(b.emp_id)).map(w=>{const r=rosterOf(w.emp_id);return{[t('emp')]:w.emp_id,[t('name')]:r?r.name:'',[t('item')]:w.item||'',[t('proc')]:wkProcName(w.process),'ES':w.process_es||'',[t('career')]:career(r?r.hire_date:null)};});
+  const ws=XLSX.utils.json_to_sheet(rows);ws['!cols']=[{wch:13},{wch:30},{wch:9},{wch:10},{wch:14},{wch:12}];
+  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Lista');XLSX.writeFile(wb,`${t('xls_name')}_명단_P${PLANT}_${today()}.xlsx`);
+}
 
 /* ── 이전 점수 자동 ── */
 function fillPrev(){
@@ -644,16 +878,22 @@ function fillPrev(){
 }
 
 /* ── 작업자 선택 ── */
-function pickWorker(v){
+function findRoster(v){
   const m=String(v||'').split(' · ');let r=null;
   if(m.length>1)r=roster.find(x=>String(x.emp_id||'')===m[m.length-1].trim());
   if(!r){const q=normName(v);r=roster.find(x=>String(x.emp_id||'').toUpperCase()===String(v).trim().toUpperCase())||roster.find(x=>normName(x.name)===q);}
+  return r||null;
+}
+function pickWorker(v){
+  const r=findRoster(v);
   if(!r)return false;
   $('wkName').value=r.name;$('wkEmp').value=r.emp_id||'';$('wkCareer').value=career(r.hire_date,$('evDate').value);$('wkSearch').value='';
   if(!$('wkFactory').value)$('wkFactory').value=`YURA HARNESS MÉXICO ${PLANT}${LANG==='es'?' Planta':'공장'}`;
   const last=history.find(x=>String(x.emp_id||'')===String(r.emp_id||''));
   if(last){['car','line','shift'].forEach(k=>{const el=$('wk'+k[0].toUpperCase()+k.slice(1));if(el&&!el.value)el.value=last[k]||'';});
-           if(!S.id){if(ITEMS.includes(last.item))S.item=last.item;if(PROCS.includes(last.process)){setProcess(last.process,last.multi);}else{const sd=stdFor(S.process,S.multi);S.uph=sd.uph;S.tt=sd.tt;}}}
+           if(!S.id&&pickWorker._follow){if(ITEMS.includes(last.item))S.item=last.item;if(PROCS.includes(last.process)){setProcess(last.process,last.multi);}else{const sd=stdFor(S.process,S.multi);S.uph=sd.uph;S.tt=sd.tt;}}}
+  if(!S.id&&last&&last.multi&&MULTI_OK.includes(S.process)&&last.process===S.process&&!S.multi){setProcess(S.process,true);}
+  $('wkItem').value=S.item;
   S.prevAuto=true;fillPrev();renderEval();return true;
 }
 
@@ -676,15 +916,17 @@ async function save(){
     if(S.id){await sb(`assy_eval?id=eq.${S.id}`,{method:'PATCH',body:JSON.stringify(d)});toast(t('updated'));}
     else{const r=await sb('assy_eval',{method:'POST',body:JSON.stringify(d)});S.id=r[0]&&r[0].id;toast(t('saved'));}
     try{localStorage.setItem('assy_eval_evaluator',JSON.stringify({dept:d.evaluator_dept,name:d.evaluator_name}));}catch(e){}
-    await loadHistory();fillDatalists();renderVerdict();
+    await loadHistory();fillDatalists();renderVerdict();renderWorkers();
+    ensureWorker(d.emp_id,d.item);
   }catch(e){toast(e.message,true);}finally{btn.disabled=false;}
 }
 function newEval(keepEval=true){
-  S=blankState();
+  const prevItem=S&&S.item,prevProc=S&&S.process;
+  S=blankState();if(keepEval){if(prevItem)S.item=prevItem;if(prevProc)S.process=prevProc;}
   ['wkSearch','wkName','wkEmp','wkCareer','wkFactory','wkCar','wkItem','wkLine','opinion'].forEach(k=>$(k).value='');$('wkShift').value='';
   if(!keepEval){$('evDept').value='';$('evName').value='';}
   try{const e=JSON.parse(localStorage.getItem('assy_eval_evaluator')||'null');if(e){if(!$('evDept').value)$('evDept').value=e.dept||'';if(!$('evName').value)$('evName').value=e.name||'';}}catch(e){}
-  $('evDate').value=today();S.item=ITEMS[0]||DEF_ITEM;$('wkItem').value=S.item;setProcess('서브',false);
+  $('evDate').value=today();S.item=keepEval?(S.item||ITEMS[0]||DEF_ITEM):(ITEMS[0]||DEF_ITEM);$('wkItem').value=S.item;setProcess(keepEval&&PROCS.includes(S.process)?S.process:'서브',false);
 }
 function loadRecord(h){
   S={id:h.id,item:ITEMS.includes(h.item)?h.item:(h.item||DEF_ITEM),process:h.process,multi:!!h.multi,uph:num(h.uph),tt:num(h.tt),defect:!!h.defect,omission:!!h.omission,prevAuto:false,
@@ -884,7 +1126,7 @@ function applyLang(){
   $('plantTag').textContent=LANG==='es'?`PLANTA ${PLANT} · ENSAMBLE`:`${PLANT}공장 · 조립생산팀`;
   document.title=t('title')+` (${PLANT}${LANG==='es'?'':'공장'})`;
   const tag=$('dbtag');if(tag.classList.contains('ok'))tag.textContent=t('db_ok');else if(tag.classList.contains('err'))tag.textContent=TBL_OK?t('db_err'):t('db_tbl');
-  fillHistFilters();fillItemSelects();renderEval();
+  fillHistFilters();fillItemSelects();renderEval();renderWkTable();
   const on=document.querySelector('.tab.on');if(on)showTab(on.id.slice(2));
 }
 
@@ -917,9 +1159,24 @@ document.addEventListener('DOMContentLoaded',async()=>{
     renderStd();renderVerdict();
   });
   $('resTbl').addEventListener('keydown',e=>{if(e.key==='Enter'){const ins=[...$('resTbl').querySelectorAll('input[data-k="time"]')];const i=ins.indexOf(e.target);if(i>-1&&ins[i+1])ins[i+1].focus();else if(i>-1)$('opinion').focus();}});
-  $('wkSearch').addEventListener('change',e=>{if(!pickWorker(e.target.value)&&e.target.value)toast(LANG==='es'?'No está en la lista':'명단에 없는 작업자입니다 — 성명·사번을 직접 입력하세요',true);});
-  $('wkSearch').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();pickWorker(e.target.value);}});
-  ['wkEmp','wkName'].forEach(k=>$(k).addEventListener('change',()=>{S.prevAuto=true;fillPrev();renderRes();renderVerdict();}));
+  // 명단 패널
+  $('wkList').addEventListener('click',e=>{
+    const rm=e.target.closest('[data-rm]');if(rm){e.stopPropagation();removeWorker(rm.dataset.rm);return;}
+    const c=e.target.closest('.wk-chip');if(!c)return;
+    if(!pickWorker(c.dataset.emp)){ // 명단엔 있으나 직원 마스터에 없음 → 사번만
+      $('wkEmp').value=c.dataset.emp;$('wkName').value='';S.prevAuto=true;fillPrev();renderEval();}
+  });
+  $('wkFilter').addEventListener('input',renderWorkers);$('wkAll').addEventListener('change',renderWorkers);
+  $('wkAddBtn').onclick=()=>{const b=$('wkAdd');b.style.display=b.style.display==='none'?'flex':'none';if(b.style.display==='flex')$('wkSearch').focus();};
+  $('wkAddCancel').onclick=()=>{$('wkAdd').style.display='none';$('wkSearch').value='';};
+  $('wkAddOk').onclick=addWorkerFromSearch;
+  $('wkSearch').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addWorkerFromSearch();}});
+  ['wkEmp','wkName'].forEach(k=>$(k).addEventListener('change',()=>{S.prevAuto=true;fillPrev();renderRes();renderVerdict();renderWorkers();}));
+  // 명단 관리 (기준 설정 탭)
+  $('wkPaste').addEventListener('input',showWkParse);$('wkPasteClear').onclick=()=>{$('wkPaste').value='';$('wkPasteInfo').textContent='';};
+  $('wkPasteSave').onclick=saveWkPaste;$('wkXls').onclick=exportWk;
+  ['wkTItem','wkTProc'].forEach(k=>$(k).addEventListener('change',renderWkTable));$('wkTQ').addEventListener('input',renderWkTable);
+  $('wkTbl').addEventListener('click',e=>{const b=e.target.closest('[data-wrm]');if(b)removeWorker(b.dataset.wrm);});
   $('evDate').addEventListener('change',()=>{const r=roster.find(x=>String(x.emp_id||'')===$('wkEmp').value.trim());if(r)$('wkCareer').value=career(r.hire_date,$('evDate').value);if(S.prevAuto){fillPrev();renderRes();}});
   $('ckDefect').onclick=()=>{S.defect=!S.defect;renderVerdict();};
   $('ckOmit').onclick=()=>{S.omission=!S.omission;renderVerdict();};
@@ -934,8 +1191,8 @@ document.addEventListener('DOMContentLoaded',async()=>{
   await loadAll();
   // 자격인증 앱에서 사번을 넘겨 열 때 (?emp=)
   const qEmp=new URLSearchParams(location.search).get('emp');
-  if(qEmp)pickWorker(qEmp);
-  setProcess(S.process,S.multi);
+  if(qEmp){pickWorker._follow=true;pickWorker(qEmp);pickWorker._follow=false;}
+  setProcess(S.process,S.multi);renderWkTable();
 });
 </script>
 </body>
