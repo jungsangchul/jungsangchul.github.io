@@ -129,6 +129,7 @@ tr.mutedr td{color:var(--dim)}
 .grid2{display:grid;grid-template-columns:2fr 1fr;gap:14px}
 .grid2>.card{min-width:0}
 .grid2.dates{grid-template-columns:minmax(0,1fr) 300px}
+.grid2.half{grid-template-columns:minmax(0,1fr) minmax(0,1.15fr)}
 @media(max-width:1100px){.grid2.dates{grid-template-columns:1fr}}
 @media(max-width:900px){.grid2{grid-template-columns:1fr}}
 .dl{max-height:420px;overflow:auto;border:1px solid var(--line2);border-radius:var(--r);background:var(--panel)}
@@ -297,7 +298,7 @@ table.cfg input{width:17px;height:17px}
 <!-- ===== 재고현황 ===== -->
 <!-- ===== 생산계획 ===== -->
 <section class="tab" id="t-plan">
-  <div class="grid2">
+  <div class="grid2 half">
     <div class="card">
       <h3 data-t="pl_h">일생산계획 등록</h3>
       <div class="hint" data-t="pl_hint">계획일자를 정하고 품번-개정을 골라 수량을 추가하거나, 엑셀에서 「품번-개정 · 수량」 또는 「품번 · 개정 · 수량」을 붙여넣으세요(머릿글 없어도 됨, 직접 입력 시 띄어쓰기로 구분해도 됨). 품번 91500-GG920-46은 BOM의 자재코드 91500-GG920 + 개정 46과 맞춥니다. 같은 날짜·품번·개정은 수량이 덮어써집니다.</div>
@@ -312,7 +313,10 @@ table.cfg input{width:17px;height:17px}
         <label class="chkl" style="padding:0"><input type="checkbox" id="pFb" checked><span data-t="pl_fb">개정이 BOM과 다르면 BOM 개정 사용</span></label></div>
       <div class="tw m" id="pPrevW" hidden style="margin-top:10px"><table id="pPrev"></table></div>
     </div>
-    <div class="card"><h3 data-t="pl_dates">저장된 계획 날짜</h3><div class="dl" id="pDates" style="max-height:200px"></div>
+    <div class="card"><div class="row hd"><h3 data-t="pl_dates">저장된 계획 날짜</h3>
+        <div class="row"><button class="btn" id="rReq" data-t="pl_req_btn" disabled>신청완료 (신청수량 기록)</button><button class="btn sec" id="rCancel" data-t="pl_req_cancel" disabled>신청취소</button></div></div>
+      <div class="hint" id="rReqInfo" style="margin-bottom:8px"></div>
+      <div class="dl" id="pDates" style="max-height:200px"></div>
       <div id="pDayW" hidden style="margin-top:12px"><div class="prev" id="pDayInfo"></div><div class="tw m" style="max-height:48vh"><table id="pDay"></table></div></div></div>
   </div>
   <div class="card">
@@ -329,7 +333,6 @@ table.cfg input{width:17px;height:17px}
         <label><input type="checkbox" value="A" checked>A</label><label><input type="checkbox" value="B" checked>B</label><label><input type="checkbox" value="C">C</label></div></div>
       <button class="btn sec" id="rCopy" data-t="copy">복사</button>
       <button class="btn sec" id="rXlsx" data-t="xlsx">엑셀</button>
-      <button class="btn" id="rReq" data-t="pl_req_btn" disabled>신청완료 (신청수량 기록)</button>
     </div>
     <div class="hint" id="rInfo" style="margin-top:8px"></div>
   </div>
@@ -413,7 +416,7 @@ table.cfg input{width:17px;height:17px}
         <label class="f"><span data-t="in_date">입고일자</span><input type="date" id="nDate"></label>
         <label class="f" style="flex:1;min-width:140px"><span data-t="memo">메모</span><input id="nMemo"></label>
         <label class="chkl"><input type="checkbox" id="nCreate"><span data-t="create_new2">찾지 못한 행은 신규 품목으로 추가 (붙여넣은 자재코드 사용)</span></label>
-        <label class="chkl"><input type="checkbox" id="nLen"><span data-t="in_len">ROLL 자재 수량이 길이(mm·m)로 적혀 있음 → 롤로 환산해 등록 (단위 칸이 EA·ROLL인 행은 롤 개수로 봄)</span></label>
+        <label class="chkl"><input type="checkbox" id="nLen" checked><span data-t="in_len">ROLL 자재 수량이 길이(mm·m)로 적혀 있음 → 롤로 환산해 등록 (단위 칸이 EA·ROLL인 행은 롤 개수로 봄)</span></label>
       </div>
       <textarea id="nPaste"></textarea><div class="prev" id="nInfo"></div>
       <div class="row"><button class="btn" id="nSave" data-t="save" disabled>저장</button><button class="btn sec" id="nClear" data-t="clear">지우기</button></div>
@@ -581,7 +584,7 @@ const H={apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json
 /* ================= i18n ================= */
 const ES={title:'Gestión de materiales · Ensamble',plant:'Planta 2 México · Torreón',worker:'Operador',home:'Inicio',
 tab_plan:'Plan de producción',tab_stk:'Inventario',tab_init:'Stock inicial',tab_in:'Entradas (24110)',tab_sub:'Prod. SUB (80230)',tab_assy:'Prod. ensamble (80350)',tab_adj:'Ajuste de stock',tab_bom:'Maestro BOM',tab_log:'Historial',
-product:'Producto (No. parte)',run:'Consultar',search:'Buscar',show:'Mostrar',o_all:'Todo',o_neg:'Faltante (negativo)',o_pos:'Con stock',o_zero:'Stock 0',o_moved:'Con movimientos',o_care:'Alerta (bajo mínimo)',o_chk2:'Faltante+alerta',thr:'Mínimo de alerta (stock <)',k_care:'Alerta',pl_h:'Registrar plan diario',pl_hint:'Elija la fecha y el No. parte-revisión y agregue la cantidad, o pegue desde Excel «parte-rev · cantidad» o «parte · rev · cantidad» (sin encabezado OK). 91500-GG920-46 se compara con código 91500-GG920 + revisión 46 del BOM. La misma fecha·parte·revisión sobrescribe la cantidad.',pl_date:'Fecha del plan',pl_qty:'Cantidad',pl_add:'Agregar',pl_fb:'Si la revisión no coincide, usar la del BOM',pl_dates:'Fechas con plan',pl_req_h:'Cálculo de necesidad · lista de solicitud',pl_calc:'Calcular',o_req:'A solicitar',o_chk:'Solicitar+alerta',o_ok:'Suficiente (OK)',k_plan:'Partes planeadas',k_planqty:'Cant. planeada',k_mat:'Materiales',k_req:'A solicitar',pl_formula:'Necesidad = Σ(cant. plan × consumo/u) · A solicitar = necesidad − stock − ya solicitado (pendiente) (mín. 0) · Alerta = no se solicita pero el stock restante queda bajo el mínimo · el mínimo se configura en Inventario. Con «Solicitud hecha» se registran las cantidades mostradas: al agregar otro plan no se vuelven a solicitar, y las entradas registradas reducen el saldo pendiente.',pl_list:'Planes registrados (periodo)',pl_req_btn:'Solicitud hecha (registrar cantidades)',pl_open_h:'Pendientes de entrada (solicitado · sin recibir)',pl_open_all:'Incluir cerradas',o_wait:'Pendiente (solicitado)',k_wait:'Pendiente (solicitado)',q_add:'+ Solicitud extra',p_q_code:'Código',p_q_qty:'Cantidad extra',p_q_memo:'Nota (opcional)',q_hint:'Saldo solicitado que aún no entra. Se resta al calcular, para no solicitar de más. Las entradas reducen el saldo desde la solicitud más antigua; si una solicitud ya no llegará, ciérrela para volver a solicitarla. Las solicitudes extra del encargado se registran con «+ Solicitud extra».',p_plan:'91500-GG920-46\t120  (o 91500-GG920\t46\t120)',
+product:'Producto (No. parte)',run:'Consultar',search:'Buscar',show:'Mostrar',o_all:'Todo',o_neg:'Faltante (negativo)',o_pos:'Con stock',o_zero:'Stock 0',o_moved:'Con movimientos',o_care:'Alerta (bajo mínimo)',o_chk2:'Faltante+alerta',thr:'Mínimo de alerta (stock <)',k_care:'Alerta',pl_h:'Registrar plan diario',pl_hint:'Elija la fecha y el No. parte-revisión y agregue la cantidad, o pegue desde Excel «parte-rev · cantidad» o «parte · rev · cantidad» (sin encabezado OK). 91500-GG920-46 se compara con código 91500-GG920 + revisión 46 del BOM. La misma fecha·parte·revisión sobrescribe la cantidad.',pl_date:'Fecha del plan',pl_qty:'Cantidad',pl_add:'Agregar',pl_fb:'Si la revisión no coincide, usar la del BOM',pl_dates:'Fechas con plan',pl_req_h:'Cálculo de necesidad · lista de solicitud',pl_calc:'Calcular',o_req:'A solicitar',o_chk:'Solicitar+alerta',o_ok:'Suficiente (OK)',k_plan:'Partes planeadas',k_planqty:'Cant. planeada',k_mat:'Materiales',k_req:'A solicitar',pl_formula:'Necesidad = Σ(cant. plan × consumo/u) · A solicitar = necesidad − stock − ya solicitado (pendiente) (mín. 0) · Alerta = no se solicita pero el stock restante queda bajo el mínimo · el mínimo se configura en Inventario. Con «Solicitud hecha» se registran las cantidades mostradas: al agregar otro plan no se vuelven a solicitar, y las entradas registradas reducen el saldo pendiente.',pl_list:'Planes registrados (periodo)',pl_req_btn:'Solicitud hecha (registrar cantidades)',pl_req_cancel:'Cancelar solicitud',pl_open_h:'Pendientes de entrada (solicitado · sin recibir)',pl_open_all:'Incluir cerradas',o_wait:'Pendiente (solicitado)',k_wait:'Pendiente (solicitado)',q_add:'+ Solicitud extra',p_q_code:'Código',p_q_qty:'Cantidad extra',p_q_memo:'Nota (opcional)',q_hint:'Saldo solicitado que aún no entra. Se resta al calcular, para no solicitar de más. Las entradas reducen el saldo desde la solicitud más antigua; si una solicitud ya no llegará, ciérrela para volver a solicitarla. Las solicitudes extra del encargado se registran con «+ Solicitud extra».',p_plan:'91500-GG920-46\t120  (o 91500-GG920\t46\t120)',
 proc:'Proceso (A·B ensamble · C corte)',copy:'Copiar',xlsx:'Excel',k_items:'Materiales',k_neg:'Faltante (<0)',k_pos:'Con stock',k_last:'Último registro',
 stk_formula:'Stock actual = Stock inicial + Entradas − Consumo SUB − Consumo ensamble ± Ajustes · Toque el número de Stock para ajustar; toque el código para ver el historial del material; las demás celdas se pueden seleccionar y copiar. Los materiales MM·M con largo por rollo definido (unidad ROLL) se muestran e ingresan en rollos.',
 init_h:'Pegar stock inicial',init_hint:'Pegue código y cantidad (sin encabezado OK). La primera columna es el código y la última la cantidad; la cantidad pasa a ser el stock actual (sobrescribe). También puede descargar la plantilla de todos los materiales y llenar solo la columna amarilla. Las filas sin cantidad se omiten.',
@@ -1596,7 +1599,7 @@ async function planLoad(){const f=$('rF').value,t=$('rT').value;let q='binv2_pla
   busy(true,tr('산출 중…','Calculando…'));try{PLAN=await sel(q);await planCalc()}catch(e){toast(errMsg(e),1)}finally{busy(false)}planListRender();reqRender()}
 let OPENREQ=new Map(),QROWS=[];
 async function reqOpenLoad(){try{QROWS=await sel('binv2_req?select=*&order=id.desc&limit=2000')}catch(e){QROWS=[]}
-  OPENREQ=new Map();QROWS.forEach(r=>{if(r.status==='open'&&Number(r.remaining)>0)OPENREQ.set(r.code,(OPENREQ.get(r.code)||0)+toR(r.code,r.remaining))});reqOpenRender()}
+  OPENREQ=new Map();QROWS.forEach(r=>{if(r.status==='open'&&Number(r.remaining)>0)OPENREQ.set(r.code,(OPENREQ.get(r.code)||0)+toR(r.code,r.remaining))});reqOpenRender();reqInfoRender()}
 function reqOpenRender(){if(!$('qTbl'))return;const all=$('qAll').checked,rows=QROWS.filter(r=>all||r.status==='open');
   $('qInfo').textContent=tr(`미입고 ${QROWS.filter(r=>r.status==='open').length}건`,`${QROWS.filter(r=>r.status==='open').length} pendientes`);
   tbl('qTbl',[{h:['신청일','Fecha'],k:'req_date'},{h:['자재코드','Código'],k:'code'},{h:['자재명','Nombre'],v:r=>(IMAP[r.code]||{}).name||'',cls:'mute'},{h:['단위','Unidad'],v:r=>(IMAP[r.code]||{}).unit||''},
@@ -1613,6 +1616,15 @@ function reqOpenXlsx(){const all=$('qAll').checked,rows=QROWS.filter(r=>all||r.s
   xlsxDownload(`조립자재_입고대기리스트_2공장_${stamp()}.xlsx`,[xsheet(tr('입고대기','Pendientes'),xTitle(tr('입고대기 리스트 (신청완료 · 미입고)','Pendientes de entrada')),xSub(all?tr('마감 포함','incl. cerradas'):tr('미입고만','solo pendientes'),rows.length),
     [{h:['신청일','Fecha'],k:'req_date'},{h:['자재코드','Código'],k:'code'},{h:['자재명','Nombre'],v:r=>(IMAP[r.code]||{}).name||''},{h:['업체품명','Nombre proveedor'],v:r=>(IMAP[r.code]||{}).vendor_part||''},{h:['단위','Unidad'],v:r=>(IMAP[r.code]||{}).unit||''},
      {h:['신청량','Solicitado'],v:r=>toR(r.code,r.qty),t:'n',sum:1},{h:['미입고 잔량','Pendiente'],v:r=>toR(r.code,r.remaining),t:'n',sum:1},{h:['계획 기간','Periodo'],v:r=>(r.plan_from||'')+' ~ '+(r.plan_to||'')},{h:['작업자','Operador'],k:'worker'},{h:['메모','Nota'],k:'memo'},{h:['상태','Estado'],v:r=>r.status==='open'?tr('미입고','Pendiente'):tr('마감','Cerrada')}],rows)])}
+function reqPeriodRows(){const f=$('rF').value||null,t=$('rT').value||null;return QROWS.filter(r=>(r.plan_from||null)===f&&(r.plan_to||null)===t&&String(r.memo||'').startsWith(tr('신청 리스트','Lista de solicitud'))&&r.status==='open')}
+function reqInfoRender(){const el=$('rReqInfo');if(!el)return;const f=$('rF').value,t=$('rT').value,rows=reqPeriodRows(),nreq=REQ?REQ.rows.filter(r=>(r.missing||procOk(r,reqProcs()))&&r.st==='req').length:0;
+  const can=REQ&&reqFiltered().some(r=>r.req>0&&!r.missing);$('rReq').disabled=!can;$('rCancel').disabled=!rows.length;
+  el.innerHTML=!REQ?'':rows.length?tr(`기간 ${f} ~ ${t} · 신청완료 <b>${rows.length}</b>종 (미입고 잔량 ${fmt(rows.reduce((s,r)=>s+toR(r.code,r.remaining),0))}) · 추가 신청 필요 ${nreq}종`,`Periodo ${f} ~ ${t} · solicitado <b>${rows.length}</b> (pendiente ${fmt(rows.reduce((s,r)=>s+toR(r.code,r.remaining),0))}) · falta solicitar ${nreq}`)
+    :tr(`기간 ${f} ~ ${t} · 신청 필요 <b>${nreq}</b>종 — 산출 결과를 확인한 뒤 「신청완료」를 누르세요`,`Periodo ${f} ~ ${t} · a solicitar <b>${nreq}</b> — revise y pulse «Solicitud hecha»`)}
+async function reqCancel(){const rows=reqPeriodRows();if(!rows.length)return;
+  const tot=rows.reduce((s,r)=>s+toR(r.code,r.remaining),0);
+  if(!confirm(tr(`기간 ${$('rF').value} ~ ${$('rT').value}의 신청완료 ${rows.length}종(미입고 잔량 ${fmt(tot)})을 취소합니다. 입고대기 리스트에서 삭제되고 다음 산출에서 다시 신청 대상이 됩니다. 진행할까요?`,`¿Cancelar la solicitud de ${rows.length} materiales del periodo? Se quitan de pendientes y volverán a solicitarse.`)))return;
+  busy(true);try{await del('binv2_req','id=in.('+rows.map(r=>r.id).join(',')+')');toast(tr(`${rows.length}건 신청취소`,`${rows.length} canceladas`));await reqOpenLoad();if(REQ){await planCalc();reqRender()}}catch(e){toast(errMsg(e),1)}finally{busy(false)}}
 async function reqSave(){if(!REQ)return;const rows=reqFiltered().filter(r=>r.req>0&&!r.missing);if(!rows.length){toast(tr('신청수량이 있는 자재가 없습니다','No hay cantidades a solicitar'));return}
   const tot=rows.reduce((s,r)=>s+r.req,0);
   if(!confirm(tr(`표시된 ${rows.length}개 자재의 신청수량(합계 ${fmt(tot)})을 신청완료로 기록합니다. 기록된 수량은 입고될 때까지 다음 산출에서 신청수량에서 빠집니다. 진행할까요?`,`¿Registrar la solicitud de ${rows.length} materiales (total ${fmt(tot)})? Las cantidades no se volverán a solicitar hasta que entren.`)))return;
@@ -1641,8 +1653,8 @@ function reqCols(){return[
 const reqProcs=()=>[...document.querySelectorAll('#rProc input:checked')].map(x=>x.value);
 function reqFiltered(){if(!REQ)return[];const q=nz($('rQ').value),show=$('rShow').value,procs=reqProcs();
   return REQ.rows.filter(r=>(r.missing||procOk(r,procs))&&(!q||nz(r.code+' '+(r.name||'')+' '+(r.vendor_part||'')).includes(q))&&(show==='req'?r.st==='req':show==='wait'?r.open>0:show==='chk'?r.st!=='ok':show==='ok'?r.st==='ok':true))}
-function reqRender(){const R=REQ;if(!R){['kPlan','kPlanQty','kMat','kReq','kWait','kRCare'].forEach(k=>$(k).textContent='-');$('rInfo').textContent='';tbl('rTbl',reqCols(),[]);$('rReq').disabled=true;return}
-  $('rReq').disabled=!reqFiltered().some(r=>r.req>0&&!r.missing);
+function reqRender(){const R=REQ;if(!R){['kPlan','kPlanQty','kMat','kReq','kWait','kRCare'].forEach(k=>$(k).textContent='-');$('rInfo').textContent='';tbl('rTbl',reqCols(),[]);reqInfoRender();return}
+  reqInfoRender();
   const procs=reqProcs(),base=R.rows.filter(r=>r.missing||procOk(r,procs));
   $('kPlan').textContent=R.parts.toLocaleString();$('kPlanQty').textContent=fmt(R.qty);$('kMat').textContent=base.length.toLocaleString();
   $('kReq').textContent=base.filter(r=>r.st==='req').length.toLocaleString();$('kWait').textContent=base.filter(r=>r.open>0).length.toLocaleString();$('kRCare').textContent=base.filter(r=>r.st==='care').length.toLocaleString();
@@ -1690,7 +1702,7 @@ async function boot(){
   bindPaste('pPaste',planParse);$('pFb').onchange=()=>{if(PASTE.pPaste)planParse(PASTE.pPaste);if(REQ)planLoad()};$('pAdd').onclick=planAddManual;$('pQty').addEventListener('keydown',e=>{if(e.key==='Enter')planAddManual()});
   $('pClear').onclick=()=>{clearPaste('pPaste');PLP=null;planRender()};$('pSave').onclick=planSave;
   $('rGo').onclick=()=>{PLSEL=null;planDates();planLoad()};$('rQ').addEventListener('input',reqRender);$('rShow').onchange=reqRender;document.querySelectorAll('#rProc input').forEach(x=>x.addEventListener('change',reqRender));
-  document.querySelectorAll('#t-plan .kpi[data-f]').forEach(k=>k.onclick=()=>{$('rShow').value=k.dataset.f;reqRender()});$('rXlsx').onclick=reqXlsx;$('rCopy').onclick=reqCopy;$('rReq').onclick=reqSave;$('qAll').onchange=reqOpenRender;$('qAdd').onclick=reqAdd;$('qX').onclick=reqOpenXlsx;
+  document.querySelectorAll('#t-plan .kpi[data-f]').forEach(k=>k.onclick=()=>{$('rShow').value=k.dataset.f;reqRender()});$('rXlsx').onclick=reqXlsx;$('rCopy').onclick=reqCopy;$('rReq').onclick=reqSave;$('rCancel').onclick=reqCancel;$('qAll').onchange=reqOpenRender;$('qAdd').onclick=reqAdd;$('qX').onclick=reqOpenXlsx;
   // 기초재고
   bindPaste('iPaste',initParse);$('iCreate').onchange=initRender;$('iClear').onclick=()=>{clearPaste('iPaste');IP=null;initRender()};$('iSave').onclick=initSave;$('iTpl').onclick=initTemplate;
   // 입고
