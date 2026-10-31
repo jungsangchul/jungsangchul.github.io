@@ -152,6 +152,13 @@ label{font-size:0.78rem;color:var(--text2);margin-bottom:0.3rem;display:block;}
 #resultsContainer .results-table tr:nth-child(even) td{background:rgba(255,255,255,0.015);}
 #resultsContainer .results-table tr:hover td{background:rgba(255,255,255,0.04);}
 #resultsContainer .results-table thead th{position:sticky;top:0;z-index:1;background:var(--surface2);}
+.proc-rework{display:inline-block;background:rgba(255,140,0,0.18);color:#ffb347;border:1px solid rgba(255,140,0,0.55);border-radius:6px;padding:0.14rem 0.5rem;font-size:0.76rem;font-weight:800;letter-spacing:0.2px;white-space:nowrap;}
+.proc-lider{display:inline-block;background:rgba(201,168,76,0.16);color:var(--accent,#c9a84c);border:1px solid rgba(201,168,76,0.5);border-radius:6px;padding:0.14rem 0.5rem;font-size:0.76rem;font-weight:800;white-space:nowrap;}
+#resultsContainer .results-table tr.row-rework td{background:rgba(255,140,0,0.05);}
+#resultsContainer .results-table tr.row-rework td:first-child{box-shadow:inset 3px 0 0 #ff8c00;}
+.chip-reeval{display:inline-block;margin-left:0.35rem;background:rgba(230,162,60,0.16);color:var(--orange,#e6a23c);border:1px solid rgba(230,162,60,0.45);border-radius:10px;padding:0.02rem 0.4rem;font-size:0.64rem;font-weight:700;vertical-align:middle;}
+.chip-first{display:inline-block;margin-left:0.35rem;background:rgba(150,150,150,0.15);color:#9aa4b2;border:1px solid rgba(150,150,150,0.35);border-radius:10px;padding:0.02rem 0.4rem;font-size:0.64rem;font-weight:700;vertical-align:middle;}
+.hist-table{width:100%;border-collapse:collapse;font-size:0.78rem;margin:0.4rem 0 0.8rem}.hist-table th,.hist-table td{padding:0.4rem 0.55rem;border-bottom:1px solid var(--border);text-align:center;white-space:nowrap}.hist-table th{color:var(--sky);font-size:0.7rem;letter-spacing:0.5px;background:var(--surface2)}.hist-table tr.cur td{background:rgba(201,168,76,0.08)}
 .results-table thead{background:var(--surface2);}
 .results-table th{color:var(--sky);font-size:.75rem;text-transform:uppercase;letter-spacing:1px;font-weight:700;}
 .results-table tr:hover td{background:rgba(255,255,255,0.03);}
@@ -401,7 +408,7 @@ async function sbLoadAll() {
       sbFetch('exam_practical_items_a1?select=id,name,max_score,sort_order&order=sort_order.asc').catch(()=>null),
       sbFetch('exam_config_a1?select=key,value').catch(()=>[]),
       sbFetch('exam_grade_config_a1?select=label,min_score,color,description,description_es,sort_order&order=sort_order.asc,min_score.desc').catch(()=>[]),
-      sbFetch('v_qual_final_status_a1?select=id,emp_id,resigned,resigned_at,msa_result,msa_grade,msa_grr,msa_group,msa_failed_before,msa_fail_date,msa_reeval_date,final_status').catch(()=>null), // ✅ 퇴사·MSA 연계 최종판정 뷰 (재평가 이력 포함)
+      sbFetch('v_qual_final_status_a1?select=id,emp_id,resigned,resigned_at,msa_result,msa_grade,msa_grr,msa_group,msa_failed_before,msa_fail_date,msa_reeval_date,final_status,attempt_no,attempts,reeval,prev_fail,prev_fail_kind,reeval_passed,superseded').catch(()=>null), // ✅ 퇴사·MSA 연계 최종판정 뷰 (재평가 이력 포함)
     ]);
     // ✅ 서버 연결 실패 감지: 조용히 넘어가지 않고 경고 배너 표시
     var _sbFailed = (qs===null||res===null||stus===null||pitems===null);
@@ -5769,15 +5776,20 @@ function renderResults(){
       if(resultFilter==='final')return st==='최종합격';
       if(resultFilter==='fail')return st==='불합격'||st==='판정대기';
       if(resultFilter==='pending')return st==='판정대기';
-      if(resultFilter==='reeval')return !!(fs&&fs.msa_failed_before);
+      if(resultFilter==='reeval')return !!(fs&&(fs.reeval_passed||fs.msa_failed_before));
       if(resultFilter==='resigned')return st==='퇴사';
       return true;
     });
   }
+  const procCell=p=>{const s=String(p||'');if(!s)return '<span style="color:var(--text2)">-</span>';if(/re-?work|수정/i.test(s))return `<span class="proc-rework">🔧 수정 · Re-Work</span>`;if(/lider|líder|반장/i.test(s))return `<span class="proc-lider">★ 반장 · Líder</span>`;return `<span style="color:var(--text2);font-size:0.78rem">${s}</span>`;};
+  const attemptChip=fs=>{if(!fs||!fs.attempts||fs.attempts<2)return '';const n=fs.attempt_no||1;return n>1?`<span class="chip-reeval">🔄 재평가 ${n}차</span>`:`<span class="chip-first">1차</span>`;};
   const fsBadge=fs=>{
     if(!fs)return'<span style="color:var(--text2);font-size:0.72rem">-</span>';
     if(fs.final_status==='퇴사')return'<span style="background:rgba(150,150,150,0.18);color:#9aa4b2;border:1px solid rgba(150,150,150,0.4);border-radius:4px;padding:0.1rem 0.4rem;font-size:0.72rem;font-weight:700">🚪 퇴사</span>';
-    if(fs.final_status==='최종합격')return'<span style="color:var(--green);font-weight:700;font-size:0.78rem">🏆 최종합격</span>';
+    if(fs.final_status==='최종합격'){
+      if(fs.reeval_passed)return`<span style="color:var(--green);font-weight:700;font-size:0.78rem">🏆 재평가 후 최종합격</span><br><span style="font-size:0.64rem;color:var(--orange,#e6a23c);font-weight:600">🔄 ${fs.prev_fail_kind||''} 재평가 (${fs.attempt_no||2}차)</span>`;
+      return'<span style="color:var(--green);font-weight:700;font-size:0.78rem">🏆 최종합격</span>';
+    }
     if(fs.final_status==='불합격')return'<span style="color:var(--red);font-weight:700;font-size:0.78rem">❌ 불합격</span>';
     return'<span style="color:var(--orange,#e6a23c);font-size:0.76rem;font-weight:700">⏳ 평가대기중</span>';
   };
@@ -5799,7 +5811,7 @@ function renderResults(){
         <option value="final" ${resultFilter==='final'?'selected':''}>🏆 최종합격만 / Solo aprobados finales</option>
         <option value="pending" ${resultFilter==='pending'?'selected':''}>⏳ 평가대기중만 / Pendientes</option>
         <option value="fail" ${resultFilter==='fail'?'selected':''}>❌ 불합격 포함 표시 / No aprobados</option>
-        <option value="reeval" ${resultFilter==='reeval'?'selected':''}>🔄 MSA 재평가통과(개선) / Mejorados tras reeval</option>
+        <option value="reeval" ${resultFilter==='reeval'?'selected':''}>🔄 재평가 후 최종합격 / Aprobados tras reevaluación</option>
         <option value="resigned" ${resultFilter==='resigned'?'selected':''}>🚪 퇴사자만 / Bajas</option>
       </select>
       <span style="font-size:0.74rem;color:var(--text2)">${sorted.length}건 표시 / 평가 ${results.length}건 + 미평가 인원 ${pendingRows.length}명 · 사번순 (최종합격자의 불합격 내역 숨김 · 이론·실습 중 하나라도 없으면 평가대기중)</span>
@@ -5829,7 +5841,7 @@ function renderResults(){
         <td style="font-family:'JetBrains Mono',monospace;color:var(--text2)">${i+1}</td>
         <td style="font-weight:600">${r.name}</td>
         <td style="font-family:'JetBrains Mono',monospace;font-size:0.73rem;color:var(--text2)">${r.empId||'-'}</td>
-        <td style="color:var(--text2);font-size:0.78rem">${r.process||'-'}</td>
+        <td>${procCell(r.process)}</td>
         <td style="color:var(--text2);font-size:0.76rem">-</td>
         <td style="font-size:0.76rem;color:var(--teal)">${calcTenure(r.hireDate)}</td>
         <td><span style="color:var(--text2);font-size:0.72rem">미평가</span></td>
@@ -5843,13 +5855,14 @@ function renderResults(){
       const isResigned=(fs&&fs.resigned)||_stOf(r)==='퇴사';
       const cls=r.totalScore>=80?'score-high':r.totalScore>=60?'score-mid':'score-low';
       const grade=calcGrade(r.totalScore,r.passed);
-      return`<tr style="${isResigned?'opacity:0.55':''}">
+      const isRework=/re-?work|수정/i.test(String(r.process||''));
+      return`<tr class="${isRework?'row-rework':''}" style="${isResigned?'opacity:0.55':''}">
         <td><input type="checkbox" class="row-chk" data-idx="${oi}" onchange="updateSelectedCount()" style="width:auto;cursor:pointer"></td>
         <td style="font-family:'JetBrains Mono',monospace;color:var(--text2)">${i+1}</td>
         <td style="font-weight:600">${r.name}${isResigned?' <span style="background:rgba(150,150,150,0.18);color:#9aa4b2;border:1px solid rgba(150,150,150,0.4);border-radius:4px;padding:0.05rem 0.3rem;font-size:0.65rem;font-weight:700;vertical-align:middle">퇴사</span>':''}</td>
         <td style="font-family:'JetBrains Mono',monospace;font-size:0.73rem;color:var(--text2)">${r.empId||'-'}</td>
-        <td style="color:var(--text2);font-size:0.78rem">${r.process||'-'}</td>
-        <td style="color:var(--text2);font-size:0.76rem">${r.date}</td>
+        <td>${procCell(r.process)}</td>
+        <td style="color:var(--text2);font-size:0.76rem">${r.date}${attemptChip(fs)}</td>
         <td style="font-size:0.76rem;color:var(--teal)">${calcTenure(r.hireDate||lookupHireDate(r.empId))}</td>
         <td>${_noT(r)?'<span style="color:var(--text2);font-size:0.72rem">미평가</span>':`<span class="score-t">${r.theoryWeighted||0}점</span>`}</td>
         <td>${_noP(r)?'<span style="color:var(--text2);font-size:0.72rem">미평가</span>':`<span class="score-p">${r.practicalWeighted||0}점</span>${pracSummaryHtml(r.practicalItemScores)}`}</td>
@@ -5906,6 +5919,7 @@ function showDetail(idx){
       <div class="score-box" style="border:1px solid rgba(155,126,232,0.3)"><div class="score-box-val" style="color:var(--purple)">${r.practicalWeighted||0}</div><div class="score-box-label">실습 점수</div><div class="score-box-sub" style="color:var(--text2)">${r.practicalRaw||0}/${r.practicalMax||'-'} 원점수<br>${r.practicalPct||0}% 반영</div></div>
       <div class="score-box" id="detailTotalBox" style="border:1px solid ${r.passed?'rgba(46,204,122,0.4)':'rgba(224,82,82,0.4)'}"><div class="score-box-val" style="color:${r.passed?'var(--green)':'var(--red)'}">${r.totalScore}</div><div class="score-box-label">총점 / 100점</div><div class="score-box-sub" style="color:${r.passed?'var(--green)':'var(--red)'}">${r.passed?'✅ 합격':'❌ 불합격'}</div></div>
     </div>
+    ${evalHistoryHtml(r)}
     ${pracDetailHtml(r)}
     <div class="score-bar-wrap">
       <div class="score-bar-label"><span>점수 구성</span><span style="font-size:0.7rem"><span style="color:var(--blue)">■ 이론 ${r.theoryWeighted||0}점</span> + <span style="color:var(--purple)">■ 실습 ${r.practicalWeighted||0}점</span></span></div>
@@ -5924,6 +5938,29 @@ function showDetail(idx){
   document.getElementById('detailModal').classList.add('open');
 }
 
+// ✅ 같은 사번의 전체 평가 이력(1차 → 재평가) 표 (2026-10-31)
+function evalHistoryHtml(r){
+  const key=String(r.empId||'').trim().toUpperCase(); if(!key)return '';
+  const cfg=getConfig(); const pass=parseFloat(cfg.passingScore)||60;
+  const rows=results.map((x,i)=>({x,i})).filter(o=>String(o.x.empId||'').trim().toUpperCase()===key)
+    .sort((a,b)=>(new Date(a.x.date||0)-new Date(b.x.date||0))||((a.x.timestamp||0)-(b.x.timestamp||0)));
+  if(rows.length<2)return '';
+  const lvOf=x=>{const it=(x.practicalItemScores||[]).find(s=>Array.isArray(s.measures)&&s.measures.length);const m=it&&it.measures[0];if(!m)return '';return (m.omission||m.defect)?`${m.level||''} <span style="color:var(--red)">과락(${m.omission?'누락':'부적합'})</span>`:(m.level||'');};
+  const tOk=x=>x.theoryRaw!=null&&x.theoryRawMax&&(x.theoryRaw/x.theoryRawMax)>=0.6;
+  const pOk=x=>(parseFloat(x.practicalWeighted)||0)>0;
+  const body=rows.map((o,k)=>{const x=o.x;const ok=(parseFloat(x.totalScore)||0)>=pass;const cur=o.x===r;
+    const why=ok?'':[(!tOk(x)?'이론 미달':''),(!pOk(x)?'실습 과락':'')].filter(Boolean).join(' · ');
+    return `<tr class="${cur?'cur':''}"><td>${k===0?'1차':`재평가 ${k+1}차`}${cur?' <span style="color:var(--accent);font-size:0.66rem">◀ 현재</span>':''}</td><td>${x.date||'-'}</td>
+      <td><span class="score-t">${x.theoryWeighted||0}점</span> <span style="font-size:0.68rem;color:var(--text2)">(${x.theoryRaw??'-'}/${x.theoryRawMax??'-'})</span></td>
+      <td><span class="score-p">${x.practicalWeighted||0}점</span> <span style="font-size:0.68rem;color:var(--text2)">${lvOf(x)}</span></td>
+      <td><b style="color:${ok?'var(--green)':'var(--red)'}">${x.totalScore}점</b></td>
+      <td>${ok?'<span style="color:var(--green)">✅ 합격</span>':`<span style="color:var(--red)">❌ 불합격</span><br><span style="font-size:0.66rem;color:var(--orange,#e6a23c)">${why}</span>`}</td>
+      <td>${cur?'':`<button class="btn btn-outline btn-sm" style="font-size:0.7rem;padding:0.15rem 0.5rem" onclick="showDetail(${o.i})">보기</button>`}</td></tr>`;}).join('');
+  const last=rows[rows.length-1].x, firstFail=rows.some((o,k)=>k<rows.length-1&&(parseFloat(o.x.totalScore)||0)<pass);
+  const head=firstFail&&(parseFloat(last.totalScore)||0)>=pass?`<span style="color:var(--green);font-weight:700">🏆 재평가 후 최종합격</span>`:`<span style="color:var(--text2)">평가 ${rows.length}회</span>`;
+  return `<div style="margin:0.2rem 0 0.6rem"><div style="font-size:0.8rem;font-weight:700;color:var(--text2);display:flex;justify-content:space-between;align-items:center"><span>🔄 평가 이력 (1차 → 재평가)</span>${head}</div>
+    <table class="hist-table"><thead><tr><th>회차</th><th>평가일</th><th>이론</th><th>실습</th><th>총점</th><th>결과</th><th></th></tr></thead><tbody>${body}</tbody></table></div>`;
+}
 function renderDetailAnswerList(r, editMode, idx){
   return (r.details||[]).map((d,di)=>{
     const isEdit=editMode;
