@@ -7070,13 +7070,13 @@ function savePracticalEntry(){
 
 // =================== 공정별 작업시간 측정 → 레벨 → 점수 환산 (2026-10-31) ===================
 // 레벨 판정 수식은 「조립 작업자 정기 평가」(assy_eval.html, 엑셀 체크시트 V7-1)와 동일:
-//  · 일반 시트(서브·포선·테이핑·클립·후취): C/T = 3600÷UPH,
+//  · 일반 시트(서브·포선·조립·구조·후공정·수정): C/T = 3600÷UPH,
 //    L1 < C/T÷0.115×0.100 · L2 < C/T · L3 < C/T÷0.115×0.129 · L4 < C/T÷0.115×0.143 · L5 < C/T÷0.115×0.158 · 신입 < L5×5
-//  · 다기능공(서브·포선·테이핑): 하한 ROUNDUP(C/T×0.85), L1~신입 상한 ROUNDUP(C/T×0.90/0.95/1.05/1.10/1.15/1.25)
+//  · 다기능공(서브·포선·조립): 하한 ROUNDUP(C/T×0.85), L1~신입 상한 ROUNDUP(C/T×0.90/0.95/1.05/1.10/1.15/1.25)
 //  하한 미만 = 「-」, 신입 상한 초과 = 「기준외」
-const PRAC_PROCS=['서브','포선','테이핑','클립','후취'];
-const PRAC_PROC_ES={'서브':'Sub-Ensamble','포선':'Ruteo','테이핑':'Encintado','클립':'Aplicación de clips','후취':'Post-proceso'};
-const PRAC_MULTI_OK=['서브','포선','테이핑'];
+const PRAC_PROCS=['서브','포선','조립','구조','후공정','수정'];
+const PRAC_PROC_ES={'서브':'Sub-Ensamble','포선':'Ruteo','조립':'Ensamble','구조':'Inspección de estructura','후공정':'Protector','수정':'Re-Work'};
+const PRAC_MULTI_OK=['서브','포선','조립'];
 const PRAC_LVS=['L1','L2','L3','L4','L5','신입'];
 const PRAC_LV_COLOR={'L1':'#4caf7d','L2':'#6fb8dd','L3':'#c9a84c','L4':'#e0a84a','L5':'#d4651a','신입':'#e05c5c','기준외':'#7a2f2f','-':'#7a7a7a'};
 const PRAC_LV_RANK={'L1':6,'L2':5,'L3':4,'L4':3,'L5':2,'신입':1,'기준외':0,'-':0};
@@ -7115,9 +7115,10 @@ function guessPracProcess(p){
   const s=String(p||'').toLowerCase();
   if(/sub|서브/.test(s))return '서브';
   if(/ruteo|포선|rout/.test(s))return '포선';
-  if(/encint|테이핑|tap/.test(s))return '테이핑';
-  if(/clip|클립/.test(s))return '클립';
-  if(/후취|post|protector|inspec|re-?work|materiales|lider/.test(s))return '후취';
+  if(/inspec|구조/.test(s))return '구조';
+  if(/re-?work|수정/.test(s))return '수정';
+  if(/후취|후공정|post|protector/.test(s))return '후공정';
+  if(/ensam|조립|encint|테이핑|clip|클립|lider|반장/.test(s))return '조립';
   return '서브';
 }
 function pracDefaultItem(){ return _assyStdItems.includes('MAIN')?'MAIN':(_assyStdItems[0]||'MAIN'); }
@@ -7140,7 +7141,7 @@ function pracStdUph(process,multi,item){
   if(assyStd[k]&&assyStd[k].uph>0)return assyStd[k].uph;
   const k2=process+'|'+(multi?1:0)+'|MAIN';
   if(assyStd[k2]&&assyStd[k2].uph>0)return assyStd[k2].uph;
-  return (multi||process==='후취')?40:12;   // assy_eval.html 기본값
+  return (multi||process==='후공정')?40:12;   // assy_eval.html 기본값
 }
 function pracCt(uph){ uph=parseFloat(uph); return uph>0?3600/uph:null; }
 function pracRowCalc(m){
@@ -7202,7 +7203,7 @@ function renderPracMeasurePanel(){
         return `<tr>
           <td><select onchange="onPracRow(${i},'process',this.value)" style="font-size:0.8rem;min-width:84px">${PRAC_PROCS.map(p=>`<option value="${p}" ${m.process===p?'selected':''}>${p}</option>`).join('')}</select></td>
           <td><select onchange="onPracRow(${i},'item',this.value)" style="font-size:0.8rem;min-width:80px">${items.map(it=>`<option value="${it}" ${m.item===it?'selected':''}>${it}</option>`).join('')}</select></td>
-          <td style="text-align:center"><input type="checkbox" ${m.multi?'checked':''} ${canMulti?'':'disabled'} onchange="onPracRow(${i},'multi',this.checked)" style="width:auto" title="${canMulti?'다기능공 시트(1G~5G) 기준':'서브·포선·테이핑만 다기능 기준 적용'}"></td>
+          <td style="text-align:center"><input type="checkbox" ${m.multi?'checked':''} ${canMulti?'':'disabled'} onchange="onPracRow(${i},'multi',this.checked)" style="width:auto" title="${canMulti?'다기능공 시트(1G~5G) 기준':'서브·포선·조립만 다기능 기준 적용'}"></td>
           <td><input type="number" step="any" min="1" value="${m.uph??''}" onchange="onPracRow(${i},'uph',this.value)" style="width:76px;text-align:center;font-family:'JetBrains Mono',monospace"></td>
           <td style="font-family:'JetBrains Mono',monospace;color:var(--text2)">${c.ct?(Math.round(c.ct*10)/10):'-'}${rng}</td>
           <td><input type="number" step="any" min="0" value="${m.time??''}" placeholder="초" oninput="onPracRow(${i},'time',this.value)" style="width:90px;text-align:center;font-family:'JetBrains Mono',monospace;font-size:1rem;font-weight:700;color:var(--purple)"></td>
