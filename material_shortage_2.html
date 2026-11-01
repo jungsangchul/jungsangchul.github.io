@@ -106,7 +106,11 @@ textarea{width:100%;min-height:150px;height:auto;padding:10px 12px;font-family:C
 .tw.fit{overflow-x:hidden}
 #sTbl{table-layout:fixed;width:100%;font-size:13.5px}
 #sTbl th,#sTbl td{padding:7px 6px;overflow:hidden}
-#sTbl th{white-space:normal;overflow-wrap:normal;line-height:1.2;font-size:13px;padding:9px 6px 8px}
+#sTbl th{white-space:normal;overflow-wrap:normal;line-height:1.2;font-size:13px;padding:9px 6px 8px;vertical-align:middle}
+#sTbl th[data-k="type"],#sTbl th[data-k="code"],#sTbl th[data-k="name"],#sTbl th[data-k="unit"],#sTbl th[data-k="car"]{font-size:14.5px;text-align:center}
+#sTbl th[data-k="name"]{text-align:left;padding-left:10px}
+#sTbl td:nth-child(1),#sTbl td:nth-child(2),#sTbl td:nth-child(4){text-align:center}
+#sTbl td:nth-child(3){padding-left:10px}
 #sTbl th small{font-size:12px;white-space:normal;line-height:1.15}
 #sTbl td{white-space:nowrap;text-overflow:ellipsis}
 #sTbl td:nth-child(2){white-space:normal;line-height:1.3}
