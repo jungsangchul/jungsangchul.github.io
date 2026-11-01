@@ -1284,7 +1284,7 @@ label{font-size:0.78rem;color:var(--text2);margin-bottom:0.3rem;display:block;}
 .results-table th{color:var(--sky);font-size:.75rem;text-transform:uppercase;letter-spacing:1px;font-weight:700;}
 .results-table tr:hover td{background:rgba(255,255,255,0.03);}
 /* ✅ 결과 이력 가독성 (2026-10-31): 전체 폭 사용, 가로 스크롤 없이 들어가도록 압축, 역할(수정·조장·교육조장) 배지 */
-#page-results{max-width:1520px;margin:0 auto;padding:1.2rem 1.4rem;}
+/* 결과 이력은 다른 탭과 같은 폭(.page 1280px) — 내용을 세로로 쌓아 배치 */
 #resultsContainer{overflow-x:hidden;}
 #resultsContainer .results-table{table-layout:auto;width:100%;}
 #resultsContainer .results-table th,#resultsContainer .results-table td{padding:.42rem .38rem;font-size:.78rem;vertical-align:middle;line-height:1.3;white-space:nowrap;}
@@ -1294,6 +1294,17 @@ label{font-size:0.78rem;color:var(--text2);margin-bottom:0.3rem;display:block;}
 #resultsContainer .results-table td.rt-proc{max-width:150px;}
 #resultsContainer .results-table td.rt-msa{max-width:210px;}
 #resultsContainer .results-table td.rt-final{max-width:170px;}
+#resultsContainer .results-table th,#resultsContainer .results-table td{padding:.4rem .32rem;}
+#resultsContainer .results-table td.rt-id{text-align:center;}
+#resultsContainer .results-table td.rt-id input{display:block;margin:0 auto .15rem;}
+#resultsContainer .results-table td.rt-id .rt-no{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--text2);}
+#resultsContainer .results-table td.rt-name{min-width:170px;max-width:250px;}
+#resultsContainer .results-table td.rt-when{min-width:118px;}
+#resultsContainer .results-table td.rt-score{min-width:150px;}
+.rt-line{display:block;margin-top:.14rem;}
+.rt-score-line{display:inline-flex;gap:.3rem;align-items:center;font-size:.72rem;color:var(--text2);white-space:nowrap;}
+.rt-score-line b{color:var(--text);font-weight:600;}
+.rt-score-line .st{color:var(--gold);} .rt-score-line .sp{color:var(--purple);} .rt-score-line .sf{color:var(--teal);}
 #resultsContainer .score-badge,#resultsContainer .score-t,#resultsContainer .score-p{padding:.12rem .4rem;font-size:.76rem;}
 .rt-sub{display:block;font-size:.68rem;color:var(--text2);font-weight:400;margin-top:.1rem;letter-spacing:0;white-space:normal;}
 .rt-mono{font-family:'JetBrains Mono',monospace;}
@@ -7302,16 +7313,10 @@ function renderResults(){
     </div>
     <table class="results-table">
     <thead><tr>
-      <th><input type="checkbox" id="chkAll" onchange="toggleAllCheck(this)" style="width:auto;cursor:pointer"></th>
-      <th><span data-kr="No." data-es="No.">No.</span></th>
-      <th><span data-kr="이름 / 사번" data-es="Nombre / N°Emp">이름 / 사번</span></th>
-      <th><span data-kr="공정" data-es="Proceso">공정</span></th>
-      <th><span data-kr="평가일 / 근속" data-es="Fecha / Antigüedad">평가일 / 근속</span></th>
-      <th><span data-kr="평가구분" data-es="Evaluación">평가구분</span></th>
-      <th><span class="tag tag-t" data-kr="이론" data-es="Teórico">이론</span></th>
-      <th><span class="tag tag-p" data-kr="실습" data-es="Práctico">실습</span></th>
-      ${_showProf?`<th><span class="tag" style="background:rgba(201,168,76,.15);color:var(--gold)" data-kr="숙련도" data-es="Productividad">숙련도</span></th>`:''}
-      <th><span data-kr="총점" data-es="Total">총점</span></th>
+      <th style="text-align:center"><input type="checkbox" id="chkAll" onchange="toggleAllCheck(this)" style="width:auto;cursor:pointer"></th>
+      <th><span data-kr="이름 / 사번 / 공정" data-es="Nombre / N°Emp / Proceso">이름 / 사번 / 공정</span></th>
+      <th><span data-kr="평가구분 / 평가일 / 근속" data-es="Evaluación / Fecha / Antigüedad">평가구분 / 평가일 / 근속</span></th>
+      <th><span data-kr="점수 (이론 · 실습${_showProf?' · 숙련도':''} → 총점)" data-es="Puntaje">점수 (<span class="tag tag-t" style="padding:0 .3rem">이론</span> · <span class="tag tag-p" style="padding:0 .3rem">실습</span>${_showProf?' · <span class="tag" style="padding:0 .3rem;background:rgba(201,168,76,.15);color:var(--gold)">숙련도</span>':''} → 총점)</span></th>
       <th><span data-kr="합격 / 등급" data-es="Resultado / Nivel">합격 / 등급</span></th>
       <th><span data-kr="MSA(계량형)" data-es="MSA(Variable)">MSA(계량형)</span></th>
       <th><span data-kr="최종판정" data-es="Veredicto Final">최종판정</span></th>
@@ -7337,21 +7342,16 @@ function renderResults(){
       else if(reF)finalCell=`<span style="color:var(--green);font-weight:700;font-size:0.76rem">🔄 <span data-kr="재평가 후 최종합격" data-es="Aprobado tras reeval">재평가 후 최종합격</span></span><span class="rt-sub">재평가 ${reF.date} · ${_perfEsc(roundShort(reF.evalRound))} ${reF.totalScore}점</span>`;
       else{finalCell=fsBadge(fs);if(prevFails.length)finalCell+=`<span class="rt-sub">🔄 1차 ${prevFails.map(f=>shortD(f.date)+' 불합격'+(failReasonText(f)?'('+failReasonText(f).replace('과락: ','')+' 과락)':'')).join(', ')}</span>`;}
       const passCell=ing?ingBadge:(r.passed?`<span style="color:var(--green)">✅ 합격</span> ${grade}${prevFails.length?'<span class="reeval-chip">재평가</span>':''}`:`<span style="color:var(--red)">❌ 불합격</span>`+failWhy(r));
+      const profTxt=_showProf?(trackW(recTrack(r)).prof>0?`<span class="sf">숙련도 <b>${r.profWeighted!=null?r.profWeighted:'-'}</b></span>`:''):'';
       return`<tr class="${role?'row-'+role:''}" style="${isResigned?'opacity:0.55':''}">
-        <td><input type="checkbox" class="row-chk" data-idx="${oi}" onchange="updateSelectedCount()" style="width:auto;cursor:pointer"></td>
-        <td class="rt-mono" style="color:var(--text2)">${i+1}</td>
-        <td class="rt-wrap rt-name" style="font-weight:600">${r.name}${isResigned?' <span style="background:rgba(150,150,150,0.18);color:#9aa4b2;border:1px solid rgba(150,150,150,0.4);border-radius:4px;padding:0.05rem 0.3rem;font-size:0.65rem;font-weight:700;vertical-align:middle">퇴사</span>':''}<span class="rt-sub rt-mono">${r.empId||'-'}</span></td>
-        <td class="rt-wrap rt-proc">${procCell(r.process)}</td>
-        <td><span style="color:var(--text2);font-size:0.76rem">${r.date}</span><span class="rt-sub" style="color:var(--teal)">${calcTenure(r.hireDate||lookupHireDate(r.empId))}</span></td>
-        <td><span class="round-chip ${r.evalRound?'':'none'}" title="${_perfEsc(roundName(r.evalRound))}">${_perfEsc(roundShort(r.evalRound))}</span></td>
-        <td>${hasTh?`<span class="score-t">${r.theoryWeighted||0}</span>`:dash}</td>
-        <td><span class="score-p">${r.practicalWeighted||0}</span></td>
-        ${_showProf?`<td>${profCellHtml(r)}</td>`:''}
-        <td>${ing?dash:`<span class="score-badge ${cls}">${r.totalScore}</span>`}</td>
+        <td class="rt-id"><input type="checkbox" class="row-chk" data-idx="${oi}" onchange="updateSelectedCount()" style="width:auto;cursor:pointer"><span class="rt-no">${i+1}</span></td>
+        <td class="rt-wrap rt-name"><span style="font-weight:600">${r.name}</span>${isResigned?' <span style="background:rgba(150,150,150,0.18);color:#9aa4b2;border:1px solid rgba(150,150,150,0.4);border-radius:4px;padding:0.05rem 0.3rem;font-size:0.65rem;font-weight:700;vertical-align:middle">퇴사</span>':''}<span class="rt-sub rt-mono">${r.empId||'-'}</span><span class="rt-line">${procCell(r.process)}</span></td>
+        <td class="rt-when"><span class="round-chip ${r.evalRound?'':'none'}" title="${_perfEsc(roundName(r.evalRound))}">${_perfEsc(roundShort(r.evalRound))}</span><span class="rt-sub" style="color:var(--text2)">${r.date}</span><span class="rt-sub" style="color:var(--teal)">${calcTenure(r.hireDate||lookupHireDate(r.empId))}</span></td>
+        <td class="rt-score"><span class="rt-score-line"><span class="st">이론 <b>${hasTh?(r.theoryWeighted||0):'-'}</b></span><span>·</span><span class="sp">실습 <b>${r.practicalWeighted||0}</b></span>${profTxt?'<span>·</span>'+profTxt:''}</span><span class="rt-line">${ing?dash:`<span class="score-badge ${cls}">총점 ${r.totalScore}</span>`}</span></td>
         <td class="rt-wrap">${passCell}</td>
         <td class="rt-wrap rt-msa">${msaBadge(fs)}</td>
         <td class="rt-wrap rt-final">${finalCell}</td>
-        <td><button class="btn btn-outline btn-sm" style="padding:.2rem .5rem" onclick="showDetail(${oi})">보기</button></td>
+        <td><button class="btn btn-outline btn-sm" style="padding:.2rem .45rem" onclick="showDetail(${oi})">보기</button></td>
       </tr>`;}).join('')}
     </tbody></table>`;
 }
