@@ -97,13 +97,13 @@ textarea{width:100%;min-height:150px;height:auto;padding:10px 12px;font-family:C
 .kpi b{display:block;font-family:var(--code);font-size:32px;line-height:1;font-weight:700;color:#fff;margin-top:8px}
 .kpi b.s{font-family:var(--body);font-size:14px;margin-top:8px;color:var(--ink2)}
 .kpi.r b{color:var(--red)}.kpi.a b{color:var(--amb)}.kpi.g b{color:var(--grn)}
-.tw{overflow:auto;max-height:65vh;border:1px solid var(--line2);border-radius:var(--r);background:var(--panel)}
+.tw{overflow:auto;max-height:80vh;border:1px solid var(--line2);border-radius:var(--r);background:var(--panel)}
 .tw.m{max-height:42vh}
 .carc{line-height:1.3;padding-top:6px;padding-bottom:6px;white-space:normal!important}
 .carc .cl{display:inline-block;font-size:12px;color:var(--ink2);margin:1px 8px 1px 0;white-space:normal;line-height:1.3}
 .carc .cl b{color:var(--ac);font-weight:700;margin-right:3px}
 /* 부족예상 표: 고정 레이아웃 — 가로 스크롤 없이 화면 폭에 맞춤 */
-.tw.fit{overflow-x:hidden}
+.tw.fit{overflow-x:hidden;max-height:calc(100vh - 20px);min-height:70vh}
 #sTbl{table-layout:fixed;width:100%;font-size:13.5px}
 #sTbl th,#sTbl td{padding:7px 6px;overflow:hidden}
 #sTbl th{white-space:normal;overflow-wrap:normal;line-height:1.2;font-size:13px;padding:9px 6px 8px;vertical-align:middle}
@@ -396,7 +396,7 @@ td.hl{color:var(--ac);font-weight:700}
     <div class="kpi g" data-f="all"><span data-t="k_ex">제외 LOT 행</span><b id="kEx">-</b></div>
   </div>
   <div class="tw fit"><table id="sTbl"></table></div>
-  <p class="hint" data-t="formula">현재고 = 실사 − 사용량 + 입고량 − 반납(24170) + 조정 (0처리로 현장롤이 0이 되면 자동 0) · 부족예상 = 현재고 + 창고재고 − 필요량 · 필요량은 같은 자재코드 합산(제외 LOT 제외) · 현장롤수 = TML·WIRE 입고 바코드 중 0처리 안 된 롤 수 (현재고를 0으로 조정하면 그 전에 입고된 롤은 0) (숫자에 마우스를 올리면 롤 수량합) · 창고롤수 = 창고보유자재(25010)의 개수</p>
+  <p class="hint" data-t="formula">현재고 = 실사 − 사용량 + 입고량 − 반납(24170) + 조정 (0처리로 현장롤이 0이 되면 자동 0) · 부족예상 = 현재고 + 창고재고 − 필요량 · 필요량은 같은 자재코드 합산(제외 LOT 제외) · 현장롤수 = TML·WIRE 입고 바코드 중 0처리 안 된 롤 수 + 실사에서 스캔했지만 TML·WIRE 입고이력에 없는 롤 (현재고를 0으로 조정하면 그 전에 입고된 롤은 0) (숫자에 마우스를 올리면 롤 수량합) · 창고롤수 = 창고보유자재(25010)의 개수</p>
 </section>
 
 <!-- ===== 17000 ===== -->
@@ -1024,7 +1024,7 @@ async function calc(fresh=true){
   try{
     if(fresh)await Promise.all([loadNeed(),loadMst(),loadAdj(),loadCars()]);else if(!Object.keys(CARS).length)await loadCars();
     const [cnt,use,rec]=await Promise.all([
-      cd?sel('mshort_count_2',`select=code,qty&cdate=eq.${cd}`):[],
+      cd?sel('mshort_count_2',`select=code,qty,barcode&cdate=eq.${cd}`):[],
       f&&t?sel('mshort_usage_2',`select=code,name,qty&udate=gte.${f}&udate=lte.${t}`):[],
       f&&t?sel('mshort_receipt_2',`select=code,name,unit,qty,rdate&rdate=gte.${f}&rdate=lte.${t}`):[]]);
     const ret=f&&t?await sel('mshort_return_2',`select=code,name,unit,qty&rtdate=gte.${f}&rtdate=lte.${t}`):[];
@@ -1042,6 +1042,10 @@ async function calc(fresh=true){
         if(!r.barcode||Z.has(r.barcode))return;
         (RB[c0]||(RB[c0]=[])).push(r.barcode);
         if(ZA[c0]&&rcvMs(r.recv_at)<=ZA[c0]){RX[c0]=(RX[c0]||0)+1;return}const c=String(r.mat_code||'').toUpperCase();RL[c]=(RL[c]||0)+1;RQ[c]=(RQ[c]||0)+(Number(r.qty)||0)});
+      /* 실사에서 스캔한 바코드가 TML·WIRE 입고이력에 없으면(로케이션 입고 업로드 누락) 실사 수량으로 현장 롤로 집계 */
+      {const ALL=new Set(rr.map(r=>r.barcode).filter(Boolean)),cdMs=cd?new Date(cd+'T00:00:00').getTime():0;
+        cnt.forEach(r=>{if(!r.barcode||ALL.has(r.barcode)||Z.has(r.barcode))return;const c=String(r.code||'').toUpperCase();if(!c)return;HB[c]=1;(RB[c]||(RB[c]=[])).push(r.barcode);
+          if(ZA[c]&&cdMs<=ZA[c]){RX[c]=(RX[c]||0)+1;return}RL[c]=(RL[c]||0)+1;RQ[c]=(RQ[c]||0)+(Number(r.qty)||0)})}
       ROLLB=RB;
     }catch(e){console.warn('roll',e)}
     const sum=a=>{const m={};a.forEach(r=>{const c=String(r.code).toUpperCase();m[c]=(m[c]||0)+Number(r.qty)});return m};
@@ -1303,6 +1307,9 @@ async function hLoad(code){
       sel('tmlwire2_receipts',`select=barcode,recv_at,qty,unit,mat_name&mat_code=eq.${c}&order=seq,barcode`),
       HZERO]);
     rolls.forEach(r=>{r.zero=ZM.has(r.barcode)?(ZM.get(r.barcode)||'0'):''});
+    /* 가장 최근 실사에서 스캔한 바코드가 TML·WIRE 입고이력에 없으면 실사 수량으로 보유 롤에 표시 */
+    {const lc=cnt.length?cnt[cnt.length-1].cdate:'',have=new Set(rolls.map(r=>r.barcode));
+      cnt.filter(r=>r.cdate===lc&&r.barcode&&!have.has(r.barcode)).forEach(r=>{have.add(r.barcode);rolls.push({barcode:r.barcode,recv_at:tr('실사 ','Inv. ')+r.cdate,qty:r.qty,unit:'',mat_name:'',zero:ZM.has(r.barcode)?(ZM.get(r.barcode)||'0'):'',cntOnly:1})})}
     const nm=hNames()[code]||(rec.find(r=>r.name)||{}).name||(use.find(r=>r.name)||{}).name||(rolls.find(r=>r.mat_name)||{}).name||'';
     HIS={code,name:nm,unit:(rec.find(r=>r.unit)||{}).unit||(rolls.find(r=>r.unit)||{}).unit||'',rec,use,cnt,rolls,f,t,bc:HBC};
     hCandRender(code);hRender();
@@ -1347,7 +1354,7 @@ function hRender(){
   const showZ=$('hZero').checked,rl=showZ?rolls:held;
   $('hRollN').textContent=tr(`보유 ${held.length}롤${showZ?` · 0처리 ${rolls.length-held.length}롤`:''}`,`${held.length} en piso${showZ?` · ${rolls.length-held.length} cerrados`:''}`);
   $('hRoll').innerHTML=`<tr><th>#</th><th>${tr('바코드','Cód. barras')}</th><th>${tr('입고일시','Entrada')}</th><th class="n">${tr('수량','Cantidad')}</th><th>${tr('상태','Estado')}</th></tr>`+
-    (rl.length?rl.slice().reverse().map((r,i)=>`<tr class="${isHit(r.barcode)?'hit':''}"><td class="mute">${rl.length-i}</td><td>${esc(r.barcode)}</td><td>${esc(r.recv_at||'')}</td><td class="n ${r.zero?'mute':'in'}">${fmt(r.qty)}</td><td>${r.zero?`<span class="tag none">${tr('0처리','Cerrado')} ${esc(r.zero==='0'?'':r.zero)}</span>`:`<span class="tag ok">${tr('현장 보유','En piso')}</span>`}</td></tr>`).join('')
+    (rl.length?rl.slice().reverse().map((r,i)=>`<tr class="${isHit(r.barcode)?'hit':''}"><td class="mute">${rl.length-i}</td><td>${esc(r.barcode)}</td><td>${esc(r.recv_at||'')}</td><td class="n ${r.zero?'mute':'in'}">${fmt(r.qty)}</td><td>${r.zero?`<span class="tag none">${tr('0처리','Cerrado')} ${esc(r.zero==='0'?'':r.zero)}</span>`:r.cntOnly?`<span class="tag ok">${tr('현장 보유','En piso')}</span> <span class="hint">${tr('실사 스캔 · TML·WIRE 입고이력 없음','Inventario · sin entrada TML·WIRE')}</span>`:`<span class="tag ok">${tr('현장 보유','En piso')}</span>`}</td></tr>`).join('')
       :`<tr><td class="empty" colspan="5">${tr('현장 보유 롤이 없습니다','Sin rollos en piso')}</td></tr>`);
 }
 $('hZero').onchange=()=>{if(HIS)hRender()};
