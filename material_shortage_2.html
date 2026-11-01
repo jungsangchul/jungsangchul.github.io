@@ -99,10 +99,39 @@ textarea{width:100%;min-height:150px;height:auto;padding:10px 12px;font-family:C
 .kpi.r b{color:var(--red)}.kpi.a b{color:var(--amb)}.kpi.g b{color:var(--grn)}
 .tw{overflow:auto;max-height:65vh;border:1px solid var(--line2);border-radius:var(--r);background:var(--panel)}
 .tw.m{max-height:42vh}
-.carc{min-width:120px;white-space:nowrap;line-height:1.35;padding-top:6px;padding-bottom:6px}
-.carc .cl{display:block;font-size:12px;color:var(--ink2);}
-.carc .cl+.cl{margin-top:2px}
-.carc .cl b{color:var(--ac);font-weight:700;margin-right:4px}
+.carc{line-height:1.3;padding-top:6px;padding-bottom:6px;white-space:normal!important}
+.carc .cl{display:inline-block;font-size:12px;color:var(--ink2);margin:1px 8px 1px 0;white-space:normal;line-height:1.3}
+.carc .cl b{color:var(--ac);font-weight:700;margin-right:3px}
+/* 부족예상 표: 고정 레이아웃 — 가로 스크롤 없이 화면 폭에 맞춤 */
+.tw.fit{overflow-x:hidden}
+#sTbl{table-layout:fixed;width:100%;font-size:13.5px}
+#sTbl th,#sTbl td{padding:7px 6px;overflow:hidden}
+#sTbl th{white-space:normal;overflow-wrap:normal;line-height:1.2;font-size:13px;padding:9px 6px 8px}
+#sTbl th small{font-size:12px;white-space:normal;line-height:1.15}
+#sTbl td{white-space:nowrap;text-overflow:ellipsis}
+#sTbl td:nth-child(2){white-space:normal;line-height:1.3}
+#sTbl td.carc{overflow:visible}
+#sTbl th[data-k="type"]{width:74px}
+#sTbl th[data-k="code"]{width:128px}
+#sTbl th[data-k="unit"]{width:46px}
+#sTbl th[data-k="need"],#sTbl th[data-k="cnt"]{width:80px}
+#sTbl th[data-k="use"],#sTbl th[data-k="rec"],#sTbl th[data-k="ret"]{width:102px}
+#sTbl th[data-k="adj"],#sTbl th[data-k="roll"]{width:78px}
+#sTbl th[data-k="cur"],#sTbl th[data-k="short"]{width:88px}
+#sTbl th[data-k="wh"]{width:84px}
+#sTbl th[data-k="whroll"]{width:72px}
+#sTbl th[data-k="chk"]{width:76px}
+#sTbl th[data-k="car"]{width:176px}
+@media(max-width:1680px){
+#sTbl{font-size:12.5px}#sTbl th{font-size:12px}#sTbl th,#sTbl td{padding:6px 5px}
+#sTbl th[data-k="type"]{width:66px}#sTbl th[data-k="code"]{width:112px}#sTbl th[data-k="unit"]{width:40px}
+#sTbl th[data-k="need"],#sTbl th[data-k="cnt"]{width:68px}
+#sTbl th[data-k="use"],#sTbl th[data-k="rec"],#sTbl th[data-k="ret"]{width:72px}
+#sTbl th[data-k="adj"],#sTbl th[data-k="roll"]{width:64px}
+#sTbl th[data-k="cur"],#sTbl th[data-k="short"]{width:76px}
+#sTbl th[data-k="wh"]{width:70px}#sTbl th[data-k="whroll"]{width:60px}
+#sTbl th[data-k="chk"]{width:76px}#sTbl th[data-k="car"]{width:120px}
+}
 table{border-collapse:separate;border-spacing:0;width:100%;font-size:14.5px;background:transparent}
 th,td{padding:8px 8px;border-bottom:1px solid var(--line);white-space:normal;overflow-wrap:break-word;vertical-align:middle;color:var(--ink2)}
 td.n{white-space:nowrap}
@@ -361,7 +390,7 @@ td.hl{color:var(--ac);font-weight:700}
     <div class="kpi a" data-f="care"><span data-t="k_care">주의</span><b id="kCare">-</b></div>
     <div class="kpi g" data-f="all"><span data-t="k_ex">제외 LOT 행</span><b id="kEx">-</b></div>
   </div>
-  <div class="tw"><table id="sTbl"></table></div>
+  <div class="tw fit"><table id="sTbl"></table></div>
   <p class="hint" data-t="formula">현재고 = 실사 − 사용량 + 입고량 − 반납(24170) + 조정 (0처리로 현장롤이 0이 되면 자동 0) · 부족예상 = 현재고 + 창고재고 − 필요량 · 필요량은 같은 자재코드 합산(제외 LOT 제외) · 현장롤수 = TML·WIRE 입고 바코드 중 0처리 안 된 롤 수 (현재고를 0으로 조정하면 그 전에 입고된 롤은 0) (숫자에 마우스를 올리면 롤 수량합) · 창고롤수 = 창고보유자재(25010)의 개수</p>
 </section>
 
@@ -1055,7 +1084,7 @@ function viewList(){
   return l;
 }
 function cols(){
-  const cd=SUM?SUM.cd:'',rng=SUM&&SUM.f?`${md(SUM.f)}~${md(SUM.t)}`:'';
+  const cd=SUM?SUM.cd:'',rng=SUM&&SUM.f?`${md(SUM.f)}~<wbr>${md(SUM.t)}`:'';
   return[['type',tr('구분','Tipo')],['code',tr('자재코드','Código')],['name',tr('자재명','Nombre')],['unit',tr('단위','Unid.')],['need',tr('필요량','Requerido'),1],
    ['cnt',tr('실사','Inv.')+(cd?`<br><small>${md(cd)}</small>`:''),1],['use',tr('사용량','Consumo')+`<br><small>${rng}</small>`,1],['rec',tr('입고량','Entrada')+`<br><small>${rng}</small>`,1],['ret',tr('반납','Devol.')+`<br><small>${rng}</small>`,1],['adj',tr('조정','Ajuste'),1],
    ['cur',tr('현재고','Stock')+(SUM&&SUM.t?`<br><small>${md(SUM.t)}</small>`:''),1],['roll',tr('현장롤수','Rollos piso'),1],['wh',tr('창고재고','Almacén'),1],['whroll',tr('창고롤수','Rollos alm.'),1],['short',tr('부족예상','Pronóstico'),1],['chk','CHECK'],['car',tr('적용차종','Modelo')]];
@@ -1077,7 +1106,7 @@ function renderSum(){
   $('sTbl').innerHTML='<tr>'+C.map(([k,h,n])=>`<th class="${n?'n':''}" data-k="${k}">${h}${sortK===k?(sortD>0?' ▲':' ▼'):''}</th>`).join('')+'</tr>'+
     l.map(r=>{const s=status(r);return`<tr class="${s==='ok'?'':s}" data-code="${esc(r.code)}">`+C.map(([k,h,n])=>{
       if(k==='chk')return`<td><span class="tag ${s}">${lab[s]}</span></td>`;
-      if(k==='car')return`<td class="carc" title="${tr('눌러서 적용차종 조회','Toque para ver modelos')}" style="cursor:pointer">${r.car?r.car.split(', ').flatMap(x=>{const i=x.indexOf(' '),c=i<0?x:x.slice(0,i),ps=i<0?['']:x.slice(i+1).split('·');return ps.map(p=>`<span class="cl"><b>${esc(c)}</b>${esc(p)}</span>`)}).join(''):'<span class="hint">-</span>'}</td>`;
+      if(k==='car')return`<td class="carc" title="${tr('눌러서 적용차종 조회','Toque para ver modelos')}" style="cursor:pointer">${r.car?r.car.split(', ').map(x=>{const i=x.indexOf(' '),c=i<0?x:x.slice(0,i),p=i<0?'':x.slice(i+1);return`<span class="cl"><b>${esc(c)}</b>${esc(p).split('·').join('·<wbr>')}</span>`}).join(''):'<span class="hint">-</span>'}</td>`;
       const v=r[k];
       if(k==='adj')return`<td class="n ${v<0?'neg':''}" title="${r.auto?tr('0처리 자동조정 포함: ','Incluye ajuste por cierre: ')+fmt(r.auto):''}">${v?fmt(v):'<span class="hint">0</span>'}${r.auto?'<span class="tag az">0</span>':''}</td>`;
       if(k==='ret')return`<td class="n">${v?fmt(v):'<span class="hint">0</span>'}</td>`;
@@ -1085,7 +1114,7 @@ function renderSum(){
       if(k==='whroll')return`<td class="n">${v?fmt(v):'<span class="hint">0</span>'}</td>`;
       if(k==='roll')return`<td class="n" title="${tr('현장 보유 롤 수량합','Cant. en rollos')}: ${fmt(r.rollq)}${r.rollx?tr(` · 재고조정 0으로 ${r.rollx}롤 제외`,` · ${r.rollx} rollos excluidos por ajuste a 0`):''}">${v?fmt(v):'<span class="hint">0</span>'}${r.rollx?'<span class="tag az">0</span>':''}</td>`;
       if(k==='code')return`<td class="codelink" title="${tr('눌러서 적용차종 조회','Toque para ver modelos')}">${esc(v)}${r.extra?`<span class="tag xt" title="${tr('17000 작업필요자재에 없음','No está en 17000')}">${tr('현장','Piso')}</span>`:''}</td>`;
-      return n?`<td class="n ${v<0?'neg':''}">${fmt(v)}</td>`:`<td>${esc(v)}</td>`}).join('')+'</tr>'}).join('');
+      return n?`<td class="n ${v<0?'neg':''}">${fmt(v)}</td>`:`<td title="${esc(v)}">${esc(v)}</td>`}).join('')+'</tr>'}).join('');
   $('sTbl').querySelectorAll('td[data-adj]').forEach(td=>td.onclick=e=>{e.stopPropagation();openAdj(td.dataset.adj)});
   $('sTbl').querySelectorAll('th').forEach(th=>th.onclick=()=>{const k=th.dataset.k==='chk'?'short':th.dataset.k;
     if(sortK===k)sortD=-sortD;else{sortK=k;sortD=1}renderSum()});
