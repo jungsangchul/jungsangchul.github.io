@@ -399,7 +399,7 @@ td.car small{color:var(--sub);font-size:12px;margin-left:6px}
         <button type="button" class="btn" id="cClear" data-i="cmpClear">선택 비우기</button>
         <button type="button" class="btn pri" id="cXlsx" data-i="cmpXlsx" style="margin-left:auto">엑셀 다운로드</button>
       </div>
-      <p class="cmp-note" data-i="cmpHelp">첫 번째 품번이 <b>기준(A)</b>이 됩니다. 나머지 품번은 각각 기준과 선번 단위로 비교합니다. 좌·우 단자·씰·부품 위치만 바뀐 회로는 동일로 보고, 서브그룹번호·조인트/쌍압착 연결코드 자체의 변경은 비교하지 않습니다. 중간스트립이 새로 생기거나 일반→쌍압착으로 바뀐 회로는 별도 표시됩니다.</p>
+      <p class="cmp-note" data-i="cmpHelp">첫 번째 품번이 <b>기준(A)</b>이 됩니다. 나머지 품번은 각각 기준과 선번 단위로 비교합니다. 제품의 모양(길이·중간스트립·쌍압착·트위스트·스트립 길이·납땜)과 자재(와이어·단자·씰·압착전부품)만 비교합니다. 좌·우 위치만 바뀐 회로는 동일로 보고, 서브그룹번호·연결코드·커넥터/HOLE·기준선·FPC/TPC 등 관리용 항목은 비교하지 않습니다. 중간스트립이 새로 생기거나 일반→쌍압착으로 바뀐 회로는 별도 표시됩니다.</p>
     </div>
     <div class="cmp-main" id="cmpMain"></div>
   </section>
@@ -801,9 +801,9 @@ $('copyRow').onclick=async()=>{
 /* ---------- 품번 비교 ---------- */
 const CMP={sel:[],cur:0,filter:'all',res:[]};
 /* 끝단(좌/우) 비교 항목: [키, 좌열, 우열, 구분] */
-const CMP_END=[['tm',16,19,'mat'],['seal',57,58,'mat'],['p1',21,24,'mat'],['p2',22,25,'mat'],['p3',23,26,'mat'],['st',12,13,'work'],['sol',14,17,'work'],['auto',50,51,'work'],['hang',59,60,'work'],['hmt',67,68,'work'],['con',31,32,'etc'],['hole',28,30,'etc']];
+const CMP_END=[['tm',16,19,'mat'],['seal',57,58,'mat'],['p1',21,24,'mat'],['p2',22,25,'mat'],['p3',23,26,'mat'],['st',12,13,'work'],['sol',14,17,'work'],['hmt',67,68,'work']];
 /* 와이어·작업조건 비교 항목: [열, 구분] */
-const CMP_COLS=[[3,'mat'],[4,'mat'],[5,'mat'],[6,'mat'],[7,'len'],[45,'work'],[43,'work'],[8,'work'],[9,'work'],[10,'work'],[11,'work'],[47,'work'],[56,'work'],[61,'work'],[62,'work'],[63,'work'],[64,'work'],[65,'work'],[66,'work']];
+const CMP_COLS=[[3,'mat'],[4,'mat'],[5,'mat'],[6,'mat'],[7,'len'],[45,'work'],[43,'work'],[8,'work'],[9,'work'],[10,'work'],[11,'work']];
 /* 중간스트립 유무 · 쌍압착(결속 2본 이상 / 연결관계 있음) 여부 — 연결코드(46a, -M- 등)·서브그룹 자체의 변경은 비교하지 않음 */
 const hasMs=r=>U(r[48])==='Y'||[8,9,10,11].some(i=>String(r[i]??'').trim()!=='');
 const msPos=r=>[8,9,10,11].map(i=>String(r[i]??'').trim()).filter(Boolean).join(' / ');
@@ -835,7 +835,6 @@ function cmpRows(a,b,ia,ib){
     if(ci===43){push(tw?'work':'len',tw?LBL(43):'OEM '+LBL(7),a[43],b[43]);return;}
     push(cat,LBL(ci),a[ci],b[ci]);
   });
-  push('work',LBL('twm'),mates(a,ia),mates(b,ib));
   /* 좌·우 끝단: 좌우 위치만 바뀐 경우는 동일 처리 */
   const aL=endOf(a,'L'),aR=endOf(a,'R'),bL=endOf(b,'L'),bR=endOf(b,'R');
   let swapped=false;
@@ -906,7 +905,7 @@ function cmpRender(){
   const ga=grpOf(res.pa),gb=grpOf(res.pb);
   const head=`<div class="cmp-head"><div class="ab"><b class="tag">A</b><span class="pn">${esc(res.pa)}</span><small>${esc(grpLabel(ga))}</small><small>· ${s.na} ${T('rows')}</small></div><span class="ar">→</span><div class="ab"><b class="tag">${tgt}</b><span class="pn">${esc(res.pb)}</span><small>${esc(grpLabel(gb))}</small><small>· ${s.nb} ${T('rows')}</small></div><div style="margin-left:auto" class="sum">${T('cDiffN')}: <b>${s.nb-s.na>0?'+':''}${s.nb-s.na}</b></div></div>`;
   const card=(k,cls,n,label)=>`<button class="card ${cls}${CMP.filter===k?' on':''}" data-cf="${k}"><span>${label}</span><b>${n}</b></button>`;
-  const cards=`<div class="cards">${card('all','',res.items.length,T('cAll'))}${card('add','add',s.add,T('cAdd'))}${card('del','del',s.del,T('cDel'))}${card('chg','chg',s.chg,T('cChg'))}${card('same','same',s.same,T('cSame'))}${card('ms','ms',s.ms,T('cMs'))}${card('dc','dc',s.dc,T('cDc'))}${card('len','len',s.len,T('cLen'))}${card('mat','mat',s.mat,T('cMat'))}${card('work','work',s.work,T('cWork'))}${card('etc','etc',s.etc,T('cEtc'))}${card('swap','swap',s.swap,T('cSwap'))}</div>`;
+  const cards=`<div class="cards">${card('all','',res.items.length,T('cAll'))}${card('add','add',s.add,T('cAdd'))}${card('del','del',s.del,T('cDel'))}${card('chg','chg',s.chg,T('cChg'))}${card('same','same',s.same,T('cSame'))}${card('ms','ms',s.ms,T('cMs'))}${card('dc','dc',s.dc,T('cDc'))}${card('len','len',s.len,T('cLen'))}${card('mat','mat',s.mat,T('cMat'))}${card('work','work',s.work,T('cWork'))}${card('swap','swap',s.swap,T('cSwap'))}</div>`;
   const items=cmpFilterItems(res);
   const rows=items.map(x=>{
     const ai=x.a?x.a[1]:null,bi=x.b?x.b[1]:null;
