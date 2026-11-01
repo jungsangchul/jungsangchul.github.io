@@ -396,7 +396,7 @@ td.hl{color:var(--ac);font-weight:700}
     <div class="kpi g" data-f="all"><span data-t="k_ex">제외 LOT 행</span><b id="kEx">-</b></div>
   </div>
   <div class="tw fit"><table id="sTbl"></table></div>
-  <p class="hint" data-t="formula">현재고 = 실사 − 사용량 + 입고량 − 반납(24170) + 조정 (0처리로 현장롤이 0이 되면 자동 0) · 부족예상 = 현재고 + 창고재고 − 필요량 · 필요량은 같은 자재코드 합산(제외 LOT 제외) · 현장롤수 = TML·WIRE 입고 바코드 중 0처리 안 된 롤 수 + 실사에서 스캔했지만 TML·WIRE 입고이력에 없는 롤 (현재고를 0으로 조정하면 그 전에 입고된 롤은 0) (숫자에 마우스를 올리면 롤 수량합) · 창고롤수 = 창고보유자재(25010)의 개수</p>
+  <p class="hint" data-t="formula">현재고 = 실사 − 사용량 + 입고량 − 반납(24170) + 조정 (0처리로 현장롤이 0이 되면 자동 0 — 양수 재고만 0으로 내리고, 음수는 그대로 표시) · 실사에 스캔된 롤이 조회기간 입고(30810)에도 있으면 입고량에서 제외 · 부족예상 = 현재고 + 창고재고 − 필요량 · 필요량은 같은 자재코드 합산(제외 LOT 제외) · 현장롤수 = TML·WIRE 입고 바코드 중 0처리 안 된 롤 수 + 실사에서 스캔했지만 TML·WIRE 입고이력에 없는 롤 (현재고를 0으로 조정하면 그 전에 입고된 롤은 0) (숫자에 마우스를 올리면 롤 수량합) · 창고롤수 = 창고보유자재(25010)의 개수</p>
 </section>
 
 <!-- ===== 17000 ===== -->
@@ -1024,9 +1024,9 @@ async function calc(fresh=true){
   try{
     if(fresh)await Promise.all([loadNeed(),loadMst(),loadAdj(),loadCars()]);else if(!Object.keys(CARS).length)await loadCars();
     const [cnt,use,rec]=await Promise.all([
-      cd?sel('mshort_count_2',`select=code,qty,barcode&cdate=eq.${cd}`):[],
+      cd?sel('mshort_count_2',`select=code,qty,barcode,created_at&cdate=eq.${cd}`):[],
       f&&t?sel('mshort_usage_2',`select=code,name,qty&udate=gte.${f}&udate=lte.${t}`):[],
-      f&&t?sel('mshort_receipt_2',`select=code,name,unit,qty,rdate&rdate=gte.${f}&rdate=lte.${t}`):[]]);
+      f&&t?sel('mshort_receipt_2',`select=code,name,unit,qty,rdate,barcode&rdate=gte.${f}&rdate=lte.${t}`):[]]);
     const ret=f&&t?await sel('mshort_return_2',`select=code,name,unit,qty&rtdate=gte.${f}&rtdate=lte.${t}`):[];
     /* 현장 보유 롤수: TML·WIRE 입고 바코드 − 0처리(사용완료) 바코드 */
     let RL={},RQ={},zAt='',HB={},LZ={},RX={};const RB={};
@@ -1060,11 +1060,13 @@ async function calc(fresh=true){
       if(cand.length){const mn=Math.min(...cand.map(c=>LZ[c]));const d0=new Date(Math.max(mn,Date.now()-120*864e5));const ds=`${d0.getFullYear()}-${String(d0.getMonth()+1).padStart(2,'0')}-${String(d0.getDate()).padStart(2,'0')}`;
         try{addLR(await sel('mshort_receipt_2',`select=code,rdate&rdate=gte.${ds}`))}catch(e){console.warn('lr',e)}}}
     /* 실사: 마지막 0처리 이후 실사에서 수량이 잡힌 자재는 자동 0조정 안 함 (실사가 우선) */
-    const LC={};{const ce=dEnd(cd);if(ce)cnt.forEach(r=>{if(Number(r.qty)>0)LC[String(r.code||'').toUpperCase()]=ce})}
+    const LC={};{const ce=dEnd(cd);if(ce)cnt.forEach(r=>{if(Number(r.qty)>0){const c=String(r.code||'').toUpperCase();LC[c]=Math.max(LC[c]||0,ce,new Date(r.created_at).getTime()||0)}})}
     /* 0처리 자동조정: 바코드 관리 자재인데 현장롤 0 + 마지막 0처리가 마지막 수동조정·마지막 30810 입고·실사보다 나중 → 현재고 0 */
-    const fin0=(c,base)=>{const auto=(HB[c]&&!(RL[c])&&(LZ[c]||0)>(LA[c]||0)&&(LZ[c]||0)>(LR[c]||0)&&(LZ[c]||0)>(LC[c]||0)&&Math.abs(base)>1e-9)?-base:0;return{adj:(A[c]||0)+auto,auto,base,cur:base+auto,lz:LZ[c]||0,rollx:RX[c]||0}};
+    const fin0=(c,base)=>{const auto=(HB[c]&&!(RL[c])&&(LZ[c]||0)>(LA[c]||0)&&(LZ[c]||0)>(LR[c]||0)&&(LZ[c]||0)>(LC[c]||0)&&base>1e-9)?-base:0;return{adj:(A[c]||0)+auto,auto,base,cur:base+auto,lz:LZ[c]||0,rollx:RX[c]||0}};
     const fin=fin0;
-    const C=sum(cnt),U=sum(use),R=sum(rec),RT=sum(ret),W={},WR={};MST.forEach(r=>{const k=String(r.code||'').toUpperCase();W[k]=(W[k]||0)+(Number(r.qty)||0);WR[k]=(WR[k]||0)+(Number(r.cnt)||0);nm(r.code,r.name,r.unit)});
+    /* 실사에서 스캔된 바코드가 조회기간 30810 입고에도 있으면 이미 실사에 포함된 롤이므로 입고량에서 제외(이중 반영 방지) */
+    const CB=new Set(cnt.map(r=>r.barcode).filter(Boolean)),recX=rec.filter(r=>r.barcode&&CB.has(r.barcode)),rec2=recX.length?rec.filter(r=>!(r.barcode&&CB.has(r.barcode))):rec;
+    const C=sum(cnt),U=sum(use),R=sum(rec2),RT=sum(ret),W={},WR={};MST.forEach(r=>{const k=String(r.code||'').toUpperCase();W[k]=(W[k]||0)+(Number(r.qty)||0);WR[k]=(WR[k]||0)+(Number(r.cnt)||0);nm(r.code,r.name,r.unit)});
     use.forEach(r=>nm(r.code,r.name));rec.forEach(r=>nm(r.code,r.name,r.unit));ret.forEach(r=>nm(r.code,r.name,r.unit));
     const agg={},order=[];let exRows=0;
     NEED.forEach(r=>{if(isEx(r.lotno)){exRows++;return}
@@ -1078,7 +1080,7 @@ async function calc(fresh=true){
     [...xs].filter(c=>c&&!inNeed.has(c)).sort().forEach(c=>{const cnt_=C[c]||0,u=U[c]||0,rc=R[c]||0,rt=RT[c]||0,F=fin(c,cnt_-u+rc-rt+(A[c]||0)),cur=F.cur,rl=RL[c]||0;
       const w=W[c]||0,o=NM[c]||{};
       list.push({code:c,name:o.name||'',unit:o.unit||'',need:0,i:list.length,cnt:cnt_,use:u,rec:rc,ret:rt,...F,roll:rl,rollq:RQ[c]||0,wh:w,whroll:WR[c]||0,short:cur+w,extra:1})});
-    SUM={list,exRows,cd,f,t,zAt};fillAdjCodes();
+    SUM={list,exRows,cd,f,t,zAt,recX:recX.length,recXq:recX.reduce((a,r)=>a+(Number(r.qty)||0),0)};fillAdjCodes();
   }catch(e){alert(e.message)}
   busy(0);renderSum();
 }
@@ -1119,9 +1121,12 @@ function renderSum(){
   $('sCutN').textContent=CUT?SUM.list.filter(r=>CUT.has(String(r.code).toUpperCase())).length:'';
   $('kAll').textContent=all.length;$('kAll').title=tr(`17000 ${all.filter(r=>!r.extra).length} + 현장보유 ${all.filter(r=>r.extra).length}`,'');$('kShort').textContent=st.filter(s=>s==='short').length;
   $('kCare').textContent=st.filter(s=>s==='care').length;$('kEx').textContent=SUM.exRows;
+  const warn=[];if(SUM.cd&&SUM.f&&SUM.f!==SUM.cd)warn.push(tr(`⚠ 사용·입고 시작일(${SUM.f})이 실사일(${SUM.cd})과 다릅니다 — 현재고는 실사일부터 계산해야 맞습니다`,`⚠ Inicio (${SUM.f}) ≠ fecha de inventario (${SUM.cd})`));
+  if(SUM.recX)warn.push(tr(`실사에 이미 스캔된 롤 ${SUM.recX}건(${fmt(SUM.recXq)})은 입고량에서 제외`,`${SUM.recX} rollos ya inventariados excluidos de entradas`));
   $('sInfo').textContent=tr(`실사 ${SUM.cd||'-'} · 사용/입고 ${SUM.f||'-'} ~ ${SUM.t||'-'} · 제외 LOT: ${EX.map(e=>e.lotno).join(', ')||'없음'}`,
     `Inventario ${SUM.cd||'-'} · ${SUM.f||'-'} ~ ${SUM.t||'-'} · LOT excluidos: ${EX.map(e=>e.lotno).join(', ')||'ninguno'}`)+
     tr(` · 롤수: TML·WIRE 입고 − 0처리 (0처리 업로드 ${SUM.zAt?SUM.zAt.slice(0,16).replace('T',' '):'-'})`,` · Rollos: entradas TML·WIRE − cerrados (${SUM.zAt?SUM.zAt.slice(0,10):'-'})`);
+  if(warn.length){const w=document.createElement('div');w.style.cssText='margin-top:6px;color:var(--amb);font-weight:700';w.textContent=warn.join(' · ');$('sInfo').appendChild(w)}
   const C=cols(),l=viewList();
   const lab={short:tr('부족','Faltante'),care:tr('주의','Alerta'),ok:'OK'};
   $('sTbl').innerHTML='<tr>'+C.map(([k,h,n])=>`<th class="${n?'n':''}" data-k="${k}">${h}${sortK===k?(sortD>0?' ▲':' ▼'):''}</th>`).join('')+'</tr>'+
