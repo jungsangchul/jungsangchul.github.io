@@ -1324,6 +1324,22 @@ label{font-size:0.78rem;color:var(--text2);margin-bottom:0.3rem;display:block;}
 .hist-title{font-size:.78rem;font-weight:700;color:var(--orange,#e6a23c);margin-bottom:.4rem;}
 .hist-table th,.hist-table td{padding:.35rem .5rem!important;font-size:.76rem!important;white-space:nowrap;}
 .hist-table tr.cur td{background:rgba(201,168,76,.08);}
+/* ✅ 숙련도 등급 결과 표 (2026-10-31): 세로 쌓기 배치, 등급 요약 */
+#skillGradeContainer .results-table th,#skillGradeContainer .results-table td{padding:.42rem .4rem;font-size:.78rem;vertical-align:middle;line-height:1.3;white-space:nowrap;}
+#skillGradeContainer .results-table th{font-size:.7rem;text-transform:none;letter-spacing:.2px;}
+#skillGradeContainer .results-table td.rt-wrap{white-space:normal;}
+#skillGradeContainer .results-table td.rt-name{min-width:180px;max-width:260px;}
+#skillGradeContainer .results-table td.rt-proc{max-width:170px;}
+#skillGradeContainer .results-table tr.row-rework td{background:rgba(255,140,0,0.05);}
+#skillGradeContainer .results-table tr.row-rework td:first-child{box-shadow:inset 3px 0 0 #ff8c00;}
+#skillGradeContainer .results-table tr.row-lider td{background:rgba(201,168,76,0.05);}
+#skillGradeContainer .results-table tr.row-lider td:first-child{box-shadow:inset 3px 0 0 #c9a84c;}
+#skillGradeContainer .results-table tr.row-train td{background:rgba(56,189,248,0.04);}
+#skillGradeContainer .results-table tr.row-train td:first-child{box-shadow:inset 3px 0 0 #38bdf8;}
+.grade-summary{display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;margin:.2rem 0 .7rem;}
+.grade-summary .gs{display:inline-flex;align-items:center;gap:.4rem;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:.3rem .65rem;font-size:.76rem;}
+.grade-summary .gs b{font-size:.95rem;}
+.grade-summary .gs .pct{color:var(--text2);font-size:.68rem;}
 
 .score-badge{display:inline-block;padding:0.18rem 0.55rem;border-radius:20px;font-size:0.76rem;font-weight:700;}
 .score-high{background:rgba(46,204,122,0.15);color:var(--green);}
@@ -8331,44 +8347,43 @@ function renderSkillGrades(){
   }
   // 검색 결과 수 표시
   const totalWorkers=workers.length;
-  el.innerHTML=`<div style="font-size:0.78rem;color:var(--text2);margin-bottom:0.6rem">
-    ${kw?`<span style="color:var(--sky)">"${kw}" 검색 결과</span> — `:''}총 <strong style="color:var(--text)">${totalWorkers}명 / ${rows.length}행</strong>
+  // ✅ 공정 필터 옵션을 실제 공정 목록으로 (2026-10-31)
+  try{const sel=document.getElementById('skillFilterProcess');if(sel&&!sel.dataset.auto){const procsAll=[...new Set(results.map(r=>r.process||'미분류'))].sort((a,b)=>a.localeCompare(b,'ko'));sel.innerHTML='<option value="">전체 공정</option>'+procsAll.map(x=>`<option value="${_perfEsc(x)}" ${x===filterProc?'selected':''}>${_perfEsc(x)}</option>`).join('');sel.dataset.auto='1';}}catch(e){}
+  // ✅ 등급 요약 (합격 기록 기준)
+  const gsum={};rows.forEach(({r})=>{if(r.passed&&!_isEvalIng(r)){const lb=gradeLabelOf({passed:true,totalScore:r.totalScore});gsum[lb]=(gsum[lb]||0)+1;}});
+  const gOrder=[...gradeConfig].sort((a,b)=>b.minScore-a.minScore).map(g=>g.label);const gTot=Object.values(gsum).reduce((a,b)=>a+b,0)||1;
+  const _showProfS=rows.some(({r})=>trackW(recTrack(r)).prof>0);
+  el.innerHTML=`<div class="grade-summary">${gOrder.map(lb=>`<span class="gs" style="border-color:${gradeColorOf(lb)}60"><span style="color:${gradeColorOf(lb)};font-weight:800">${lb}</span><b>${gsum[lb]||0}</b><span class="pct">${((gsum[lb]||0)/gTot*100).toFixed(0)}%</span></span>`).join('')}<span class="gs"><span style="color:var(--text2)">합격 계</span><b>${gTot}</b></span><span class="role-legend"><span class="proc-rework">🔧 수정</span><span class="proc-lider">★ 조장</span><span class="proc-train">🎓 교육조장</span></span></div>
+  <div style="font-size:0.78rem;color:var(--text2);margin-bottom:0.6rem">
+    ${kw?`<span style="color:var(--sky)">"${kw}" 검색 결과</span> — `:''}총 <strong style="color:var(--text)">${totalWorkers}명 / ${rows.length}행</strong> · 입사일순
   </div>
-  <div style="overflow-x:auto"><table class="results-table">
+  <table class="results-table">
     <thead><tr>
-      <th><span data-kr="이름" data-es="Nombre">이름</span></th>
-      <th><span data-kr="사번" data-es="N°Emp">사번</span></th>
-      <th><span data-kr="근속" data-es="Antigüedad">근속</span></th>
+      <th><span data-kr="이름 / 사번 / 근속" data-es="Nombre / N°Emp / Antigüedad">이름 / 사번 / 근속</span></th>
       <th style="color:var(--sky)"><span data-kr="공정명" data-es="Proceso">공정명</span></th>
       <th><span data-kr="응시일" data-es="Fecha">응시일</span></th>
-      <th><span data-kr="이론" data-es="Teórico">이론</span></th>
-      <th><span data-kr="실습" data-es="Práctico">실습</span></th>
-      <th style="color:var(--gold)"><span data-kr="숙련도" data-es="Productividad">숙련도</span></th>
-      <th><span data-kr="총점" data-es="Total">총점</span></th>
-      <th><span data-kr="합격" data-es="Resultado">합격</span></th>
-      <th><span data-kr="등급" data-es="Nivel">등급</span></th>
+      <th><span data-kr="점수" data-es="Puntaje">점수 (<span class="tag tag-t" style="padding:0 .3rem">이론</span> · <span class="tag tag-p" style="padding:0 .3rem">실습</span>${_showProfS?' · <span class="tag" style="padding:0 .3rem;background:rgba(201,168,76,.15);color:var(--gold)">숙련도</span>':''} → 총점)</span></th>
+      <th><span data-kr="합격 / 등급" data-es="Resultado / Nivel">합격 / 등급</span></th>
       <th><span data-kr="다기능" data-es="Multi">다기능</span></th>
     </tr></thead>
     <tbody>${rows.map(({w,p,r,passedTotal})=>{
       const hd=w.hireDate||lookupHireDate(w.empId);
       const cls=r.totalScore>=80?'score-high':r.totalScore>=60?'score-mid':'score-low';
       const ing=_isEvalIng(r), miss=ing?_evalMiss(r):null, dash='<span style="color:var(--text2)">-</span>';
-      return`<tr>
-        <td style="font-weight:600">${w.name}</td>
-        <td style="font-family:'JetBrains Mono',monospace;font-size:0.73rem;color:var(--text2)">${w.empId||'-'}</td>
-        <td style="font-size:0.76rem;color:var(--teal)">${calcTenure(hd)}</td>
-        <td><span style="background:rgba(91,163,232,0.12);color:var(--sky);border:1px solid rgba(91,163,232,0.3);border-radius:4px;padding:0.12rem 0.5rem;font-size:0.78rem;font-weight:700">${p}</span></td>
-        <td style="font-size:0.75rem;color:var(--text2)">${r.date}</td>
-        <td>${miss&&miss.includes('이론')?dash:`<span class="score-t">${r.theoryWeighted||0}점</span>`}</td>
-        <td><span class="score-p">${r.practicalWeighted||0}점</span></td>
-        <td>${profCellHtml(r)}</td>
-        <td>${ing?dash:`<span class="score-badge ${cls}">${r.totalScore}점</span>`}</td>
-        <td>${ing?_EVALING_BADGE+`<br><span style="font-size:0.64rem;color:var(--text2)">미평가: ${miss.join('·')}</span>`:(r.passed?'<span style="color:var(--green)">✅ 합격</span>':'<span style="color:var(--red)">❌ 불합격</span>')}</td>
-        <td>${ing?dash:calcGrade(r.totalScore,r.passed)}</td>
+      const role=roleOf(p);
+      const profTxt=_showProfS?(trackW(recTrack(r)).prof>0?`<span>·</span><span class="sf">숙련도 <b>${r.profWeighted!=null?r.profWeighted:'-'}</b></span>`:''):'';
+      const isRe=/^RE-/.test(r.evalRound||'');
+      const fsx=(typeof finalStatusMap!=='undefined'&&finalStatusMap)?finalStatusMap[r._sbId]:null;const isResigned=!!(fsx&&fsx.resigned);
+      return`<tr class="${role?'row-'+role:''}" style="${isResigned?'opacity:0.55':''}">
+        <td class="rt-wrap rt-name"><span style="font-weight:600">${w.name}</span>${isResigned?' <span style="background:rgba(150,150,150,0.18);color:#9aa4b2;border:1px solid rgba(150,150,150,0.4);border-radius:4px;padding:0.05rem 0.3rem;font-size:0.65rem;font-weight:700;vertical-align:middle">퇴사</span>':''}<span class="rt-sub rt-mono">${w.empId||'-'}</span><span class="rt-sub" style="color:var(--teal)">${calcTenure(hd)}</span></td>
+        <td class="rt-wrap rt-proc">${role?procCell(p):`<span style="background:rgba(91,163,232,0.12);color:var(--sky);border:1px solid rgba(91,163,232,0.3);border-radius:4px;padding:0.1rem 0.45rem;font-size:0.76rem;font-weight:700;white-space:normal">${_perfEsc(p)}</span>`}</td>
+        <td><span style="font-size:0.76rem;color:var(--text2)">${r.date}</span><span class="rt-sub">${_perfEsc(roundShort(r.evalRound))}${isRe?' <span class="reeval-chip">재평가</span>':''}</span></td>
+        <td class="rt-score"><span class="rt-score-line"><span class="st">이론 <b>${miss&&miss.includes('이론')?'-':(r.theoryWeighted||0)}</b></span><span>·</span><span class="sp">실습 <b>${r.practicalWeighted||0}</b></span>${profTxt}</span><span class="rt-line">${ing?dash:`<span class="score-badge ${cls}">총점 ${r.totalScore}</span>`}</span></td>
+        <td class="rt-wrap">${ing?_EVALING_BADGE+`<span class="rt-sub">미평가: ${miss.join('·')}</span>`:(r.passed?`<span style="color:var(--green)">✅ 합격</span> ${calcGrade(r.totalScore,r.passed)}`:'<span style="color:var(--red)">❌ 불합격</span>'+failWhy(r))}</td>
         <td style="text-align:center">${passedTotal>=2?`<span class="multi-badge">🔀 ${passedTotal}공정</span>`:'-'}</td>
       </tr>`;
     }).join('')}
-    </tbody></table></div>`;
+    </tbody></table>`;
 }
 
 function renderMultiFunction(){
