@@ -125,6 +125,80 @@ td.car small{color:var(--sub);font-size:12px;margin-left:6px}
 .pn-list span{cursor:pointer;display:inline-block;background:var(--tag);color:var(--tag-ink);border-radius:4px;padding:2px 8px;margin:0 6px 6px 0;font-weight:600}
 .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--panel);padding:10px 18px;border-radius:6px;z-index:40;font-size:13px}
 @media (prefers-reduced-motion:no-preference){.drawer{animation:slide .18s ease-out}@keyframes slide{from{transform:translateX(30px);opacity:.6}}}
+
+/* ---------- 품번 비교 ---------- */
+.cmp-btn{border:1px solid var(--gold);background:transparent;color:var(--gold);padding:7px 14px;border-radius:6px;cursor:pointer;font-weight:700;white-space:nowrap}
+.cmp-btn:hover{background:rgba(201,168,76,.12)}
+.cmp-btn.on{background:var(--gold);color:var(--tag-ink)}
+.cmp{display:grid;grid-template-columns:300px minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:900px){.cmp{grid-template-columns:1fr}}
+.cmp-side{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px}
+.cmp-side h3{margin:0 0 6px;font-size:13px;color:var(--accent)}
+.cmp-side label.f{margin-bottom:6px}
+.pnlist{max-height:38vh;overflow:auto;border:1px solid var(--line);border-radius:6px;background:var(--bg)}
+.pnlist label{display:flex;gap:8px;align-items:center;padding:5px 8px;border-bottom:1px solid var(--line);cursor:pointer;font-size:13px}
+.pnlist label:last-child{border-bottom:0}
+.pnlist label:hover{background:var(--hit)}
+.pnlist label.chosen{background:var(--hit)}
+.pnlist label span.pn{font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pnlist label small{color:var(--sub);margin-left:auto;white-space:nowrap;font-size:12px}
+.pnlist label small i{font-style:normal;color:var(--gold);margin-right:6px}
+.sel{display:flex;flex-direction:column;gap:4px;margin-top:8px}
+.sel .it{display:flex;gap:6px;align-items:center;border:1px solid var(--line);border-radius:6px;padding:4px 8px;font-size:13px;background:var(--bg)}
+.sel .it.base{border-color:var(--gold)}
+.sel .it b.tag{font-family:'Space Mono',Consolas,monospace;color:var(--gold);min-width:16px}
+.sel .it .pn{font-weight:700;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sel .it .pn small{font-weight:400;color:var(--sub);margin-left:6px}
+.sel .it button{border:0;background:none;cursor:pointer;color:var(--sub);padding:0 4px;font-size:14px}
+.sel .it button:hover{color:var(--ink)}
+.sel .it.base .mk{visibility:hidden}
+.cmp-main{min-width:0}
+.cmp-empty{background:var(--panel);border:1px dashed var(--line);border-radius:8px;padding:48px 16px;text-align:center;color:var(--sub)}
+.cmp-tabs{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px;align-items:center}
+.cmp-tabs button{border:1px solid var(--line);background:var(--panel);padding:6px 12px;border-radius:6px;cursor:pointer;font-weight:600}
+.cmp-tabs button.on{border-color:var(--gold);color:var(--gold)}
+.cmp-tabs .sp{flex:1}
+.cmp-head{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin-bottom:10px;display:flex;gap:8px 24px;flex-wrap:wrap;align-items:center;font-size:13px}
+.cmp-head .ab{display:flex;gap:8px;align-items:center}
+.cmp-head .ab b.tag{font-family:'Space Mono',Consolas,monospace;color:var(--gold)}
+.cmp-head .ab .pn{font-weight:700;font-size:15px}
+.cmp-head .ab small{color:var(--sub)}
+.cmp-head .ar{color:var(--gold);font-size:18px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(108px,1fr));gap:8px;margin-bottom:10px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px 10px;cursor:pointer;text-align:left}
+.card:hover{border-color:var(--accent)}
+.card.on{border-color:var(--accent);background:var(--hit)}
+.card span{font-size:12px;color:var(--sub);display:block;white-space:nowrap}
+.card b{font-size:22px;line-height:1.2}
+.card.add b{color:#9fe3b4}.card.del b{color:var(--danger)}.card.chg b{color:#E3C46A}
+.card.len b{color:#9fd0e3}.card.mat b{color:#f0b7ad}.card.work b{color:#E3C46A}.card.etc b,.card.swap b{color:var(--sub)}
+.dtab{width:100%;table-layout:fixed;white-space:normal;border-collapse:collapse;background:var(--panel);border:1px solid var(--line);border-radius:8px}
+.dtab th,.dtab td{vertical-align:top;font-size:12px;padding:6px 8px;word-break:break-word;border-bottom:1px solid var(--line)}
+.dtab th{position:sticky;top:0;background:var(--panel);color:var(--sub);font-weight:600;z-index:1}
+.dtab td.wn{font-size:13px;font-weight:700}
+.dtab td.wn .ab{display:flex;gap:4px;margin-top:3px}
+.dtab td.wn .ab button{border:1px solid var(--line);background:var(--bg);border-radius:4px;padding:0 6px;font-size:11px;cursor:pointer;font-family:'Space Mono',Consolas,monospace;color:var(--gold)}
+.dtab td.wn .ab button:hover{border-color:var(--gold)}
+.dtab tr.add td{background:rgba(159,227,180,.05)}
+.dtab tr.del td{background:rgba(242,134,126,.06)}
+.st{display:inline-block;font-size:11px;font-weight:700;padding:1px 7px;border-radius:999px;border:1px solid;white-space:nowrap}
+.st.add{color:#9fe3b4;border-color:#3d8054}.st.del{color:var(--danger);border-color:#8a4a44}.st.chg{color:#E3C46A;border-color:#8a7330}.st.same{color:var(--sub);border-color:var(--line)}
+.ct{display:inline-block;font-size:11px;padding:0 6px;border-radius:4px;margin:2px 3px 0 0;background:var(--hit);white-space:nowrap}
+.ct.len{color:#9fd0e3}.ct.mat{color:#f0b7ad}.ct.work{color:#E3C46A}.ct.etc{color:var(--sub)}.ct.swap{color:var(--sub);border:1px dashed var(--line);background:none}
+.dl{font-size:12px;line-height:1.55}
+.dl div{display:flex;gap:6px;flex-wrap:wrap;align-items:baseline}
+.dl .k{color:var(--sub);min-width:0}
+.dl .k::after{content:':'}
+.dl .va{color:var(--danger);text-decoration:line-through;opacity:.85}
+.dl .vb{color:#9fe3b4;font-weight:600}
+.dl .arw{color:var(--sub)}
+.dl.etc .vb{color:var(--sub);font-weight:400}
+.dl.etc .va{color:var(--sub);opacity:.6}
+.ws{font-size:12px;line-height:1.5;color:var(--sub)}
+.ws b{color:var(--ink)}
+.ws .chip i{width:20px;height:8px}
+.cmp-scroll{overflow:auto;max-height:calc(100vh - 330px);border-radius:8px}
+.cmp-note{font-size:12px;color:var(--sub);margin:4px 0 8px;line-height:1.5}
 </style>
 
 <!-- ═══ 포털 공통 (yh-common-v2): 제목 서체 · 닫기 버튼 · 최소 글자 크기 ═══ -->
@@ -228,6 +302,7 @@ td.car small{color:var(--sub);font-size:12px;margin-left:6px}
   <a class="brand" href="./" title="YURA HARNESS MÉXICO">YURA HARNESS MÉXICO</a>
   <h1 data-i="title">회로 조회<small data-i="sub">와이어 · 단자 · 부품 · 심볼</small></h1>
   <span class="plant">PLANT 1 · 몽클로바</span>
+  <button class="cmp-btn" id="tabCompare" data-i="tCompare">⇄ 품번 비교</button>
   <nav class="tabs">
     <button id="tabLookup" class="on" data-i="tLookup">조회</button>
     <button id="tabMaster" data-i="tMaster">마스터</button>
@@ -309,6 +384,25 @@ td.car small{color:var(--sub);font-size:12px;margin-left:6px}
     </div>
   </section>
 
+
+  <!-- COMPARE -->
+  <section id="viewCompare" class="cmp hidden">
+    <div class="cmp-side">
+      <h3 data-i="cmpSelT">비교할 품번 선택 (2개 이상)</h3>
+      <label class="f"><span data-i="carF">차종 / 품명</span><select id="cCar"></select></label>
+      <label class="f"><span data-i="cmpFind">품번 검색</span><input id="cFind" autocomplete="off" placeholder="91100-FC"></label>
+      <div class="pnlist" id="cList"></div>
+      <h3 style="margin-top:12px"><span data-i="cmpSelected">선택한 품번</span> <small id="cSelN" style="color:var(--sub);font-weight:400"></small></h3>
+      <div class="sel" id="cSel"></div>
+      <div class="row-btns" style="margin-top:10px">
+        <button type="button" class="btn" id="cClear" data-i="cmpClear">선택 비우기</button>
+        <button type="button" class="btn pri" id="cXlsx" data-i="cmpXlsx" style="margin-left:auto">엑셀 다운로드</button>
+      </div>
+      <p class="cmp-note" data-i="cmpHelp">첫 번째 품번이 <b>기준(A)</b>이 됩니다. 나머지 품번은 각각 기준과 선번 단위로 비교합니다. 좌·우 단자·씰·부품 위치만 바뀐 회로는 동일로 봅니다.</p>
+    </div>
+    <div class="cmp-main" id="cmpMain"></div>
+  </section>
+
   <!-- MASTER -->
   <section id="viewMaster" class="hidden">
     <div class="master">
@@ -370,8 +464,8 @@ const C={pn:0,sub:1,wn:2,mat:3,matNo:4,sq:5,col:6,len:7,stL:12,stR:13,tL:16,tR:1
 const KEY_COLS=new Set([45,46,43,33,C.pn,C.sub,C.wn,C.mat,C.sq,C.col,C.len,C.tL,C.tR,C.p1L,C.p1R,...C.sym]);
 
 /* ---------- 언어 ---------- */
-const ES={title:'Consulta de circuitos',sub:'Cable · Terminal · Pieza · Símbolo',tLookup:'Consulta',tMaster:'Maestro',gBasic:'No. parte / Circuito',pn:'No. de parte',wn:'No. de circuito',gWire:'Por cable',mat:'Material',col:'Color',len:'Longitud (mm)',tol:'Tolerancia ±mm',gTerm:'Por terminal',tL:'Terminal izq.',tR:'Terminal der.',swap:'Buscar sin importar izq./der.',gPart:'Pieza pre-crimpado 1',pL:'Izquierda',pR:'Derecha',gSym:'Por símbolo',symCol:'Columna',sym:'Símbolo',reset:'↺ Limpiar filtros',gGrp:'Prefijo de No. parte · Modelo / Producto',grpHelp:'Ingrese el modelo y el producto por prefijo del No. de parte (ej.: 91500-FC, 91100-GG) y guarde. Se muestran en los resultados de consulta. Los prefijos del maestro aparecen automáticamente.',grpKey:'Prefijo',grpCnt:'Circuitos',grpCar:'Modelo',grpName:'Producto',grpAdd:'+ Agregar prefijo',grpSave:'Guardar modelo/producto',carF:'Modelo / Producto',carCol:'Modelo/Producto',grpSaved:'Modelo/producto guardado',grpBad:'Formato de prefijo: 91500-FC',grpDel:'¿Eliminar este prefijo?',noGrp:'(sin registrar)',rows:'circuitos',mTitle:'Pegar maestro',mDesc:'Copie en Excel desde la fila de encabezados hasta los datos (Ctrl+C) y péguelos abajo (Ctrl+V). Sin encabezados se usa el formato estándar de 69 columnas.',saveMerge:'Guardar reemplazando por No. parte',saveAll:'Reemplazar todo',clearAll:'Borrar maestro',dlXlsx:'Descargar Excel',dlHelp:'Descargar Excel baja todo el maestro guardado; al hacer clic en un No. de parte se descarga solo ese.',dlNone:'No hay maestro para descargar.',dlErr:'No se pudo cargar la librería de Excel. Revise la conexión.',mHelp:'Reemplazar por No. parte: solo se borran las filas de los números de parte pegados; los demás se conservan. Los datos se comparten en todas las PC.',sRows:'Circuitos guardados',sPn:'No. de parte',sUpd:'Último guardado',close:'Cerrar',hideBlank:'Ocultar vacíos',copyRow:'Copiar fila',all:'Todos',anyCol:'Cualquiera',noMaster:'No hay maestro. Pegue los datos en la pestaña Maestro.',noHit:'No hay circuitos con estas condiciones. Quite un filtro.',showing:'Mostrando los primeros 500',copied:'Fila copiada',saved:'Guardado',parsed:'filas leídas',cleared:'Maestro borrado',confirmClear:'¿Borrar todo el maestro?',confirmAll:'Se reemplazará todo el maestro. ¿Continuar?',nothing:'No hay filas para guardar.',symAny:'★ Solo con símbolo',twAll:'Todos',sealL:'Sello izq.',sealR:'Sello der.',sealAll:'Todos',sealYes:'Con sello',sealNo:'Sin sello',sealCol:'Sello',twT:'Trenzado (T)',twS:'Blindado (S)',twN:'Normal',twLen:'Long. trenzado',twPair:'Par',twInfo:'Trenzado',shInfo:'Blindado',twAfter:'Después de trenzar',cutLen:'corte',tw:'Trenzado / blindado',online:'Servidor',offline:'Sin conexión (caché)',saving:'Guardando…',loading:'Cargando…',saveErr:'Error al guardar en el servidor'};
-const KO={grpSaved:'차종·품명 저장 완료',grpBad:'구분자 형식: 91500-FC',grpDel:'이 구분자를 삭제할까요?',noGrp:'(미등록)',sealAll:'전체',sealYes:'씰 있음',sealNo:'씰 없음',sealCol:'씰',dlNone:'다운로드할 마스터가 없습니다.',dlErr:'엑셀 라이브러리를 불러오지 못했습니다. 인터넷 연결을 확인하세요.',all:'전체',anyCol:'전체 칸',noMaster:'마스터가 없습니다. 마스터 탭에서 엑셀 내용을 붙여넣으세요.',noHit:'조건에 맞는 회로가 없습니다. 조건을 하나 줄여 보세요.',showing:'앞 500건만 표시',copied:'행을 복사했습니다',saved:'저장했습니다',parsed:'행 읽음',cleared:'마스터를 삭제했습니다',confirmClear:'마스터 전체를 삭제할까요?',confirmAll:'기존 마스터를 모두 지우고 새로 저장합니다. 계속할까요?',nothing:'저장할 행이 없습니다.',symAny:'★ 심볼 있는 것만',twAll:'전체',twT:'트위스트 (T)',twS:'쉴드 (S)',twN:'일반 (없음)',twLen:'Tw후 길이',twPair:'짝 선번',twInfo:'트위스트',shInfo:'쉴드',twAfter:'트위스트 후',cutLen:'절단길이',online:'서버 연결',offline:'오프라인 (캐시 사용)',saving:'저장 중…',loading:'불러오는 중…',saveErr:'서버 저장 실패'};
+const ES={tCompare:'⇄ Comparar',cmpSelT:'Seleccione No. de parte (2 o más)',cmpFind:'Buscar No. parte',cmpSelected:'Seleccionados',cmpClear:'Vaciar selección',cmpXlsx:'Descargar Excel',cmpHelp:'El primer No. de parte es la <b>base (A)</b>. Los demás se comparan con la base circuito por circuito. Un circuito con solo terminal·sello·pieza intercambiados izq./der. se considera igual.',cmpBase:'base',cmpTarget:'Comparado',cmpMakeBase:'Usar como base',cmpNone:'Marque los No. de parte en la lista de arriba.',cmpOne:'Seleccione un No. de parte más para comparar.',cmpPick:'Seleccione 2 o más No. de parte en la izquierda.',cAll:'Total',cAdd:'Agregado',cDel:'Eliminado',cChg:'Cambiado',cSame:'Igual',cLen:'Longitud',cMat:'Material',cWork:'Cond. trabajo',cEtc:'Otros (ref.)',cSwap:'Izq/der invertido',cStatus:'Estado',cDetail:'Cambios',cCat:'Tipo',cItem:'Ítem',cRowsA:'Circuitos A',cRowsB:'Circuitos B',cDiffN:'Dif. circuitos',cAddOnly:'Solo en',cDelOnly:'No existe en',cSameAll:'Sin cambios',title:'Consulta de circuitos',sub:'Cable · Terminal · Pieza · Símbolo',tLookup:'Consulta',tMaster:'Maestro',gBasic:'No. parte / Circuito',pn:'No. de parte',wn:'No. de circuito',gWire:'Por cable',mat:'Material',col:'Color',len:'Longitud (mm)',tol:'Tolerancia ±mm',gTerm:'Por terminal',tL:'Terminal izq.',tR:'Terminal der.',swap:'Buscar sin importar izq./der.',gPart:'Pieza pre-crimpado 1',pL:'Izquierda',pR:'Derecha',gSym:'Por símbolo',symCol:'Columna',sym:'Símbolo',reset:'↺ Limpiar filtros',gGrp:'Prefijo de No. parte · Modelo / Producto',grpHelp:'Ingrese el modelo y el producto por prefijo del No. de parte (ej.: 91500-FC, 91100-GG) y guarde. Se muestran en los resultados de consulta. Los prefijos del maestro aparecen automáticamente.',grpKey:'Prefijo',grpCnt:'Circuitos',grpCar:'Modelo',grpName:'Producto',grpAdd:'+ Agregar prefijo',grpSave:'Guardar modelo/producto',carF:'Modelo / Producto',carCol:'Modelo/Producto',grpSaved:'Modelo/producto guardado',grpBad:'Formato de prefijo: 91500-FC',grpDel:'¿Eliminar este prefijo?',noGrp:'(sin registrar)',rows:'circuitos',mTitle:'Pegar maestro',mDesc:'Copie en Excel desde la fila de encabezados hasta los datos (Ctrl+C) y péguelos abajo (Ctrl+V). Sin encabezados se usa el formato estándar de 69 columnas.',saveMerge:'Guardar reemplazando por No. parte',saveAll:'Reemplazar todo',clearAll:'Borrar maestro',dlXlsx:'Descargar Excel',dlHelp:'Descargar Excel baja todo el maestro guardado; al hacer clic en un No. de parte se descarga solo ese.',dlNone:'No hay maestro para descargar.',dlErr:'No se pudo cargar la librería de Excel. Revise la conexión.',mHelp:'Reemplazar por No. parte: solo se borran las filas de los números de parte pegados; los demás se conservan. Los datos se comparten en todas las PC.',sRows:'Circuitos guardados',sPn:'No. de parte',sUpd:'Último guardado',close:'Cerrar',hideBlank:'Ocultar vacíos',copyRow:'Copiar fila',all:'Todos',anyCol:'Cualquiera',noMaster:'No hay maestro. Pegue los datos en la pestaña Maestro.',noHit:'No hay circuitos con estas condiciones. Quite un filtro.',showing:'Mostrando los primeros 500',copied:'Fila copiada',saved:'Guardado',parsed:'filas leídas',cleared:'Maestro borrado',confirmClear:'¿Borrar todo el maestro?',confirmAll:'Se reemplazará todo el maestro. ¿Continuar?',nothing:'No hay filas para guardar.',symAny:'★ Solo con símbolo',twAll:'Todos',sealL:'Sello izq.',sealR:'Sello der.',sealAll:'Todos',sealYes:'Con sello',sealNo:'Sin sello',sealCol:'Sello',twT:'Trenzado (T)',twS:'Blindado (S)',twN:'Normal',twLen:'Long. trenzado',twPair:'Par',twInfo:'Trenzado',shInfo:'Blindado',twAfter:'Después de trenzar',cutLen:'corte',tw:'Trenzado / blindado',online:'Servidor',offline:'Sin conexión (caché)',saving:'Guardando…',loading:'Cargando…',saveErr:'Error al guardar en el servidor'};
+const KO={rows:'건',cmpBase:'기준',cmpTarget:'비교 품번',cmpMakeBase:'기준으로',cmpNone:'위 목록에서 품번을 체크하세요.',cmpOne:'비교할 품번을 하나 더 선택하세요.',cmpPick:'왼쪽에서 품번을 2개 이상 선택하세요.',cAll:'전체',cAdd:'추가',cDel:'삭제',cChg:'변경',cSame:'동일',cLen:'길이',cMat:'자재',cWork:'작업조건',cEtc:'기타(참고)',cSwap:'좌우 반전',cStatus:'상태',cDetail:'변경 내역',cCat:'구분',cItem:'항목',cRowsA:'A 회로수',cRowsB:'B 회로수',cDiffN:'회로수 차이',cAddOnly:'추가됨 → 품번',cDelOnly:'삭제됨 ← 품번',cSameAll:'변경 없음',wn:'선번',grpSaved:'차종·품명 저장 완료',grpBad:'구분자 형식: 91500-FC',grpDel:'이 구분자를 삭제할까요?',noGrp:'(미등록)',sealAll:'전체',sealYes:'씰 있음',sealNo:'씰 없음',sealCol:'씰',dlNone:'다운로드할 마스터가 없습니다.',dlErr:'엑셀 라이브러리를 불러오지 못했습니다. 인터넷 연결을 확인하세요.',all:'전체',anyCol:'전체 칸',noMaster:'마스터가 없습니다. 마스터 탭에서 엑셀 내용을 붙여넣으세요.',noHit:'조건에 맞는 회로가 없습니다. 조건을 하나 줄여 보세요.',showing:'앞 500건만 표시',copied:'행을 복사했습니다',saved:'저장했습니다',parsed:'행 읽음',cleared:'마스터를 삭제했습니다',confirmClear:'마스터 전체를 삭제할까요?',confirmAll:'기존 마스터를 모두 지우고 새로 저장합니다. 계속할까요?',nothing:'저장할 행이 없습니다.',symAny:'★ 심볼 있는 것만',twAll:'전체',twT:'트위스트 (T)',twS:'쉴드 (S)',twN:'일반 (없음)',twLen:'Tw후 길이',twPair:'짝 선번',twInfo:'트위스트',shInfo:'쉴드',twAfter:'트위스트 후',cutLen:'절단길이',online:'서버 연결',offline:'오프라인 (캐시 사용)',saving:'저장 중…',loading:'불러오는 중…',saveErr:'서버 저장 실패'};
 let lang='ko';
 const koText={};document.querySelectorAll('[data-i]').forEach(el=>koText[el.dataset.i]=el.innerHTML);
 const T=k=>lang==='es'?(ES[k]??KO[k]??k):(KO[k]??k);
@@ -380,7 +474,7 @@ function applyLang(){
   document.getElementById('langBtn').textContent=lang==='ko'?'ES':'KO';
   document.documentElement.lang=lang;
   if(document.getElementById('netStat').className.includes('ok')||document.getElementById('netStat').className.includes('off'))setNet(online);
-  refreshOptions();render();
+  refreshOptions();render();if(typeof CMP!=='undefined'){cmpOptions();cmpBuild();}
 }
 document.getElementById('langBtn').onclick=()=>{lang=lang==='ko'?'es':'ko';try{localStorage.setItem('circ_lang',lang)}catch(e){}applyLang();};
 
@@ -702,11 +796,146 @@ $('copyRow').onclick=async()=>{
   toast(T('copied'));
 };
 
+
+/* ---------- 품번 비교 ---------- */
+const CMP={sel:[],cur:0,filter:'all',res:[]};
+/* 끝단(좌/우) 비교 항목: [키, 좌열, 우열, 구분] */
+const CMP_END=[['tm',16,19,'mat'],['seal',57,58,'mat'],['p1',21,24,'mat'],['p2',22,25,'mat'],['p3',23,26,'mat'],['st',12,13,'work'],['sol',14,17,'work'],['auto',50,51,'work'],['hang',59,60,'work'],['hmt',67,68,'work'],['con',31,32,'etc'],['hole',28,30,'etc']];
+/* 와이어·작업조건 비교 항목: [열, 구분] */
+const CMP_COLS=[[3,'mat'],[4,'mat'],[5,'mat'],[6,'mat'],[7,'len'],[45,'work'],[43,'work'],[20,'work'],[34,'work'],[8,'work'],[9,'work'],[10,'work'],[11,'work'],[48,'work'],[55,'work'],[47,'work'],[56,'work'],[61,'work'],[62,'work'],[63,'work'],[64,'work'],[65,'work'],[66,'work'],[1,'etc']];
+const LBL_KO={tm:'단자',seal:'씰',p1:'부품1',p2:'부품2',p3:'부품3',st:'스트립 길이',sol:'납땜',auto:'자동/반자동',hang:'걸이수',hmt:'HMT',con:'커넥터',hole:'HOLE',3:'재질',4:'자재번호',5:'SQ',6:'색상',7:'길이',45:'Tw/Sh 구분',43:'Tw후 길이',twm:'트위스트 짝',20:'조인트·쌍압착 연결',34:'조인트·쌍압착 연결(형식2)',8:'중간스트립1',9:'중간스트립2',10:'중간스트립3',11:'중간스트립4',48:'중간스트립 여부',55:'결속갯수',47:'기준선',56:'특수단자 기호',61:'FPC',62:'FPC1',63:'FPC2',64:'TPC',65:'TPC1',66:'TPC2',1:'서브그룹',L:'좌',R:'우'};
+const LBL_ES={tm:'Terminal',seal:'Sello',p1:'Pieza1',p2:'Pieza2',p3:'Pieza3',st:'Long. pelado',sol:'Soldadura',auto:'Auto/semi',hang:'Ganchos',hmt:'HMT',con:'Conector',hole:'HOLE',3:'Material',4:'No. material',5:'SQ',6:'Color',7:'Longitud',45:'Tw/Sh',43:'Long. trenz.',twm:'Par trenzado',20:'Unión/doble crimp',34:'Unión/doble crimp (2)',8:'Pelado medio1',9:'Pelado medio2',10:'Pelado medio3',11:'Pelado medio4',48:'Pelado medio',55:'Amarres',47:'Cable base',56:'Símbolo term. esp.',61:'FPC',62:'FPC1',63:'FPC2',64:'TPC',65:'TPC1',66:'TPC2',1:'Subgrupo',L:'Izq',R:'Der'};
+const LBL=k=>lang==='es'?(LBL_ES[k]??LBL_KO[k]??k):(LBL_KO[k]??k);
+const sameV=(a,b)=>{const x=num(a),y=num(b);if(x!==null&&y!==null&&String(a).trim()!==''&&String(b).trim()!=='')return x===y;return U(a)===U(b);};
+const endVal=(r,k,ci)=>k==='seal'?(hasSeal(r[ci])?'1':''):String(r[ci]??'').trim();
+function endOf(r,side){const o={};CMP_END.forEach(([k,l,rr])=>o[k]=endVal(r,k,side==='L'?l:rr));return o;}
+const endEq=(x,y)=>CMP_END.every(([k])=>sameV(x[k],y[k]));
+const endDiff=(x,y)=>CMP_END.filter(([k])=>!sameV(x[k],y[k])).length;
+function pnRows(pn){return MASTER.rows.map((r,i)=>[r,i]).filter(([r])=>r[C.pn]===pn);}
+function mateIdx(list){const m={};list.forEach(([r])=>{const v=U(r[C.shtw]),k=r[C.shtwLink]||r[C.twPair];if(v&&k)(m[v+'|'+k]=m[v+'|'+k]||[]).push(U(r[C.wn]));});return m;}
+function mates(r,idx){const v=U(r[C.shtw]),k=r[C.shtwLink]||r[C.twPair];if(!v||!k)return '';const w=U(r[C.wn]);return (idx[v+'|'+k]||[]).filter(x=>x!==w).sort().join(', ');}
+function keyed(list){const m=new Map(),seen={};list.forEach(([r,i])=>{const w=U(r[C.wn]);const n=seen[w]=(seen[w]||0)+1;m.set(n>1?w+'#'+n:w,[r,i]);});return m;}
+function cmpRows(a,b,ia,ib){
+  const diffs=[];
+  const push=(cat,label,av,bv)=>{if(!sameV(av,bv))diffs.push({cat,label,av:String(av??''),bv:String(bv??'')});};
+  const tw=isTw(a)||isTw(b);
+  CMP_COLS.forEach(([ci,cat])=>{
+    if(ci===43){push(tw?'work':'len',tw?LBL(43):'OEM '+LBL(7),a[43],b[43]);return;}
+    push(cat,LBL(ci),a[ci],b[ci]);
+  });
+  push('work',LBL('twm'),mates(a,ia),mates(b,ib));
+  /* 좌·우 끝단: 좌우 위치만 바뀐 경우는 동일 처리 */
+  const aL=endOf(a,'L'),aR=endOf(a,'R'),bL=endOf(b,'L'),bR=endOf(b,'R');
+  let swapped=false;
+  if(!(endEq(aL,bL)&&endEq(aR,bR))){
+    if(endEq(aL,bR)&&endEq(aR,bL))swapped=true;
+    else{
+      const d1=endDiff(aL,bL)+endDiff(aR,bR),d2=endDiff(aL,bR)+endDiff(aR,bL);
+      const sw=d2<d1;swapped=sw;
+      const pairs=sw?[[aL,bR,'L','R'],[aR,bL,'R','L']]:[[aL,bL,'L','L'],[aR,bR,'R','R']];
+      pairs.forEach(([x,y,sa,sb])=>CMP_END.forEach(([k,,,cat])=>{if(!sameV(x[k],y[k])){
+        const lb=(sa===sb?LBL(sa):LBL(sa)+'→'+LBL(sb))+' '+LBL(k);
+        diffs.push({cat,label:lb,av:k==='seal'?(x[k]?'1':'0'):x[k],bv:k==='seal'?(y[k]?'1':'0'):y[k]});}}));
+    }
+  }
+  return {diffs,swapped};
+}
+const natKey=(a,b)=>a.localeCompare(b,undefined,{numeric:true});
+function cmpPair(pa,pb){
+  const la=pnRows(pa),lb=pnRows(pb),A=keyed(la),B=keyed(lb),ia=mateIdx(la),ib=mateIdx(lb);
+  const keys=[...new Set([...A.keys(),...B.keys()])].sort(natKey);
+  const items=keys.map(k=>{const a=A.get(k),b=B.get(k);
+    if(!b)return {k,st:'del',a,b:null,diffs:[],cats:[],swapped:false};
+    if(!a)return {k,st:'add',a:null,b,diffs:[],cats:[],swapped:false};
+    const d=cmpRows(a[0],b[0],ia,ib);const cats=[...new Set(d.diffs.map(x=>x.cat))];
+    return {k,st:cats.some(c=>c!=='etc')?'chg':'same',a,b,diffs:d.diffs,cats,swapped:d.swapped};});
+  const n=s=>items.filter(x=>x.st===s).length,c=cat=>items.filter(x=>x.cats.includes(cat)).length;
+  return {pa,pb,items,sum:{na:A.size,nb:B.size,add:n('add'),del:n('del'),chg:n('chg'),same:n('same'),len:c('len'),mat:c('mat'),work:c('work'),etc:c('etc'),swap:items.filter(x=>x.swapped).length}};
+}
+function cmpBuild(){
+  CMP.res=CMP.sel.length>=2?CMP.sel.slice(1).map(pn=>cmpPair(CMP.sel[0],pn)):[];
+  if(CMP.cur>=CMP.res.length)CMP.cur=0;
+  cmpRender();
+}
+/* 선택 패널 */
+function cmpOptions(){
+  const cnt={};MASTER.rows.forEach(r=>cnt[r[C.pn]]=(cnt[r[C.pn]]||0)+1);
+  const cars={};Object.keys(cnt).forEach(p=>{const l=grpLabel(grpOf(p));if(l)cars[l]=1;});
+  const cs=$('cCar'),cur=cs.value;cs.innerHTML=`<option value="">${T('all')}</option>`+Object.keys(cars).sort().map(k=>`<option value="${esc(k)}">${esc(k)}</option>`).join('');cs.value=cur;
+  const q=U($('cFind').value),car=cs.value;
+  const pns=Object.keys(cnt).filter(p=>(!car||grpLabel(grpOf(p))===car)&&(!q||U(p).includes(q))).sort(natKey);
+  $('cList').innerHTML=pns.map(p=>{const i=CMP.sel.indexOf(p),g=grpOf(p);
+    return `<label class="${i>=0?'chosen':''}"><input type="checkbox" data-pn="${esc(p)}"${i>=0?' checked':''}><span class="pn" title="${esc(p)}${g?' · '+esc(grpLabel(g)):''}">${esc(p)}</span><small>${i>=0?`<i>${String.fromCharCode(65+i)}</i>`:''}${cnt[p]}</small></label>`;}).join('')||`<div class="empty">${T('noMaster')}</div>`;
+  $('cSelN').textContent=CMP.sel.length?CMP.sel.length+'':'';
+  $('cSel').innerHTML=CMP.sel.map((p,i)=>{const g=grpOf(p);
+    return `<div class="it${i===0?' base':''}"><b class="tag">${String.fromCharCode(65+i)}</b><span class="pn" title="${esc(p)}">${esc(p)}${i===0?`<small>${T('cmpBase')}</small>`:''}${g&&g.car?`<small>${esc(g.car)}</small>`:''}</span><button class="mk" data-mk="${i}" title="${T('cmpMakeBase')}">↑</button><button data-rm="${i}" title="✕">✕</button></div>`;}).join('')||`<div class="cmp-note" style="margin:0">${T('cmpNone')}</div>`;
+}
+$('cList').addEventListener('change',e=>{const cb=e.target.closest('input[data-pn]');if(!cb)return;const p=cb.dataset.pn;
+  if(cb.checked){if(!CMP.sel.includes(p))CMP.sel.push(p);}else CMP.sel=CMP.sel.filter(x=>x!==p);
+  cmpOptions();cmpBuild();});
+$('cSel').addEventListener('click',e=>{const mk=e.target.closest('[data-mk]'),rm=e.target.closest('[data-rm]');
+  if(mk){const i=+mk.dataset.mk;const [p]=CMP.sel.splice(i,1);CMP.sel.unshift(p);}
+  else if(rm){CMP.sel.splice(+rm.dataset.rm,1);}
+  else return;CMP.cur=0;cmpOptions();cmpBuild();});
+$('cClear').onclick=()=>{CMP.sel=[];CMP.cur=0;cmpOptions();cmpBuild();};
+$('cCar').addEventListener('change',cmpOptions);$('cFind').addEventListener('input',cmpOptions);
+/* 결과 렌더 */
+const STN=s=>T({add:'cAdd',del:'cDel',chg:'cChg',same:'cSame'}[s]);
+const CATN=c=>T({len:'cLen',mat:'cMat',work:'cWork',etc:'cEtc'}[c]);
+function wireSum(r){if(!r)return '';return `<div class="ws"><b>${esc(r[C.mat])} ${esc(r[C.sq])}</b> ${chip(r[C.col])} <b>${esc(r[C.len])}</b>${isTw(r)?` <span class="twb t">T ${esc(r[C.oemLen])}</span>`:U(r[C.shtw])?` <span class="twb s">${esc(U(r[C.shtw]))}</span>`:''}<br>L ${esc(r[C.tL]||'-')}${hasSeal(r[C.sealL])?' <span class="twb seal">'+T('sealCol')+'</span>':''}${r[C.p1L]?' <span style="opacity:.8">'+esc(r[C.p1L])+'</span>':''}<br>R ${esc(r[C.tR]||'-')}${hasSeal(r[C.sealR])?' <span class="twb seal">'+T('sealCol')+'</span>':''}${r[C.p1R]?' <span style="opacity:.8">'+esc(r[C.p1R])+'</span>':''}</div>`;}
+function cmpFilterItems(res){
+  const f=CMP.filter;return res.items.filter(x=>f==='all'?true:f==='swap'?x.swapped:['add','del','chg','same'].includes(f)?x.st===f:x.cats.includes(f));
+}
+function cmpRender(){
+  const m=$('cmpMain');
+  if(!CMP.res.length){m.innerHTML=`<div class="cmp-empty">${T(CMP.sel.length===1?'cmpOne':'cmpPick')}</div>`;return;}
+  const res=CMP.res[CMP.cur],s=res.sum,tgt=String.fromCharCode(66+CMP.cur);
+  const tabs=CMP.res.length>1?`<div class="cmp-tabs">${CMP.res.map((r,i)=>`<button class="${i===CMP.cur?'on':''}" data-ct="${i}">A ↔ ${String.fromCharCode(66+i)} · ${esc(r.pb)}</button>`).join('')}</div>`:'';
+  const ga=grpOf(res.pa),gb=grpOf(res.pb);
+  const head=`<div class="cmp-head"><div class="ab"><b class="tag">A</b><span class="pn">${esc(res.pa)}</span><small>${esc(grpLabel(ga))}</small><small>· ${s.na} ${T('rows')}</small></div><span class="ar">→</span><div class="ab"><b class="tag">${tgt}</b><span class="pn">${esc(res.pb)}</span><small>${esc(grpLabel(gb))}</small><small>· ${s.nb} ${T('rows')}</small></div><div style="margin-left:auto" class="sum">${T('cDiffN')}: <b>${s.nb-s.na>0?'+':''}${s.nb-s.na}</b></div></div>`;
+  const card=(k,cls,n,label)=>`<button class="card ${cls}${CMP.filter===k?' on':''}" data-cf="${k}"><span>${label}</span><b>${n}</b></button>`;
+  const cards=`<div class="cards">${card('all','',res.items.length,T('cAll'))}${card('add','add',s.add,T('cAdd'))}${card('del','del',s.del,T('cDel'))}${card('chg','chg',s.chg,T('cChg'))}${card('same','same',s.same,T('cSame'))}${card('len','len',s.len,T('cLen'))}${card('mat','mat',s.mat,T('cMat'))}${card('work','work',s.work,T('cWork'))}${card('etc','etc',s.etc,T('cEtc'))}${card('swap','swap',s.swap,T('cSwap'))}</div>`;
+  const items=cmpFilterItems(res);
+  const rows=items.map(x=>{
+    const ai=x.a?x.a[1]:null,bi=x.b?x.b[1]:null;
+    const dl=x.diffs.length?`<div class="dl${x.st==='same'?' etc':''}">${x.diffs.map(d=>`<div><span class="k">${esc(d.label)}</span><span class="va">${esc(d.av)||'—'}</span><span class="arw">→</span><span class="vb">${esc(d.bv)||'—'}</span></div>`).join('')}</div>`:x.st==='add'?`<span class="st add">${T('cAddOnly')} ${tgt}</span>`:x.st==='del'?`<span class="st del">${T('cDelOnly')} ${tgt}</span>`:`<span style="color:var(--sub)">${T('cSameAll')}</span>`;
+    const cats=x.cats.map(c=>`<span class="ct ${c}">${CATN(c)}</span>`).join('')+(x.swapped?`<span class="ct swap">${T('cSwap')}</span>`:'');
+    return `<tr class="${x.st}"><td class="wn">${esc(x.k)}<div class="ab">${ai!==null?`<button data-row="${ai}">A</button>`:''}${bi!==null?`<button data-row="${bi}">${tgt}</button>`:''}</div></td><td><span class="st ${x.st}">${STN(x.st)}</span><div>${cats}</div></td><td>${dl}</td><td>${wireSum(x.a&&x.a[0])}</td><td>${wireSum(x.b&&x.b[0])}</td></tr>`;}).join('');
+  m.innerHTML=tabs+head+cards+`<div class="cmp-scroll"><table class="dtab"><colgroup><col style="width:96px"><col style="width:110px"><col><col style="width:210px"><col style="width:210px"></colgroup><thead><tr><th>${T('wn')}</th><th>${T('cStatus')}</th><th>${T('cDetail')} (A → ${tgt})</th><th>A · ${esc(res.pa)}</th><th>${tgt} · ${esc(res.pb)}</th></tr></thead><tbody>${rows||`<tr><td colspan="5" class="empty">${T('noHit')}</td></tr>`}</tbody></table></div>`;
+}
+$('cmpMain').addEventListener('click',e=>{
+  const ct=e.target.closest('[data-ct]');if(ct){CMP.cur=+ct.dataset.ct;cmpRender();return;}
+  const cf=e.target.closest('[data-cf]');if(cf){CMP.filter=cf.dataset.cf;cmpRender();return;}
+  const rb=e.target.closest('[data-row]');if(rb)openDetail(+rb.dataset.row);
+});
+/* 비교 엑셀 */
+$('cXlsx').onclick=async()=>{
+  if(!CMP.res.length){toast(T('cmpPick'));return;}
+  const btn=$('cXlsx');btn.disabled=true;
+  try{
+    await loadXlsx();const wb=XLSX.utils.book_new();
+    const sum=[[T('cmpBase'),T('cmpTarget'),T('cRowsA'),T('cRowsB'),T('cDiffN'),T('cAdd'),T('cDel'),T('cChg'),T('cSame'),T('cLen'),T('cMat'),T('cWork'),T('cEtc'),T('cSwap')]];
+    CMP.res.forEach(r=>{const s=r.sum;sum.push([r.pa,r.pb,s.na,s.nb,s.nb-s.na,s.add,s.del,s.chg,s.same,s.len,s.mat,s.work,s.etc,s.swap]);});
+    const ws0=XLSX.utils.aoa_to_sheet(sum);ws0['!cols']=sum[0].map(()=>({wch:14}));ws0['!cols'][0]={wch:18};ws0['!cols'][1]={wch:18};
+    XLSX.utils.book_append_sheet(wb,ws0,'SUMMARY');
+    CMP.res.forEach((r,i)=>{const tgt=String.fromCharCode(66+i);
+      const aoa=[[T('wn'),T('cStatus'),T('cCat'),T('cItem'),'A '+r.pa,tgt+' '+r.pb,T('cSwap')]];
+      r.items.forEach(x=>{const sw=x.swapped?'Y':'';
+        if(!x.diffs.length)aoa.push([x.k,STN(x.st),'','','','',sw]);
+        else x.diffs.forEach(d=>aoa.push([x.k,STN(x.st),CATN(d.cat),d.label,d.av,d.bv,sw]));});
+      const ws=XLSX.utils.aoa_to_sheet(aoa);ws['!cols']=[{wch:10},{wch:8},{wch:10},{wch:22},{wch:18},{wch:18},{wch:8}];ws['!freeze']={xSplit:0,ySplit:1};
+      XLSX.utils.book_append_sheet(wb,ws,('A-'+tgt+' '+r.pb).replace(/[\\/:*?\[\]]/g,'-').slice(0,31));});
+    const d=new Date(),pad=n=>String(n).padStart(2,'0');
+    XLSX.writeFile(wb,'circuit_compare_'+d.getFullYear()+pad(d.getMonth()+1)+pad(d.getDate())+'.xlsx');
+  }catch(e){console.error(e);toast(T('dlErr'));}
+  finally{btn.disabled=false;}
+};
+
 /* ---------- 공통 ---------- */
 function toast(m){const t=$('toast');t.textContent=m;t.classList.remove('hidden');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.add('hidden'),1800);}
-function show(v){$('viewLookup').classList.toggle('hidden',v!=='l');$('viewMaster').classList.toggle('hidden',v!=='m');$('tabLookup').classList.toggle('on',v==='l');$('tabMaster').classList.toggle('on',v==='m');}
-$('tabLookup').onclick=()=>show('l');$('tabMaster').onclick=()=>show('m');
-function afterLoad(){renderMasterStats();refreshOptions();render();}
+function show(v){$('viewLookup').classList.toggle('hidden',v!=='l');$('viewMaster').classList.toggle('hidden',v!=='m');$('viewCompare').classList.toggle('hidden',v!=='c');$('tabLookup').classList.toggle('on',v==='l');$('tabMaster').classList.toggle('on',v==='m');$('tabCompare').classList.toggle('on',v==='c');if(v==='c'){cmpOptions();cmpBuild();}}
+$('tabLookup').onclick=()=>show('l');$('tabMaster').onclick=()=>show('m');$('tabCompare').onclick=()=>show('c');
+function afterLoad(){renderMasterStats();refreshOptions();render();CMP.sel=CMP.sel.filter(p=>MASTER.rows.some(r=>r[C.pn]===p));cmpOptions();cmpBuild();}
 
 (async()=>{
   try{lang=localStorage.getItem('circ_lang')||'ko'}catch(e){}
