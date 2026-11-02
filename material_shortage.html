@@ -105,6 +105,7 @@ textarea{width:100%;min-height:150px;height:auto;padding:10px 12px;font-family:C
 /* 부족예상 표: 고정 레이아웃 — 가로 스크롤 없이 화면 폭에 맞춤 */
 .tw.fit{overflow-x:hidden;height:var(--fitH,calc(100vh - 20px));max-height:none;min-height:320px}
 #sTbl{table-layout:fixed;width:100%;font-size:13.5px}
+#nTbl{width:100%}#nTbl td{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:260px}
 #sTbl th,#sTbl td{padding:7px 6px;overflow:hidden}
 #sTbl th{white-space:normal;overflow-wrap:normal;line-height:1.2;font-size:13px;padding:9px 6px 8px;vertical-align:middle}
 #sTbl th[data-k="type"],#sTbl th[data-k="code"],#sTbl th[data-k="name"],#sTbl th[data-k="unit"],#sTbl th[data-k="car"]{font-size:14.5px;text-align:center}
@@ -355,7 +356,7 @@ td.hl{color:var(--ac);font-weight:700}
 </header>
 <nav id="nav" class="tabs">
   <button data-tab="sum" class="on"><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 14l4-4 4 3 5-6"/></svg><span data-t="tab_sum">부족예상</span></button>
-  <button data-tab="need"><svg viewBox="0 0 24 24"><path d="M9 3h6l1 2h4v16H4V5h4z"/><path d="M8 12h8M8 16h5"/></svg><span data-t="tab_need">작업필요자재 (17000)</span></button>
+  <button data-tab="need"><svg viewBox="0 0 24 24"><path d="M9 3h6l1 2h4v16H4V5h4z"/><path d="M8 12h8M8 16h5"/></svg><span data-t="tab_need">작업필요자재 (32030)</span></button>
   <button data-tab="cnt"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/><circle cx="19" cy="18" r="2"/></svg><span data-t="tab_cnt">실사</span></button>
   <button data-tab="rec"><svg viewBox="0 0 24 24"><path d="M12 4v12M6 10l6 6 6-6"/><path d="M4 20h16"/></svg><span data-t="tab_rec">현장입고 (30810)</span></button>
   <button data-tab="use"><svg viewBox="0 0 24 24"><path d="M12 20V8M6 14l6-6 6 6"/><path d="M4 4h16"/></svg><span data-t="tab_use">사용량 (32040)</span></button>
@@ -403,8 +404,8 @@ td.hl{color:var(--ac);font-weight:700}
 <section class="tab" id="t-need">
   <div class="grid2" style="grid-template-columns:1fr">
     <div class="card">
-      <h3 data-t="need_h">작업필요자재 붙여넣기 (ERP 32030 지시일자별 자재 사용량)</h3>
-      <div class="hint" data-t="need_hint">ERP [32030] 지시일자별 자재 사용량 조회의 8열(지시일자·순위·자재명·업체명·품목그룹·총소요량·사용량·잔량)을 복사해 붙여넣으세요. 저장 시 잔량이 −인 행은 0으로, +인 행만 필요량으로 반영됩니다. 헤더 행은 자동으로 건너뜁니다.</div>
+      <h3 data-t="need_h">작업필요자재 붙여넣기 (MES 32030 지시일자별 자재 사용량)</h3>
+      <div class="hint" data-t="need_hint">MES [32030] 지시일자별 자재 사용량 조회의 8열(지시일자·순위·자재명·업체명·품목그룹·총소요량·사용량·잔량)을 복사해 붙여넣으세요. 저장 시 잔량이 −인 행은 0으로, +인 행만 필요량으로 반영됩니다. 헤더 행은 자동으로 건너뜁니다.</div>
       <textarea id="nTxt"></textarea>
       <div class="prev" id="nPrev"></div>
       <div class="row">
@@ -422,7 +423,7 @@ td.hl{color:var(--ac);font-weight:700}
       <h3 style="margin:0"><span data-t="need_list">저장된 목록</span> <span class="hint" id="nInfo"></span></h3>
       <input id="nQ" placeholder="검색" style="width:170px">
     </div>
-    <div class="tw"><table id="nTbl"></table></div>
+    <div class="tw fit"><table id="nTbl"></table></div>
   </div>
 </section>
 
@@ -599,12 +600,12 @@ const KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6
 const H={apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json'};
 
 /* ---------- i18n ---------- */
-const ES={title:'Gestión de materiales · Corte',plant:'Planta 1 México · Monclova',tab_sum:'Faltantes',tab_need:'Material requerido (17000)',tab_cnt:'Inventario físico',
+const ES={title:'Gestión de materiales · Corte',plant:'Planta 1 México · Monclova',tab_sum:'Faltantes',tab_need:'Material requerido (32030)',tab_cnt:'Inventario físico',
 tab_rec:'Entrada a piso (30810)',tab_use:'Consumo (32040)',tab_ret:'Devoluciones (24170)',tab_mst:'Material en almacén (25010)',cntDate:'Fecha inventario',from:'Desde',to:'Hasta',
 thr:'Umbral alerta (<)',run:'Consultar',search:'Buscar',filter:'Mostrar',type:'Tipo',f_all:'Todo',f_short:'Faltante',f_care:'Alerta',f_chk:'Faltante+Alerta',f_need:'Solo 17000',f_extra:'Fuera de 17000 (piso)',
 copy:'Copiar',xlsx:'Excel',cut:'Alcance',cut_only:'Solo material de corte',k_mat:'Materiales',k_short:'Faltante (<0)',k_care:'Alerta',k_ex:'Saldo −/0 (req. 0)',
 formula:'Stock actual = Inventario − Consumo + Entrada − Devoluciones (24170) + Ajuste (sin rollos en piso tras cierre 0 → 0) · Pronóstico = Stock actual + Almacén − Requerido · Rollos piso = rollos recibidos (TML·WIRE) sin cierre (0); ajuste a 0 → rollos previos = 0 · Rollos alm. = Piezas de almacén (25010)',
-need_h:'Pegar material requerido (ERP 32030)',need_hint:'Copie las 8 columnas de [32030] (fecha, orden, código, proveedor, grupo, total, consumo, saldo). Al guardar, el saldo negativo se cambia a 0 y solo el saldo positivo se toma como requerido.',
+need_h:'Pegar material requerido (MES 32030)',need_hint:'Copie las 8 columnas de [32030] (fecha, orden, código, proveedor, grupo, total, consumo, saldo). Al guardar, el saldo negativo se cambia a 0 y solo el saldo positivo se toma como requerido.',
 mode:'Modo',m_replace:'Reemplazar todo',m_append:'Agregar a la lista',save:'Guardar',clearAll:'Borrar todo',add:'Agregar',need_list:'Lista guardada',mst_h:'Pegar material en almacén',
 mst_hint:'Código, nombre, unidad, cantidad (almacén), piezas.',m_upsert:'Agregar/actualizar',m_replace2:'Reemplazar todo',
 mst_one:'Agregar / editar',del:'Eliminar',mst_click:'Haga clic en una fila para cargarla aquí.',mst_list:'Material en almacén',
@@ -663,7 +664,14 @@ let ROLLB={},ADJ=[],NEED=[],MST=[],DATES=[],CFG={threshold:'2000'},SUM=null,sort
 document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>{
   document.querySelectorAll('#nav button').forEach(x=>x.classList.toggle('on',x===b));
   document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on',x.id==='t-'+b.dataset.tab));
+  if(b.dataset.tab==='sum')sumRefresh();
 });
+/* 부족예상 탭 클릭 시 새로고침 없이 최신 데이터로 재조회 */
+let sumBusy=false;
+async function sumRefresh(){
+  if(sumBusy||typeof calc!=='function')return;sumBusy=true;
+  try{await loadDates();await calc(true)}catch(e){console.warn('sumRefresh',e)}finally{sumBusy=false}
+}
 
 /* ---------- 17000 ---------- */
 /* ERP 32030: 지시일자·순위·자재명(=자재코드)·업체명·품목그룹·총소요량·사용량·잔량
@@ -1460,21 +1468,26 @@ document.querySelectorAll('.lang button').forEach(b=>b.onclick=()=>{if(b.dataset
    - 표 내부 스크롤이 맨 끝에 닿기 전에는 페이지 스크롤이 그 지점(표 헤더)보다 더 내려가지 않음
    - 표 내부 스크롤이 맨 끝이면 페이지가 더 내려가 아래 설명문까지 볼 수 있음 */
 (function(){
-  var GAP=8, tw=document.querySelector('#t-sum .tw.fit'), top=document.querySelector('.top'), tab=document.getElementById('t-sum');
-  if(!tw||!top||!tab) return;
+  var GAP=8, top=document.querySelector('.top');
+  if(!top) return;
   function topH(){ return top.offsetHeight||0; }
   function fit(){ var h=Math.max(320, window.innerHeight - topH() - GAP); document.documentElement.style.setProperty('--fitH', h+'px'); }
-  function limitY(){ return Math.max(0, Math.round(tw.getBoundingClientRect().top + window.scrollY - topH() - GAP)); }
-  function innerAtEnd(){ return tw.scrollHeight - tw.clientHeight - tw.scrollTop <= 1; }
+  /* 부족예상·작업필요자재 두 탭 모두 같은 방식 (탭별 .tw.fit) */
+  var ctrls=['t-sum','t-need'].map(function(id){
+    var tab=document.getElementById(id), tw=tab&&tab.querySelector('.tw.fit'); return tab&&tw?{tab:tab,tw:tw}:null;
+  }).filter(Boolean);
+  function cur(){ for(var i=0;i<ctrls.length;i++){ if(ctrls[i].tab.classList.contains('on')) return ctrls[i]; } return null; }
+  function limitY(tw){ return Math.max(0, Math.round(tw.getBoundingClientRect().top + window.scrollY - topH() - GAP)); }
+  function innerAtEnd(tw){ return tw.scrollHeight - tw.clientHeight - tw.scrollTop <= 1; }
   var busy=false;
   function gate(){
-    if(busy||!tab.classList.contains('on')) return;
-    var lim=limitY();
-    if(window.scrollY > lim + 1 && !innerAtEnd()){ busy=true; window.scrollTo(0,lim); busy=false; }
+    var c=cur(); if(busy||!c) return;
+    var lim=limitY(c.tw);
+    if(window.scrollY > lim + 1 && !innerAtEnd(c.tw)){ busy=true; window.scrollTo(0,lim); busy=false; }
   }
   window.addEventListener('resize',function(){ fit(); gate(); });
   window.addEventListener('scroll',gate,{passive:true});
-  tw.addEventListener('scroll',gate,{passive:true});
+  ctrls.forEach(function(c){ c.tw.addEventListener('scroll',gate,{passive:true}); });
   if(window.ResizeObserver){ new ResizeObserver(fit).observe(top); }
   fit();
 })();
