@@ -180,6 +180,16 @@
   .ph-thumb .ph-rm{position:absolute;top:3px;right:3px;background:rgba(0,0,0,.62);color:#fff;border:none;border-radius:7px;width:24px;height:24px;font-size:12px;font-weight:800;cursor:pointer;line-height:1;padding:0}
   .d-gallery{margin-top:12px;display:flex;flex-direction:column;gap:10px}
   .d-gallery img{max-width:100%;border-radius:13px;display:block;border:1px solid var(--line2)}
+  .ph-thumb.ph-pdf{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;background:rgba(201,168,76,.08);border-color:rgba(201,168,76,.45);padding:6px 4px 4px;text-align:center}
+  .ph-thumb.ph-pdf .ph-ic{font-size:26px;line-height:1}
+  .ph-thumb.ph-pdf .ph-nm{font-size:10px;line-height:1.25;color:var(--text);width:100%;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;word-break:break-all}
+  .d-files{margin-top:12px;display:flex;flex-direction:column;gap:8px}
+  .d-file{display:flex;align-items:center;gap:10px;padding:11px 14px;border:1px solid rgba(201,168,76,.45);background:rgba(201,168,76,.08);border-radius:12px;color:var(--text);text-decoration:none;font-weight:700;font-size:14px}
+  .d-file:hover{background:rgba(201,168,76,.16)}
+  .d-file .df-ic{font-size:22px;line-height:1}
+  .d-file .df-nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .d-file .df-tag{font-family:"Space Mono",monospace;font-size:11px;letter-spacing:.08em;color:#c9a84c;border:1px solid rgba(201,168,76,.5);border-radius:6px;padding:2px 7px;flex:none}
+  .d-file .df-dl{flex:none;font-size:12px;color:var(--muted,#9aa8c7)}
   .vsep{margin:0 7px;opacity:.45}
   .gps-note{margin-top:11px;font-size:12px;color:#9fb3d4;font-weight:600;position:relative}
   .id-once{margin-top:13px;font-size:12.5px;color:#86efac;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.25);border-radius:11px;padding:10px 13px;line-height:1.5;font-weight:600}
@@ -880,15 +890,17 @@
       <label data-i18n="ntLContentEs">Mensaje (español)</label>
       <textarea id="ntContentEs" maxlength="2000" data-i18n-ph="ntPhContentEs" placeholder="Escribe el aviso…"></textarea>
       <div id="ntExistWrap" style="display:none">
-        <label style="margin-top:12px" data-i18n="ntExistPhotos">기존 사진</label>
+        <label style="margin-top:12px" data-i18n="ntExistPhotos">기존 첨부</label>
         <div class="photo-grid" id="ntExistPrev"></div>
       </div>
-      <label data-i18n="lPhotoNt" style="margin-top:12px">사진 (선택, 최대 20장)</label>
+      <label data-i18n="lPhotoNt" style="margin-top:12px">사진·PDF (선택, 최대 20개)</label>
       <input type="file" id="ntPhoto" accept="image/*" multiple style="display:none">
       <input type="file" id="ntCam" accept="image/*" capture="environment" style="display:none">
+      <input type="file" id="ntPdf" accept="application/pdf,.pdf" multiple style="display:none">
       <div class="photo-actions">
         <button type="button" class="photo-btn2" id="ntCamBtn">📷 <span data-i18n="camLabel">카메라</span></button>
         <button type="button" class="photo-btn2" id="ntAlbumBtn">🖼️ <span data-i18n="albumLabel">앨범</span></button>
+        <button type="button" class="photo-btn2" id="ntPdfBtn">📄 <span data-i18n="pdfLabel">PDF 첨부</span></button>
       </div>
       <div class="photo-grid" id="ntPhotoPrev" style="display:none"></div>
       <div class="side-note" style="display:block;margin-top:8px" data-i18n="pasteHint">💡 캡쳐한 이미지는 Ctrl+V 로 바로 붙여넣을 수 있습니다.</div>
@@ -963,7 +975,7 @@ const I18N={
   ntHint:"Si dejas el español vacío, se mostrará el texto en coreano.",ntSubmit:"📢 Publicar aviso",
   ntNeed:"Escribe el título y el mensaje",ntSaving:"Publicando…",ntOkT:"¡Aviso publicado!",ntOkS:"Ya es visible para todos.",ntFail:"No se pudo publicar el aviso.",
   adminNtEdit:"✏️ Editar avisos",adminNtEditOff:"✏️ Salir de edición",ntEditHead:"✏️ Editar aviso",ntEditSubmit:"✏️ Guardar cambios",
-  ntEditSaving:"Guardando…",ntEditOkT:"¡Aviso actualizado!",ntEditOkS:"Los cambios ya están publicados.",ntEditFail:"No se pudo actualizar el aviso.",ntExistPhotos:"Fotos actuales",
+  ntEditSaving:"Guardando…",ntEditOkT:"¡Aviso actualizado!",ntEditOkS:"Los cambios ya están publicados.",ntEditFail:"No se pudo actualizar el aviso.",ntExistPhotos:"Archivos actuales",pdfLabel:"Adjuntar PDF",pdfTooBig:"Solo se permiten PDF de hasta 20 MB.",pdfOpen:"Abrir / descargar",
   adminDel:"🗑 Modo eliminar",adminDelOff:"🗑 Salir de modo eliminar",delPw:"Contraseña de administrador:",delPwBad:"Contraseña incorrecta",
   delConfirm:"¿Eliminar esta publicación definitivamente? No se puede deshacer.",delFail:"Error al eliminar",delDone:"Eliminado",delModeOn:"Modo eliminar activado",
   bannerT:"Conecta Corazones",bannerIntro:"🔒 Sugerencias anónimas → respuesta de la empresa · 🏆 Reconoce a un compañero → conteo mensual/trimestral/anual",
@@ -977,7 +989,7 @@ const I18N={
   lSearch:"Buscar compañero (nombre o número)",phSearch:"Nombre o M026…",lSelected:"Seleccionado",lReason:"Motivo",phReason:"¿Qué hizo bien? Sé específico…",submitPraise:"Enviar reconocimiento",
   mMonth:"Mes",mQuarter:"Trim.",mYear:"Año",cnt:"reconoc.",
   author:"Anónimo",ansH:"Respuesta de la empresa",trAns:"Traducir respuesta",trPost:"Traducir al español",trDoing:"Traduciendo…",trHead:"Traducción automática (referencia)",trFail:"Error de traducción (verifica tu internet)",viewsLabel:"Vistas",stPending:"En revisión",stAnswered:"Respondido",stSelected:"Seleccionado",stRejected:"No aprobado",rejHead:"📝 Comentario del revisor",rejNote:"Solo tú puedes ver este comentario de rechazo.",dupPraise:"Ya reconociste a este compañero esta semana. Inténtalo la próxima semana.",pendingNote:"En revisión. Aún sin respuesta de la empresa.",
-  adminMh:"Administrador",adminAnon:"Responder buzón",adminPraise:"Revisar reconoc.",adminEmp:"Empleados",lPhoto:"Fotos (opcional, máx 5)",lPhotoNt:"Fotos (opcional, máx 20)",addPhoto:"Adjuntar fotos",camLabel:"Cámara",albumLabel:"Galería",busyImg:"Subiendo imágenes…",imgFail:"No se pudieron subir las imágenes (¿almacenamiento configurado?)",visToday:"Hoy",visTotal:"Total",pasteHint:"💡 También puedes pegar una captura con Ctrl+V.",gpsNote:"📍 Solo se puede publicar dentro de la planta (se valida tu ubicación).",
+  adminMh:"Administrador",adminAnon:"Responder buzón",adminPraise:"Revisar reconoc.",adminEmp:"Empleados",lPhoto:"Fotos (opcional, máx 5)",lPhotoNt:"Fotos · PDF (opcional, máx 20)",addPhoto:"Adjuntar fotos",camLabel:"Cámara",albumLabel:"Galería",busyImg:"Subiendo imágenes…",imgFail:"No se pudieron subir las imágenes (¿almacenamiento configurado?)",visToday:"Hoy",visTotal:"Total",pasteHint:"💡 También puedes pegar una captura con Ctrl+V.",gpsNote:"📍 Solo se puede publicar dentro de la planta (se valida tu ubicación).",
   idEmpty:"Ingrese su número",idBad:"Número no registrado",notEmp:"Su número ya no está registrado como empleado activo. Verifique de nuevo.",netErr:"Error de red",checking:"Verificando…",
   needTitle:"Escriba el asunto",needContent:"Escriba el mensaje",searchEmpty:"Escriba nombre o número",noRes:"Sin resultados",self:"No puede reconocerse a sí mismo",needSel:"Seleccione un compañero",needReason:"Escriba el motivo",
   busyLoc:"Verificando ubicación…",busySave:"Enviando…",locOut:m=>`Fuera del área permitida (≈${m}m). Debe estar en planta.`,locFail:"Active el permiso de ubicación.",saveFail:"No se pudo enviar.",dupSelf:"No puede reconocerse a sí mismo.",
@@ -992,7 +1004,7 @@ const I18N={
   ntHint:"스페인어를 비워두면 한국어 내용이 그대로 표시됩니다.",ntSubmit:"📢 공지 등록",
   ntNeed:"제목과 내용을 입력하세요",ntSaving:"등록 중…",ntOkT:"공지 등록 완료!",ntOkS:"게시판 맨 위에 표시됩니다.",ntFail:"공지를 등록하지 못했습니다.",
   adminNtEdit:"✏️ 공지 수정 모드",adminNtEditOff:"✏️ 수정 모드 종료",ntEditHead:"✏️ 공지 수정",ntEditSubmit:"✏️ 수정 저장",
-  ntEditSaving:"저장 중…",ntEditOkT:"공지 수정 완료!",ntEditOkS:"변경 내용이 반영되었습니다.",ntEditFail:"공지를 수정하지 못했습니다.",ntExistPhotos:"기존 사진",
+  ntEditSaving:"저장 중…",ntEditOkT:"공지 수정 완료!",ntEditOkS:"변경 내용이 반영되었습니다.",ntEditFail:"공지를 수정하지 못했습니다.",ntExistPhotos:"기존 첨부",pdfLabel:"PDF 첨부",pdfTooBig:"PDF 파일은 20MB 이하만 첨부할 수 있습니다.",pdfOpen:"열기 / 다운로드",
   adminDel:"🗑 글 삭제 모드",adminDelOff:"🗑 삭제 모드 종료",delPw:"관리자 비밀번호:",delPwBad:"비밀번호가 올바르지 않습니다",
   delConfirm:"이 글을 완전히 삭제할까요? 되돌릴 수 없습니다.",delFail:"삭제 실패",delDone:"삭제되었습니다",delModeOn:"삭제 모드가 켜졌습니다",
   bannerT:"마음톡톡",bannerIntro:"🔒 익명 건의·고민 → 담당자 답변 · 🏆 동료 칭찬 → 월·분기·연 칭찬 득표 현황",
@@ -1006,7 +1018,7 @@ const I18N={
   lSearch:"동료 검색 (이름 또는 사번)",phSearch:"이름 또는 M026…",lSelected:"선택됨",lReason:"칭찬 사유",phReason:"무엇을 잘했나요? 구체적으로…",submitPraise:"칭찬 보내기",
   mMonth:"월",mQuarter:"분기",mYear:"연",cnt:"건 채택",
   author:"익명",ansH:"회사 답변",trAns:"답변 번역",trPost:"한글 번역",trDoing:"번역 중…",trHead:"한글 번역 (자동 · 참고용)",trFail:"번역 실패 (인터넷 확인)",viewsLabel:"조회",stPending:"검토중",stAnswered:"답변완료",stSelected:"채택",stRejected:"반려",rejHead:"📝 반려 의견",rejNote:"반려 의견은 작성자 본인에게만 표시됩니다.",dupPraise:"이번 주에 이미 이 동료를 칭찬했습니다. 다음 주에 다시 시도하세요.",pendingNote:"검토중입니다. 아직 회사 답변이 없습니다.",
-  adminMh:"담당자 전용",adminAnon:"익명 답변",adminPraise:"칭찬 검토",adminEmp:"직원 관리",lPhoto:"사진 (선택, 최대 5장)",lPhotoNt:"사진 (선택, 최대 20장)",addPhoto:"사진 첨부",camLabel:"카메라 촬영",albumLabel:"앨범 선택",busyImg:"이미지 업로드 중…",imgFail:"이미지 업로드 실패 (스토리지 설정 확인)",visToday:"오늘",visTotal:"전체",pasteHint:"💡 캡쳐한 이미지는 Ctrl+V 로 바로 붙여넣을 수 있습니다.",gpsNote:"📍 글쓰기는 공장 반경 내에서만 가능합니다 (위치 확인).",
+  adminMh:"담당자 전용",adminAnon:"익명 답변",adminPraise:"칭찬 검토",adminEmp:"직원 관리",lPhoto:"사진 (선택, 최대 5장)",lPhotoNt:"사진·PDF (선택, 최대 20개)",addPhoto:"사진 첨부",camLabel:"카메라 촬영",albumLabel:"앨범 선택",busyImg:"이미지 업로드 중…",imgFail:"이미지 업로드 실패 (스토리지 설정 확인)",visToday:"오늘",visTotal:"전체",pasteHint:"💡 캡쳐한 이미지는 Ctrl+V 로 바로 붙여넣을 수 있습니다.",gpsNote:"📍 글쓰기는 공장 반경 내에서만 가능합니다 (위치 확인).",
   idEmpty:"사번을 입력하세요",idBad:"등록되지 않은 사번입니다",notEmp:"현재 등록된 재직 사번이 아닙니다. 사번을 다시 인증해 주세요.",netErr:"통신 오류",checking:"확인 중…",
   needTitle:"제목을 입력하세요",needContent:"내용을 입력하세요",searchEmpty:"이름 또는 사번을 입력하세요",noRes:"검색 결과 없음",self:"본인은 칭찬할 수 없습니다",needSel:"칭찬할 동료를 선택하세요",needReason:"칭찬 사유를 입력하세요",
   busyLoc:"위치 확인 중…",busySave:"제출 중…",locOut:m=>`공장 반경 밖입니다 (약 ${m}m). 공장 내에서 작성하세요.`,locFail:"위치 권한을 허용하세요.",saveFail:"제출하지 못했습니다.",dupSelf:"본인은 칭찬할 수 없습니다.",
@@ -1216,7 +1228,9 @@ function noticeUrlsOf(p){
 }
 function renderNtExistPrev(){
   const wrap=$("ntExistPrev");
-  wrap.innerHTML = ntKeepUrls.map((u,i)=>`<div class="ph-thumb"><img src="${esc(u)}" alt=""><button type="button" class="ph-rm" data-i="${i}">✕</button></div>`).join("");
+  wrap.innerHTML = ntKeepUrls.map((u,i)=>isPdfUrl(u)
+    ? `<div class="ph-thumb ph-pdf" title="${esc(pdfName(u))}"><span class="ph-ic">📄</span><span class="ph-nm">${esc(pdfName(u))}</span><button type="button" class="ph-rm" data-i="${i}">✕</button></div>`
+    : `<div class="ph-thumb"><img src="${esc(u)}" alt=""><button type="button" class="ph-rm" data-i="${i}">✕</button></div>`).join("");
   $("ntExistWrap").style.display = ntKeepUrls.length?"block":"none";
   wrap.querySelectorAll(".ph-rm").forEach(b=>b.onclick=()=>{ ntKeepUrls.splice(parseInt(b.dataset.i,10),1); renderNtExistPrev(); });
 }
@@ -1316,8 +1330,9 @@ function galleryHtml(p){
   if(p.image_url) urls.push(p.image_url);
   if(!urls.length) return "";
   const isVid=u=>/\.(mp4|webm|mov|m4v)(\?|#|$)/i.test(u);
-  const vids=urls.filter(isVid), imgs=urls.filter(u=>!isVid(u));
-  let out=vids.map(u=>`<video src="${esc(u)}" controls playsinline preload="metadata" style="width:100%;max-height:70vh;border-radius:12px;background:#000;margin-top:10px"></video>`).join("");
+  const pdfs=urls.filter(isPdfUrl), vids=urls.filter(isVid), imgs=urls.filter(u=>!isVid(u)&&!isPdfUrl(u));
+  let out=pdfs.length?`<div class="d-files">`+pdfs.map(u=>`<a class="d-file" href="${esc(pdfHref(u))}" target="_blank" rel="noopener"><span class="df-ic">📄</span><span class="df-nm">${esc(pdfName(u))}</span><span class="df-tag">PDF</span><span class="df-dl">${t("pdfOpen")}</span></a>`).join("")+`</div>`:"";
+  out+=vids.map(u=>`<video src="${esc(u)}" controls playsinline preload="metadata" style="width:100%;max-height:70vh;border-radius:12px;background:#000;margin-top:10px"></video>`).join("");
   if(imgs.length) out+=`<div class="d-gallery">`+imgs.map(u=>`<a href="${esc(u)}" target="_blank" rel="noopener"><img src="${esc(u)}" alt="" loading="lazy"></a>`).join("")+`</div>`;
   return out;
 }
@@ -1507,18 +1522,31 @@ $("pickAnon").onclick=()=>showStep("cstep-anon");
 $("pickPraise").onclick=()=>{ target=null; $("selWrap").style.display="none"; $("searchRes").innerHTML=""; $("searchIn").value=""; showStep("cstep-praise"); setTimeout(()=>$("searchIn").focus(),150); };
 
 $("catSeg").querySelectorAll("button").forEach(b=>{ b.onclick=()=>{ cat=b.dataset.cat; $("catSeg").querySelectorAll("button").forEach(x=>x.classList.remove("on")); b.classList.add("on"); }; });
+const PDF_MAX_BYTES=20*1024*1024;
+const isPdfFile=fl=>!!fl&&(fl.type==="application/pdf"||/\.pdf$/i.test(fl.name||""));
+const isPdfUrl=u=>/\.pdf(\?|#|$)/i.test(String(u||""));
+function pdfHref(u){ return String(u).split("#")[0]; }
+function pdfName(u){
+  const s=String(u||""); const m=s.match(/#n=([^&]+)/); if(m){ try{ return decodeURIComponent(m[1]); }catch(e){} }
+  const seg=pdfHref(s).split("/").pop()||"file.pdf"; try{ return decodeURIComponent(seg); }catch(e){ return seg; }
+}
 function wirePhoto(prefix){
-  const add=e=>{ const fs=Array.from(e.target.files||[]); for(const fl of fs){ if(photoStore[prefix].length<maxOf(prefix)) photoStore[prefix].push(fl); } e.target.value=""; renderPhotoPrev(prefix); };
+  const add=e=>{ const fs=Array.from(e.target.files||[]); let big=false;
+    for(const fl of fs){ if(isPdfFile(fl)&&fl.size>PDF_MAX_BYTES){ big=true; continue; } if(photoStore[prefix].length<maxOf(prefix)) photoStore[prefix].push(fl); }
+    e.target.value=""; renderPhotoPrev(prefix); if(big) alert(t("pdfTooBig")); };
   $(prefix+"AlbumBtn").onclick=()=>$(prefix+"Photo").click();
   $(prefix+"CamBtn").onclick=()=>$(prefix+"Cam").click();
   $(prefix+"Photo").onchange=add; $(prefix+"Cam").onchange=add;
+  const pdfIn=$(prefix+"Pdf"); if(pdfIn){ $(prefix+"PdfBtn").onclick=()=>pdfIn.click(); pdfIn.onchange=add; }
 }
 function renderPhotoPrev(prefix){
   const wrap=$(prefix+"PhotoPrev"), files=photoStore[prefix];
-  wrap.innerHTML = files.map((fl,i)=>`<div class="ph-thumb"><img src="${URL.createObjectURL(fl)}" alt=""><button type="button" class="ph-rm" data-i="${i}">✕</button></div>`).join("");
+  wrap.innerHTML = files.map((fl,i)=>isPdfFile(fl)
+    ? `<div class="ph-thumb ph-pdf" title="${esc(fl.name)}"><span class="ph-ic">📄</span><span class="ph-nm">${esc(fl.name)}</span><button type="button" class="ph-rm" data-i="${i}">✕</button></div>`
+    : `<div class="ph-thumb"><img src="${URL.createObjectURL(fl)}" alt=""><button type="button" class="ph-rm" data-i="${i}">✕</button></div>`).join("");
   wrap.style.display = files.length?"flex":"none";
   const full=files.length>=maxOf(prefix);
-  $(prefix+"CamBtn").disabled=full; $(prefix+"AlbumBtn").disabled=full;
+  $(prefix+"CamBtn").disabled=full; $(prefix+"AlbumBtn").disabled=full; if($(prefix+"PdfBtn")) $(prefix+"PdfBtn").disabled=full;
   wrap.querySelectorAll(".ph-rm").forEach(b=>b.onclick=()=>{ files.splice(parseInt(b.dataset.i,10),1); renderPhotoPrev(prefix); });
 }
 wirePhoto("a"); wirePhoto("p"); wirePhoto("nt");
@@ -1543,7 +1571,7 @@ document.addEventListener("paste", e=>{
   }
   renderPhotoPrev(pfx);
 });
-function resetPhotos(){ photoStore={a:[],p:[],nt:[]}; ["a","p","nt"].forEach(p=>{ ["Photo","Cam"].forEach(k=>{ if($(p+k)) $(p+k).value=""; }); if($(p+"PhotoPrev")){ $(p+"PhotoPrev").innerHTML=""; $(p+"PhotoPrev").style.display="none"; } if($(p+"CamBtn")) $(p+"CamBtn").disabled=false; if($(p+"AlbumBtn")) $(p+"AlbumBtn").disabled=false; }); }
+function resetPhotos(){ photoStore={a:[],p:[],nt:[]}; ["a","p","nt"].forEach(p=>{ ["Photo","Cam","Pdf"].forEach(k=>{ if($(p+k)) $(p+k).value=""; }); if($(p+"PdfBtn")) $(p+"PdfBtn").disabled=false; if($(p+"PhotoPrev")){ $(p+"PhotoPrev").innerHTML=""; $(p+"PhotoPrev").style.display="none"; } if($(p+"CamBtn")) $(p+"CamBtn").disabled=false; if($(p+"AlbumBtn")) $(p+"AlbumBtn").disabled=false; }); }
 function compressImage(file, maxDim=1280, quality=0.72){
   return new Promise((resolve,reject)=>{
     const img=new Image(); const url=URL.createObjectURL(file);
@@ -1554,16 +1582,25 @@ function compressImage(file, maxDim=1280, quality=0.72){
     img.onerror=()=>reject(new Error("img")); img.src=url;
   });
 }
-async function uploadImage(blob, folder){
-  const path=folder+"/"+Date.now()+"_"+Math.random().toString(36).slice(2,8)+".jpg";
+async function uploadBlob(blob, folder, ext, mime){
+  const path=folder+"/"+Date.now()+"_"+Math.random().toString(36).slice(2,8)+"."+ext;
   const r=await fetch(CONFIG.SUPABASE_URL+"/storage/v1/object/"+BUCKET+"/"+path,{
-    method:"POST", headers:{ "apikey":CONFIG.SUPABASE_ANON, "Authorization":"Bearer "+CONFIG.SUPABASE_ANON, "Content-Type":"image/jpeg", "x-upsert":"true" }, body:blob });
+    method:"POST", headers:{ "apikey":CONFIG.SUPABASE_ANON, "Authorization":"Bearer "+CONFIG.SUPABASE_ANON, "Content-Type":mime, "x-upsert":"true" }, body:blob });
   if(!r.ok){ console.error("upload",r.status,await r.text()); return null; }
   return CONFIG.SUPABASE_URL+"/storage/v1/object/public/"+BUCKET+"/"+path;
 }
+async function uploadImage(blob, folder){ return uploadBlob(blob, folder, "jpg", "image/jpeg"); }
+async function uploadPdf(file, folder){
+  const u=await uploadBlob(file, folder, "pdf", "application/pdf"); if(!u) return null;
+  const nm=(file.name||"file.pdf").replace(/[\r\n]/g," ").trim();
+  return u+"#n="+encodeURIComponent(nm);
+}
 async function uploadPhotos(prefix, folder){
   const out=[];
-  for(const fl of photoStore[prefix]){ const blob=await compressImage(fl); const u=await uploadImage(blob, folder); if(!u) return null; out.push(u); }
+  for(const fl of photoStore[prefix]){
+    const u = isPdfFile(fl) ? await uploadPdf(fl, folder) : await uploadImage(await compressImage(fl), folder);
+    if(!u) return null; out.push(u);
+  }
   return out;
 }
 $("aSubmit").onclick=submitAnon;
