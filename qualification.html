@@ -5357,6 +5357,7 @@ document.addEventListener('DOMContentLoaded', renderExamQr);
   <div class="subtab-nav">
     <button class="subtab-btn active" onclick="switchResultSubtab('all',this)">📊 전체 결과</button>
     <button class="subtab-btn" onclick="switchResultSubtab('history',this)">📅 작업자별 이력</button>
+    <button class="subtab-btn" onclick="switchResultSubtab('dist',this)">🎖️ <span data-kr="등급별 인원·비율" data-es="Personal y % por Nivel">등급별 인원·비율</span></button>
   </div>
 
   <div id="result-sub-all">
@@ -5556,6 +5557,25 @@ document.addEventListener('DOMContentLoaded', renderExamQr);
         <button class="btn btn-secondary btn-sm" onclick="document.getElementById('historySearch').value='';renderHistory()"><span data-kr="전체보기" data-es="Ver Todo">전체보기</span></button>
       </div>
       <div id="historyContainer"><div class="empty-state"><div class="empty-icon">📅</div>이력이 없습니다</div></div>
+    </div>
+  </div>
+
+  <!-- 작업자별 등급별 인원·비율 (2026-11-03) -->
+  <div id="result-sub-dist" style="display:none">
+    <div class="card">
+      <div class="flex-between" style="flex-wrap:wrap;gap:0.6rem">
+        <div class="card-title gold">🎖️ <span data-kr="작업자별 등급 분포 — 등급별 인원·비율" data-es="Distribución de niveles por trabajador — Personal y %">작업자별 등급 분포 — 등급별 인원·비율</span></div>
+        <div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap">
+          <span style="font-size:0.76rem;color:var(--text2)">평가구분:</span>
+          <select id="distRoundSel" onchange="renderGradeDist()" style="width:auto;max-width:240px;font-size:0.8rem;padding:0.3rem 0.6rem"><option value="__all__">전체 평가구분</option></select>
+          <span style="font-size:0.76rem;color:var(--text2)">공정:</span>
+          <select id="distProcSel" onchange="renderGradeDist()" style="width:auto;max-width:200px;font-size:0.8rem;padding:0.3rem 0.6rem"><option value="">전체 공정</option></select>
+          <label style="display:flex;align-items:center;gap:0.3rem;font-size:0.76rem;color:var(--text2);cursor:pointer;white-space:nowrap"><input type="checkbox" id="distActiveOnly" checked onchange="renderGradeDist()" style="width:auto"><span data-kr="재직자만" data-es="Solo activos">재직자만</span></label>
+          <button class="btn btn-secondary btn-sm" onclick="exportGradeDist()">📊 <span data-kr="엑셀 저장" data-es="Guardar Excel">엑셀 저장</span></button>
+        </div>
+      </div>
+      <div class="info-box"><span data-kr="작업자 1명 = 1등급으로 집계합니다. 최종합격 기록이 있으면 가장 최근 최종합격 총점의 등급, 없으면 최근 기록의 상태(평가중 / 미달)로 분류합니다. 평가구분을 고르면 그 회차 기록만으로 집계합니다." data-es="Cada trabajador cuenta una sola vez. Si tiene aprobación final se usa el nivel del puntaje más reciente aprobado; si no, el estado del último registro (En evaluación / No alcanzado). Al elegir una evaluación se calcula solo con esa.">작업자 1명 = 1등급으로 집계합니다. 최종합격 기록이 있으면 가장 최근 최종합격 총점의 등급, 없으면 최근 기록의 상태(평가중 / 미달)로 분류합니다. 평가구분을 고르면 그 회차 기록만으로 집계합니다.</span></div>
+      <div id="gradeDistContainer"><div class="empty-state"><div class="empty-icon">🎖️</div>결과 데이터가 없습니다</div></div>
     </div>
   </div>
 </div>
@@ -6284,6 +6304,8 @@ function switchResultSubtab(sub,btn){
   btn.classList.add('active');
   document.getElementById('result-sub-all').style.display=sub==='all'?'block':'none';
   document.getElementById('result-sub-history').style.display=sub==='history'?'block':'none';
+  const _d=document.getElementById('result-sub-dist');if(_d)_d.style.display=sub==='dist'?'block':'none';
+  if(sub==='dist'){try{renderGradeDist();}catch(e){console.warn('등급별 인원 집계 오류:',e);}}
 }
 function switchStatsSubtab(sub,btn){
   document.querySelectorAll('#page-stats .subtab-btn').forEach(b=>b.classList.remove('active'));
@@ -7427,16 +7449,9 @@ function _evalMiss(r){
   const miss=[];
   if(!_hasTheory(r))miss.push('이론');
   if(pf.na)miss.push('작업수행');
-  if(!((cr&&!cr.na&&(parseFloat(cr.score)||0)>0)||(df&&!df.na&&(parseFloat(df.score)||0)>0)||(fs&&fs.msa_result)))miss.push('MSA');
+  if(!((cr&&!cr.na&&(parseFloat(cr.score)||0)>0)||(df&&!df.na)||(fs&&fs.msa_result)))miss.push('MSA');
   if(trackW(recTrack(r)).prof>0&&r.profWeighted==null)miss.push('숙련도');
-  // ✅ 입사 후 NEW_HIRE_PENDING_DAYS 일 이내(평가 진행 기간)인 신입은 불합격이 아니라 평가중으로 표시 (2026-11-03)
-  if(!r.passed&&_withinNewHireWindow(r))miss.push('입사 '+NEW_HIRE_PENDING_DAYS+'일 이내');
   return miss.length?miss:null;
-}
-var NEW_HIRE_PENDING_DAYS=10;
-function _withinNewHireWindow(r){
-  try{const h=r.hireDate||lookupHireDate(r.empId)||'';if(!/^\d{4}-\d{2}-\d{2}/.test(h))return false;
-    const d=(Date.now()-new Date(h.slice(0,10)+'T00:00:00').getTime())/86400000;return d>=0&&d<=NEW_HIRE_PENDING_DAYS;}catch(e){return false;}
 }
 function _isEvalIng(r){
   const fs=(typeof finalStatusMap!=='undefined'&&finalStatusMap)?finalStatusMap[r._sbId]:null;
@@ -7596,6 +7611,156 @@ function renderResults(){
         <td><button class="btn btn-outline btn-sm" style="padding:.2rem .45rem" onclick="showDetail(${oi})">보기</button></td>
       </tr>`;}).join('')}
     </tbody></table>`;
+}
+
+// ════ 작업자별 등급별 인원·비율 (④ 결과 이력 서브탭, 2026-11-03) ════
+function _distFsOf(r){return (typeof finalStatusMap!=='undefined'&&finalStatusMap)?(finalStatusMap[r._sbId]||null):null;}
+function _distStOf(r){const fs=_distFsOf(r);if(_isEvalIng(r))return'평가중';return fs?fs.final_status:(r.passed?'최종합격':'불합격');}
+// 작업자 1명당 1행: {key,name,empId,process,hireDate,cat,rec,resigned,date}
+function computeGradeDist(opts){
+  opts=opts||{};
+  const roundF=opts.round||'__all__', procF=opts.proc||'', activeOnly=opts.activeOnly!==false;
+  const labels=[...gradeConfig].sort((a,b)=>b.minScore-a.minScore).map(g=>g.label);
+  const cats=[...labels,'미달','평가중'];if(!activeOnly)cats.push('퇴사');
+  const byW={};
+  results.forEach(r=>{
+    if(roundF!=='__all__'&&(r.evalRound||'')!==(roundF==='__none__'?'':roundF))return;
+    const key=r.empId?String(r.empId):('N:'+String(r.name||''));
+    (byW[key]=byW[key]||[]).push(r);
+  });
+  const workers=[];
+  Object.entries(byW).forEach(([key,recs])=>{
+    recs.sort((a,b)=>new Date(a.date||0)-new Date(b.date||0));
+    const last=recs[recs.length-1];
+    const resigned=recs.some(r=>{const fs=_distFsOf(r);return !!(fs&&(fs.resigned||fs.final_status==='퇴사'));});
+    if(activeOnly&&resigned)return;
+    const finals=recs.filter(r=>_distStOf(r)==='최종합격'||(resigned&&r.passed));
+    const rec=finals.length?finals[finals.length-1]:last;
+    let cat;
+    if(resigned&&!activeOnly)cat='퇴사';
+    else if(finals.length)cat=gradeLabelOf(rec);
+    else cat=_distStOf(last)==='평가중'?'평가중':'미달';
+    const w={key,name:last.name||'',empId:last.empId||'',process:last.process||rec.process||'미분류',hireDate:last.hireDate||lookupHireDate(last.empId),cat,rec,resigned,date:rec.date||''};
+    if(procF&&w.process!==procF)return;
+    workers.push(w);
+  });
+  const count=Object.fromEntries(cats.map(c=>[c,0]));
+  const byProc={};
+  workers.forEach(w=>{count[w.cat]=(count[w.cat]||0)+1;if(!byProc[w.process])byProc[w.process]=Object.fromEntries(cats.map(c=>[c,0]));byProc[w.process][w.cat]++;});
+  return {labels,cats,count,total:workers.length,byProc,workers};
+}
+function _distFillSelects(){
+  const rs=document.getElementById('distRoundSel'), ps=document.getElementById('distProcSel');
+  if(rs){const cur=rs.value||'__all__';
+    rs.innerHTML=`<option value="__all__">${currentLang==='es'?'Todas las evaluaciones':'전체 평가구분'}</option><option value="__none__">${currentLang==='es'?'Sin asignar':'미지정'} (${results.filter(r=>!r.evalRound).length})</option>`+
+      _sortedRounds().map(rd=>`<option value="${_perfEsc(rd.id)}">${_perfEsc(rd.name)} (${results.filter(r=>r.evalRound===rd.id).length})</option>`).join('');
+    if([...rs.options].some(o=>o.value===cur))rs.value=cur;}
+  if(ps){const cur=ps.value||'';
+    const procs=[...new Set(results.map(r=>r.process||'미분류'))].sort((a,b)=>a.localeCompare(b,'ko'));
+    ps.innerHTML=`<option value="">${tr('전체 공정')}</option>`+procs.map(p=>`<option value="${_perfEsc(p)}">${_perfEsc(p)}</option>`).join('');
+    if(procs.includes(cur))ps.value=cur;}
+}
+function _distCatColor(c){if(c==='미달')return'#e05a5a';if(c==='평가중')return'#e6a23c';if(c==='퇴사')return'#9aa4b2';return gradeColorOf(c);}
+function _distCatBadge(c){
+  const es=currentLang==='es';
+  if(c==='미달')return`<span class="grade-fail">${es?'No alcanzado':'미달'}</span>`;
+  if(c==='평가중')return`<span style="background:rgba(230,162,60,.14);color:#e6a23c;border:1px solid rgba(230,162,60,.45);border-radius:6px;padding:0.12rem 0.5rem;font-size:0.78rem;font-weight:700">⏳ ${es?'En evaluación':'평가중'}</span>`;
+  if(c==='퇴사')return`<span style="background:rgba(150,150,150,0.18);color:#9aa4b2;border:1px solid rgba(150,150,150,0.4);border-radius:6px;padding:0.12rem 0.5rem;font-size:0.78rem;font-weight:700">🚪 ${es?'Baja':'퇴사'}</span>`;
+  const col=gradeColorOf(c);return`<span style="background:${col}20;color:${col};border:1px solid ${col}50;border-radius:6px;padding:0.12rem 0.5rem;font-size:0.78rem;font-weight:700">${c}</span>`;
+}
+function renderGradeDist(){
+  const el=document.getElementById('gradeDistContainer');if(!el)return;
+  _distFillSelects();
+  if(!results.length){el.innerHTML='<div class="empty-state"><div class="empty-icon">🎖️</div>결과 데이터가 없습니다</div>';return;}
+  if(!gradeConfig.length){el.innerHTML='<div class="empty-state"><div class="empty-icon">⚙️</div>등급 기준이 설정되지 않았습니다. ⑦ 평가기준 / ⑧ 관리자에서 등급을 먼저 설정하세요.</div>';return;}
+  const es=currentLang==='es';const L=(k,e)=>es?e:k;
+  const opts={round:document.getElementById('distRoundSel')?.value||'__all__',proc:document.getElementById('distProcSel')?.value||'',activeOnly:!!document.getElementById('distActiveOnly')?.checked};
+  const d=computeGradeDist(opts);const {labels,cats,count,total,byProc,workers}=d;
+  if(!total){el.innerHTML='<div class="empty-state"><div class="empty-icon">🎖️</div>'+L('조건에 맞는 작업자가 없습니다','No hay trabajadores con estos filtros')+'</div>';return;}
+  const pct=(n,t)=>t?(n/t*100):0;
+  const pctTxt=(n,t)=>t?(n/t*100).toFixed(1)+'%':'-';
+  const graded=labels.reduce((s,l)=>s+count[l],0);
+  const descOf=l=>{const g=gradeConfig.find(x=>x.label===l);if(!g)return'';return es?(g.descEs||g.desc||''):(g.desc||'');};
+  const minOf=l=>{const g=gradeConfig.find(x=>x.label===l);return g?g.minScore+L('점↑','pts↑'):'';};
+  const roundLbl=opts.round==='__all__'?L('전체 평가구분','Todas las evaluaciones'):opts.round==='__none__'?L('미지정','Sin asignar'):roundName(opts.round);
+
+  // ── 1. 요약 카드 ──
+  const card=(v,lbl,color,sub)=>`<div class="stat-card" style="border-top-color:${color}"><div class="stat-val" style="color:${color}">${v}<span style="font-size:0.9rem">${L('명','')}</span></div><div class="stat-label">${lbl}${sub?` <span style="opacity:0.75">(${sub})</span>`:''}</div></div>`;
+  const cards=[
+    card(total,L('총 인원','Total'),'var(--accent)',''),
+    card(graded,L('등급 보유','Con nivel'),'var(--green)',pctTxt(graded,total)),
+    ...labels.map(l=>card(count[l],`<strong style="color:${gradeColorOf(l)}">${l}</strong>${descOf(l)?' · '+descOf(l):''}`,gradeColorOf(l),pctTxt(count[l],total))),
+    card(count['미달'],L('미달','No alcanzado'),'#e05a5a',pctTxt(count['미달'],total)),
+    card(count['평가중'],L('평가중','En evaluación'),'#e6a23c',pctTxt(count['평가중'],total)),
+    ...(cats.includes('퇴사')?[card(count['퇴사'],L('퇴사','Baja'),'#9aa4b2',pctTxt(count['퇴사'],total))]:[])
+  ];
+  // ── 2. 분포 바 ──
+  const bar=`<div style="display:flex;height:26px;border-radius:7px;overflow:hidden;border:1px solid var(--border);margin:0.2rem 0 1.2rem">
+    ${cats.map(c=>{const n=count[c];if(!n)return'';const col=_distCatColor(c);const w=pct(n,total);return`<div title="${c} ${n}명 (${pctTxt(n,total)})" style="width:${w}%;background:${col};display:flex;align-items:center;justify-content:center;font-size:0.72rem;font-weight:700;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,0.55);white-space:nowrap;overflow:hidden">${w>=6?`${c} ${n}`:''}</div>`;}).join('')}
+  </div>`;
+  // ── 3. 등급별 인원·비율 표 ──
+  let cum=0;
+  const rows=cats.map(c=>{const n=count[c];const p=pct(n,total);const isG=labels.includes(c);if(isG)cum+=p;const col=_distCatColor(c);
+    return`<tr style="${n?'':'opacity:0.5'}">
+      <td>${_distCatBadge(c)}</td>
+      <td style="font-size:0.76rem;color:var(--text2)">${isG?`${minOf(c)}${descOf(c)?' · '+descOf(c):''}`:c==='미달'?L('불합격 · 판정대기','No aprobado · Pendiente'):c==='평가중'?L('이론·실습·MSA 중 미평가 항목 있음','Falta teoría, práctica o MSA'):L('퇴사자','Baja')}</td>
+      <td style="text-align:right;font-weight:700;font-size:0.92rem">${n}<span style="font-size:0.7rem;color:var(--text2);font-weight:500"> ${L('명','')}</span></td>
+      <td style="text-align:right;font-weight:700;color:${col}">${pctTxt(n,total)}</td>
+      <td style="text-align:right;color:var(--text2);font-size:0.76rem">${isG?cum.toFixed(1)+'%':'-'}</td>
+      <td style="min-width:160px"><div style="height:14px;border-radius:4px;background:var(--surface2);overflow:hidden"><div style="height:100%;width:${p}%;background:${col};border-radius:4px"></div></div></td>
+    </tr>`;}).join('');
+  const distTable=`<table class="results-table" style="table-layout:auto">
+    <thead><tr><th>${L('등급','Nivel')}</th><th>${L('기준','Criterio')}</th><th style="text-align:right">${L('인원','Personas')}</th><th style="text-align:right">${L('비율','%')}</th><th style="text-align:right">${L('누적(등급)','Acum.')}</th><th>${L('분포','Distribución')}</th></tr></thead>
+    <tbody>${rows}
+      <tr style="background:var(--surface2);font-weight:700"><td>${L('합계','Total')}</td><td></td><td style="text-align:right">${total}<span style="font-size:0.7rem;color:var(--text2);font-weight:500"> ${L('명','')}</span></td><td style="text-align:right">100%</td><td style="text-align:right;color:var(--text2);font-size:0.76rem">${L('등급 보유','Con nivel')} ${pctTxt(graded,total)}</td><td></td></tr>
+    </tbody></table>`;
+  // ── 4. 공정별 매트릭스 ──
+  const procNames=Object.keys(byProc).sort((a,b)=>a.localeCompare(b,'ko'));
+  const colTotal=Object.fromEntries(cats.map(c=>[c,0]));
+  const cell=(n,t,c)=>{if(!n)return`<td style="text-align:center;color:var(--text2);opacity:0.45">-</td>`;const col=_distCatColor(c);const a=Math.min(0.12+0.38*(n/(t||1)),0.5);return`<td style="text-align:center;background:${col}${Math.round(a*255).toString(16).padStart(2,'0')};font-weight:700;color:var(--text)">${n}<span style="font-size:0.66rem;opacity:0.75;font-weight:500"> (${pctTxt(n,t).replace('.0%','%')})</span></td>`;};
+  const procRows=procNames.map(p=>{const row=byProc[p];const t=cats.reduce((s,c)=>s+row[c],0);const g=labels.reduce((s,l)=>s+row[l],0);cats.forEach(c=>colTotal[c]+=row[c]);
+    return`<tr><td>${procCell(p)}</td>${cats.map(c=>cell(row[c],t,c)).join('')}<td style="text-align:center;font-weight:700">${t}</td><td style="text-align:center"><strong style="color:${t&&g/t>=0.7?'var(--green)':'var(--red)'}">${pctTxt(g,t).replace('.0%','%')}</strong></td></tr>`;}).join('');
+  const gT=labels.reduce((s,l)=>s+colTotal[l],0);
+  const procTable=`<table class="results-table" style="table-layout:auto">
+    <thead><tr><th>${L('공정','Proceso')}</th>${cats.map(c=>`<th style="text-align:center">${_distCatBadge(c)}</th>`).join('')}<th style="text-align:center">${L('합계','Total')}</th><th style="text-align:center">${L('등급보유율','% con nivel')}</th></tr></thead>
+    <tbody>${procRows}
+      <tr style="background:var(--surface2);font-weight:700"><td>${L('합계','Total')}</td>${cats.map(c=>`<td style="text-align:center;color:${_distCatColor(c)}">${colTotal[c]}<span style="font-size:0.66rem;opacity:0.75;font-weight:500"> (${pctTxt(colTotal[c],total).replace('.0%','%')})</span></td>`).join('')}<td style="text-align:center">${total}</td><td style="text-align:center;color:${total&&gT/total>=0.7?'var(--green)':'var(--red)'}">${pctTxt(gT,total).replace('.0%','%')}</td></tr>
+    </tbody></table>`;
+  // ── 5. 등급별 명단 (접기/펼치기) ──
+  const lists=cats.filter(c=>count[c]).map(c=>{const ws=workers.filter(w=>w.cat===c).sort((a,b)=>String(a.empId).localeCompare(String(b.empId),undefined,{numeric:true}));const col=_distCatColor(c);
+    return`<details style="margin:0.35rem 0;border:1px solid var(--border);border-radius:8px;background:var(--surface)">
+      <summary style="cursor:pointer;padding:0.5rem 0.8rem;font-size:0.8rem;display:flex;align-items:center;gap:0.6rem">${_distCatBadge(c)}<b>${ws.length}${L('명','')}</b><span style="color:${col};font-weight:700">${pctTxt(ws.length,total)}</span><span style="color:var(--text2);font-size:0.72rem">${L('클릭하여 명단 보기','Clic para ver lista')}</span></summary>
+      <div style="padding:0.3rem 0.8rem 0.7rem;display:flex;flex-wrap:wrap;gap:0.35rem">
+        ${ws.map(w=>{const role=roleOf(w.process);const sc=labels.includes(c)?` · <b style="color:${col}">${w.rec.totalScore}</b>`:'';return`<span class="${role?'row-'+role:''}" style="display:inline-flex;flex-direction:column;border:1px solid var(--border);border-radius:6px;padding:0.25rem 0.5rem;font-size:0.72rem;background:var(--surface2);line-height:1.35;cursor:pointer" onclick="showDetail(${results.indexOf(w.rec)})" title="${_perfEsc(w.process)} · ${_perfEsc(w.date)}"><span style="font-weight:600">${_perfEsc(w.name)}${sc}</span><span class="rt-mono" style="color:var(--text2);font-size:0.66rem">${_perfEsc(w.empId||'-')} · ${_perfEsc(w.process)}${role==='rework'?' 🔧':role==='lider'?' ★':role==='train'?' 🎓':''}</span></span>`;}).join('')}
+      </div></details>`;}).join('');
+
+  el.innerHTML=`
+    <div style="font-size:0.82rem;font-weight:700;color:var(--gold);margin:0.3rem 0 0.6rem">👥 ${L('등급별 인원 요약','Resumen por nivel')} <span style="font-weight:500;color:var(--text2);font-size:0.74rem">— ${L('작업자 1인 1등급','1 trabajador = 1 nivel')} · ${_perfEsc(roundLbl)}${opts.proc?' · '+_perfEsc(opts.proc):''}${opts.activeOnly?' · '+L('재직자만','solo activos'):''}</span></div>
+    <div class="stats-row" style="grid-template-columns:repeat(auto-fit,minmax(118px,1fr));margin-bottom:0.8rem">${cards.join('')}</div>
+    ${bar}
+    <div style="font-size:0.82rem;font-weight:700;color:var(--accent);margin:0.3rem 0 0.6rem">📋 ${L('등급별 인원 · 비율','Personas y % por nivel')}</div>
+    ${distTable}
+    <div style="font-size:0.82rem;font-weight:700;color:var(--sky);margin:1.2rem 0 0.6rem">🏭 ${L('공정별 등급 분포','Distribución por proceso')} <span style="font-weight:500;color:var(--text2);font-size:0.74rem">— ${L('인원 (비율)','personas (%)')}</span></div>
+    ${procTable}
+    <div style="font-size:0.82rem;font-weight:700;color:var(--teal);margin:1.2rem 0 0.6rem">👤 ${L('등급별 명단','Lista por nivel')} <span style="font-weight:500;color:var(--text2);font-size:0.74rem">— ${L('이름 클릭 시 상세 보기','clic en nombre para detalle')}</span></div>
+    ${lists}`;
+}
+function exportGradeDist(){
+  if(!results.length){alert('결과 데이터가 없습니다.');return;}
+  const opts={round:document.getElementById('distRoundSel')?.value||'__all__',proc:document.getElementById('distProcSel')?.value||'',activeOnly:!!document.getElementById('distActiveOnly')?.checked};
+  const d=computeGradeDist(opts);const {labels,cats,count,total,byProc,workers}=d;
+  const p=(n,t)=>t?Math.round(n/t*1000)/10+'%':'-';
+  const today=new Date().toISOString().slice(0,10);
+  const wb=XLSX.utils.book_new();
+  const s1=[['등급','인원','비율']];cats.forEach(c=>s1.push([c,count[c],p(count[c],total)]));s1.push(['합계',total,'100%']);
+  const s2=[['공정',...cats,'합계','등급보유율']];
+  Object.keys(byProc).sort((a,b)=>a.localeCompare(b,'ko')).forEach(pr=>{const row=byProc[pr];const t=cats.reduce((s,c)=>s+row[c],0);const g=labels.reduce((s,l)=>s+row[l],0);s2.push([pr,...cats.map(c=>row[c]),t,p(g,t)]);});
+  const s3=[['등급','이름','사번','공정','평가구분','평가일','총점','근속','재직']];
+  workers.sort((a,b)=>cats.indexOf(a.cat)-cats.indexOf(b.cat)||String(a.empId).localeCompare(String(b.empId),undefined,{numeric:true}))
+    .forEach(w=>s3.push([w.cat,w.name,w.empId,w.process,roundName(w.rec.evalRound),w.date,labels.includes(w.cat)?w.rec.totalScore:'',calcTenure(w.hireDate),w.resigned?'퇴사':'재직']));
+  const add=(rows,name,widths)=>{const ws=XLSX.utils.aoa_to_sheet(rows);if(widths)ws['!cols']=widths;XLSX.utils.book_append_sheet(wb,ws,name);};
+  add(s1,'등급별인원비율',[{wch:10},{wch:8},{wch:8}]);add(s2,'공정별',[{wch:18}]);add(s3,'명단',[{wch:8},{wch:26},{wch:14},{wch:18},{wch:22},{wch:12},{wch:7},{wch:10},{wch:6}]);
+  XLSX.writeFile(wb,`등급별인원비율${opts.proc?'_'+opts.proc:''}_${today}.xlsx`);
 }
 
 // ════ 평가구분 일괄 지정 (결과 이력에서 선택 → 지정) ════
@@ -9669,7 +9834,7 @@ window.SPEED=(function(){
       if(typeof _isLocalFile!=='undefined'&&_isLocalFile){STD=SPEED_DEFAULTS.map((d,i)=>({...d,id:'def'+i,factory:FAC,active:true,levels:null}));LV=DEF_LV.map(x=>({...x,factory:FAC}));EV=[];missing=true;loaded=true;loading=null;renderAll();return;}
       try{
         const [s,l,e]=await Promise.all([
-          sbFetch('exam_speed_std?select=*&factory=eq.'+FAC+'&order=sort_no.asc,name.asc'),
+          sbFetch('exam_speed_std?select=*&order=sort_no.asc,name.asc'),
           sbFetch('exam_speed_level?select=*&factory=eq.'+FAC+'&order=min_pct.desc'),
           sbFetch('exam_speed_eval?select=*&factory=eq.'+FAC+'&order=eval_date.desc,created_at.desc&limit=4000')
         ]);
@@ -10073,7 +10238,7 @@ async function loadAll(force){
     GRADES=grades;PITEMS=pitems.map(x=>({name:x.name,max:+x.max_score}));QUESTIONS=qs;STUDENTS=students;RESULTS=results;
     try{const f=await sb('v_qual_final_status?select=id,final_status,msa_result,msa_grade,msa_grr,msa_group,resigned');FINAL={};f.forEach(x=>FINAL[x.id]=x);}catch(e){FINAL={};}
     try{PROD=await sb('v_qual_productivity?select=*&order=emp_id.asc');}catch(e){PROD=null;}
-    try{[SPD,SPLV,SPSTD]=await Promise.all([sb('exam_speed_eval?select=*&factory=eq.1&order=eval_date.desc,created_at.desc&limit=4000'),sb('exam_speed_level?select=*&factory=eq.1&order=min_pct.desc'),sb('exam_speed_std?select=id,name,name_es,std_time,match,active,levels,sort_no&factory=eq.1&order=sort_no.asc')]);SPEED_OK=true;}catch(e){SPD=[];SPLV=[];SPSTD=[];SPEED_OK=false;}
+    try{[SPD,SPLV,SPSTD]=await Promise.all([sb('exam_speed_eval?select=*&order=eval_date.desc,created_at.desc&limit=4000'),sb('exam_speed_level?select=*&factory=eq.1&order=min_pct.desc'),sb('exam_speed_std?select=id,name,name_es,std_time,match,active,levels,sort_no&order=sort_no.asc')]);SPEED_OK=true;}catch(e){SPD=[];SPLV=[];SPSTD=[];SPEED_OK=false;}
     try{HEALTH=await sb('v_qual_health?select=k,v');}catch(e){HEALTH=null;}
     if(!PERF)loadPerfSheets();
     renderDiag();renderWeights();fillRoundSelects();renderProd();dInit();renderSim();
