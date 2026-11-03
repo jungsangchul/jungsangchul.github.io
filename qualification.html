@@ -1496,7 +1496,13 @@ textarea{resize:vertical;}
 .sp-std-table .mini{padding:.2rem .5rem;font-size:.7rem}
 .sp-hist{width:100%;border-collapse:collapse}
 .sp-hist th{color:var(--sky);font-size:.7rem;text-transform:uppercase;letter-spacing:.5px;text-align:left;padding:.5rem .55rem;border-bottom:1px solid var(--border);background:var(--surface2);white-space:nowrap}
-.sp-hist td{padding:.5rem .55rem;border-bottom:1px solid var(--border);font-size:.78rem;vertical-align:middle}
+.sp-hist{table-layout:fixed}
+.sp-hist td{padding:.55rem .6rem;border-bottom:1px solid var(--border);font-size:.8rem;vertical-align:middle;overflow:hidden}
+.sp-hist .sp-h1{font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sp-hist .sp-h2{font-size:.7rem;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:.1rem}
+.sp-hist .mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.sp-hist .sp-ok{color:var(--green);font-weight:700}.sp-hist .sp-ng{color:var(--red);font-weight:700}.sp-hist .sp-warn{color:var(--orange);font-weight:700}
+.sp-ib{padding:.2rem .45rem;font-size:.72rem}
 .sp-hist td.n{font-family:var(--mono);text-align:right;font-variant-numeric:tabular-nums}
 .sp-hist tr:hover td{background:rgba(255,255,255,.03)}
 .sp-toast{position:fixed;bottom:1.2rem;left:50%;transform:translateX(-50%);background:#1d1d1d;border:1px solid var(--gold);color:var(--text);padding:.6rem 1rem;border-radius:10px;font-size:.82rem;z-index:10000;display:none;max-width:90vw}
@@ -4756,11 +4762,11 @@ document.addEventListener('DOMContentLoaded', renderExamQr);
         <div style="font-size:0.76rem;color:var(--text2)"><span data-kr="MSA(계량형·계수형) 결과로 자동 반영 가능" data-es="Se puede cargar desde resultados MSA">MSA(계량형·계수형) 결과로 자동 반영 가능</span></div>
       </div>
       <div class="score-block prof" style="border-left:3px solid var(--gold)">
-        <div class="score-block-title" style="color:var(--gold)">④ <span data-kr="숙련도 (생산성)" data-es="Productividad">숙련도 (생산성)</span></div>
+        <div class="score-block-title" style="color:var(--gold)">④ <span data-kr="숙련도 (공정별 신속성)" data-es="Habilidad (rapidez)">숙련도 (공정별 신속성)</span></div>
         <div class="form-row" style="margin-bottom:0.5rem">
           <div><label><span data-kr="배점 (%)" data-es="Peso (%)">배점 (%)</span></label><input type="number" id="profPct" value="0" min="0" max="100" onchange="onScoreLayoutChange()"></div>
         </div>
-        <div style="font-size:0.76rem;color:var(--text2)"><span data-kr="평가일 직전 기간 평균 달성률(실적/목표) → 구간표 환산 · 신입사원평가는 0% 권장 · 기준·실적 입력은 ⑦ 관리자" data-es="Promedio de cumplimiento (real/meta) del periodo previo → tabla de niveles">평가일 직전 기간 평균 달성률(실적/목표) → 구간표 환산 · 신입사원평가는 0% 권장 · 기준·실적 입력은 ⑦ 관리자</span></div>
+        <div style="font-size:0.76rem;color:var(--text2)"><span data-kr="⑥ 숙련도 평가에서 초시계로 측정한 공정별 총소요시간 → 달성률 → 레벨(L1~L5) → 배점 환산 · 배점이 0보다 크면 숙련도 평가 기록이 있어야 합격 판정 (없으면 「평가중」)" data-es="Tiempo total por proceso (cronómetro) → cumplimiento → nivel L1~L5 → peso · si el peso > 0 se requiere registro de habilidad">⑥ 숙련도 평가에서 초시계로 측정한 공정별 총소요시간 → 달성률 → 레벨(L1~L5) → 배점 환산 · 배점이 0보다 크면 숙련도 평가 기록이 있어야 합격 판정 (없으면 「평가중」)</span></div>
       </div>
     </div>
     <!-- 내부 계산용 (실습 = ② + ③, 원점수=가중점수) -->
@@ -7804,9 +7810,10 @@ function showDetail(idx){
       <div class="score-box" id="detailTotalBox" style="border:1px solid ${r.passed?'rgba(46,204,122,0.4)':'rgba(224,82,82,0.4)'}"><div class="score-box-val" style="color:${r.passed?'var(--green)':'var(--red)'}">${r.totalScore}</div><div class="score-box-label">총점 / 100점</div><div class="score-box-sub" style="color:${r.passed?'var(--green)':'var(--red)'}">${r.passed?'✅ 합격':'❌ 불합격'}</div></div>
     </div>
     ${r.practicalItemScores?.length?`<div style="margin-bottom:0.9rem"><div style="font-size:0.76rem;font-weight:700;color:var(--purple);margin-bottom:0.5rem">실습 항목별 점수</div><div style="display:flex;gap:0.5rem;flex-wrap:wrap">${r.practicalItemScores.map(it=>`<div style="background:var(--bg);border:1px solid rgba(155,126,232,0.3);border-radius:6px;padding:0.5rem 0.8rem;font-size:0.78rem"><div style="color:var(--text2);margin-bottom:0.2rem">${it.name}</div><strong style="color:var(--purple)">${it.score}/${it.max}</strong>${it.sheet?`<div style="font-size:0.7rem;color:var(--teal);margin-top:0.2rem">${it.sheet.process} · 원점수 ${it.sheet.sum}/${it.sheet.max}</div>${(it.sheet.detail||[]).filter(x=>x.score<x.pts).length?`<div style="font-size:0.68rem;color:var(--gold);margin-top:0.2rem;max-width:260px">감점: ${(it.sheet.detail||[]).filter(x=>x.score<x.pts).map(x=>x.name+' '+x.score+'/'+x.pts).join(', ')}</div>`:''}`:''}</div>`).join('')}</div></div>`:''}
+    <div id="detailSpeedBox">${(typeof SPEED!=='undefined'&&SPEED.loaded)?SPEED.detailHtml(r):(trackW(recTrack(r)).prof>0?'<div style="font-size:.76rem;color:var(--text2);margin-bottom:.9rem">⏱ 숙련도 평가 기록 불러오는 중…</div>':'')}</div>
     <div class="score-bar-wrap">
-      <div class="score-bar-label"><span>점수 구성</span><span style="font-size:0.7rem"><span style="color:var(--blue)">■ 이론 ${r.theoryWeighted||0}점</span> + <span style="color:var(--purple)">■ 실습 ${r.practicalWeighted||0}점</span></span></div>
-      <div class="score-bar"><div class="score-bar-t" style="width:${r.theoryWeighted||0}%"></div><div class="score-bar-p" style="width:${r.practicalWeighted||0}%"></div></div>
+      <div class="score-bar-label"><span>점수 구성</span><span style="font-size:0.7rem"><span style="color:var(--blue)">■ 이론 ${r.theoryWeighted||0}점</span> + <span style="color:var(--purple)">■ 실습 ${r.practicalWeighted||0}점</span>${r.profWeighted!=null?` + <span style="color:var(--gold)">■ 숙련도 ${r.profWeighted}점</span>`:''}</span></div>
+      <div class="score-bar"><div class="score-bar-t" style="width:${r.theoryWeighted||0}%"></div><div class="score-bar-p" style="width:${r.practicalWeighted||0}%"></div>${r.profWeighted!=null?`<div style="background:var(--gold);height:100%;border-radius:4px;width:${r.profWeighted}%"></div>`:''}</div>
     </div>
     <hr class="divider">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.6rem">
@@ -7819,6 +7826,7 @@ function showDetail(idx){
       <button class="btn btn-sm" style="background:var(--green);color:#fff" onclick="saveDetailEdit(${idx})">✅ 수정 저장</button>
     </div>`;
   document.getElementById('detailModal').classList.add('open');
+  try{if(typeof SPEED!=='undefined'&&!SPEED.loaded&&trackW(recTrack(r)).prof>0)SPEED.load().then(()=>{const b=document.getElementById('detailSpeedBox');if(b)b.innerHTML=SPEED.detailHtml(r);});}catch(e){}
 }
 
 function renderDetailAnswerList(r, editMode, idx){
@@ -9828,11 +9836,23 @@ window.SPEED=(function(){
     $('spHistCnt').textContent=`${rows.length} / ${EV.length}${T('건','')}`;
     if(!rows.length){el.innerHTML=`<div class="empty-state"><div class="empty-icon">⏱</div>${T('평가 기록이 없습니다','Sin registros')}</div>`;return;}
     const w=profW();
-    el.innerHTML=`<table class="sp-hist"><thead><tr><th>${T('평가일','Fecha')}</th><th>${T('사번','N°')}</th><th>${T('이름','Nombre')}</th><th>${T('배치공정','Proceso')}</th><th>${T('기준표','Hoja')}</th><th>${T('평가구분','Ronda')}</th><th style="text-align:right">${T('표준','Est.')}(s)</th><th style="text-align:right">${T('측정','Med.')}(s)</th><th style="text-align:right">${T('달성률','Cumpl.')}</th><th>${T('레벨','Nivel')}</th><th style="text-align:right">${T('점수','Pts')} /${w}</th><th>${T('판정','Result.')}</th><th>${T('평가자','Eval.')}</th><th></th></tr></thead><tbody>
+    el.innerHTML=`<table class="sp-hist"><thead><tr>
+        <th style="width:110px">${T('평가일 / 구분','Fecha / Ronda')}</th><th>${T('작업자','Operador')}</th><th>${T('기준표 (공정)','Hoja (proceso)')}</th>
+        <th style="width:150px;text-align:right">${T('측정 / 표준','Medido / Estándar')}</th><th style="width:88px;text-align:center">${T('달성률','Cumpl.')}</th>
+        <th style="width:96px;text-align:center">${T('레벨 · 점수','Nivel · Pts')} <span style="font-weight:400;text-transform:none;letter-spacing:0">/${w}</span></th>
+        <th style="width:110px">${T('판정 / 평가자','Result. / Eval.')}</th><th style="width:70px"></th></tr></thead><tbody>
       ${rows.slice(0,500).map(e=>{const std=stdById(e.std_id)||STD.find(s=>s.name===e.std_name);const b=lvByName(e.level,std)||{level:e.level,color:'#8a8a8a'};
-        const res=e.result==='합격'?`<span style="color:var(--green)">✅ ${T('합격','OK')}</span>`:e.result==='과락'?`<span style="color:var(--red)" title="${e.defect?'부적합품 ':''}${e.omission?'항목누락':''}">❌ ${T('과락','Reprob.')}</span>`:`<span style="color:var(--orange)">⚠️ ${esc(e.result||'')}</span>`;
-        return `<tr><td class="n">${esc(e.eval_date)}</td><td class="n">${esc(e.emp_id)}${e.is_dummy?' <span class="tag" style="background:#333;color:#aaa">TEST</span>':''}</td><td>${esc(e.name||'')}</td><td style="color:var(--text2)">${esc(e.process||'')}</td><td>${esc(e.std_name||'')}</td><td style="color:var(--text2)">${esc(roundShort(e.eval_round))}</td><td class="n">${r1(e.std_time)}</td><td class="n">${r1(e.measured_sec)}</td><td class="n"><b>${r1(e.eff_pct)}%</b></td><td>${lvTag(b)}</td><td class="n" style="color:var(--gold);font-weight:700">${r1(w*(+e.score_pct||0)/100)}</td><td>${res}</td><td style="color:var(--text2)">${esc(e.evaluator||'')}</td>
-          <td><button class="btn btn-outline btn-sm" style="padding:.15rem .45rem;font-size:.7rem" onclick="SPEED.loadInto('${esc(e.id)}')" title="이 기록의 작업자·공정을 평가 화면에 불러오기(재평가)">↩</button> <button class="btn btn-danger btn-sm" style="padding:.15rem .45rem;font-size:.7rem" onclick="SPEED.del('${esc(e.id)}')">✕</button></td></tr>`;}).join('')}
+        const res=e.result==='합격'?`<span class="sp-ok">✅ ${T('합격','Aprobado')}</span>`:e.result==='과락'?`<span class="sp-ng" title="${e.defect?'부적합품 ':''}${e.omission?'항목누락':''}">❌ ${T('과락','Reprobado')}</span>`:`<span class="sp-warn">⚠️ ${esc(e.result||'')}</span>`;
+        const effCol=+e.eff_pct>=100?'var(--green)':+e.eff_pct>=72?'var(--text)':'var(--red)';
+        return `<tr>
+          <td><div class="sp-h1 mono">${esc(e.eval_date)}</div><div class="sp-h2">${esc(roundShort(e.eval_round))}</div></td>
+          <td><div class="sp-h1">${esc(e.name||'')}${e.is_dummy?' <span class="tag" style="background:#333;color:#aaa">TEST</span>':''}</div><div class="sp-h2"><span class="mono">${esc(e.emp_id)}</span> · ${esc(e.process||'')}</div></td>
+          <td><div class="sp-h1">${esc(e.std_name||'')}</div><div class="sp-h2">${esc((std&&std.cond)||'')}</div></td>
+          <td style="text-align:right"><div class="sp-h1 mono">${r1(e.measured_sec)}<span class="sp-h2"> s</span></div><div class="sp-h2 mono">${T('표준','est.')} ${r1(e.std_time)} s</div></td>
+          <td style="text-align:center"><div class="sp-h1 mono" style="color:${effCol};font-size:.92rem">${r1(e.eff_pct)}%</div></td>
+          <td style="text-align:center;white-space:nowrap">${lvTag(b)} <b class="mono" style="color:var(--gold);font-size:.9rem;margin-left:.25rem">${r1(w*(+e.score_pct||0)/100)}</b></td>
+          <td><div class="sp-h1" style="white-space:nowrap">${res}</div><div class="sp-h2">${esc(e.evaluator||'')}</div></td>
+          <td style="white-space:nowrap;text-align:right"><button class="btn btn-outline btn-sm sp-ib" onclick="SPEED.loadInto('${esc(e.id)}')" title="${T('이 기록의 작업자·공정을 평가 화면에 불러오기(재평가)','Cargar para reevaluar')}">↩</button> <button class="btn btn-danger btn-sm sp-ib" onclick="SPEED.del('${esc(e.id)}')" title="${T('삭제','Eliminar')}">✕</button></td></tr>`;}).join('')}
       </tbody></table>${rows.length>500?`<div style="font-size:.74rem;color:var(--text2);margin-top:.4rem">${T('상위 500건만 표시 — 검색으로 좁히세요','Solo 500 filas')}</div>`:''}`;
   }
   function loadInto(id){const e=EV.find(x=>String(x.id)===String(id));if(!e)return;$('spEmpAll').checked=true;$('spEmpQ').value='';
@@ -9939,12 +9959,40 @@ window.SPEED=(function(){
     }catch(e){alert('저장 실패: '+e.message);}
   }
 
+
+  /* ───── 결과 상세(보기)에서 사용: 서버 exam_speed_pick 과 같은 규칙으로 적용 기록 찾기 ───── */
+  function pickFor(emp,date,round){const e=String(emp||'').toUpperCase();const mine=EV.filter(x=>String(x.emp_id).toUpperCase()===e);
+    if(round){const s=mine.find(x=>x.eval_round===round);if(s)return s;}
+    const d=date?new Date(date+'T00:00:00'):new Date();if(isNaN(d))return mine[0]||null;const lo=new Date(d);lo.setDate(lo.getDate()-120);const hi=new Date(d);hi.setDate(hi.getDate()+60);
+    return mine.find(x=>{const t=new Date(x.eval_date+'T00:00:00');return t>=lo&&t<=hi;})||null;}
+  function detailHtml(r){
+    let w;try{w=trackW(recTrack(r));}catch(e){w={prof:0};}if(!(w.prof>0))return'';
+    const e=pickFor(r.empId,r.date,r.evalRound);
+    const head=`<div style="font-size:0.76rem;font-weight:700;color:var(--gold);margin-bottom:0.5rem">⏱ ${T('숙련도 평가 — 공정별 신속성(총소요시간)','Evaluación de habilidad — rapidez por proceso')} <span style="font-weight:400;color:var(--text2)">(${T('배점','peso')} ${w.prof}${T('점','')})</span></div>`;
+    if(!e)return`<div style="margin-bottom:0.9rem">${head}<div style="background:var(--bg);border:1px solid rgba(232,122,42,.4);border-radius:6px;padding:.6rem .8rem;font-size:.78rem;color:var(--orange)">⏳ ${T('숙련도 평가 기록 없음 — ⑥ 숙련도·다기능 → ⏱ 숙련도 평가에서 초시계로 측정·저장하면 이 결과에 자동 반영됩니다 (그 전까지 합격 보류·평가중)','Sin registro — mida y guarde en ⑥ ⏱; hasta entonces "En evaluación"')}</div></div>`;
+    const std=stdById(e.std_id)||STD.find(s=>s.name===e.std_name);const b=lvByName(e.level,std)||{level:e.level,color:'#8a8a8a'};
+    const score=e.result==='과락'?0:r1(w.prof*(+e.score_pct||0)/100);
+    const res=e.result==='합격'?`<span style="color:var(--green)">✅ ${T('합격','OK')}</span>`:e.result==='과락'?`<span style="color:var(--red)">❌ ${T('과락','Reprobado')} (${e.defect?T('부적합품','no conforme'):''}${e.defect&&e.omission?' · ':''}${e.omission?T('항목 누락','omisión'):''})</span>`:`<span style="color:var(--orange)">⚠️ ${esc(e.result||'')}</span>`;
+    const kv=(k,v)=>`<span style="color:var(--text2)">${k}</span><b style="color:var(--text)">${v}</b>`;
+    return`<div style="margin-bottom:0.9rem">${head}
+      <div style="background:var(--bg);border:1px solid rgba(201,168,76,.35);border-radius:6px;padding:.6rem .9rem;font-size:.78rem;display:flex;gap:1rem;flex-wrap:wrap;align-items:center">
+        <div style="text-align:center;min-width:70px">${lvTag(b,true)}<div style="font-size:.66rem;color:var(--text2);margin-top:.25rem">${T('레벨','Nivel')}</div></div>
+        <div style="text-align:center;min-width:70px"><b style="color:var(--gold);font-size:1.2rem;font-family:var(--mono)">${score}</b><span style="color:var(--text2)"> / ${w.prof}</span><div style="font-size:.66rem;color:var(--text2)">${T('숙련도 점수','Puntaje')} (${e.result==='과락'?0:e.score_pct}%)</div></div>
+        <div style="display:grid;grid-template-columns:auto auto;gap:.15rem .6rem;flex:1 1 260px">
+          ${kv(T('기준표','Hoja'),esc(e.std_name||'-'))}${kv(T('평가일','Fecha'),esc(e.eval_date)+(e.eval_round?' · '+esc(roundShort(e.eval_round)):''))}
+          ${kv(T('표준 ÷ 측정','Est. ÷ Med.'),`${r1(e.std_time)}s ÷ ${r1(e.measured_sec)}s = <span style="color:var(--gold)">${r1(e.eff_pct)}%</span>`)}${kv(T('판정','Resultado'),res)}
+          ${kv(T('평가자','Evaluador'),esc(e.evaluator||'-'))}${e.opinion?kv(T('의견','Obs.'),esc(e.opinion)):''}
+        </div>
+        <button class="btn btn-outline btn-sm" style="font-size:.7rem" onclick="document.getElementById('detailModal').classList.remove('open');SPEED.goEval('${esc(e.id)}')">⏱ ${T('재평가','Reevaluar')}</button>
+      </div></div>`;
+  }
+  function goEval(id){try{switchTab('skills',document.querySelector('.tab-nav .tab-btn[onclick*=\'skills\']'));switchSkillsSubtab('speed',document.querySelector('#page-skills .subtab-btn'));setTimeout(()=>loadInto(id),150);}catch(e){console.warn(e);}}
   /* ───── 외부 제공 ───── */
   function latestOf(emp){const e=String(emp||'').toUpperCase();return EV.find(x=>String(x.emp_id).toUpperCase()===e)||null;}
   function levelsHtml(){const w=profW();return `<table class="results-table"><thead><tr><th>${T('레벨','Nivel')}</th><th>${T('달성률','Cumplimiento')}</th><th>${T('배점 대비','% del peso')}</th><th>${T('정기평가 점수','Pts periódica')} (/${w})</th></tr></thead><tbody>${levelsFor(null).map((b,i,arr)=>`<tr><td>${lvTag(b)}</td><td>${b.is_fail?`< ${arr[i-1]?arr[i-1].min_pct:0}%`:b.min_pct+'% ↑'}</td><td>${b.score_pct}%</td><td style="color:var(--gold);font-weight:700">${r1(w*b.score_pct/100)}</td></tr>`).join('')}</tbody></table>`;}
   return{load,renderAll,onStd,onEmp,renderEmpSelect,swStart,swPause,swReset,swDone,calc,clearForm,save,renderHist,loadInto,del,exportHist,
     renderStdTable,edStd,addStd,delStd,saveStd,seedDefaults,openItems,closeItems,edItem,addItemRow,delItemRow,itemSumToStd,toggleOwnLv,edOwn,addOwnLv,delOwn,applyItems,
-    renderLevelTable,edLv,addLevel,delLv,saveLevels,latestOf,levelsHtml,lvTag,lvByName,judge,levelsFor,
+    renderLevelTable,edLv,addLevel,delLv,saveLevels,latestOf,levelsHtml,pickFor,detailHtml,goEval,lvTag,lvByName,judge,levelsFor,
     get STD(){return STD;},get LV(){return LV;},get EV(){return EV;},get missing(){return missing;},get loaded(){return loaded;}};
 })();
 
