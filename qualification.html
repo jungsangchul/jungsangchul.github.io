@@ -7427,9 +7427,16 @@ function _evalMiss(r){
   const miss=[];
   if(!_hasTheory(r))miss.push('이론');
   if(pf.na)miss.push('작업수행');
-  if(!((cr&&!cr.na&&(parseFloat(cr.score)||0)>0)||(df&&!df.na)||(fs&&fs.msa_result)))miss.push('MSA');
+  if(!((cr&&!cr.na&&(parseFloat(cr.score)||0)>0)||(df&&!df.na&&(parseFloat(df.score)||0)>0)||(fs&&fs.msa_result)))miss.push('MSA');
   if(trackW(recTrack(r)).prof>0&&r.profWeighted==null)miss.push('숙련도');
+  // ✅ 입사 후 NEW_HIRE_PENDING_DAYS 일 이내(평가 진행 기간)인 신입은 불합격이 아니라 평가중으로 표시 (2026-11-03)
+  if(!r.passed&&_withinNewHireWindow(r))miss.push('입사 '+NEW_HIRE_PENDING_DAYS+'일 이내');
   return miss.length?miss:null;
+}
+var NEW_HIRE_PENDING_DAYS=10;
+function _withinNewHireWindow(r){
+  try{const h=r.hireDate||lookupHireDate(r.empId)||'';if(!/^\d{4}-\d{2}-\d{2}/.test(h))return false;
+    const d=(Date.now()-new Date(h.slice(0,10)+'T00:00:00').getTime())/86400000;return d>=0&&d<=NEW_HIRE_PENDING_DAYS;}catch(e){return false;}
 }
 function _isEvalIng(r){
   const fs=(typeof finalStatusMap!=='undefined'&&finalStatusMap)?finalStatusMap[r._sbId]:null;
@@ -9662,7 +9669,7 @@ window.SPEED=(function(){
       if(typeof _isLocalFile!=='undefined'&&_isLocalFile){STD=SPEED_DEFAULTS.map((d,i)=>({...d,id:'def'+i,factory:FAC,active:true,levels:null}));LV=DEF_LV.map(x=>({...x,factory:FAC}));EV=[];missing=true;loaded=true;loading=null;renderAll();return;}
       try{
         const [s,l,e]=await Promise.all([
-          sbFetch('exam_speed_std?select=*&order=sort_no.asc,name.asc'),
+          sbFetch('exam_speed_std?select=*&factory=eq.'+FAC+'&order=sort_no.asc,name.asc'),
           sbFetch('exam_speed_level?select=*&factory=eq.'+FAC+'&order=min_pct.desc'),
           sbFetch('exam_speed_eval?select=*&factory=eq.'+FAC+'&order=eval_date.desc,created_at.desc&limit=4000')
         ]);
@@ -10066,7 +10073,7 @@ async function loadAll(force){
     GRADES=grades;PITEMS=pitems.map(x=>({name:x.name,max:+x.max_score}));QUESTIONS=qs;STUDENTS=students;RESULTS=results;
     try{const f=await sb('v_qual_final_status?select=id,final_status,msa_result,msa_grade,msa_grr,msa_group,resigned');FINAL={};f.forEach(x=>FINAL[x.id]=x);}catch(e){FINAL={};}
     try{PROD=await sb('v_qual_productivity?select=*&order=emp_id.asc');}catch(e){PROD=null;}
-    try{[SPD,SPLV,SPSTD]=await Promise.all([sb('exam_speed_eval?select=*&order=eval_date.desc,created_at.desc&limit=4000'),sb('exam_speed_level?select=*&factory=eq.1&order=min_pct.desc'),sb('exam_speed_std?select=id,name,name_es,std_time,match,active,levels,sort_no&order=sort_no.asc')]);SPEED_OK=true;}catch(e){SPD=[];SPLV=[];SPSTD=[];SPEED_OK=false;}
+    try{[SPD,SPLV,SPSTD]=await Promise.all([sb('exam_speed_eval?select=*&factory=eq.1&order=eval_date.desc,created_at.desc&limit=4000'),sb('exam_speed_level?select=*&factory=eq.1&order=min_pct.desc'),sb('exam_speed_std?select=id,name,name_es,std_time,match,active,levels,sort_no&factory=eq.1&order=sort_no.asc')]);SPEED_OK=true;}catch(e){SPD=[];SPLV=[];SPSTD=[];SPEED_OK=false;}
     try{HEALTH=await sb('v_qual_health?select=k,v');}catch(e){HEALTH=null;}
     if(!PERF)loadPerfSheets();
     renderDiag();renderWeights();fillRoundSelects();renderProd();dInit();renderSim();

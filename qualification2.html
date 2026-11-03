@@ -7427,9 +7427,16 @@ function _evalMiss(r){
   const miss=[];
   if(!_hasTheory(r))miss.push('이론');
   if(pf.na)miss.push('작업수행');
-  if(!((cr&&!cr.na&&(parseFloat(cr.score)||0)>0)||(df&&!df.na)||(fs&&fs.msa_result)))miss.push('MSA');
+  if(!((cr&&!cr.na&&(parseFloat(cr.score)||0)>0)||(df&&!df.na&&(parseFloat(df.score)||0)>0)||(fs&&fs.msa_result)))miss.push('MSA');
   if(trackW(recTrack(r)).prof>0&&r.profWeighted==null)miss.push('숙련도');
+  // ✅ 입사 후 NEW_HIRE_PENDING_DAYS 일 이내(평가 진행 기간)인 신입은 불합격이 아니라 평가중으로 표시 (2026-11-03)
+  if(!r.passed&&_withinNewHireWindow(r))miss.push('입사 '+NEW_HIRE_PENDING_DAYS+'일 이내');
   return miss.length?miss:null;
+}
+var NEW_HIRE_PENDING_DAYS=10;
+function _withinNewHireWindow(r){
+  try{const h=r.hireDate||lookupHireDate(r.empId)||'';if(!/^\d{4}-\d{2}-\d{2}/.test(h))return false;
+    const d=(Date.now()-new Date(h.slice(0,10)+'T00:00:00').getTime())/86400000;return d>=0&&d<=NEW_HIRE_PENDING_DAYS;}catch(e){return false;}
 }
 function _isEvalIng(r){
   const fs=(typeof finalStatusMap!=='undefined'&&finalStatusMap)?finalStatusMap[r._sbId]:null;
