@@ -292,6 +292,12 @@ label{font-family:var(--mono);font-size:12px;letter-spacing:.1em;color:#c9a84c;t
 .grade-b{background:rgba(201,168,76,.08);color:#c9a84c;border-color:rgba(201,168,76,.4)}
 .grade-fail{background:rgba(224,92,92,.08);color:#ef9a9a;border-color:rgba(224,92,92,.45)}
 .grade-na{color:#555;font-family:var(--mono)}
+.grade-l1,.grade-l2,.grade-l3,.grade-l4,.grade-l5{border-radius:999px;padding:3px 10px;font-size:12px;font-weight:600;font-family:var(--mono);letter-spacing:.02em;white-space:nowrap;border:1px solid}
+.grade-l1{background:rgba(226,196,106,.14);color:#e2c46a;border-color:rgba(226,196,106,.55)}
+.grade-l2{background:rgba(76,175,125,.08);color:#4caf7d;border-color:rgba(76,175,125,.45)}
+.grade-l3{background:rgba(201,168,76,.08);color:#c9a84c;border-color:rgba(201,168,76,.4)}
+.grade-l4{background:rgba(120,160,220,.08);color:#8fb3e8;border-color:rgba(120,160,220,.45)}
+.grade-l5{background:rgba(224,92,92,.08);color:#ef9a9a;border-color:rgba(224,92,92,.45)}
 .done-badge,.pend-badge,.fail-badge,.na-badge{border-radius:999px;padding:3px 10px;font-size:12px;font-weight:600;background:transparent}
 .done-badge{color:#4caf7d;border-color:rgba(76,175,125,.45)}
 .pend-badge{color:#e0a84a;border-color:rgba(224,168,74,.45)}
@@ -2899,8 +2905,8 @@ title:['보전자 자격인증 평가','Certificación de Personal de Mantenimie
 subtitle:['가공생산팀 · 이론/실기 숙련도 평가','Producción de Corte · Evaluación teórica y práctica'],
 tab_dash:['인증 현황','Estado'],tab_theory:['이론평가','Examen teórico'],tab_prac:['실기평가 입력','Evaluación práctica'],tab_hist:['평가 이력','Historial'],tab_admin:['관리','Administración'],
 matrix:['보전자별 자격인증 현황','Estado de certificación por técnico'],csv:['CSV','CSV'],print:['인쇄','Imprimir'],
-rule:['등급: S 90↑ 매우능숙 · A 80↑ 능숙 · B 70↑ 보통(조건부 합격) · C 69↓ 부족(해당 설비 재교육) / 판정: 이론 불합격 = 불합격, 이론 합격 + 실기 4개 전부 A 이상 = 합격, 그 외 = 조건부 합격',
-      'Nivel: S ≥90 · A ≥80 · B ≥70 (aprobado condicional) · C ≤69 (recapacitar en ese equipo) / Resultado: teórico reprobado = Reprobado; teórico aprobado + 4 prácticos ≥A = Aprobado; otros = Condicional'],
+rule:['등급: L1 95↑ · L2 90↑ · L3 80↑ · L4 70↑(조건부 합격) · L5 60↑ · 60↓ 재교육 / 판정: 이론 불합격 = 불합격, 이론 합격 + 실기 4개 전부 L3(80) 이상 = 합격, 그 외 = 조건부 합격',
+      'Nivel: L1 ≥95 · L2 ≥90 · L3 ≥80 · L4 ≥70 (aprobado condicional) · L5 ≥60 · <60 recapacitar / Resultado: teórico reprobado = Reprobado; teórico aprobado + 4 prácticos ≥L3(80) = Aprobado; otros = Condicional'],
 dist:['설비별 등급 분포','Distribución de niveles por equipo'],process:['자격인증 절차','Proceso de certificación'],
 plant:['공장','Planta'],all:['전체','Todas'],name:['성명','Nombre'],lang:['언어','Idioma'],start:['시험 시작','Iniciar examen'],
 ex_title:['이론평가 (객관식 20문항 + 서술형 1문항)','Examen teórico (20 opción múltiple + 1 abierta)'],
@@ -3070,10 +3076,13 @@ async function loadAll(){
     sb(TB.config+'?select=*')]);
   STAFF=s;PRAC=p;THEO=t;
   const st=(c||[]).find(x=>x.key==='settings'); if(st) CFG={...CFG,...st.value};
+  const gr=(c||[]).find(x=>x.key==='grades'); if(gr&&gr.value&&Array.isArray(gr.value.levels)&&gr.value.levels.length) GR={...DEF_GR,...gr.value,levels:[...gr.value.levels].sort((a,b)=>b.min-a.min)};
 }
-const grade=s=>s==null?null:s>=90?'S':s>=80?'A':s>=70?'B':'C';
-const gCls={S:'grade-s',A:'grade-a',B:'grade-b',C:'grade-fail'};
-const gTag=s=>s==null?`<span class="grade-na">—</span>`:`<span class="${gCls[grade(s)]}">${s} (${grade(s)})</span>`;
+const DEF_GR={levels:[{label:'L1',min:95},{label:'L2',min:90},{label:'L3',min:80},{label:'L4',min:70},{label:'L5',min:60}],passMin:80,condMin:70};
+let GR=DEF_GR;
+const grade=s=>s==null?null:((GR.levels.find(l=>s>=l.min)||{}).label||'NG');
+const gClsOf=g=>({L1:'grade-l1',L2:'grade-l2',L3:'grade-l3',L4:'grade-l4',L5:'grade-l5'}[g]||'grade-fail');
+const gTag=s=>s==null?`<span class="grade-na">—</span>`:`<span class="${gClsOf(grade(s))}">${s} (${grade(s)})</span>`;
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const today=()=>{const d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,10)};
 function toast(m){const e=document.getElementById('toast');e.textContent=m;e.style.display='block';clearTimeout(e._t);e._t=setTimeout(()=>e.style.display='none',2400)}
@@ -3085,11 +3094,11 @@ function judge(n){
   const th=latestTheo(n), sc=EQK.map(e=>{const p=latestPrac(n,e);return p?p.total:null});
   const done=sc.filter(x=>x!=null);
   const avg=done.length?Math.round(done.reduce((a,b)=>a+b,0)/done.length*10)/10:null;
-  const cs=EQK.filter((e,i)=>sc[i]!=null&&sc[i]<70);
+  const cs=EQK.filter((e,i)=>sc[i]!=null&&sc[i]<GR.condMin);
   let res;
   if(th&&th.score<CFG.theoryPass) res='NG';
   else if(!th||done.length<EQK.length) res='NA';
-  else if(Math.min(...sc)>=80) res='OK';
+  else if(Math.min(...sc)>=GR.passMin) res='OK';
   else res='COND';
   return {th,sc,avg,res,cs};
 }
@@ -3157,9 +3166,10 @@ function renderDash(){
   });
   if(!J.length) h+=`<tr><td colspan="10" class="empty-state">${T('no_data')}</td></tr>`;
   document.getElementById('matrix').innerHTML=h+'</tbody>';
-  const col={S:'#f1c40f',A:'var(--green)',B:'var(--blue)',C:'var(--red)'};
-  const stack=arr=>{const g={S:0,A:0,B:0,C:0};arr.forEach(s=>g[grade(s)]++);const n=arr.length;
-    return `<div class="stack">${n?'SABC'.split('').filter(x=>g[x]).map(x=>`<div style="width:${g[x]/n*100}%;background:${col[x]}${x==='S'?';color:#000':''}">${x} ${g[x]}</div>`).join(''):''}</div>`};
+  const col={L1:'#e2c46a',L2:'var(--green)',L3:'var(--blue)',L4:'#5b8fd9',L5:'#c0392b',NG:'var(--red)'};
+  const KEYS=[...GR.levels.map(l=>l.label),'NG'];
+  const stack=arr=>{const g={};KEYS.forEach(k=>g[k]=0);arr.forEach(s=>g[grade(s)]++);const n=arr.length;
+    return `<div class="stack">${n?KEYS.filter(x=>g[x]).map(x=>`<div style="width:${g[x]/n*100}%;background:${col[x]||'var(--red)'}${x==='L1'?';color:#000':''}">${x} ${g[x]}</div>`).join(''):''}</div>`};
   document.getElementById('dist').innerHTML=EQK.map((k,ix)=>{const arr=J.map(j=>j.sc[ix]).filter(x=>x!=null);
     return `<div><div class="bar-label">${L(EQUIP[k])}<span>${arr.length}${LANG==='ko'?'명':''}</span></div>${stack(arr)}</div>`}).join('')
     +(()=>{const arr=J.filter(j=>j.th).map(j=>j.th.score);return `<div><div class="bar-label">${T('theory')}<span>${arr.length}${LANG==='ko'?'명':''}</span></div>${stack(arr)}</div>`})();
@@ -3273,7 +3283,7 @@ async function submitExam(){
     <div class="done-title" style="color:${ok?'var(--green)':'var(--red)'}">${ok?(ko?'합격':'Aprobado'):(ko?'불합격':'Reprobado')}</div>
     <div class="muted">${esc(EX.name)}</div>
     <div class="done-score" style="color:${ok?'var(--green)':'var(--red)'}">${score}</div>
-    <span class="${ok?gCls[g]:'grade-fail'}">${g}</span>
+    <span class="${ok?gClsOf(g):'grade-fail'}">${g}</span>
     <div class="done-msg">${ko?'정답':'Correctas'} ${correct} / 20<br>${ok?'':(ko?'교육 후 재시험 대상입니다.':'Debe recapacitarse y presentar de nuevo.')}<br>${ko?'21번 서술형은 평가자가 확인합니다.':'La pregunta 21 la revisa el evaluador.'}</div>
     <button class="btn-start" onclick="EX={on:false};resetExamView()">${T('next_person')}</button>`;
   window.scrollTo(0,0); EX.on=false;
@@ -3335,7 +3345,7 @@ function setSc(i,v,fromInput){
 function updTot(){
   const t=PR.scores.reduce((a,b)=>a+(b||0),0), full=PR.scores.every(x=>x!=null);
   document.getElementById('prTot').textContent=t;
-  document.getElementById('prGrade').innerHTML=full?gTag(t)+' '+(t>=80?`<span class="done-badge">✔ ${T('pass')}</span>`:t>=70?`<span class="pend-badge">△ ${T('cond')}</span>`:`<span class="fail-badge">↺ ${T('retrain_eq')}</span>`):`<span class="muted">${PR.scores.filter(x=>x!=null).length} / ${PR.scores.length}</span>`;
+  document.getElementById('prGrade').innerHTML=full?gTag(t)+' '+(t>=GR.passMin?`<span class="done-badge">✔ ${T('pass')}</span>`:t>=GR.condMin?`<span class="pend-badge">△ ${T('cond')}</span>`:`<span class="fail-badge">↺ ${T('retrain_eq')}</span>`):`<span class="muted">${PR.scores.filter(x=>x!=null).length} / ${PR.scores.length}</span>`;
   const tag=document.getElementById('prEditTag');tag.classList.toggle('hide',!PR.editId);tag.textContent='✏️ '+T('editing')+' #'+(PR.editId||'');
 }
 function resetPrac(){const k=document.getElementById('prEquip').value;PR={scores:EQUIP[k].items.map(()=>null),equip:k,editId:null};document.getElementById('prNote').value='';renderPrac()}
