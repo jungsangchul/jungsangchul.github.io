@@ -650,10 +650,11 @@ function judgeLocal(r){
 // ════ ⑦ 평가기준 탭: 현재 설정(배점·과락·숙련도·등급·실습항목)을 읽기 전용으로 표시 — ⑧ 관리자에서 변경하면 즉시 반영 ════
 function renderCriteria(){
   const el=document.getElementById('criteriaRoot');if(!el)return;
+  try{if(typeof SPEED!=='undefined'&&!SPEED.loaded&&!renderCriteria._spWait){renderCriteria._spWait=true;SPEED.load().then(()=>{renderCriteria._spWait=false;try{renderCriteria();}catch(e){}});}}catch(e){}
   const es=_perfIsEs(),T=(k,e)=>es?e:k;
   const cfg=getConfig(),pass=cfg.passingScore;
   const wN=trackW('new'),wR=trackW('regular'),ct=curTrack();
-  const bar=w=>{const parts=[['theory',T('이론','Teoría'),'#5ba3e8'],['perf',T('작업수행','Desempeño'),'#2ec4b6'],['crimp',T('압착고','Altura'),'#9b7ee8'],['defect',T('불량판별','Defectos'),'#b58de8'],['prof',T('숙련도','Productividad'),'#c9a84c']].filter(p=>w[p[0]]>0);
+  const bar=w=>{const parts=[['theory',T('이론','Teoría'),'#5ba3e8'],['perf',T('작업수행','Desempeño'),'#2ec4b6'],['crimp',T('압착고','Altura'),'#9b7ee8'],['defect',T('불량판별','Defectos'),'#b58de8'],['prof',T('숙련도','Habilidad'),'#c9a84c']].filter(p=>w[p[0]]>0);
     const sum=parts.reduce((a,p)=>a+w[p[0]],0)||1;
     return `<div class="crit-bar">${parts.map(p=>`<span style="flex:${w[p[0]]};background:${p[2]}" title="${p[1]} ${w[p[0]]}%">${w[p[0]]>=8?p[1]+' '+w[p[0]]:w[p[0]]}</span>`).join('')}</div>
       <div class="crit-kv">${parts.map(p=>`<span style="color:${p[2]}">● ${p[1]}</span><b>${w[p[0]]}${T('점','pts')}</b>`).join('')}<span style="color:var(--text2)">${T('합계','Total')}</span><b style="color:${sum===100?'var(--green)':'var(--red)'}">${sum}</b></div>`;};
@@ -674,7 +675,7 @@ function renderCriteria(){
         <div class="crit-step"><div class="crit-num">✓</div><div><b>${T('최종합격','Aprobación final')}</b><div style="font-size:.78rem;color:var(--text2)">${T(`총점 ${pass}점 이상 + 과락 없음 + MSA 조(組) 결과 Aprobado → 최종합격. 불합격 시 재평가`,`Total ≥ ${pass} + sin reprobar materias + grupo MSA Aprobado → Aprobado final; si no, reevaluación`)}</div></div></div>
       </div>
       <div><div style="margin-bottom:.4rem">${badge('regular')}</div>
-        <div class="crit-step"><div class="crit-num">2</div><div><b>${T('정기평가','Evaluación periódica')}</b><div style="font-size:.78rem;color:var(--text2)">${T('대상: 신입평가 합격 후 재직자 · 반기 1회','Personal aprobado · una vez por semestre')}<br>${T('이론 + 작업수행 + MSA + <b style="color:var(--gold)">숙련도(생산성)</b> → 총점으로 L등급','Teoría + Desempeño + MSA + <b style="color:var(--gold)">Productividad</b> → nivel L por puntaje total')}</div></div></div>
+        <div class="crit-step"><div class="crit-num">2</div><div><b>${T('정기평가','Evaluación periódica')}</b><div style="font-size:.78rem;color:var(--text2)">${T('대상: 신입평가 합격 후 재직자 · 반기 1회','Personal aprobado · una vez por semestre')}<br>${T('이론 + 작업수행 + MSA + <b style="color:var(--gold)">숙련도(공정별 신속성 — 초시계 총소요시간)</b> → 총점으로 L등급','Teoría + Desempeño + MSA + <b style="color:var(--gold)">Habilidad (rapidez por proceso — cronómetro)</b> → nivel L por puntaje total')}</div></div></div>
         <div class="crit-step"><div class="crit-num">3</div><div><b>${T('재평가','Reevaluación')}</b><div style="font-size:.78rem;color:var(--text2)">${T('불합격·등급 하락자 · 1개월 내 · 정기평가와 같은 배점, 미달 항목 재평가 결과로 대체','Reprobados / baja de nivel · en 1 mes · mismo peso que la periódica')}</div></div></div>
       </div>
     </div>
@@ -690,21 +691,22 @@ function renderCriteria(){
         <span>${T('과락 · 이론','Mínimo · Teoría')}</span>${mp('theory')}
         <span>${T('과락 · 작업수행','Mínimo · Desempeño')}</span>${mp('perf')}
         <span>${T('과락 · MSA(압착고+불량판별)','Mínimo · MSA')}</span>${mp('msa')}
-        <span>${T('과락 · 숙련도','Mínimo · Productividad')}</span>${mp('prof')}
+        <span>${T('과락 · 숙련도','Mínimo · Habilidad')}</span>${mp('prof')}
         <span>MSA</span><b>${T('계량형 GR&R 조 결과 Aprobado 필수 (압착고 배점 만점/0점)','Grupo GR&R Aprobado obligatorio (altura: todo o nada)')}</b>
-        <span>${T('숙련도 자료','Datos de productividad')}</span><b>${T(`실적 ${PROFRULE.minDays}일 미만이면 「평가중」(합격 보류)`,`menos de ${PROFRULE.minDays} días → "En evaluación"`)}</b>
+        <span>${T('숙련도 평가','Evaluación de habilidad')}</span><b>${T('초시계 평가 기록이 없으면 「평가중」(합격 보류) · 과락(부적합·누락)·배치기준 미달이면 재평가','Sin registro → "En evaluación" · reprobado o bajo el mínimo → reevaluación')}</b>
       </div>
       <div style="font-size:.74rem;color:var(--text2);margin-top:.6rem">${T('과락 %는 해당 과목 배점 대비 최소 득점률. 예) 이론 30% → 정기평가 이론 배점 20점 중 6점 미만이면 총점과 무관하게 불합격.','El % mínimo se aplica sobre el peso de cada materia.')}</div>
     </div>
-    <div class="card"><div class="card-title">📈 ${T('숙련도(생산성) 산출','Cálculo de productividad')}</div>
+    <div class="card"><div class="card-title">⏱ ${T('숙련도 산출 — 공정별 신속성(총소요시간) 평가','Cálculo de habilidad — rapidez por proceso')}</div>
       <div class="crit-kv" style="margin-bottom:.6rem">
-        <span>${T('지표','Indicador')}</span><b>${T('달성률 = 실적수량 ÷ 목표수량 × 100 (일자별 평균)','Cumplimiento = real ÷ meta × 100 (promedio diario)')}</b>
-        <span>${T('기간','Periodo')}</span><b>${T(`평가일 직전 ${PROFRULE.periodDays}일 · 최소 ${PROFRULE.minDays} 실적일`,`${PROFRULE.periodDays} días antes de la evaluación · mín. ${PROFRULE.minDays} días`)}</b>
-        <span>${T('품질 보정','Ajuste de calidad')}</span><b>${T(`불량 ${PROFRULE.defectCapPpm} ppm 초과 시 달성률 −5%p`,`> ${PROFRULE.defectCapPpm} ppm → −5 puntos`)}</b>
+        <span>${T('측정','Medición')}</span><b>${T('공정(기준표) 선택 → 초시계 ▶ 시작 ~ ■ 완료 → 1회 총소요시간(초) — 항목별 시간은 측정하지 않음','Proceso → cronómetro → tiempo total de 1 ciclo (s)')}</b>
+        <span>${T('지표','Indicador')}</span><b>${T('달성률 = 표준 총소요시간 ÷ 측정시간 × 100','Cumplimiento = estándar ÷ medido × 100')}</b>
+        <span>${T('표준시간','Estándar')}</span><b>${T('엑셀 「작업자 신속성 평가 항목 기준표」 공정별 필수·적용 항목 T/T 합계 — ⑥ 공정별 기준 마스터에서 관리','Suma de T/T por proceso — maestro en ⑥')}</b>
+        <span>${T('과락','Reprobado')}</span><b>${T('부적합품 1개 발생 또는 수행항목 1개 누락 → 과락(0점) · 재평가','1 no conforme o 1 omisión → reprobado · reevaluar')}</b>
+        <span>${T('적용 기록','Registro aplicado')}</span><b>${T('같은 평가구분의 최신 기록, 없으면 응시일 전후 기간 내 최신 기록','Último de la misma ronda, o el más reciente cercano a la fecha')}</b>
       </div>
-      <table class="results-table"><thead><tr><th>${T('달성률','Cumplimiento')}</th><th>${T('배점 대비','% del peso')}</th><th>${T('정기평가 점수','Pts periódica')} (/${wR.prof})</th></tr></thead><tbody>
-        ${bands.map((b,i)=>`<tr><td>${b.min}%${i?` ~ ${bands[i-1].min-0.1}%`:' ↑'}</td><td>${b.pct}%</td><td style="color:var(--gold);font-weight:700">${_r1(wR.prof*b.pct/100)}</td></tr>`).join('')}
-      </tbody></table>
+      ${(typeof SPEED!=='undefined'&&SPEED.loaded)?SPEED.levelsHtml():`<div style="font-size:.76rem;color:var(--text2)">${T('레벨 기준은 ⑥ 숙련도·다기능 → ⚙️ 공정별 기준 마스터','Niveles en ⑥')}</div>`}
+      <div style="font-size:.74rem;color:var(--text2);margin-top:.5rem">${T(`레벨별 배점 대비 % × 정기·재평가 숙련도 배점(${wR.prof}점) = 숙련도 점수. 공정별 전용 기준이 있으면 그 기준을 따릅니다.`,`% del peso × ${wR.prof} pts = puntaje de habilidad`)}</div>
     </div>
   </div>
   <div class="crit-grid">
@@ -728,10 +730,11 @@ function renderCriteria(){
 function _applyJudge(r){const j=judgeLocal(r);r.totalScore=j.total;r.passed=j.passed;return r;}
 // 서버 저장 결과(트리거 계산값)로 메모리 기록 동기화
 function _syncFromSaved(r,res){const x=Array.isArray(res)?res[0]:null;if(!x)return;if(x.total_score!=null)r.totalScore=parseFloat(x.total_score);if(x.passed!=null)r.passed=!!x.passed;
-  if('prof_weighted'in x){r.profWeighted=x.prof_weighted;r.profRaw=x.prof_raw;r.profPct=x.prof_pct;}if(x.track)r.track=x.track;}
+  if('prof_weighted'in x){r.profWeighted=x.prof_weighted;r.profRaw=x.prof_raw;r.profPct=x.prof_pct;}if('prof_level'in x)r.profLevel=x.prof_level;if(x.track)r.track=x.track;}
 function profCellHtml(r){const w=trackW(recTrack(r));if(!(w.prof>0))return'<span style="color:var(--text2)">-</span>';
-  if(r.profWeighted==null)return'<span style="color:var(--orange,#e6a23c);font-size:0.74rem" title="평가일 직전 '+PROFRULE.periodDays+'일 생산실적 '+PROFRULE.minDays+'일 이상 필요">⏳ 자료부족</span>';
-  return`<span style="color:var(--gold);font-weight:700">${_r1(r.profWeighted)}점</span><span style="font-size:0.66rem;color:var(--text2)"> ${r.profRaw!=null?_r1(r.profRaw)+'%':''}</span>`;}
+  if(r.profWeighted==null)return'<span style="color:var(--orange,#e6a23c);font-size:0.74rem" title="⑥ 숙련도·다기능 → ⏱ 숙련도 평가에서 초시계로 공정별 총소요시간을 측정·저장하면 자동 반영">⏳ 숙련도 평가 대기</span>';
+  const lv=r.profLevel?`<span style="font-size:0.68rem;font-weight:800;color:${/과락|미달/.test(r.profLevel)?'var(--red)':'var(--gold)'};border:1px solid currentColor;border-radius:5px;padding:0 .3rem;margin-left:.25rem">${_perfEsc(r.profLevel)}</span>`:'';
+  return`<span style="color:var(--gold);font-weight:700">${_r1(r.profWeighted)}점</span>${lv}<span style="font-size:0.66rem;color:var(--text2)"> ${r.profRaw!=null?_r1(r.profRaw)+'%':''}</span>`;}
 function _applyRoundCfg(cfgObj){
   try{const a=JSON.parse(cfgObj.evalRounds||'[]');if(Array.isArray(a))evalRounds=a;}catch(e){}
   if(cfgObj.activeRound!=null)activeRound=cfgObj.activeRound||'';
@@ -1440,6 +1443,64 @@ textarea{resize:vertical;}
 .grade-criteria-table th{background:var(--surface2);color:var(--sky);font-size:.75rem;text-transform:uppercase;}
 .grade-criteria-table input[type="number"]{width:100px;text-align:center;}
 .grade-criteria-table input[type="color"]{width:50px;height:30px;padding:2px;border-radius:4px;cursor:pointer;}
+/* ⏱ 숙련도(신속성) 평가 — 2026-11-03 */
+.sp-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;align-items:start}
+@media(max-width:980px){.sp-grid{grid-template-columns:1fr}}
+.sp-col{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:1rem 1.1rem}
+.sp-sec{display:flex;align-items:center;gap:.5rem;font-weight:700;font-size:.9rem;margin-bottom:.7rem;color:var(--text)}
+.sp-no{width:22px;height:22px;border-radius:50%;background:var(--gold);color:#0a0a0a;font-size:.72rem;font-weight:800;display:inline-flex;align-items:center;justify-content:center;font-family:var(--mono)}
+.sp-row{display:flex;gap:.6rem;flex-wrap:wrap;margin-bottom:.6rem;align-items:flex-end}
+.sp-row label{margin-bottom:.25rem}
+.sp-chk{display:inline-flex;align-items:center;gap:.4rem;font-size:.82rem;color:var(--text);text-transform:none;letter-spacing:0;font-family:inherit;cursor:pointer;background:var(--surface2);border:1px solid var(--border);border-radius:999px;padding:.35rem .8rem;margin:0}
+.sp-chk input{width:auto;margin:0;accent-color:var(--gold)}
+.sp-chk.on{border-color:var(--red);color:#ff8f8f;background:rgba(224,82,82,.1)}
+.sp-std{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:.7rem .9rem;font-size:.8rem;margin-top:.3rem}
+.sp-std .t{color:var(--gold);font-weight:700;font-size:.86rem;margin-bottom:.3rem}
+.sp-std .kv{display:grid;grid-template-columns:auto 1fr;gap:.2rem .7rem;color:var(--text2)}
+.sp-std .kv b{color:var(--text)}
+.sp-lv{width:100%;border-collapse:collapse;margin-top:.5rem;font-size:.76rem}
+.sp-lv th{color:var(--sky);font-size:.68rem;text-transform:uppercase;letter-spacing:.5px;text-align:left;padding:.3rem .45rem;border-bottom:1px solid var(--border)}
+.sp-lv td{padding:.3rem .45rem;border-bottom:1px solid var(--border);font-variant-numeric:tabular-nums}
+.sp-lv tr.hit td{background:rgba(201,168,76,.12)}
+.sp-prev{margin-top:.6rem;font-size:.78rem;color:var(--text2)}
+.sp-prev b{color:var(--text)}
+.lv-tag{display:inline-block;padding:.12rem .55rem;border-radius:6px;font-weight:800;font-size:.78rem;border:1px solid;font-family:var(--mono)}
+.sw{display:flex;align-items:center;gap:.8rem;flex-wrap:wrap;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:.8rem 1rem;margin-bottom:.8rem}
+.sw-time{font-family:var(--mono);font-size:2.1rem;font-weight:700;color:var(--gold);min-width:150px;text-align:right;letter-spacing:.02em;font-variant-numeric:tabular-nums;line-height:1}
+.sw-time small{font-size:.9rem;color:var(--text2);margin-left:2px}
+.sw.running .sw-time{color:#7fd9a8}.sw.paused .sw-time{color:var(--orange)}
+.sw-btns{display:flex;gap:.45rem;flex-wrap:wrap;margin-left:auto}
+.sw-btn{height:38px;padding:0 14px;border-radius:999px;border:1px solid var(--border);background:#161616;color:var(--text);font-weight:800;font-size:.85rem;cursor:pointer;white-space:nowrap;transition:.15s;font-family:inherit;display:inline-flex;align-items:center;gap:.3rem}
+.sw-btn:disabled{opacity:.35;cursor:default}
+.sw-btn.start{border-color:rgba(76,175,125,.55);color:#7fd9a8;background:rgba(76,175,125,.12)}
+.sw-btn.pause{border-color:rgba(232,122,42,.55);color:var(--orange);background:rgba(232,122,42,.10)}
+.sw-btn.done{border-color:rgba(201,168,76,.7);color:#0a0a0a;background:linear-gradient(180deg,#d9b85c,#c9a84c);box-shadow:0 4px 14px rgba(201,168,76,.25)}
+.sw-btn.reset{width:38px;padding:0;font-size:1rem;justify-content:center}
+.sw-btn:not(:disabled):hover{filter:brightness(1.12)}
+#spSec.sw-filled{box-shadow:0 0 0 2px rgba(201,168,76,.6);background:rgba(201,168,76,.10)}
+.sp-verdict{display:flex;align-items:center;gap:.9rem;flex-wrap:wrap;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:.8rem 1rem;margin-bottom:.7rem;min-height:58px}
+.sp-verdict.ok{border-color:rgba(46,204,122,.5)}.sp-verdict.ng{border-color:rgba(224,82,82,.55)}.sp-verdict.warn{border-color:rgba(232,122,42,.55)}
+.sp-verdict .big{font-size:1.05rem;font-weight:800}
+.sp-verdict .sub{font-size:.78rem;color:var(--text2)}
+.sp-verdict .score{margin-left:auto;text-align:right;font-family:var(--mono)}
+.sp-verdict .score b{color:var(--gold);font-size:1.3rem}
+.sp-items{margin-top:1rem;border:1px solid var(--border);border-radius:8px;padding:.6rem .9rem;background:var(--bg)}
+.sp-items summary{cursor:pointer;font-size:.84rem;font-weight:700}
+.sp-items table{width:100%;border-collapse:collapse;font-size:.76rem}
+.sp-items th{color:var(--sky);font-size:.68rem;text-transform:uppercase;text-align:left;padding:.3rem .5rem;border-bottom:1px solid var(--border)}
+.sp-items td{padding:.28rem .5rem;border-bottom:1px solid var(--border)}
+.sp-items td.n{font-family:var(--mono);text-align:right}
+.sp-std-table input[type=text],.sp-std-table input[type=number],.sp-item-table input{width:100%;padding:.3rem .45rem;font-size:.78rem}
+.sp-std-table input[type=number]{text-align:right;font-family:var(--mono)}
+.sp-std-table td,.sp-item-table td{padding:.35rem .4rem;vertical-align:middle}
+.sp-std-table .mini{padding:.2rem .5rem;font-size:.7rem}
+.sp-hist{width:100%;border-collapse:collapse}
+.sp-hist th{color:var(--sky);font-size:.7rem;text-transform:uppercase;letter-spacing:.5px;text-align:left;padding:.5rem .55rem;border-bottom:1px solid var(--border);background:var(--surface2);white-space:nowrap}
+.sp-hist td{padding:.5rem .55rem;border-bottom:1px solid var(--border);font-size:.78rem;vertical-align:middle}
+.sp-hist td.n{font-family:var(--mono);text-align:right;font-variant-numeric:tabular-nums}
+.sp-hist tr:hover td{background:rgba(255,255,255,.03)}
+.sp-toast{position:fixed;bottom:1.2rem;left:50%;transform:translateX(-50%);background:#1d1d1d;border:1px solid var(--gold);color:var(--text);padding:.6rem 1rem;border-radius:10px;font-size:.82rem;z-index:10000;display:none;max-width:90vw}
+
 
 /* LOGIN */
 
@@ -1583,6 +1644,7 @@ async function sbLoadAll() {
     let [qs, res, stus, pitems, cfgs, grades, fstat] = await Promise.all([
       sbFetch('exam_questions?select=id,text,text_es,opts,opts_es,ans,sort_order,img&order=sort_order.asc,id.asc').catch(()=>null),  /* ✅ id 2차정렬: sort_order 동률이어도 순서가 흔들리지 않음 */
       (async()=>{const _c='id,name,emp_id,team,process,hire_date,date,theory_raw,theory_raw_max,theory_weighted,theory_pct,practical_raw,practical_max,practical_weighted,practical_pct,total_score,correct,passed,timestamp,details,practical_item_scores';
+        try{const x=await sbFetch('exam_results?select='+_c+',eval_round,track,prof_raw,prof_pct,prof_weighted,prof_level,is_dummy&order=created_at.asc');_hasRoundCol=true;_hasTrackCols=true;return x;}catch(e00){}
         try{const x=await sbFetch('exam_results?select='+_c+',eval_round,track,prof_raw,prof_pct,prof_weighted,is_dummy&order=created_at.asc');_hasRoundCol=true;_hasTrackCols=true;return x;}catch(e0){_hasTrackCols=false;}
         try{const x=await sbFetch('exam_results?select='+_c+',eval_round&order=created_at.asc');_hasRoundCol=true;return x;}
         catch(e){if(!/eval_round/.test(e.message||''))return null;_hasRoundCol=false;console.warn('eval_round 컬럼 없음 — qualification_eval_round.sql 실행 필요');
@@ -1646,7 +1708,7 @@ async function sbLoadAll() {
           details:r.details||[], practicalItemScores:r.practical_item_scores||[],
           passed:r.passed, timestamp:r.timestamp, _sbId:r.id,
           evalRound:r.eval_round||'', _thMax0:parseFloat(r.theory_raw_max)||0,
-          track:r.track||null, profRaw:r.prof_raw, profPct:r.prof_pct, profWeighted:r.prof_weighted, isDummy:!!r.is_dummy
+          track:r.track||null, profRaw:r.prof_raw, profPct:r.prof_pct, profWeighted:r.prof_weighted, profLevel:r.prof_level||null, isDummy:!!r.is_dummy
         };
         // ── 정규화 1: 모바일 온라인 응시 결과의 이론 가중점수 보정 ──
         // 일부 레코드는 theoryWeighted에 원점수 퍼센트(0~100)가 저장됨.
@@ -5577,13 +5639,15 @@ document.addEventListener('DOMContentLoaded', renderExamQr);
 <!-- ===== PAGE 6: 숙련도·다기능 ===== -->
 <div id="page-skills" class="page">
   <div class="subtab-nav">
-    <button class="subtab-btn active" onclick="switchSkillsSubtab('grade',this)"><span data-kr="🎖️ 숙련도 등급 결과" data-es="🎖️ Resultados de Nivel">🎖️ 숙련도 등급 결과</span></button>
+    <button class="subtab-btn active" onclick="switchSkillsSubtab('speed',this)"><span data-kr="⏱ 숙련도 평가 (신속성)" data-es="⏱ Evaluación de habilidad">⏱ 숙련도 평가 (신속성)</span></button>
+    <button class="subtab-btn" onclick="switchSkillsSubtab('grade',this)"><span data-kr="🎖️ 숙련도 등급 결과" data-es="🎖️ Resultados de Nivel">🎖️ 숙련도 등급 결과</span></button>
     <button class="subtab-btn" onclick="switchSkillsSubtab('multi',this)"><span data-kr="🔀 다기능 현황" data-es="🔀 Estado Multi-Proceso">🔀 다기능 현황</span></button>
+    <button class="subtab-btn" onclick="switchSkillsSubtab('speedmaster',this)"><span data-kr="⚙️ 공정별 기준 마스터" data-es="⚙️ Maestro por Proceso">⚙️ 공정별 기준 마스터</span></button>
     <button class="subtab-btn" onclick="switchSkillsSubtab('master',this)"><span data-kr="⚙️ 등급 기준 마스터" data-es="⚙️ Maestro de Niveles">⚙️ 등급 기준 마스터</span></button>
   </div>
 
   <!-- 숙련도 등급 결과 -->
-  <div id="skills-sub-grade" style="display: block;">
+  <div id="skills-sub-grade" style="display:none">
     <div class="card">
       <div class="flex-between" style="flex-wrap:wrap;gap:0.6rem">
         <div class="card-title">🎖️ 작업자 숙련도 등급 현황 (공정별)</div>
@@ -5677,6 +5741,157 @@ document.addEventListener('DOMContentLoaded', renderExamQr);
     </div>
   </div>
 
+
+  <!-- ⏱ 숙련도 평가 — 공정별 신속성(총소요시간) · 2026-11-03 (생산실적 기반 숙련도 대체) -->
+  <div id="skills-sub-speed" style="display:none">
+    <div class="card">
+      <div class="flex-between" style="flex-wrap:wrap;gap:.6rem">
+        <div class="card-title gold">⏱ <span data-kr="숙련도 평가 — 공정별 신속성(총소요시간)" data-es="Evaluación de habilidad — rapidez por proceso (tiempo total)">숙련도 평가 — 공정별 신속성(총소요시간)</span></div>
+        <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;font-size:.76rem;color:var(--text2)">
+          <span id="spRoundBadge"></span>
+          <span id="spWeightBadge"></span>
+          <button class="btn btn-secondary btn-sm" onclick="SPEED.load(true)">↻ <span data-kr="새로고침" data-es="Actualizar">새로고침</span></button>
+        </div>
+      </div>
+      <div class="info-box" id="spHint">① <span class="hl">공정(기준표)</span> 선택 → ② <span class="hl">작업자</span> 선택 → ③ <span class="hl">▶ 평가 시작</span> 으로 초시계 작동 → 작업 종료 시 <span class="hl">■ 평가완료</span> → 총소요시간이 입력되고 <b>달성률 · 레벨 · 숙련도 점수</b>가 바로 표시됩니다. 항목별 시간은 측정하지 않고 <b>총소요시간(1회)</b>만 측정합니다. 저장하면 해당 사번의 정기·재평가 결과에 숙련도 점수가 자동 반영됩니다.</div>
+      <div id="spSqlHint" style="display:none" class="info-box"><b style="color:var(--orange)">⚠️ qualification_speed.sql 미실행</b> — Supabase SQL Editor에서 먼저 실행해야 공정별 기준 마스터·평가 저장이 동작합니다. (아래 공정 목록은 엑셀 기준표 기본값을 임시로 표시)</div>
+
+      <div class="sp-grid">
+        <!-- 1) 평가 대상 -->
+        <div class="sp-col">
+          <div class="sp-sec"><span class="sp-no">1</span><span data-kr="평가 대상" data-es="Objetivo de evaluación">평가 대상</span></div>
+          <div class="sp-row">
+            <div style="flex:1 1 100%"><label><span data-kr="공정 (기준표)" data-es="Proceso (hoja)">공정 (기준표)</span></label><select id="spStd" onchange="SPEED.onStd()"></select></div>
+          </div>
+          <div class="sp-row">
+            <div style="flex:1 1 160px"><label><span data-kr="작업자 검색" data-es="Buscar operador">작업자 검색</span></label><input type="text" id="spEmpQ" placeholder="사번 / 이름" oninput="SPEED.renderEmpSelect()"></div>
+            <div style="flex:2 1 220px"><label><span data-kr="작업자" data-es="Operador">작업자</span> <span id="spEmpCnt" style="color:var(--text2)"></span></label><select id="spEmp" onchange="SPEED.onEmp()"></select></div>
+          </div>
+          <div class="sp-row">
+            <label class="sp-chk" style="margin:0"><input type="checkbox" id="spEmpAll" onchange="SPEED.renderEmpSelect()"> <span data-kr="전체 인원 보기 (공정 매칭 무시)" data-es="Ver todo el personal">전체 인원 보기 (공정 매칭 무시)</span></label>
+          </div>
+          <div class="sp-row">
+            <div style="flex:1 1 130px"><label><span data-kr="평가일" data-es="Fecha">평가일</span></label><input type="date" id="spDate"></div>
+            <div style="flex:2 1 200px"><label><span data-kr="평가구분" data-es="Ronda">평가구분</span></label><select id="spRound"></select></div>
+            <div style="flex:1 1 140px"><label><span data-kr="평가자" data-es="Evaluador">평가자</span></label><input type="text" id="spEvaluator" placeholder="성명"></div>
+          </div>
+          <div class="sp-std" id="spStdInfo"></div>
+          <div class="sp-prev" id="spPrev"></div>
+        </div>
+
+        <!-- 2) 측정 · 3) 결과 -->
+        <div class="sp-col">
+          <div class="sp-sec"><span class="sp-no">2</span><span data-kr="총소요시간 측정 (초시계)" data-es="Medición del tiempo total (cronómetro)">총소요시간 측정 (초시계)</span></div>
+          <div class="sw" id="spSw">
+            <span class="sw-time" id="spSwTime">0.0<small>s</small></span>
+            <div class="sw-btns">
+              <button class="sw-btn start" id="spSwStart" type="button" onclick="SPEED.swStart()">▶ <span data-kr="평가 시작" data-es="Iniciar">평가 시작</span></button>
+              <button class="sw-btn pause" id="spSwPause" type="button" onclick="SPEED.swPause()" disabled>⏸ <span data-kr="일시정지" data-es="Pausa">일시정지</span></button>
+              <button class="sw-btn done" id="spSwDone" type="button" onclick="SPEED.swDone()" disabled>■ <span data-kr="평가완료" data-es="Terminar">평가완료</span></button>
+              <button class="sw-btn reset" id="spSwReset" type="button" onclick="SPEED.swReset(true)" title="0으로" disabled>↺</button>
+            </div>
+          </div>
+          <div class="sp-row" style="align-items:flex-end">
+            <div style="flex:0 0 150px"><label><span data-kr="작업시간(초)" data-es="Tiempo (s)">작업시간(초)</span></label><input type="number" id="spSec" min="0" step="0.1" placeholder="0.0" oninput="SPEED.calc()"></div>
+            <div style="flex:1 1 160px"><label><span data-kr="표준시간(초)" data-es="Tiempo estándar (s)">표준시간(초)</span></label><input type="text" id="spStdTime" readonly></div>
+            <div style="flex:1 1 120px"><label><span data-kr="달성률" data-es="Cumplimiento">달성률</span></label><input type="text" id="spEff" readonly></div>
+          </div>
+
+          <div class="sp-sec" style="margin-top:1rem"><span class="sp-no">3</span><span data-kr="레벨 판정 · 숙련도 점수" data-es="Nivel · puntaje de habilidad">레벨 판정 · 숙련도 점수</span></div>
+          <div class="sp-verdict" id="spVerdict"><span class="big" style="color:var(--text2)">작업시간을 측정하면 레벨이 자동 판정됩니다</span></div>
+          <div class="sp-row">
+            <label class="sp-chk" id="spDefectW"><input type="checkbox" id="spDefect" onchange="SPEED.calc()"> <span data-kr="부적합품 발생" data-es="Producto no conforme">부적합품 발생</span></label>
+            <label class="sp-chk" id="spOmitW"><input type="checkbox" id="spOmit" onchange="SPEED.calc()"> <span data-kr="수행항목 누락" data-es="Ítem omitido">수행항목 누락</span></label>
+          </div>
+          <div style="font-size:.74rem;color:var(--text2);margin:-.2rem 0 .6rem">① 부적합품 1개 발생 시 — 과락으로 재평가 &nbsp; ② 수행항목 1개 누락 시 — 과락으로 재평가</div>
+          <div class="sp-row"><div style="flex:1 1 100%"><label><span data-kr="평가 의견" data-es="Observaciones">평가 의견</span></label><textarea id="spOpinion" rows="2" placeholder="실행항목 누락 / 부적합 발생 유무 등"></textarea></div></div>
+          <div class="sp-row" style="justify-content:flex-end;gap:.6rem">
+            <button class="btn btn-secondary" onclick="SPEED.clearForm()"><span data-kr="초기화" data-es="Limpiar">초기화</span></button>
+            <button class="btn btn-gold" id="spSaveBtn" onclick="SPEED.save()">💾 <span data-kr="평가 저장" data-es="Guardar evaluación">평가 저장</span></button>
+          </div>
+        </div>
+      </div>
+
+      <details class="sp-items" id="spItemsBox">
+        <summary>📋 <span data-kr="필수 수행항목 체크리스트" data-es="Lista de ítems requeridos">필수 수행항목 체크리스트</span> <span id="spItemsCnt" style="color:var(--text2)"></span> <span style="color:var(--text2);font-weight:400;margin-left:.4rem">— 누락 확인용 (항목별 시간은 측정하지 않음)</span></summary>
+        <div id="spItemsTable" style="margin-top:.6rem"></div>
+      </details>
+    </div>
+
+    <div class="card">
+      <div class="flex-between" style="flex-wrap:wrap;gap:.6rem">
+        <div class="card-title">🗂 <span data-kr="숙련도 평가 이력" data-es="Historial de evaluaciones">숙련도 평가 이력</span> <span id="spHistCnt" style="font-size:.72rem;color:var(--text2);font-weight:400"></span></div>
+        <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
+          <input type="text" id="spHistQ" placeholder="이름 또는 사번 검색..." oninput="SPEED.renderHist()" style="width:180px;font-size:.8rem;padding:.3rem .65rem">
+          <select id="spHistStd" onchange="SPEED.renderHist()" style="width:auto;font-size:.8rem;padding:.3rem .6rem"><option value="">전체 공정</option></select>
+          <select id="spHistRound" onchange="SPEED.renderHist()" style="width:auto;font-size:.8rem;padding:.3rem .6rem"><option value="">전체 평가구분</option></select>
+          <button class="btn btn-secondary btn-sm" onclick="SPEED.exportHist()">📊 <span data-kr="엑셀 저장" data-es="Excel">엑셀 저장</span></button>
+        </div>
+      </div>
+      <div id="spHistTable"><div class="empty-state"><div class="empty-icon">⏱</div>평가 기록이 없습니다</div></div>
+    </div>
+  </div>
+
+  <!-- ⚙️ 공정별 평가 기준 마스터 -->
+  <div id="skills-sub-speedmaster" style="display:none">
+    <div class="card">
+      <div class="flex-between" style="flex-wrap:wrap;gap:.6rem">
+        <div class="card-title gold">⚙️ <span data-kr="공정별 평가 기준 마스터 (표준 총소요시간)" data-es="Maestro de criterios por proceso (tiempo estándar)">공정별 평가 기준 마스터 (표준 총소요시간)</span></div>
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+          <button class="btn btn-secondary btn-sm" onclick="SPEED.addStd()">＋ <span data-kr="공정 추가" data-es="Agregar proceso">공정 추가</span></button>
+          <button class="btn btn-secondary btn-sm" onclick="SPEED.seedDefaults()" title="엑셀 「작업자 신속성 평가 항목 기준표」 24공정 기본값으로 채움 (같은 이름은 덮어씀)">📥 <span data-kr="엑셀 기준표 기본값 불러오기" data-es="Cargar valores de Excel">엑셀 기준표 기본값 불러오기</span></button>
+          <button class="btn btn-primary btn-sm" onclick="SPEED.saveStd()">💾 <span data-kr="저장" data-es="Guardar">저장</span></button>
+        </div>
+      </div>
+      <div class="info-box"><span class="hl">표준시간</span> = 엑셀 「작업자 신속성 평가 항목 기준표」의 필수(○)·적용(△) 항목 T/T 합계(초, 1회 기준). 달성률 = 표준시간 ÷ 측정시간 × 100 → 아래 <span class="hl">레벨 부여 기준</span>으로 L1~L5 판정, 숙련도 점수 = 정기·재평가 숙련도 배점 × 배점 대비 %. <span class="hl">매칭 키워드</span>는 작업자의 배치 공정명과 비교해 평가 화면에서 기준표를 자동 추천합니다(쉼표 구분). 「항목」 버튼으로 필수 수행항목·공정별 별도 레벨 기준을 편집합니다.</div>
+      <div style="overflow-x:auto"><table class="grade-criteria-table sp-std-table" id="spStdTable"><thead><tr>
+        <th style="width:46px">No</th><th><span data-kr="공정 (기준표)" data-es="Proceso">공정 (기준표)</span></th><th>Español</th><th style="width:110px"><span data-kr="표준시간(초)" data-es="Estándar (s)">표준시간(초)</span></th><th><span data-kr="평가 조건" data-es="Condición">평가 조건</span></th><th style="width:90px"><span data-kr="수행항목" data-es="Ítems">수행항목</span></th><th><span data-kr="매칭 키워드" data-es="Palabras clave">매칭 키워드</span></th><th style="width:70px"><span data-kr="레벨기준" data-es="Niveles">레벨기준</span></th><th style="width:50px"><span data-kr="사용" data-es="Uso">사용</span></th><th style="width:40px"></th>
+      </tr></thead><tbody id="spStdBody"></tbody></table></div>
+      <div id="spStdMsg" style="font-size:.76rem;color:var(--text2);margin-top:.5rem"></div>
+    </div>
+
+    <div class="card">
+      <div class="flex-between" style="flex-wrap:wrap;gap:.6rem">
+        <div class="card-title gold">🎖️ <span data-kr="레벨 부여 기준 (공통) — 달성률 → 레벨 → 배점 대비 %" data-es="Criterios de nivel (común)">레벨 부여 기준 (공통) — 달성률 → 레벨 → 배점 대비 %</span></div>
+        <div style="display:flex;gap:.5rem">
+          <button class="btn btn-secondary btn-sm" onclick="SPEED.addLevel()">＋ <span data-kr="레벨 추가" data-es="Agregar nivel">레벨 추가</span></button>
+          <button class="btn btn-primary btn-sm" onclick="SPEED.saveLevels()">💾 <span data-kr="저장" data-es="Guardar">저장</span></button>
+        </div>
+      </div>
+      <div class="info-box">엑셀 기준: L1 115%↑ · L2 100%↑ · L3 89%↑ · L4 80%↑ · L5 72%↑ · 72% 미만 = 신입사원 배치 가능기준 미만(미달). 달성률이 높은 레벨부터 순서대로 적용되며, <span class="hl">미달</span>로 표시한 행은 합격 보류(재평가) 처리됩니다. 공정별로 다른 기준이 필요하면 위 마스터의 「항목」에서 공정 전용 기준을 켤 수 있습니다.</div>
+      <table class="grade-criteria-table" id="spLevelTable"><thead><tr>
+        <th><span data-kr="레벨" data-es="Nivel">레벨</span></th><th><span data-kr="달성률 이상 (%)" data-es="Cumplimiento ≥ (%)">달성률 이상 (%)</span></th><th><span data-kr="배점 대비 (%)" data-es="% del peso">배점 대비 (%)</span></th><th><span data-kr="숙련도 점수" data-es="Puntaje">숙련도 점수</span> <span id="spLvW" style="color:var(--text2);font-weight:400"></span></th><th><span data-kr="미달(재평가)" data-es="Reprobado">미달(재평가)</span></th><th><span data-kr="색상" data-es="Color">색상</span></th><th></th>
+      </tr></thead><tbody id="spLevelBody"></tbody></table>
+      <div id="spLevelMsg" style="font-size:.76rem;color:var(--text2);margin-top:.5rem"></div>
+    </div>
+  </div>
+
+  <!-- 항목 편집 모달 -->
+  <div class="modal-bg" id="spItemModal">
+    <div class="modal" style="max-width:900px">
+      <button class="modal-close" onclick="SPEED.closeItems()">✕</button>
+      <div class="modal-title" id="spItemTitle">수행항목 편집</div>
+      <div class="info-box">엑셀 기준표의 적용항목(필수 ○ / 적용 △)과 T/T(초)를 그대로 옮긴 목록입니다. 평가 화면에서는 누락 확인용 체크리스트로만 쓰이고, 표준시간은 아래 합계 또는 직접 입력값을 사용합니다.</div>
+      <div style="overflow-x:auto"><table class="grade-criteria-table sp-item-table"><thead><tr><th style="width:50px">No</th><th><span data-kr="구분" data-es="Grupo">구분</span></th><th><span data-kr="항목" data-es="Ítem">항목</span></th><th style="width:90px"><span data-kr="단위" data-es="Unidad">단위</span></th><th style="width:100px"><span data-kr="적용기준" data-es="Base">적용기준</span></th><th style="width:90px">T/T(초)</th><th style="width:70px"><span data-kr="구분" data-es="Tipo">종류</span></th><th style="width:36px"></th></tr></thead><tbody id="spItemBody"></tbody></table></div>
+      <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;margin-top:.6rem">
+        <button class="btn btn-secondary btn-sm" onclick="SPEED.addItemRow()">＋ <span data-kr="항목 추가" data-es="Agregar ítem">항목 추가</span></button>
+        <span style="font-size:.78rem;color:var(--text2)">T/T 합계 <b id="spItemSum" style="color:var(--gold)">0</b>초</span>
+        <button class="btn btn-teal btn-sm" onclick="SPEED.itemSumToStd()">Σ <span data-kr="합계를 표준시간으로" data-es="Suma → estándar">합계를 표준시간으로</span></button>
+      </div>
+      <hr style="border:none;border-top:1px solid var(--border);margin:1rem 0">
+      <label class="sp-chk"><input type="checkbox" id="spOwnLv" onchange="SPEED.toggleOwnLv()"> <span data-kr="이 공정 전용 레벨 기준 사용 (끄면 공통 기준)" data-es="Usar criterios propios de este proceso">이 공정 전용 레벨 기준 사용 (끄면 공통 기준)</span></label>
+      <div id="spOwnLvBox" style="display:none;margin-top:.5rem">
+        <table class="grade-criteria-table"><thead><tr><th>레벨</th><th>달성률 이상 (%)</th><th>배점 대비 (%)</th><th>미달</th><th></th></tr></thead><tbody id="spOwnLvBody"></tbody></table>
+        <button class="btn btn-secondary btn-sm" style="margin-top:.4rem" onclick="SPEED.addOwnLv()">＋ 레벨 추가</button>
+      </div>
+      <div style="display:flex;justify-content:flex-end;gap:.6rem;margin-top:1rem">
+        <button class="btn btn-secondary" onclick="SPEED.closeItems()"><span data-kr="닫기" data-es="Cerrar">닫기</span></button>
+        <button class="btn btn-primary" onclick="SPEED.applyItems()"><span data-kr="적용 (마스터 저장 필요)" data-es="Aplicar">적용 (마스터 저장 필요)</span></button>
+      </div>
+    </div>
+  </div>
+  <div class="sp-toast" id="spToast"></div>
+
   <!-- 등급 기준 마스터 -->
   <div id="skills-sub-master" style="display:none">
     <div class="card">
@@ -5717,7 +5932,7 @@ document.addEventListener('DOMContentLoaded', renderExamQr);
 <div class="tabs"><button class="btn sm" onclick="QA.loadAll(true)">↻ 새로고침</button><span class="muted" id="syncMsg" style="align-self:center"></span>
   <div class="tab on" data-t="diag" onclick="QA.go('diag')">① 데이터 점검</div>
   <div class="tab" data-t="weights" onclick="QA.go('weights')">② 배점·판정 설계</div>
-  <div class="tab" data-t="prof" onclick="QA.go('prof')">③ 숙련도(생산성) 데이터</div>
+  <div class="tab" data-t="prof" onclick="QA.go('prof')">③ 숙련도(신속성) 평가 데이터</div>
   <div class="tab" data-t="dummy" onclick="QA.go('dummy')">④ 임의데이터 생성·적용</div>
   <div class="tab" data-t="sim" onclick="QA.go('sim')">⑤ 숙련도 반영 시뮬레이션</div><span class="muted" style="align-self:center">여기서 저장한 기준은 ⑦ 평가기준 탭에 바로 표시됩니다</span>
 </div>
@@ -5764,29 +5979,24 @@ document.addEventListener('DOMContentLoaded', renderExamQr);
     </div>
     <div class="muted" style="margin-top:.5rem">0 = 미적용. 예) 이론 50 → 이론 배점 30점 중 15점 미만이면 총점과 무관하게 불합격.</div>
   </div>
-  <div class="card"><h3>📈 숙련도 환산 구간표 (달성률 % → 배점의 %)</h3>
-    <table><thead><tr><th>달성률 이상</th><th>배점 대비 %</th><th></th></tr></thead><tbody id="bandBody"></tbody></table>
-    <div class="row" style="margin-top:.5rem"><button class="btn sm" onclick="QA.addBand()">＋ 구간 추가</button>
-      <div><label class="f">최소 실적일수</label><input type="number" id="prMinDays" min="1"></div>
-      <div><label class="f">평가기간(일)</label><input type="number" id="prPeriod" min="7"></div>
-      <div><label class="f">불량 상한 ppm</label><input type="number" id="prCap" min="0"></div>
-    </div>
-    <div class="muted" style="margin-top:.4rem">실적일수 미달 → 숙련도 「평가중」. 불량 상한 초과 → 달성률 −5%p 후 환산.</div>
+  <div class="card"><h3>⏱ 숙련도 = 공정별 신속성(총소요시간) 평가</h3>
+    <div class="note">숙련도 점수는 <b>⑥ 숙련도·다기능 → ⏱ 숙련도 평가</b>에서 초시계로 측정한 1회 총소요시간 → 달성률(표준÷측정) → 레벨(L1~L5·미달) → 위 정기·재평가 <b>숙련도 배점 × 배점 대비 %</b>로 산출됩니다. 공정별 표준시간·수행항목·레벨 기준은 <b>⚙️ 공정별 기준 마스터</b>에서 관리합니다. (생산실적 기반 환산 구간표는 더 이상 사용하지 않음)</div>
+    <div class="row" style="margin-top:.6rem"><button class="btn sm" onclick="QA.goSpeed()">⏱ 숙련도 평가 탭으로</button><button class="btn sm" onclick="QA.goSpeedMaster()">⚙️ 공정별 기준 마스터로</button></div>
+    <div style="display:none"><table><tbody id="bandBody"></tbody></table><input type="number" id="prMinDays"><input type="number" id="prPeriod"><input type="number" id="prCap"></div>
   </div>
   <div class="card"><h3>🔐 관리자 비밀번호</h3><div class="row"><div><label class="f">새 비밀번호(4~12자)</label><input id="newPin" type="password" maxlength="12" autocomplete="new-password"></div><button class="btn sm" onclick="QA.savePin()">변경</button></div><div class="muted" style="margin-top:.4rem">SHA-256 해시로 저장됩니다. 관리자 탭은 페이지를 열 때마다 입력해야 합니다.</div></div>
   </div>
   <div class="row" style="margin-top:.4rem"><button class="btn gold" onclick="QA.saveWeights()">💾 배점·판정 설정 저장</button><span class="muted" id="wMsg"></span></div>
 </section>
 
-<!-- ───────── ③ 숙련도 데이터 ───────── -->
+<!-- ───────── ③ 숙련도(신속성) 평가 데이터 ───────── -->
 <section class="panel" id="p-prof">
-  <div class="card"><h3>📋 생산실적 붙여넣기 (엑셀 → 탭 구분)</h3>
-    <div class="note">열 순서: <b>사번 · 일자(YYYY-MM-DD) · 공정 · 목표수량 · 실적수량 · 작업시간(h) · 불량수</b> (머리글 포함해도 됨, 공정/작업시간/불량수는 비워도 됨). 같은 사번·일자·공정은 덮어씁니다.</div>
-    <textarea id="prodPaste" rows="6" style="margin-top:.5rem;font-family:'Space Mono',monospace;font-size:.72rem" placeholder="M026100865	2026-11-03	자동절단압착공정	6000	5820	8	6"></textarea>
-    <div class="row" style="margin-top:.5rem"><div><label class="f">평가구분(선택)</label><select id="prodRound"></select></div><button class="btn gold" onclick="QA.importProd()">⬆ 등록</button><span class="muted" id="prodMsg"></span></div>
+  <div class="card"><h3>⏱ 숙련도 평가 기록 (공정별 신속성 — 초시계 총소요시간)</h3>
+    <div class="note">기록은 <b>⑥ 숙련도·다기능 → ⏱ 숙련도 평가</b>에서 초시계로 측정해 저장합니다 (관리자 모드에서는 조회·삭제·엑셀만). 저장·삭제 시 해당 사번의 정기·재평가 결과(총점·합격)가 서버에서 자동 재판정됩니다. 공정별 표준시간·레벨 기준은 <b>⚙️ 공정별 기준 마스터</b>.</div>
+    <div class="row" style="margin-top:.5rem"><button class="btn gold" onclick="QA.goSpeed()">⏱ 숙련도 평가 탭으로</button><button class="btn sm" onclick="QA.goSpeedMaster()">⚙️ 공정별 기준 마스터</button><select id="prodRound" style="display:none"></select><span class="muted" id="prodMsg"></span></div>
   </div>
-  <div class="card"><h3>📊 사번별 숙련도 요약 <span class="muted" id="prodCnt"></span></h3>
-    <div class="row" style="margin-bottom:.5rem"><div><label class="f">검색</label><input id="prodQ" placeholder="사번/이름" oninput="QA.renderProd()"></div><div><label class="f">임의데이터</label><select id="prodDummy" onchange="QA.renderProd()"><option value="all">전체</option><option value="real">실데이터만</option><option value="dummy">임의만</option></select></div><button class="btn sm" onclick="QA.exportProd()">⬇ 엑셀</button></div>
+  <div class="card"><h3>📊 평가 기록 <span class="muted" id="prodCnt"></span></h3>
+    <div class="row" style="margin-bottom:.5rem"><div><label class="f">검색</label><input id="prodQ" placeholder="사번/이름/공정" oninput="QA.renderProd()"></div><div><label class="f">임의데이터</label><select id="prodDummy" onchange="QA.renderProd()"><option value="all">전체</option><option value="real">실데이터만</option><option value="dummy">임의만</option></select></div><button class="btn sm" onclick="QA.exportProd()">⬇ 엑셀</button></div>
     <div class="scroll" id="prodTable"><div class="muted">-</div></div>
   </div>
 </section>
@@ -5812,12 +6022,12 @@ document.addEventListener('DOMContentLoaded', renderExamQr);
       <div><label class="f">작업수행 합격 (≥60%)</label><input type="number" id="tPerf" min="0"></div>
       <div><label class="f">압착고 GR&R 합격</label><input type="number" id="tCrimp" min="0"><div class="muted">3인 1조 → 조 단위로 반올림</div></div>
       <div><label class="f">불량판별 합격</label><input type="number" id="tDefect" min="0"></div>
-      <div id="tProfBox"><label class="f">숙련도 달성률 100%↑</label><input type="number" id="tProfHi" min="0"><label class="f" style="margin-top:.3rem">달성률 80% 미만</label><input type="number" id="tProfLo" min="0"></div>
+      <div id="tProfBox"><label class="f">숙련도 L1~L2 (달성률 100%↑)</label><input type="number" id="tProfHi" min="0"><label class="f" style="margin-top:.3rem">미달 (달성률 72% 미만)</label><input type="number" id="tProfLo" min="0"></div>
     </div>
     <div class="row" style="margin-top:.6rem">
       <div><label class="f">최종합격 목표 (비우면 자동)</label><input type="number" id="tFinal" min="0" placeholder="자동"></div>
-      <div><label class="f">숙련도 실적일수</label><input type="number" id="dProdDays" value="20" min="0" max="31"></div>
-      <label class="chip" style="align-self:center"><input type="checkbox" id="dGenProd" checked style="width:auto"> 생산실적 생성</label>
+      <input type="hidden" id="dProdDays" value="1">
+      <label class="chip" style="align-self:center"><input type="checkbox" id="dGenProd" checked style="width:auto"> 숙련도(신속성) 평가 기록 생성</label>
       <label class="chip" style="align-self:center"><input type="checkbox" id="dGenMsa" checked style="width:auto"> MSA 세션·측정값 생성</label>
     </div>
     <div class="row" style="margin-top:.7rem"><button class="btn" onclick="QA.dPreview()">👁 미리보기</button><button class="btn gold" id="dApplyBtn" onclick="QA.dApply()" disabled>⬆ Supabase 적용</button><button class="btn red" onclick="QA.dPurge()">🗑 임의데이터 전체 삭제</button><span class="muted" id="dMsg"></span></div>
@@ -5833,7 +6043,7 @@ document.addEventListener('DOMContentLoaded', renderExamQr);
     <div class="row">
       <div style="min-width:260px"><label class="f">평가구분</label><select id="sRound" onchange="QA.renderSim()"></select></div>
       <div><label class="f">적용 배점</label><select id="sTrack" onchange="QA.renderSim()"><option value="auto">회차 종류 자동</option><option value="new">신입(new)</option><option value="regular">정기(regular)</option></select></div>
-      <div><label class="f">숙련도 기간 시작</label><input type="date" id="sFrom" onchange="QA.renderSim()"></div>
+      <div><label class="f">숙련도 평가 기간 시작</label><input type="date" id="sFrom" onchange="QA.renderSim()"></div>
       <div><label class="f">종료</label><input type="date" id="sTo" onchange="QA.renderSim()"></div>
       <div><label class="f">임의데이터</label><select id="sDummy" onchange="QA.renderSim()"><option value="all">포함</option><option value="real">실데이터만</option><option value="dummy">임의만</option></select></div>
       <button class="btn sm" onclick="QA.exportSim()">⬇ 엑셀</button>
@@ -5841,7 +6051,7 @@ document.addEventListener('DOMContentLoaded', renderExamQr);
     </div>
     <div class="kpis" id="sKpis" style="margin-top:.7rem"></div>
     <div class="scroll" id="sTable" style="margin-top:.7rem"></div>
-    <div class="note" style="margin-top:.5rem">이론·작업수행·압착고·불량판별은 저장된 득점률(점수/만점)에 선택 배점을 곱해 재환산. 숙련도는 exam_productivity 기간 평균 달성률 → 구간표. 「결과 반영」은 선택 회차의 exam_results를 다시 저장해 서버 판정(숙련도·과락 포함)을 갱신합니다.</div>
+    <div class="note" style="margin-top:.5rem">이론·작업수행·압착고·불량판별은 저장된 득점률(점수/만점)에 선택 배점을 곱해 재환산. 숙련도는 exam_speed_eval(초시계 신속성 평가)의 같은 평가구분 기록 → 없으면 기간 내 최신 기록의 레벨 → 배점 대비 %. 「결과 반영」은 선택 회차의 exam_results를 다시 저장해 서버 판정(숙련도·과락 포함)을 갱신합니다.</div>
   </div>
 </section>
 </div>
@@ -6058,7 +6268,7 @@ function switchTab(tab,btn){
     if(tab==='exam'){try{updateScoreSummary();}catch(e){} try{renderPracticalItemList();}catch(e){}}
     if(tab==='grade'){try{qualTressSync(true).then(()=>{try{renderPracticalCardList();}catch(e){}});}catch(e){} try{refreshManualStudentList();}catch(e){} try{setGradeMode('json');}catch(e){}}
     if(tab==='stats'){try{renderAllStats();}catch(e){}}
-    if(tab==='skills'){try{switchSkillsSubtab('grade',document.querySelector('#page-skills .subtab-btn'));}catch(e){} try{updateSkillProcessFilter();}catch(e){}}
+    if(tab==='skills'){try{switchSkillsSubtab('speed',document.querySelector('#page-skills .subtab-btn'));}catch(e){} try{updateSkillProcessFilter();}catch(e){}}
     if(tab==='criteria'){try{renderCriteria();}catch(e){console.warn(e);}}
     if(tab==='admin'){try{QA.enter();}catch(e){}}
   }catch(e){console.warn('switchTab 오류:',e);}
@@ -6104,9 +6314,12 @@ function switchSkillsSubtab(sub,btn){
   document.getElementById('skills-sub-grade').style.display=sub==='grade'?'block':'none';
   document.getElementById('skills-sub-multi').style.display=sub==='multi'?'block':'none';
   document.getElementById('skills-sub-master').style.display=sub==='master'?'block':'none';
+  document.getElementById('skills-sub-speed').style.display=sub==='speed'?'block':'none';
+  document.getElementById('skills-sub-speedmaster').style.display=sub==='speedmaster'?'block':'none';
   if(sub==='grade'){renderSkillGrades();updateSkillProcessFilter();}
   if(sub==='multi')renderMultiFunction();
   if(sub==='master')renderGradeCriteria();
+  if(sub==='speed'||sub==='speedmaster'){try{if(SPEED.loaded)SPEED.renderAll();else SPEED.load();}catch(e){console.warn(e);}}
 }
 function updateSkillProcessFilter(){
   const sel=document.getElementById('skillFilterProcess');if(!sel)return;
@@ -6227,7 +6440,7 @@ function applyLang(){
   // Re-render dynamic tables to pick up language
   renderStudentTable();
   if(document.getElementById('page-results').classList.contains('active'))renderResults();
-  if(document.getElementById('page-skills').classList.contains('active'))renderSkillGrades();
+  if(document.getElementById('page-skills').classList.contains('active')){renderSkillGrades();try{SPEED.renderAll();}catch(e){}}
   if(document.getElementById('page-stats').classList.contains('active'))renderAllStats();
 }
 
@@ -7358,7 +7571,7 @@ function renderResults(){
       else if(reF)finalCell=`<span style="color:var(--green);font-weight:700;font-size:0.76rem">🔄 <span data-kr="재평가 후 최종합격" data-es="Aprobado tras reeval">재평가 후 최종합격</span></span><span class="rt-sub">재평가 ${reF.date} · ${_perfEsc(roundShort(reF.evalRound))} ${reF.totalScore}점</span>`;
       else{finalCell=fsBadge(fs);if(prevFails.length)finalCell+=`<span class="rt-sub">🔄 1차 ${prevFails.map(f=>shortD(f.date)+' 불합격'+(failReasonText(f)?'('+failReasonText(f).replace('과락: ','')+' 과락)':'')).join(', ')}</span>`;}
       const passCell=ing?ingBadge:(r.passed?`<span style="color:var(--green)">✅ 합격</span> ${grade}${prevFails.length?'<span class="reeval-chip">재평가</span>':''}`:`<span style="color:var(--red)">❌ 불합격</span>`+failWhy(r));
-      const profTxt=_showProf?(trackW(recTrack(r)).prof>0?`<span class="sf">숙련도 <b>${r.profWeighted!=null?r.profWeighted:'-'}</b></span>`:''):'';
+      const profTxt=_showProf?(trackW(recTrack(r)).prof>0?`<span class="sf">숙련도 <b>${r.profWeighted!=null?r.profWeighted:'-'}</b>${r.profLevel?' <span style="color:'+(/과락|미달/.test(r.profLevel)?'var(--red)':'var(--gold)')+';font-size:.68rem;font-weight:800">'+_perfEsc(r.profLevel)+'</span>':''}</span>`:''):'';
       return`<tr class="${role?'row-'+role:''}" style="${isResigned?'opacity:0.55':''}">
         <td class="rt-id"><input type="checkbox" class="row-chk" data-idx="${oi}" onchange="updateSelectedCount()" style="width:auto;cursor:pointer"><span class="rt-no">${i+1}</span></td>
         <td class="rt-wrap rt-name"><span style="font-weight:600">${r.name}</span>${isResigned?' <span style="background:rgba(150,150,150,0.18);color:#9aa4b2;border:1px solid rgba(150,150,150,0.4);border-radius:4px;padding:0.05rem 0.3rem;font-size:0.65rem;font-weight:700;vertical-align:middle">퇴사</span>':''}<span class="rt-sub rt-mono">${r.empId||'-'}</span><span class="rt-line">${procCell(r.process)}</span></td>
@@ -7584,7 +7797,7 @@ function showDetail(idx){
       <span style="color:var(--text2)">|</span><span style="color:var(--text2)">근속: <strong style="color:var(--teal)">${calcTenure(r.hireDate||lookupHireDate(r.empId))}</strong></span>
     </div>
     ${(()=>{try{const hist=results.map((x,j)=>({x,j})).filter(o=>o.x.empId&&String(o.x.empId)===String(r.empId)).sort((a,b)=>new Date(a.x.date||0)-new Date(b.x.date||0));if(hist.length<2)return'';
-      return `<div class="hist-box"><div class="hist-title">🗂 평가 이력 ${hist.length}건 — 1차 불합격 → 재평가 근거</div><table class="results-table hist-table"><thead><tr><th>#</th><th>응시일</th><th>평가구분</th><th>이론</th><th>실습</th><th>숙련도</th><th>총점</th><th>판정</th><th></th></tr></thead><tbody>${hist.map((o,k)=>`<tr class="${o.j===idx?'cur':''}"><td>${k+1}</td><td>${o.x.date}</td><td>${_perfEsc(roundShort(o.x.evalRound))}</td><td>${o.x.theoryWeighted||0}</td><td>${o.x.practicalWeighted||0}</td><td>${o.x.profWeighted!=null?o.x.profWeighted:'-'}</td><td><b>${o.x.totalScore}</b></td><td>${o.x.passed?'<span style="color:var(--green)">✅ 합격</span>':'<span style="color:var(--red)">❌ 불합격</span>'+(failReasonText(o.x)?' <span style="color:var(--text2);font-size:.7rem">'+failReasonText(o.x)+'</span>':'')}</td><td>${o.j===idx?'<span style="font-size:.7rem;color:var(--gold)">◀ 현재</span>':`<button class="btn btn-outline btn-sm" style="padding:.15rem .45rem;font-size:.7rem" onclick="showDetail(${o.j})">보기</button>`}</td></tr>`).join('')}</tbody></table></div>`;}catch(e){return'';}})()}
+      return `<div class="hist-box"><div class="hist-title">🗂 평가 이력 ${hist.length}건 — 1차 불합격 → 재평가 근거</div><table class="results-table hist-table"><thead><tr><th>#</th><th>응시일</th><th>평가구분</th><th>이론</th><th>실습</th><th>숙련도</th><th>총점</th><th>판정</th><th></th></tr></thead><tbody>${hist.map((o,k)=>`<tr class="${o.j===idx?'cur':''}"><td>${k+1}</td><td>${o.x.date}</td><td>${_perfEsc(roundShort(o.x.evalRound))}</td><td>${o.x.theoryWeighted||0}</td><td>${o.x.practicalWeighted||0}</td><td>${o.x.profWeighted!=null?o.x.profWeighted:'-'}${o.x.profLevel?' <span style="font-size:.68rem;color:var(--gold)">'+_perfEsc(o.x.profLevel)+'</span>':''}</td><td><b>${o.x.totalScore}</b></td><td>${o.x.passed?'<span style="color:var(--green)">✅ 합격</span>':'<span style="color:var(--red)">❌ 불합격</span>'+(failReasonText(o.x)?' <span style="color:var(--text2);font-size:.7rem">'+failReasonText(o.x)+'</span>':'')}</td><td>${o.j===idx?'<span style="font-size:.7rem;color:var(--gold)">◀ 현재</span>':`<button class="btn btn-outline btn-sm" style="padding:.15rem .45rem;font-size:.7rem" onclick="showDetail(${o.j})">보기</button>`}</td></tr>`).join('')}</tbody></table></div>`;}catch(e){return'';}})()}
     <div class="score-breakdown" id="detailScoreBreakdown">
       <div class="score-box" style="border:1px solid rgba(74,144,217,0.3)"><div class="score-box-val" style="color:var(--blue)">${r.theoryWeighted||0}</div><div class="score-box-label">이론 점수</div><div class="score-box-sub" style="color:var(--text2)">${r.theoryRaw||0}/${r.theoryRawMax||'-'} 원점수<br>${r.theoryPct||0}% 반영</div></div>
       <div class="score-box" style="border:1px solid rgba(155,126,232,0.3)"><div class="score-box-val" style="color:var(--purple)">${r.practicalWeighted||0}</div><div class="score-box-label">실습 점수</div><div class="score-box-sub" style="color:var(--text2)">${r.practicalRaw||0}/${r.practicalMax||'-'} 원점수<br>${r.practicalPct||0}% 반영</div></div>
@@ -8371,7 +8584,7 @@ function renderSkillGrades(){
       const cls=r.totalScore>=80?'score-high':r.totalScore>=60?'score-mid':'score-low';
       const ing=_isEvalIng(r), miss=ing?_evalMiss(r):null, dash='<span style="color:var(--text2)">-</span>';
       const role=roleOf(p);
-      const profTxt=_showProfS?(trackW(recTrack(r)).prof>0?`<span>·</span><span class="sf">숙련도 <b>${r.profWeighted!=null?r.profWeighted:'-'}</b></span>`:''):'';
+      const profTxt=_showProfS?(trackW(recTrack(r)).prof>0?`<span>·</span><span class="sf">숙련도 <b>${r.profWeighted!=null?r.profWeighted:'-'}</b>${r.profLevel?' <span style="color:'+(/과락|미달/.test(r.profLevel)?'var(--red)':'var(--gold)')+';font-size:.68rem;font-weight:800">'+_perfEsc(r.profLevel)+'</span>':''}</span>`:''):'';
       const isRe=/^RE-/.test(r.evalRound||'');
       const fsx=(typeof finalStatusMap!=='undefined'&&finalStatusMap)?finalStatusMap[r._sbId]:null;const isResigned=!!(fsx&&fsx.resigned);
       return`<tr class="${role?'row-'+role:''}" style="${isResigned?'opacity:0.55':''}">
@@ -9415,6 +9628,326 @@ showApp();
 
 
 <div id="_saveToast" style="position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: rgb(26, 138, 124); color: rgb(255, 255, 255); padding: 0.6rem 1.4rem; border-radius: 8px; font-size: 0.88rem; font-weight: 700; z-index: 99999; box-shadow: rgba(0, 0, 0, 0.4) 0px 4px 16px; transition: opacity 0.4s; opacity: 0;">✅ 저장 완료 — 응시자 5명</div><div id="ghImgPicker" style="display:none;position:fixed;inset:0;z-index:100000;background:rgba(0,0,0,0.7);align-items:center;justify-content:center;padding:1rem"><div style="background:var(--card,#161b22);border:1px solid var(--border,#30363d);border-radius:12px;max-width:680px;width:100%;max-height:85vh;display:flex;flex-direction:column"><div style="padding:0.8rem 1rem;border-bottom:1px solid var(--border,#30363d);display:flex;align-items:center;gap:0.5rem"><strong style="flex:1">📁 GitHub 이미지 선택</strong><button type="button" onclick="closeGhImgPicker()" style="background:none;border:none;color:#888;font-size:1.3rem;cursor:pointer;font-family:inherit">✕</button></div><div style="padding:0.6rem 1rem;display:flex;gap:0.4rem;align-items:center;border-bottom:1px solid var(--border,#30363d)"><span style="font-size:0.78rem;color:#9aa">폴더</span><input id="ghImgDirInput" style="flex:1;padding:5px 8px;font-size:0.8rem;border-radius:6px;border:1px solid var(--border,#444);background:#0d0d0d;color:#fff;font-family:inherit"><button type="button" onclick="applyGhImgDir()" style="padding:5px 12px;font-size:0.78rem;background:#c9a84c;border:none;color:#fff;border-radius:6px;cursor:pointer;font-family:inherit">조회</button></div><div id="ghImgList" style="padding:0.8rem;overflow-y:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:0.5rem;align-content:start"></div></div></div><script>
+
+// ════ ⏱ SPEED — 숙련도 평가: 공정별 신속성(총소요시간) (2026-11-03) ════
+//  생산실적(exam_productivity) 기반 숙련도를 대체. 엑셀 「작업자 신속성 평가 항목 기준표」의 공정별 표준 총소요시간을 마스터(exam_speed_std)로 두고,
+//  초시계로 1회 총소요시간만 측정 → 달성률(표준÷측정×100) → 레벨(exam_speed_level) → 숙련도 점수(정기 배점×배점대비%).
+//  저장(exam_speed_eval)하면 서버 트리거가 해당 사번의 정기·재평가 exam_results 를 자동 재판정.
+const SPEED_DEFAULTS=[{"sort_no":1,"name":"자동절압착(일반_양단)","name_es":"Corte y crimpado auto (ambos extremos)","cond":"절단본수 50본 · 선재길이 1,000~1,999mm · 양단","cut_qty":50,"wire_len":"1,000~1,999","crimp_info":"양단","std_time":479.85,"items":[{"no":1,"mid":"준비작업","name":"이동전표확인","unit":"1장","basis":"LOT","tt":5.088,"kind":"필수"},{"no":2,"mid":"준비작업","name":"이동전표스캔","unit":"1장","basis":"LOT","tt":3.442,"kind":"필수"},{"no":4,"mid":"장착및교체","name":"금형교체(장착)","unit":"1회","basis":"조건변경","tt":12.42,"kind":"필수"},{"no":7,"mid":"장착및교체","name":"단자교체(장착)","unit":"1회","basis":"조건&소진","tt":33.968,"kind":"필수"},{"no":10,"mid":"장착및교체","name":"전선교체(장착)","unit":"1회","basis":"조건&소진","tt":49.547,"kind":"필수"},{"no":14,"mid":"장착및교체","name":"단자스캔","unit":"1회","basis":"조건변경","tt":13.318,"kind":"필수"},{"no":15,"mid":"장착및교체","name":"전선스캔","unit":"1회","basis":"조건변경","tt":8.829,"kind":"필수"},{"no":17,"mid":"장착및교체","name":"금형스캔","unit":"1회","basis":"조건변경","tt":1.347,"kind":"필수"},{"no":18,"mid":"장착및교체","name":"OK스캔","unit":"1회","basis":"조건변경","tt":1.347,"kind":"필수"},{"no":22,"mid":"테스트/샘플작업","name":"작업조건입력","range":"길이","unit":"1회","basis":"조건변경","tt":3.891,"kind":"필수"},{"no":23,"mid":"테스트/샘플작업","name":"테스트/샘플압착","unit":"1회","basis":"조건변경","tt":6.35,"kind":"필수"},{"no":24,"mid":"테스트/샘플작업","name":"테스트/샘플압착고측정","range":"편단","unit":"1회","basis":"조건변경","tt":14.665,"kind":"필수"},{"no":25,"mid":"테스트/샘플작업","name":"샘플작업조건입력","unit":"1회","basis":"조건변경","tt":19.453,"kind":"필수"},{"no":27,"mid":"테스트/샘플작업","name":"인장력측정","unit":"1회","basis":"조건변경","tt":51.275,"kind":"필수"},{"no":28,"mid":"테스트/샘플작업","name":"샘플압착","range":"편단","unit":"3개","basis":"조건변경","tt":13.4,"kind":"필수"},{"no":42,"mid":"일반","name":"양단","range":"1000~1999","unit":"mm","basis":"회로","tt":137.95,"kind":"적용"},{"no":70,"mid":"자주검사","name":"압착고측정(양단)","range":"1000~1999","unit":"mm","basis":"LOT","tt":21.756,"kind":"적용"},{"no":79,"mid":"자주검사","name":"선재길이검사","range":"1000~1999","unit":"mm","basis":"LOT","tt":13.944,"kind":"적용"},{"no":88,"mid":"자주검사","name":"자주검사","range":"1~50","unit":"1회","basis":"LOT","tt":9.876,"kind":"필수"},{"no":90,"mid":"자주검사","name":"검사결과 POP입력","unit":"1회","basis":"LOT","tt":14.665,"kind":"필수"},{"no":91,"mid":"마무리작업","name":"이동전표날인","unit":"1장","basis":"LOT","tt":3.741,"kind":"필수"},{"no":92,"mid":"마무리작업","name":"끝단정렬","range":"편단","unit":"1회","basis":"LOT","tt":9.876,"kind":"필수"},{"no":93,"mid":"마무리작업","name":"선재사림","range":"1000~1999","unit":"mm","basis":"LOT","tt":4.265,"kind":"적용"},{"no":101,"mid":"마무리작업","name":"이동전표삽입","unit":"1장","basis":"LOT","tt":3.292,"kind":"필수"},{"no":102,"mid":"마무리작업","name":"묶음테이핑","unit":"1Point","basis":"LOT","tt":5.836,"kind":"필수"},{"no":103,"mid":"마무리작업","name":"보호캡적용","unit":"1개","basis":"묶음(편단)","tt":8.38,"kind":"필수"},{"no":104,"mid":"마무리작업","name":"선재적재","unit":"1회","basis":"LOT","tt":7.931,"kind":"필수"}],"match":"자동절단압착공정,자동절단압착,자동절압착"},{"sort_no":2,"name":"자동절압착(씰편단)","name_es":"Corte y crimpado auto (sello un extremo)","cond":"절단본수 50본 · 선재길이 1,000~1,999mm · 씰편단","cut_qty":50,"wire_len":"1,000~1,999","crimp_info":"씰편단","std_time":502,"items":[{"no":1,"mid":"준비작업","name":"이동전표확인","unit":"1장","basis":"LOT","tt":5.088,"kind":"필수"},{"no":2,"mid":"준비작업","name":"이동전표스캔","unit":"1장","basis":"LOT","tt":3.442,"kind":"필수"},{"no":4,"mid":"장착및교체","name":"금형교체(장착)","unit":"1회","basis":"조건변경","tt":12.42,"kind":"필수"},{"no":7,"mid":"장착및교체","name":"단자교체(장착)","unit":"1회","basis":"조건&소진","tt":33.968,"kind":"필수"},{"no":10,"mid":"장착및교체","name":"전선교체(장착)","unit":"1회","basis":"조건&소진","tt":49.547,"kind":"필수"},{"no":14,"mid":"장착및교체","name":"단자스캔","unit":"1회","basis":"조건변경","tt":13.318,"kind":"필수"},{"no":15,"mid":"장착및교체","name":"전선스캔","unit":"1회","basis":"조건변경","tt":8.829,"kind":"필수"},{"no":16,"mid":"장착및교체","name":"씰스캔","unit":"1회","basis":"조건변경","tt":1.347,"kind":"필수"},{"no":17,"mid":"장착및교체","name":"금형스캔","unit":"1회","basis":"조건변경","tt":1.347,"kind":"필수"},{"no":18,"mid":"장착및교체","name":"OK스캔","unit":"1회","basis":"조건변경","tt":1.347,"kind":"필수"},{"no":22,"mid":"테스트/샘플작업","name":"작업조건입력","range":"길이","unit":"1회","basis":"조건변경","tt":3.891,"kind":"필수"},{"no":23,"mid":"테스트/샘플작업","name":"테스트/샘플압착","unit":"1회","basis":"조건변경","tt":6.35,"kind":"필수"},{"no":24,"mid":"테스트/샘플작업","name":"테스트/샘플압착고측정","range":"편단","unit":"1회","basis":"조건변경","tt":14.665,"kind":"필수"},{"no":25,"mid":"테스트/샘플작업","name":"샘플작업조건입력","unit":"1회","basis":"조건변경","tt":19.453,"kind":"필수"},{"no":27,"mid":"테스트/샘플작업","name":"인장력측정","unit":"1회","basis":"조건변경","tt":51.275,"kind":"필수"},{"no":28,"mid":"테스트/샘플작업","name":"샘플압착","range":"편단","unit":"3개","basis":"조건변경","tt":13.4,"kind":"필수"},{"no":42,"mid":"일반","name":"편단/양단","range":"1000~1999","unit":"mm","basis":"회로","tt":68.975,"kind":"적용"},{"no":51,"mid":"씰","name":"씰(편단)-단자(편단)","range":"1000~1999","unit":"mm","basis":"회로","tt":89.825,"kind":"적용"},{"no":70,"mid":"자주검사","name":"압착고측정(양단)","range":"1000~1999","unit":"mm","basis":"LOT","tt":21.756,"kind":"적용"},{"no":79,"mid":"자주검사","name":"선재길이검사","range":"1000~1999","unit":"mm","basis":"LOT","tt":13.944,"kind":"적용"},{"no":88,"mid":"자주검사","name":"자주검사","range":"1~50","unit":"1회","basis":"LOT","tt":9.876,"kind":"필수"},{"no":90,"mid":"자주검사","name":"검사결과 POP입력","unit":"1회","basis":"LOT","tt":14.665,"kind":"필수"},{"no":91,"mid":"마무리작업","name":"이동전표날인","unit":"1장","basis":"LOT","tt":3.741,"kind":"필수"},{"no":92,"mid":"마무리작업","name":"끝단정렬","range":"편단","unit":"1회","basis":"LOT","tt":9.876,"kind":"필수"},{"no":93,"mid":"마무리작업","name":"선재사림","range":"1000~1999","unit":"mm","basis":"LOT","tt":4.265,"kind":"적용"},{"no":101,"mid":"마무리작업","name":"이동전표삽입","unit":"1장","basis":"LOT","tt":3.292,"kind":"필수"},{"no":102,"mid":"마무리작업","name":"묶음테이핑","unit":"1Point","basis":"LOT","tt":5.836,"kind":"필수"},{"no":103,"mid":"마무리작업","name":"보호캡적용","unit":"1개","basis":"묶음(편단)","tt":8.38,"kind":"필수"},{"no":104,"mid":"마무리작업","name":"선재적재","unit":"1회","basis":"LOT","tt":7.931,"kind":"필수"}],"match":"자동절단압착공정"},{"sort_no":3,"name":"자동절압착(씰양단)","name_es":"Corte y crimpado auto (sello ambos)","cond":"절단본수 50본 · 선재길이 1,000~1,999mm · 씰양단","cut_qty":50,"wire_len":"1,000~1,999","crimp_info":"씰양단","std_time":522,"items":[{"no":1,"mid":"준비작업","name":"이동전표확인","unit":"1장","basis":"LOT","tt":5.088,"kind":"필수"},{"no":2,"mid":"준비작업","name":"이동전표스캔","unit":"1장","basis":"LOT","tt":3.442,"kind":"필수"},{"no":4,"mid":"장착및교체","name":"금형교체(장착)","unit":"1회","basis":"조건변경","tt":12.42,"kind":"필수"},{"no":7,"mid":"장착및교체","name":"단자교체(장착)","unit":"1회","basis":"조건&소진","tt":33.968,"kind":"필수"},{"no":10,"mid":"장착및교체","name":"전선교체(장착)","unit":"1회","basis":"조건&소진","tt":49.547,"kind":"필수"},{"no":14,"mid":"장착및교체","name":"단자스캔","unit":"1회","basis":"조건변경","tt":13.318,"kind":"필수"},{"no":15,"mid":"장착및교체","name":"전선스캔","unit":"1회","basis":"조건변경","tt":8.829,"kind":"필수"},{"no":16,"mid":"장착및교체","name":"씰스캔","unit":"1회","basis":"조건변경","tt":1.347,"kind":"필수"},{"no":17,"mid":"장착및교체","name":"금형스캔","unit":"1회","basis":"조건변경","tt":1.347,"kind":"필수"},{"no":18,"mid":"장착및교체","name":"OK스캔","unit":"1회","basis":"조건변경","tt":1.347,"kind":"필수"},{"no":22,"mid":"테스트/샘플작업","name":"작업조건입력","range":"길이","unit":"1회","basis":"조건변경","tt":3.891,"kind":"필수"},{"no":23,"mid":"테스트/샘플작업","name":"테스트/샘플압착","unit":"1회","basis":"조건변경","tt":6.35,"kind":"필수"},{"no":24,"mid":"테스트/샘플작업","name":"테스트/샘플압착고측정","range":"편단","unit":"1회","basis":"조건변경","tt":14.665,"kind":"필수"},{"no":25,"mid":"테스트/샘플작업","name":"샘플작업조건입력","unit":"1회","basis":"조건변경","tt":19.453,"kind":"필수"},{"no":27,"mid":"테스트/샘플작업","name":"인장력측정","unit":"1회","basis":"조건변경","tt":51.275,"kind":"필수"},{"no":28,"mid":"테스트/샘플작업","name":"샘플압착","range":"편단","unit":"3개","basis":"조건변경","tt":13.4,"kind":"필수"},{"no":51,"mid":"씰","name":"씰(편단)-단자(편/양단)","range":"1000~1999","unit":"mm","basis":"회로","tt":179.65,"kind":"적용"},{"no":70,"mid":"자주검사","name":"압착고측정(양단)","range":"1000~1999","unit":"mm","basis":"LOT","tt":21.756,"kind":"적용"},{"no":79,"mid":"자주검사","name":"선재길이검사","range":"1000~1999","unit":"mm","basis":"LOT","tt":13.944,"kind":"적용"},{"no":88,"mid":"자주검사","name":"자주검사","range":"1~50","unit":"1회","basis":"LOT","tt":9.876,"kind":"필수"},{"no":90,"mid":"자주검사","name":"검사결과 POP입력","unit":"1회","basis":"LOT","tt":14.665,"kind":"필수"},{"no":91,"mid":"마무리작업","name":"이동전표날인","unit":"1장","basis":"LOT","tt":3.741,"kind":"필수"},{"no":92,"mid":"마무리작업","name":"끝단정렬","range":"편단","unit":"1회","basis":"LOT","tt":9.876,"kind":"필수"},{"no":93,"mid":"마무리작업","name":"선재사림","range":"1000~1999","unit":"mm","basis":"LOT","tt":4.265,"kind":"적용"},{"no":101,"mid":"마무리작업","name":"이동전표삽입","unit":"1장","basis":"LOT","tt":3.292,"kind":"필수"},{"no":102,"mid":"마무리작업","name":"묶음테이핑","unit":"1Point","basis":"LOT","tt":5.836,"kind":"필수"},{"no":103,"mid":"마무리작업","name":"보호캡적용","unit":"1개","basis":"묶음(편단)","tt":8.38,"kind":"필수"},{"no":104,"mid":"마무리작업","name":"선재적재","unit":"1회","basis":"LOT","tt":7.931,"kind":"필수"}],"match":"자동절단압착공정"},{"sort_no":4,"name":"자동절압착(쌍압)","name_es":"Corte y crimpado auto (doble crimp)","cond":"절단본수 50본 · 선재길이 1,000~1,999mm · 쌍압","cut_qty":50,"wire_len":"1,000~1,999","crimp_info":"쌍압","std_time":458,"items":[{"no":1,"mid":"준비작업","name":"이동전표확인","unit":"1장","basis":"LOT","tt":5.088,"kind":"필수"},{"no":2,"mid":"준비작업","name":"이동전표스캔","unit":"1장","basis":"LOT","tt":3.442,"kind":"필수"},{"no":4,"mid":"장착및교체","name":"금형교체(장착)","unit":"1회","basis":"조건변경","tt":12.42,"kind":"필수"},{"no":7,"mid":"장착및교체","name":"단자교체(장착)","unit":"1회","basis":"조건&소진","tt":33.968,"kind":"필수"},{"no":10,"mid":"장착및교체","name":"전선교체(장착)","unit":"1회","basis":"조건&소진","tt":49.547,"kind":"필수"},{"no":14,"mid":"장착및교체","name":"단자스캔","unit":"1회","basis":"조건변경","tt":13.318,"kind":"필수"},{"no":15,"mid":"장착및교체","name":"전선스캔","unit":"1회","basis":"조건변경","tt":8.829,"kind":"필수"},{"no":17,"mid":"장착및교체","name":"금형스캔","unit":"1회","basis":"조건변경","tt":1.347,"kind":"필수"},{"no":18,"mid":"장착및교체","name":"OK스캔","unit":"1회","basis":"조건변경","tt":1.347,"kind":"필수"},{"no":22,"mid":"테스트/샘플작업","name":"작업조건입력","range":"길이","unit":"1회","basis":"조건변경","tt":3.891,"kind":"필수"},{"no":23,"mid":"테스트/샘플작업","name":"테스트/샘플압착","unit":"1회","basis":"조건변경","tt":6.35,"kind":"필수"},{"no":24,"mid":"테스트/샘플작업","name":"테스트/샘플압착고측정","range":"편단","unit":"1회","basis":"조건변경","tt":14.665,"kind":"필수"},{"no":25,"mid":"테스트/샘플작업","name":"샘플작업조건입력","unit":"1회","basis":"조건변경","tt":19.453,"kind":"필수"},{"no":27,"mid":"테스트/샘플작업","name":"인장력측정","unit":"1회","basis":"조건변경","tt":51.275,"kind":"필수"},{"no":28,"mid":"테스트/샘플작업","name":"샘플압착","range":"편단","unit":"3개","basis":"조건변경","tt":13.4,"kind":"필수"},{"no":60,"mid":"쌍압착","name":"쌍압착","range":"1000~1999","unit":"mm","basis":"회로","tt":116.7,"kind":"적용"},{"no":70,"mid":"자주검사","name":"압착고측정(양단)","range":"1000~1999","unit":"mm","basis":"LOT","tt":21.756,"kind":"적용"},{"no":79,"mid":"자주검사","name":"선재길이검사","range":"1000~1999","unit":"mm","basis":"LOT","tt":13.944,"kind":"적용"},{"no":88,"mid":"자주검사","name":"자주검사","range":"1~50","unit":"1회","basis":"LOT","tt":9.876,"kind":"필수"},{"no":90,"mid":"자주검사","name":"검사결과 POP입력","unit":"1회","basis":"LOT","tt":14.665,"kind":"필수"},{"no":91,"mid":"마무리작업","name":"이동전표날인","unit":"1장","basis":"LOT","tt":3.741,"kind":"필수"},{"no":92,"mid":"마무리작업","name":"끝단정렬","range":"편단","unit":"1회","basis":"LOT","tt":9.876,"kind":"필수"},{"no":93,"mid":"마무리작업","name":"선재사림","range":"1000~1999","unit":"mm","basis":"LOT","tt":4.265,"kind":"적용"},{"no":101,"mid":"마무리작업","name":"이동전표삽입","unit":"1장","basis":"LOT","tt":3.292,"kind":"필수"},{"no":102,"mid":"마무리작업","name":"묶음테이핑","unit":"1Point","basis":"LOT","tt":5.836,"kind":"필수"},{"no":103,"mid":"마무리작업","name":"보호캡적용","unit":"1개","basis":"묶음(편단)","tt":8.38,"kind":"필수"},{"no":104,"mid":"마무리작업","name":"선재적재","unit":"1회","basis":"LOT","tt":7.931,"kind":"필수"}],"match":"자동절단압착공정"},{"sort_no":5,"name":"자동절단","name_es":"Corte automático","cond":"절단본수 50본 · 선재길이 1,000~1,999mm · 자동절단","cut_qty":50,"wire_len":"1,000~1,999","crimp_info":"자동절단","std_time":419,"items":[{"no":1,"mid":"준비확인","name":"이동전표확인","unit":"1장","basis":"LOT","tt":5.088,"kind":"필수"},{"no":2,"mid":"준비확인","name":"이동전표스캔","unit":"1장","basis":"LOT","tt":3.442,"kind":"필수"},{"no":5,"mid":"장착및교체","name":"전선교체(장착)","unit":"1회","basis":"조건&소진","tt":22.404,"kind":"필수"},{"no":6,"mid":"장착및교체","name":"전선스캔","unit":"1회","basis":"조건변경","tt":8.829,"kind":"필수"},{"no":9,"mid":"테스트/샘플작업","name":"샘플작업조건입력","unit":"1회","basis":"조건변경","tt":19.453,"kind":"필수"},{"no":10,"mid":"테스트/샘플작업","name":"샘플절단","unit":"1회","basis":"LOT","tt":4.248,"kind":"필수"},{"no":12,"mid":"일반","name":"3.0SQ초과~10.0SQ미만","range":"1000~1999","unit":"mm","basis":"EA","tt":288.6,"kind":"적용"},{"no":26,"mid":"초·종물검사","name":"선재길이검사","range":"1000~1999","unit":"mm","basis":"LOT","tt":13.944,"kind":"적용"},{"no":35,"mid":"마무리검사","name":"자주검사","range":"1~50","unit":"1회","basis":"묶음","tt":9.876,"kind":"필수"},{"no":37,"mid":"마무리검사","name":"이동전표스캔","unit":"1장","basis":"LOT","tt":3.442,"kind":"필수"},{"no":38,"mid":"마무리검사","name":"검사결과기록","unit":"1회","basis":"LOT","tt":9.118,"kind":"필수"},{"no":39,"mid":"마무리검사","name":"이동전표날인","unit":"1장","basis":"묶음","tt":3.741,"kind":"필수"},{"no":40,"mid":"포장 및 적재","name":"이동전표삽입","unit":"1장","basis":"묶음","tt":3.292,"kind":"필수"},{"no":41,"mid":"포장 및 적재","name":"끝단정렬","unit":"1회","basis":"묶음","tt":9.876,"kind":"필수"},{"no":42,"mid":"포장 및 적재","name":"선재사림","range":"1000~1999","unit":"mm","basis":"LOT","tt":4.265,"kind":"적용"},{"no":50,"mid":"포장 및 적재","name":"묶음테이핑","unit":"1Point","basis":"묶음","tt":5.836,"kind":"필수"},{"no":51,"mid":"포장 및 적재","name":"보호캡적용","unit":"1개","basis":"묶음(편단)","tt":4.19,"kind":"필수"}],"match":"자동절단압착공정,자동절단"},{"sort_no":6,"name":"BATT절단","name_es":"Corte BATT","cond":"절단본수 50본 · 선재길이 1,000~1,999mm","cut_qty":50,"wire_len":"1,000~1,999","crimp_info":"","std_time":430,"items":[{"no":1,"mid":"준비작업","name":"이동전표확인","unit":"1장","basis":"LOT","tt":5.088,"kind":"필수"},{"no":2,"mid":"준비작업","name":"이동전표스캔","unit":"1장","basis":"LOT","tt":3.442,"kind":"필수"},{"no":4,"mid":"본작업","name":"10.0SQ초과","unit":"1회","basis":"LOT","tt":389,"kind":"필수"},{"no":6,"mid":"초·종물검사","name":"선재길이검사","range":"1000~1999","unit":"mm","basis":"LOT","tt":13.944,"kind":"적용"},{"no":14,"mid":"마무리검사","name":"이동전표날인","unit":"1장","basis":"묶음","tt":4.248,"kind":"필수"},{"no":15,"mid":"포장및적재","name":"이동전표삽입","unit":"1장","basis":"LOT","tt":3.152,"kind":"필수"},{"no":16,"mid":"포장및적재","name":"묶음테이핑","unit":"1Point","basis":"LOT","tt":5.772,"kind":"필수"},{"no":17,"mid":"포장및적재","name":"선재적재","unit":"1회","basis":"LOT","tt":5.957,"kind":"필수"}],"match":"BATT"},{"sort_no":7,"name":"BATT압착","name_es":"Crimpado BATT","cond":"절단본수 50본 · 선재길이 1,000~1,999mm","cut_qty":50,"wire_len":"1,000~1,999","crimp_info":"","std_time":805,"items":[{"no":1,"mid":"준비확인","name":"선재준비","unit":"1회","basis":"LOT","tt":12.112,"kind":"필수"},{"no":2,"mid":"준비확인","name":"이동전표확인","unit":"1장","basis":"LOT","tt":3.988,"kind":"필수"},{"no":3,"mid":"준비확인","name":"묶음테이핑제거","unit":"1Point","basis":"LOT","tt":5.908,"kind":"필수"},{"no":4,"mid":"본작업","name":"BATT단자","unit":"1장","basis":"LOT","tt":751.5,"kind":"필수"},{"no":5,"mid":"압착고측정","name":"압착고측정","unit":"1회","basis":"조던변셩","tt":13.441,"kind":"필수"},{"no":6,"mid":"포장및적재","name":"이동전표삽입","unit":"1장","basis":"LOT","tt":3.25,"kind":"필수"},{"no":7,"mid":"포장및적재","name":"묶음테이핑","unit":"1Point","basis":"LOT","tt":5.76,"kind":"필수"},{"no":8,"mid":"포장및적재","name":"선재적재","unit":"1회","basis":"LOT","tt":9.896,"kind":"필수"}],"match":"BATT"},{"sort_no":8,"name":"반자동 압착(편단압착)","name_es":"Crimpado semiautomático (un extremo)","cond":"절단본수 50본 · 선재길이 1,000~1,999mm · 편단압착","cut_qty":50,"wire_len":"1,000~1,999","crimp_info":"편단압착","std_time":337,"items":[{"no":1,"mid":"준비확인","name":"선재준비","unit":"1회","basis":"LOT","tt":12.112,"kind":"필수"},{"no":2,"mid":"준비확인","name":"이동전표확인","unit":"1장","basis":"LOT","tt":3.988,"kind":"필수"},{"no":3,"mid":"준비확인","name":"보호캡탈거_편단","unit":"1개","basis":"묶음(편단)","tt":3.545,"kind":"필수"},{"no":5,"mid":"준비확인","name":"묶음테이핑제거","unit":"1Point","basis":"LOT","tt":5.908,"kind":"필수"},{"no":7,"mid":"장착및교체","name":"금형교체(장착)","unit":"1회","basis":"조건변경","tt":3.397,"kind":"필수"},{"no":11,"mid":"장착및교체","name":"단자교체(장착)","unit":"1회","basis":"조건&소진","tt":40.323,"kind":"필수"},{"no":12,"mid":"장착및교체","name":"이동전표스캔","unit":"1장","basis":"LOT","tt":3.397,"kind":"필수"},{"no":13,"mid":"장착및교체","name":"금형스캔","unit":"1회","basis":"조건변경","tt":2.216,"kind":"필수"},{"no":14,"mid":"장착및교체","name":"단자스캔","unit":"1회","basis":"조건변경","tt":7.385,"kind":"필수"},{"no":15,"mid":"장비셋업","name":"압착디스크조정","unit":"1회","basis":"조건변경","tt":5.76,"kind":"필수"},{"no":16,"mid":"테스트/샘플작업","name":"샘플준비 및 스트립","unit":"1회","basis":"조건변경","tt":6.204,"kind":"필수"},{"no":18,"mid":"테스트/샘플작업","name":"샘플압착","unit":"1회","basis":"조건변경","tt":2.376,"kind":"필수"},{"no":19,"mid":"테스트/샘플작업","name":"압착상태검사","unit":"1회","basis":"조건변경","tt":2.511,"kind":"필수"},{"no":20,"mid":"테스트/샘플작업","name":"압착고측정","unit":"1회","basis":"조건변경","tt":13.441,"kind":"필수"},{"no":21,"mid":"테스트/샘플작업","name":"인장력측정","unit":"1회","basis":"조건변경","tt":56.188,"kind":"필수"},{"no":24,"mid":"일반","name":"일반단자","range":"1전선~","unit":"1회","basis":"EA","tt":117.279,"kind":"적용"},{"no":28,"mid":"초·종물검사","name":"압착고측정","unit":"1회","basis":"LOT","tt":13.441,"kind":"필수"},{"no":29,"mid":"마무리검사","name":"자주검사","range":"1~50","unit":"1회","basis":"LOT","tt":9.749,"kind":"필수"},{"no":31,"mid":"마무리검사","name":"작업완료확인체크(POP)","unit":"1회","basis":"LOT","tt":4.874,"kind":"필수"},{"no":32,"mid":"마무리검사","name":"이동전표날인","unit":"1장","basis":"LOT","tt":3.693,"kind":"필수"},{"no":33,"mid":"포장및적재","name":"묶음테이핑","unit":"1Point","basis":"LOT","tt":5.76,"kind":"필수"},{"no":34,"mid":"포장및적재","name":"보호캡적용","unit":"묶음(편단)","basis":"LOT","tt":4.136,"kind":"필수"},{"no":35,"mid":"포장및적재","name":"선재적재","unit":"1회","basis":"LOT","tt":9.896,"kind":"필수"}],"match":"수동압착,반자동압착"},{"sort_no":9,"name":"반자동 압착(쌍압착)","name_es":"Crimpado semiautomático (doble)","cond":"절단본수 50본 · 선재길이 1,000~1,999mm · 쌍압착","cut_qty":50,"wire_len":"1,000~1,999","crimp_info":"쌍압착","std_time":471,"items":[{"no":1,"mid":"준비확인","name":"선재준비","unit":"1회","basis":"LOT","tt":12.112,"kind":"필수"},{"no":2,"mid":"준비확인","name":"이동전표확인","unit":"1장","basis":"LOT","tt":3.988,"kind":"필수"},{"no":3,"mid":"준비확인","name":"보호캡탈거","unit":"1개","basis":"LOT","tt":3.545,"kind":"필수"},{"no":5,"mid":"준비확인","name":"묶음테이핑제거","unit":"1Point","basis":"LOT","tt":5.908,"kind":"필수"},{"no":7,"mid":"장착및교체","name":"금형교체(장착)","unit":"1회","basis":"조건변경","tt":3.397,"kind":"필수"},{"no":11,"mid":"장착및교체","name":"단자교체(장착)","unit":"1회","basis":"조건&소진","tt":40.323,"kind":"필수"},{"no":12,"mid":"장착및교체","name":"이동전표스캔","unit":"1장","basis":"LOT","tt":3.397,"kind":"필수"},{"no":13,"mid":"장착및교체","name":"금형스캔","unit":"1회","basis":"조건변경","tt":2.216,"kind":"필수"},{"no":14,"mid":"장착및교체","name":"단자스캔","unit":"1회","basis":"조건변경","tt":7.385,"kind":"필수"},{"no":15,"mid":"장비셋업","name":"압착디스크조정","unit":"1회","basis":"조건변경","tt":5.76,"kind":"필수"},{"no":16,"mid":"테스트/샘플작업","name":"샘플준비 및 스트립","unit":"1회","basis":"조건변경","tt":6.204,"kind":"필수"},{"no":18,"mid":"테스트/샘플작업","name":"샘플압착","unit":"1회","basis":"조건변경","tt":2.376,"kind":"필수"},{"no":19,"mid":"테스트/샘플작업","name":"압착상태검사","unit":"1회","basis":"조건변경","tt":2.511,"kind":"필수"},{"no":20,"mid":"테스트/샘플작업","name":"압착고측정","unit":"1회","basis":"조건변경","tt":13.441,"kind":"필수"},{"no":21,"mid":"테스트/샘플작업","name":"인장력측정","unit":"1회","basis":"조건변경","tt":56.188,"kind":"필수"},{"no":25,"mid":"일반","name":"일반단자","range":"2전선~","unit":"1회","basis":"EA","tt":250.952,"kind":"적용"},{"no":28,"mid":"초·종물검사","name":"압착고측정","unit":"1회","basis":"LOT","tt":13.441,"kind":"필수"},{"no":29,"mid":"마무리검사","name":"자주검사","range":"1~50","unit":"1회","basis":"LOT","tt":9.749,"kind":"필수"},{"no":31,"mid":"마무리검사","name":"작업완료확인체크(POP)","unit":"1회","basis":"LOT","tt":4.874,"kind":"필수"},{"no":32,"mid":"마무리검사","name":"이동전표날인","unit":"1장","basis":"LOT","tt":3.693,"kind":"필수"},{"no":33,"mid":"포장및적재","name":"묶음테이핑","unit":"1Point","basis":"LOT","tt":5.76,"kind":"필수"},{"no":34,"mid":"포장및적재","name":"보호캡적용_편단)","unit":"1개","basis":"묶음(편단)","tt":4.136,"kind":"필수"},{"no":35,"mid":"포장및적재","name":"선재적재","unit":"1회","basis":"LOT","tt":9.896,"kind":"필수"}],"match":"수동압착,반자동압착"},{"sort_no":10,"name":"반자동 압착(씰압착)","name_es":"Crimpado semiautomático (sello)","cond":"절단본수 50본 · 선재길이 1,000~1,999mm · 씰압착","cut_qty":50,"wire_len":"1,000~1,999","crimp_info":"씰압착","std_time":367,"items":[{"no":1,"mid":"준비확인","name":"선재준비","unit":"1회","basis":"LOT","tt":12.112,"kind":"필수"},{"no":2,"mid":"준비확인","name":"이동전표확인","unit":"1장","basis":"LOT","tt":3.988,"kind":"필수"},{"no":3,"mid":"준비확인","name":"보호캡탈거","unit":"1개","basis":"LOT","tt":3.545,"kind":"필수"},{"no":5,"mid":"준비확인","name":"묶음테이핑제거","unit":"1Point","basis":"LOT","tt":5.908,"kind":"필수"},{"no":7,"mid":"장착및교체","name":"금형교체(장착)","unit":"1회","basis":"조건변경","tt":3.397,"kind":"필수"},{"no":11,"mid":"장착및교체","name":"단자교체(장착)","unit":"1회","basis":"조건&소진","tt":40.323,"kind":"필수"},{"no":12,"mid":"장착및교체","name":"이동전표스캔","unit":"1장","basis":"LOT","tt":3.397,"kind":"필수"},{"no":13,"mid":"장착및교체","name":"금형스캔","unit":"1회","basis":"조건변경","tt":2.216,"kind":"필수"},{"no":14,"mid":"장착및교체","name":"단자스캔","unit":"1회","basis":"조건변경","tt":7.385,"kind":"필수"},{"no":15,"mid":"장비셋업","name":"압착디스크조정","unit":"1회","basis":"조건변경","tt":5.76,"kind":"필수"},{"no":16,"mid":"테스트/샘플작업","name":"샘플준비 및 스트립","unit":"1회","basis":"조건변경","tt":6.204,"kind":"필수"},{"no":18,"mid":"테스트/샘플작업","name":"샘플압착","unit":"1회","basis":"조건변경","tt":2.376,"kind":"필수"},{"no":19,"mid":"테스트/샘플작업","name":"압착상태검사","unit":"1회","basis":"조건변경","tt":2.511,"kind":"필수"},{"no":20,"mid":"테스트/샘플작업","name":"압착고측정","unit":"1회","basis":"조건변경","tt":13.441,"kind":"필수"},{"no":21,"mid":"테스트/샘플작업","name":"인장력측정","unit":"1회","basis":"조건변경","tt":56.188,"kind":"필수"},{"no":27,"mid":"씰","name":"일반단자(2ton)","range":"1전선~","unit":"1회","basis":"EA","tt":146.82,"kind":"적용"},{"no":28,"mid":"초·종물검사","name":"압착고측정","unit":"1회","basis":"LOT","tt":13.441,"kind":"필수"},{"no":29,"mid":"마무리검사","name":"자주검사","range":"1~50","unit":"1회","basis":"LOT","tt":9.749,"kind":"필수"},{"no":31,"mid":"마무리검사","name":"작업완료확인체크(POP)","unit":"1회","basis":"LOT","tt":4.874,"kind":"필수"},{"no":32,"mid":"마무리검사","name":"이동전표날인","unit":"1장","basis":"LOT","tt":3.693,"kind":"필수"},{"no":33,"mid":"포장및적재","name":"묶음테이핑","unit":"1Point","basis":"LOT","tt":5.76,"kind":"필수"},{"no":34,"mid":"포장및적재","name":"보호캡적용_편단)","unit":"1개","basis":"묶음(편단)","tt":4.136,"kind":"필수"},{"no":35,"mid":"포장및적재","name":"선재적재","unit":"1회","basis":"LOT","tt":9.896,"kind":"필수"}],"match":"수동압착,반자동압착"},{"sort_no":11,"name":"차폐선 조인트압착","name_es":"Crimpado joint blindado","cond":"절단본수 50본 · 선재길이 1,000~1,999mm","cut_qty":50,"wire_len":"1,000~1,999","crimp_info":"","std_time":528,"items":[{"no":1,"mid":"준비확인","name":"선재준비","unit":"1회","basis":"묶음","tt":12.112,"kind":"필수"},{"no":2,"mid":"준비확인","name":"이동전표확인","unit":"1장","basis":"LOT","tt":3.102,"kind":"필수"},{"no":3,"mid":"준비확인","name":"이동전표스캔","unit":"1장","basis":"LOT","tt":3.397,"kind":"필수"},{"no":5,"mid":"준비확인","name":"보호캡탈거","unit":"1개","basis":"묶음(편단)","tt":3.545,"kind":"필수"},{"no":6,"mid":"준비확인","name":"묶음테이핑제거","unit":"1Point","basis":"묶음","tt":5.908,"kind":"필수"},{"no":7,"mid":"준비확인","name":"선재정렬(작업전)","unit":"1회","basis":"묶음","tt":10.782,"kind":"필수"},{"no":9,"mid":"장착및교체","name":"금형교체(장착)","unit":"1회","basis":"조건변경","tt":3.397,"kind":"필수"},{"no":11,"mid":"장착및교체","name":"단자교체(장착)","unit":"1회","basis":"조건변경","tt":40.323,"kind":"필수"},{"no":12,"mid":"장착및교체","name":"금형스캔","unit":"1회","basis":"조건변경","tt":2.216,"kind":"필수"},{"no":13,"mid":"장착및교체","name":"단자스캔","unit":"1회","basis":"조건변경","tt":7.385,"kind":"필수"},{"no":16,"mid":"테스트/샘플작업","name":"샘플준비 및 스트립","unit":"1회","basis":"조건변경","tt":6.204,"kind":"필수"},{"no":17,"mid":"테스트/샘플작업","name":"샘플압착 2전선","unit":"1회","basis":"조건변경","tt":6.481,"kind":"필수"},{"no":19,"mid":"테스트/샘플작업","name":"압착상태검사","unit":"1회","basis":"조건변경","tt":2.511,"kind":"필수"},{"no":20,"mid":"테스트/샘플작업","name":"압착고측정","unit":"1회","basis":"조건변경","tt":8.862,"kind":"필수"},{"no":21,"mid":"테스트/샘플작업","name":"인장력측정","unit":"1회","basis":"조건변경","tt":56.188,"kind":"필수"},{"no":22,"mid":"테스트/샘플작업","name":"샘플작업(4EA)","unit":"1회","basis":"조건변경","tt":20.531,"kind":"필수"},{"no":24,"mid":"본작업","name":"2전선","unit":"1회","basis":"EA","tt":301.91,"kind":"필수"},{"no":27,"mid":"마무리검사","name":"자주검사","range":"1~50","unit":"1회","basis":"묶음","tt":9.749,"kind":"필수"},{"no":29,"mid":"마무리검사","name":"이동전표날인","unit":"1장","basis":"묶음","tt":3.693,"kind":"필수"},{"no":30,"mid":"포장및적재","name":"묶음테이핑","unit":"1Point","basis":"묶음","tt":5.76,"kind":"필수"},{"no":31,"mid":"포장및적재","name":"보호캡적용","unit":"1개","basis":"묶음(편단)","tt":4.136,"kind":"필수"},{"no":32,"mid":"포장및적재","name":"선재적재","unit":"1회","basis":"묶음","tt":9.896,"kind":"필수"}],"match":"결속압착(JOINT),조인트"},{"sort_no":12,"name":"일반조인트압착","name_es":"Crimpado joint general","cond":"절단본수 50본 · 선재길이 1,000~1,999mm","cut_qty":50,"wire_len":"1,000~1,999","crimp_info":"","std_time":490,"items":[{"no":1,"mid":"준비확인","name":"선재준비","unit":"1회","basis":"묶음","tt":12.112,"kind":"필수"},{"no":2,"mid":"준비확인","name":"이동전표확인","unit":"1장","basis":"LOT","tt":3.102,"kind":"필수"},{"no":3,"mid":"준비확인","name":"묶음테이핑제거","unit":"1Point","basis":"묶음","tt":5.908,"kind":"필수"},{"no":4,"mid":"준비확인","name":"선재정렬(작업전) 2전선","unit":"1회","basis":"묶음","tt":12.26,"kind":"필수"},{"no":7,"mid":"준비확인","name":"보호캡탈거","unit":"1개","basis":"묶음(편단)","tt":3.545,"kind":"필수"},{"no":9,"mid":"준비확인","name":"이동전표스캔","unit":"1장","basis":"LOT","tt":3.397,"kind":"필수"},{"no":11,"mid":"장착및교체","name":"금형교체(장착)","unit":"1회","basis":"조건변경","tt":3.397,"kind":"필수"},{"no":13,"mid":"장착및교체","name":"단자교체(장착)","unit":"1회","basis":"조건변경","tt":40.323,"kind":"필수"},{"no":14,"mid":"장착및교체","name":"금형스캔","unit":"1회","basis":"조건변경","tt":2.216,"kind":"필수"},{"no":15,"mid":"장착및교체","name":"단자스캔","unit":"1회","basis":"조건변경","tt":7.385,"kind":"필수"},{"no":18,"mid":"테스트/샘플작업","name":"샘플준비 및 스트립","unit":"1회","basis":"조건변경","tt":6.204,"kind":"필수"},{"no":19,"mid":"테스트/샘플작업","name":"테스트압착 2전선","unit":"1회","basis":"조건변경","tt":5.595,"kind":"필수"},{"no":22,"mid":"테스트/샘플작업","name":"압착상태검사","unit":"1회","basis":"조건변경","tt":2.511,"kind":"필수"},{"no":23,"mid":"테스트/샘플작업","name":"압착고측정","unit":"1회","basis":"조건변경","tt":7.385,"kind":"필수"},{"no":24,"mid":"테스트/샘플작업","name":"인장력측정","unit":"1회","basis":"조건변경","tt":56.188,"kind":"필수"},{"no":25,"mid":"테스트/샘플작업","name":"샘플압착 2전선","unit":"1회","basis":"조건변경","tt":5.595,"kind":"필수"},{"no":29,"mid":"본작업","name":"일반조인트압착 2전선","unit":"1회","basis":"EA","tt":279.754,"kind":"필수"},{"no":32,"mid":"마무리검사","name":"자주검사","range":"1~50","unit":"1회","basis":"묶음","tt":9.749,"kind":"필수"},{"no":35,"mid":"마무리검사","name":"이동전표날인","unit":"1장","basis":"묶음","tt":3.693,"kind":"필수"},{"no":36,"mid":"포장및적재","name":"묶음테이핑","unit":"1Point","basis":"묶음","tt":5.76,"kind":"필수"},{"no":37,"mid":"포장및적재","name":"보호캡적용","unit":"1개","basis":"묶음(편단)","tt":4.136,"kind":"필수"},{"no":38,"mid":"포장및적재","name":"선재적재","unit":"1회","basis":"묶음","tt":9.896,"kind":"필수"}],"match":"결속압착(JOINT),조인트"},{"sort_no":13,"name":"실드선 작업","name_es":"Trabajo cable blindado","cond":"절단본수 50본 · 선재길이 1,000~1,999mm","cut_qty":50,"wire_len":"1,000~1,999","crimp_info":"","std_time":951,"items":[{"no":1,"mid":"준비확인","name":"선재준비","unit":"1회","basis":"묶음","tt":4.623,"kind":"필수"},{"no":2,"mid":"준비확인","name":"이동전표확인","unit":"1장","basis":"LOT","tt":2.312,"kind":"필수"},{"no":4,"mid":"본작업","name":"실드외피제거_편단","range":"1~25","unit":"1회","basis":"묶음","tt":534.576,"kind":"필수"},{"no":5,"mid":"본작업","name":"차폐선분리 및 정렬","unit":"1회","basis":"EA","tt":281.736,"kind":"필수"},{"no":6,"mid":"본작업","name":"차폐선절단_편단","unit":"1회","basis":"EA","tt":122.808,"kind":"필수"},{"no":7,"mid":"초·종물검사","name":"차폐선길이검사_편단","unit":"1회","basis":"LOT","tt":0.289,"kind":"필수"},{"no":10,"mid":"포장및적재","name":"선재적재","unit":"1회","basis":"묶음","tt":5.201,"kind":"필수"}],"match":"SLD절단,SLD"},{"sort_no":14,"name":"실드선 테이핑","name_es":"Cintado cable blindado","cond":"절단본수 50본 · 선재길이 1,000~1,999mm","cut_qty":50,"wire_len":"1,000~1,999","crimp_info":"","std_time":538,"items":[{"no":1,"mid":"준비확인","name":"선재준비","unit":"1회","basis":"묶음","tt":4.623,"kind":"필수"},{"no":2,"mid":"준비확인","name":"이동전표확인","unit":"1장","basis":"LOT","tt":2.312,"kind":"필수"},{"no":4,"mid":"준비확인","name":"보호캡탈거_편단","unit":"1개","basis":"묶음(편단)","tt":3.468,"kind":"필수"},{"no":5,"mid":"본작업","name":"차폐선테이핑_편단","unit":"1회","basis":"EA","tt":505.68,"kind":"필수"},{"no":6,"mid":"마무리검사","name":"자주검사","range":"1~50","unit":"1회","basis":"묶음","tt":9.536,"kind":"필수"},{"no":7,"mid":"마무리검사","name":"이동전표날인","unit":"1장","basis":"묶음","tt":3.612,"kind":"필수"},{"no":8,"mid":"포장및적재","name":"보호캡적용_편단","unit":"1개","basis":"묶음(편단)","tt":4.045,"kind":"필수"},{"no":9,"mid":"포장및적재","name":"선재적재","unit":"1회","basis":"묶음","tt":5.201,"kind":"필수"}],"match":"SLD,테이핑"},{"sort_no":15,"name":"TWIST(단방향)","name_es":"TWIST (una dirección)","cond":"절단본수 50본 · 선재길이 1,000~1,999mm","cut_qty":50,"wire_len":"1,000~1,999","crimp_info":"","std_time":420,"items":[{"no":1,"mid":"준비확인","name":"선재준비","unit":"1회","basis":"묶음","tt":8.271,"kind":"필수"},{"no":3,"mid":"준비확인","name":"이동전표확인","unit":"1장","basis":"LOT","tt":2.363,"kind":"필수"},{"no":4,"mid":"준비확인","name":"보호캡탈거_편단","unit":"1개","basis":"묶음(편단)","tt":3.545,"kind":"필수"},{"no":5,"mid":"준비확인","name":"선재정렬(작업전)","unit":"1회","basis":"묶음","tt":3.84,"kind":"필수"},{"no":6,"mid":"준비확인","name":"묶음테이핑제거","unit":"1Point","basis":"묶음","tt":5.908,"kind":"필수"},{"no":7,"mid":"준비확인","name":"이동전표분리","unit":"1장","basis":"묶음","tt":2.511,"kind":"필수"},{"no":13,"mid":"본작업","name":"본작업(일반)","range":"1000~1999","unit":"mm","basis":"EA","tt":353.406,"kind":"적용"},{"no":29,"mid":"초·종물검사","name":"선재길이검사","range":"1000~1999","unit":"mm","basis":"LOT","tt":14.032,"kind":"적용"},{"no":36,"mid":"마무리검사","name":"선재사림","range":"1000~1999","unit":"mm","basis":"LOT","tt":4.265,"kind":"적용"},{"no":44,"mid":"마무리검사","name":"이동전표날인","unit":"1장","basis":"묶음","tt":3.693,"kind":"필수"},{"no":46,"mid":"포장및적재","name":"이동전표삽입","unit":"1장","basis":"묶음","tt":3.25,"kind":"필수"},{"no":47,"mid":"포장및적재","name":"보호캡적용_편단","unit":"1개","basis":"묶음(편단)","tt":4.136,"kind":"필수"},{"no":48,"mid":"포장및적재","name":"묶음테이핑","unit":"1Point","basis":"묶음","tt":5.76,"kind":"필수"},{"no":49,"mid":"포장및적재","name":"선재적재","unit":"1회","basis":"묶음","tt":5.317,"kind":"필수"}],"match":"TWIST"},{"sort_no":16,"name":"TWIST (양방향)","name_es":"TWIST (dos direcciones)","cond":"절단본수 50본 · 선재길이 1,000~1,999mm","cut_qty":50,"wire_len":"1,000~1,999","crimp_info":"","std_time":1100,"items":[{"no":1,"mid":"준비확인","name":"선재준비","unit":"1회","basis":"묶음","tt":8.271,"kind":"필수"},{"no":3,"mid":"준비확인","name":"이동전표확인","unit":"1장","basis":"LOT","tt":2.363,"kind":"필수"},{"no":4,"mid":"준비확인","name":"보호캡탈거_편단","unit":"1개","basis":"묶음(편단)","tt":3.545,"kind":"필수"},{"no":5,"mid":"준비확인","name":"선재정렬(작업전)","unit":"1회","basis":"묶음","tt":3.84,"kind":"필수"},{"no":6,"mid":"준비확인","name":"묶음테이핑제거","unit":"1Point","basis":"묶음","tt":5.908,"kind":"필수"},{"no":7,"mid":"준비확인","name":"이동전표분리","unit":"1장","basis":"묶음","tt":2.511,"kind":"필수"},{"no":21,"mid":"본작업","name":"본작업(양방향)","range":"1000~1999","unit":"mm","basis":"EA","tt":1033.914,"kind":"적용"},{"no":29,"mid":"초·종물검사","name":"선재길이검사","range":"1000~1999","unit":"mm","basis":"LOT","tt":14.032,"kind":"적용"},{"no":36,"mid":"마무리검사","name":"선재사림","range":"1000~1999","unit":"mm","basis":"LOT","tt":4.265,"kind":"적용"},{"no":44,"mid":"마무리검사","name":"이동전표날인","unit":"1장","basis":"묶음","tt":3.693,"kind":"필수"},{"no":46,"mid":"포장및적재","name":"이동전표삽입","unit":"1장","basis":"묶음","tt":3.25,"kind":"필수"},{"no":47,"mid":"포장및적재","name":"보호캡적용_편단","unit":"1개","basis":"묶음(편단)","tt":4.136,"kind":"필수"},{"no":48,"mid":"포장및적재","name":"묶음테이핑","unit":"1Point","basis":"묶음","tt":5.76,"kind":"필수"},{"no":49,"mid":"포장및적재","name":"선재적재","unit":"1회","basis":"묶음","tt":5.317,"kind":"필수"}],"match":"TWIST"},{"sort_no":17,"name":"중간스트립","name_es":"Pelado intermedio","cond":"절단본수 50본 · 선재길이 1,000~1,999mm","cut_qty":50,"wire_len":"1,000~1,999","crimp_info":"","std_time":353,"items":[{"no":1,"mid":"준비확인","name":"이동전표확인","unit":"1장","basis":"LOT","tt":3.988,"kind":"필수"},{"no":3,"mid":"준비확인","name":"보호캡탈거_편단","unit":"1개","basis":"묶음(편단)","tt":3.545,"kind":"필수"},{"no":4,"mid":"준비확인","name":"묶음테이핑제거","unit":"1Point","basis":"묶음","tt":5.317,"kind":"필수"},{"no":5,"mid":"준비확인","name":"선재정렬(작업전)","unit":"1회","basis":"묶음","tt":10.93,"kind":"필수"},{"no":6,"mid":"준비확인","name":"선재정렬(끝단정렬)","unit":"1회","basis":"묶음","tt":37.074,"kind":"필수"},{"no":7,"mid":"준비확인","name":"묶음테이핑","unit":"1Point","basis":"묶음","tt":5.76,"kind":"필수"},{"no":8,"mid":"준비확인","name":"선재고정","unit":"1회","basis":"묶음","tt":2.513,"kind":"필수"},{"no":12,"mid":"테스트/샘플작업","name":"샘플스트립","unit":"1회","basis":"조건변경","tt":7.181,"kind":"필수"},{"no":13,"mid":"본작업","name":"중간스트립","unit":"1회","basis":"EA","tt":226.131,"kind":"필수"},{"no":14,"mid":"초·종물검사","name":"초·종물검사","unit":"1회","basis":"LOT(2회)","tt":2.659,"kind":"필수"},{"no":16,"mid":"마무리검사","name":"자주검사","range":"1~50","unit":"1회","basis":"묶음","tt":9.749,"kind":"필수"},{"no":19,"mid":"마무리검사","name":"이동전표날인","unit":"1장","basis":"묶음","tt":3.693,"kind":"필수"},{"no":20,"mid":"포장및적재","name":"선재정렬_편단","unit":"1회","basis":"묶음(편단)","tt":10.93,"kind":"필수"},{"no":21,"mid":"포장및적재","name":"보호캡적용_편단","unit":"1개","basis":"묶음(편단)","tt":4.136,"kind":"필수"},{"no":22,"mid":"포장및적재","name":"선재사림","range":"1000~1999","unit":"mm","basis":"LOT","tt":4.265,"kind":"적용"},{"no":30,"mid":"포장및적재","name":"묶음테이핑","unit":"1Point","basis":"묶음","tt":5.76,"kind":"필수"},{"no":31,"mid":"포장및적재","name":"선재적재","unit":"1회","basis":"묶음","tt":9.896,"kind":"필수"}],"match":"중간스트립"},{"sort_no":18,"name":"실드끝단스트립","name_es":"Pelado extremo blindado","cond":"절단본수 50본 · 선재길이 1,000~1,999mm","cut_qty":50,"wire_len":"1,000~1,999","crimp_info":"","std_time":199,"items":[{"no":1,"mid":"준비확인","name":"선재준비","unit":"1회","basis":"묶음","tt":4.727,"kind":"필수"},{"no":2,"mid":"준비확인","name":"이동전표확인","unit":"1장","basis":"LOT","tt":2.806,"kind":"필수"},{"no":4,"mid":"준비확인","name":"보호캡탈거","unit":"1개","basis":"묶음(편단)","tt":3.545,"kind":"필수"},{"no":7,"mid":"실드","name":"실드내피스트립(편단기준)","unit":"1회로","basis":"EA","tt":158.957,"kind":"필수"},{"no":8,"mid":"초·종물검사","name":"초·종물검사","unit":"1회","basis":"LOT(2회)","tt":6.499,"kind":"필수"},{"no":9,"mid":"마무리검사","name":"자주검사","range":"1~50","unit":"1회","basis":"묶음","tt":9.749,"kind":"필수"},{"no":11,"mid":"마무리검사","name":"이동전표날인","unit":"1장","basis":"묶음","tt":3.693,"kind":"필수"},{"no":12,"mid":"포장및적재","name":"보호캡적용","unit":"1개","basis":"묶음(편단)","tt":4.136,"kind":"필수"},{"no":13,"mid":"포장및적재","name":"선재적재","unit":"1회","basis":"묶음","tt":5.317,"kind":"필수"}],"match":"SLD"},{"sort_no":19,"name":"초음파융착","name_es":"Soldadura ultrasónica","cond":"절단본수 50본 · 선재길이 1,000~1,999mm","cut_qty":50,"wire_len":"1,000~1,999","crimp_info":"","std_time":511,"items":[{"no":1,"mid":"준비확인","name":"선재준비","unit":"1회","basis":"묶음","tt":12.112,"kind":"필수"},{"no":2,"mid":"준비확인","name":"이동전표확인","unit":"1장","basis":"LOT","tt":3.102,"kind":"필수"},{"no":4,"mid":"준비확인","name":"보호캡탈거","unit":"1개","basis":"묶음(편단)","tt":3.545,"kind":"필수"},{"no":5,"mid":"준비확인","name":"묶음테이핑제거","unit":"1Point","basis":"묶음","tt":5.908,"kind":"필수"},{"no":6,"mid":"준비확인","name":"선재정렬(작업전)","unit":"1회","basis":"묶음","tt":1.625,"kind":"필수"},{"no":7,"mid":"준비확인","name":"이동전표스캔","unit":"1장","basis":"LOT","tt":3.397,"kind":"필수"},{"no":9,"mid":"테스트/샘플작업","name":"샘플작업(압착고 포함)","unit":"1회","basis":"조건변경","tt":20.486,"kind":"필수"},{"no":10,"mid":"테스트/샘플작업","name":"인장력측정(인열강도)","unit":"1장","basis":"조건변경","tt":84.755,"kind":"필수"},{"no":12,"mid":"본작업","name":"융착회로수(단방향융착x:0)","unit":"1회","basis":"EA(회로수)","tt":322.693,"kind":"필수"},{"no":14,"mid":"마무리검사","name":"자주검사","unit":"1회","basis":"묶음","tt":9.749,"kind":"필수"},{"no":15,"mid":"마무리검사","name":"작업완료확인체크(POP)","unit":"1회","basis":"LOT","tt":26.439,"kind":"필수"},{"no":16,"mid":"마무리검사","name":"이동전표날인","unit":"1장","basis":"묶음","tt":3.693,"kind":"필수"},{"no":17,"mid":"포장및적재","name":"보호캡적용","unit":"1개","basis":"묶음(편단)","tt":4.136,"kind":"필수"},{"no":18,"mid":"포장및적재","name":"선재적재","unit":"1회","basis":"묶음","tt":9.896,"kind":"필수"}],"match":"초음파,융착"},{"sort_no":20,"name":"튜브삽입","name_es":"Inserción de tubo","cond":"절단본수 50본 · 선재길이 1,000~1,999mm","cut_qty":50,"wire_len":"1,000~1,999","crimp_info":"","std_time":209,"items":[{"no":1,"mid":"준비확인","name":"선재준비","unit":"1회","basis":"묶음","tt":4.623,"kind":"필수"},{"no":2,"mid":"준비확인","name":"이동전표확인","unit":"1장","basis":"LOT","tt":2.601,"kind":"필수"},{"no":4,"mid":"준비확인","name":"보호캡탈거","unit":"1개","basis":"묶음(편단)","tt":3.468,"kind":"필수"},{"no":5,"mid":"준비확인","name":"묶음테이핑제거","unit":"1Point","basis":"묶음","tt":5.779,"kind":"필수"},{"no":6,"mid":"준비확인","name":"튜브준비","unit":"1회","basis":"LOT","tt":15.508,"kind":"필수"},{"no":7,"mid":"본작업","name":"HMT,HSC튜브삽입 1CORE","unit":"1회","basis":"EA","tt":149.32,"kind":"필수"},{"no":11,"mid":"마무리검사","name":"자주검사","range":"1~50","unit":"1회","basis":"묶음","tt":9.536,"kind":"필수"},{"no":14,"mid":"마무리검사","name":"이동전표날인","unit":"1장","basis":"묶음","tt":3.612,"kind":"필수"},{"no":15,"mid":"포장및적재","name":"묶음테이핑","unit":"1Point","basis":"묶음","tt":5.635,"kind":"필수"},{"no":16,"mid":"포장및적재","name":"보호캡적용","unit":"1개","basis":"묶음(편단)","tt":4.045,"kind":"필수"},{"no":17,"mid":"포장및적재","name":"선재적재","unit":"1회","basis":"묶음","tt":5.201,"kind":"필수"}],"match":"튜브"},{"sort_no":21,"name":"튜브열수축","name_es":"Termocontracción de tubo","cond":"절단본수 50본 · 선재길이 1,000~1,999mm","cut_qty":50,"wire_len":"1,000~1,999","crimp_info":"","std_time":1445,"items":[{"no":1,"mid":"준비확인","name":"선재준비","unit":"1회","basis":"묶음","tt":4.727,"kind":"필수"},{"no":2,"mid":"준비확인","name":"이동전표확인","unit":"1장","basis":"LOT","tt":2.659,"kind":"필수"},{"no":4,"mid":"준비확인","name":"보호캡탈거","unit":"1개","basis":"묶음(편단)","tt":3.545,"kind":"필수"},{"no":5,"mid":"준비확인","name":"묶음테이핑제거","unit":"1Point","basis":"묶음","tt":5.908,"kind":"필수"},{"no":8,"mid":"준비확인","name":"선재정렬(작업전)(일반)","range":"1001~","unit":"1회","basis":"묶음","tt":28.064,"kind":"필수"},{"no":9,"mid":"준비확인","name":"선재정렬(작업전)(링단자)","unit":"1회","basis":"묶음","tt":58.787,"kind":"필수"},{"no":13,"mid":"테스트/샘플작업","name":"샘플작업(외관확인및치수측정)","unit":"1회","basis":"LOT","tt":38.293,"kind":"필수"},{"no":14,"mid":"본작업","name":"6Ø, 20회로기준 HSC, HMT","unit":"1회","basis":"EA","tt":1243.713,"kind":"필수"},{"no":17,"mid":"초·종물검사","name":"초물검사","unit":"1회","basis":"LOT","tt":4.874,"kind":"필수"},{"no":18,"mid":"초·종물검사","name":"검사결과기록","unit":"1회","basis":"LOT","tt":7.86,"kind":"필수"},{"no":19,"mid":"마무리검사","name":"자주검사","unit":"1회","basis":"묶음","tt":9.749,"kind":"필수"},{"no":20,"mid":"마무리검사","name":"끝단정렬","unit":"1회","basis":"묶음(편단)","tt":9.749,"kind":"필수"},{"no":21,"mid":"마무리검사","name":"묶음테이핑","unit":"1Point","basis":"묶음","tt":5.76,"kind":"필수"},{"no":22,"mid":"마무리검사","name":"이동전표스캔","unit":"1장","basis":"LOT","tt":3.397,"kind":"필수"},{"no":23,"mid":"마무리검사","name":"이동전표날인","unit":"1장","basis":"묶음","tt":3.693,"kind":"필수"},{"no":24,"mid":"포장및적재","name":"묶음테이핑","unit":"1Point","basis":"묶음","tt":5.76,"kind":"필수"},{"no":25,"mid":"포장및적재","name":"보호캡적용","unit":"1개","basis":"묶음(편단)","tt":4.136,"kind":"필수"},{"no":26,"mid":"포장및적재","name":"선재적재","unit":"1회","basis":"묶음","tt":5.317,"kind":"필수"}],"match":"튜브"},{"sort_no":22,"name":"실드 조인트테이핑","name_es":"Cintado joint blindado","cond":"절단본수 50본 · 선재길이 1,000~1,999mm","cut_qty":50,"wire_len":"1,000~1,999","crimp_info":"","std_time":232,"items":[{"no":1,"mid":"준비확인","name":"선재준비","range":"1~5","unit":"1회","basis":"묶음","tt":4.727,"kind":"필수"},{"no":3,"mid":"준비확인","name":"이동전표확인","unit":"1장","basis":"LOT","tt":2.659,"kind":"필수"},{"no":9,"mid":"본작업","name":"S/J테이핑(1회로,1POINT기준)","range":"44~55","unit":"1회","basis":"EA","tt":195.32,"kind":"필수"},{"no":11,"mid":"마무리검사","name":"자주검사","range":"1~50","unit":"1회","basis":"묶음","tt":9.749,"kind":"필수"},{"no":13,"mid":"마무리검사","name":"이동전표스캔","unit":"1장","basis":"LOT","tt":3.397,"kind":"필수"},{"no":14,"mid":"마무리검사","name":"이동전표날인","unit":"1장","basis":"묶음","tt":3.693,"kind":"필수"},{"no":15,"mid":"포장및적재","name":"선재정렬","unit":"1회","basis":"묶음","tt":7.681,"kind":"필수"},{"no":19,"mid":"포장및적재","name":"선재적재","unit":"1회","basis":"묶음","tt":5.317,"kind":"필수"}],"match":"테이핑(JOINT),테이핑"},{"sort_no":23,"name":"씰삽입","name_es":"Inserción de sello","cond":"절단본수 50본 · 선재길이 1,000~1,999mm","cut_qty":50,"wire_len":"1,000~1,999","crimp_info":"","std_time":206,"items":[{"no":1,"mid":"준비확인","name":"선재준비","unit":"1회","basis":"묶음","tt":4.623,"kind":"필수"},{"no":2,"mid":"준비확인","name":"이동전표확인","unit":"1장","basis":"LOT","tt":2.312,"kind":"필수"},{"no":4,"mid":"준비확인","name":"보호캡탈거","unit":"1개","basis":"묶음(편단)","tt":3.468,"kind":"필수"},{"no":5,"mid":"준비확인","name":"이동전표스캔","unit":"1장","basis":"LOT","tt":3.323,"kind":"필수"},{"no":8,"mid":"본작업","name":"선부품 삽입","unit":"1회","basis":"조건변경","tt":170.486,"kind":"필수"},{"no":11,"mid":"마무리검사","name":"자주검사","range":"1~50","unit":"1회","basis":"묶음","tt":9.536,"kind":"필수"},{"no":13,"mid":"마무리검사","name":"이동전표날인","unit":"1장","basis":"묶음","tt":3.612,"kind":"필수"},{"no":14,"mid":"포장및적재","name":"보호캡적용","unit":"1개","basis":"묶음(편단)","tt":4.045,"kind":"필수"},{"no":15,"mid":"포장및적재","name":"선재적재","unit":"1회","basis":"묶음","tt":5.201,"kind":"필수"}],"match":"SEAL선취,씰"},{"sort_no":24,"name":"게이트검사","name_es":"Inspección gate","cond":"절단본수 50본 · 선재길이 1,000~1,999mm","cut_qty":50,"wire_len":"1,000~1,999","crimp_info":"","std_time":521,"items":[{"no":1,"mid":"준비확인","name":"선재준비","unit":"1회","basis":"묶음","tt":4.727,"kind":"필수"},{"no":2,"mid":"준비확인","name":"이동전표확인","unit":"1장","basis":"LOT","tt":3.988,"kind":"필수"},{"no":3,"mid":"준비확인","name":"이동전표스캔","unit":"1장","basis":"LOT","tt":3.397,"kind":"필수"},{"no":4,"mid":"준비확인","name":"보호캡탈거","unit":"1개","basis":"묶음(편단)","tt":3.545,"kind":"필수"},{"no":6,"mid":"본작업","name":"외관검사","range":"1~50","unit":"1회","basis":"묶음","tt":487.426,"kind":"필수"},{"no":11,"mid":"마무리검사","name":"이동전표날인","unit":"1장","basis":"묶음","tt":3.693,"kind":"필수"},{"no":12,"mid":"포장및적재","name":"묶음테이핑","unit":"1Point","basis":"묶음","tt":5.76,"kind":"필수"},{"no":13,"mid":"포장및적재","name":"보호캡적용","unit":"1개","basis":"묶음(편단)","tt":4.136,"kind":"필수"},{"no":14,"mid":"포장및적재","name":"선재적재","unit":"1회","basis":"묶음","tt":5.317,"kind":"필수"}],"match":"SLD내전압,게이트"}];
+window.SPEED=(function(){
+  const $=id=>document.getElementById(id);
+  const esc=s=>_perfEsc(s), T=(k,e)=>_perfIsEs()?e:k;
+  const r1=v=>Math.round((parseFloat(v)||0)*10)/10;
+  const todayStr=()=>new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,10);
+  const FAC='1';
+  let STD=[],LV=[],EV=[],missing=false,loaded=false,loading=null;
+  const SW={running:false,start:0,acc:0,timer:null};
+  let edit={idx:-1,items:[],own:null};
+  function toast(m,ms=2800){const t=$('spToast');if(!t)return;t.textContent=m;t.style.display='block';clearTimeout(t._t);t._t=setTimeout(()=>t.style.display='none',ms);}
+  const DEF_LV=[{level:'L1',min_pct:115,score_pct:100,color:'#2ecc7a',sort_no:1,is_fail:false},{level:'L2',min_pct:100,score_pct:90,color:'#2ab8a8',sort_no:2,is_fail:false},{level:'L3',min_pct:89,score_pct:80,color:'#5ba3e8',sort_no:3,is_fail:false},{level:'L4',min_pct:80,score_pct:70,color:'#e2c46a',sort_no:4,is_fail:false},{level:'L5',min_pct:72,score_pct:60,color:'#e87a2a',sort_no:5,is_fail:false},{level:'미달',min_pct:0,score_pct:0,color:'#e05252',sort_no:6,is_fail:true}];
+  const profW=()=>{try{return (trackW('regular').prof)||0;}catch(e){return 30;}};
+
+  /* ───── 데이터 ───── */
+  async function load(force){
+    if(loading)return loading;
+    loading=(async()=>{
+      if(typeof _isLocalFile!=='undefined'&&_isLocalFile){STD=SPEED_DEFAULTS.map((d,i)=>({...d,id:'def'+i,factory:FAC,active:true,levels:null}));LV=DEF_LV.map(x=>({...x,factory:FAC}));EV=[];missing=true;loaded=true;loading=null;renderAll();return;}
+      try{
+        const [s,l,e]=await Promise.all([
+          sbFetch('exam_speed_std?select=*&order=sort_no.asc,name.asc'),
+          sbFetch('exam_speed_level?select=*&factory=eq.'+FAC+'&order=min_pct.desc'),
+          sbFetch('exam_speed_eval?select=*&factory=eq.'+FAC+'&order=eval_date.desc,created_at.desc&limit=4000')
+        ]);
+        STD=s||[];LV=(l&&l.length)?l:[];EV=e||[];missing=false;loaded=true;
+        if(!LV.length)LV=DEF_LV.map(x=>({...x,factory:FAC}));
+      }catch(err){
+        const m=String(err&&err.message||'');
+        if(/exam_speed_|42P01|does not exist|404/i.test(m)){missing=true;STD=STD.length?STD:SPEED_DEFAULTS.map((d,i)=>({...d,id:'def'+i,factory:FAC,active:true,levels:null}));if(!LV.length)LV=DEF_LV.map(x=>({...x,factory:FAC}));EV=[];}
+        else{console.warn('SPEED load',err);toast('⚠️ '+m);}
+      }finally{loading=null;}
+      renderAll();
+    })();
+    return loading;
+  }
+  function renderAll(){
+    const h=$('spSqlHint');if(h)h.style.display=missing?'block':'none';
+    try{renderStdSelect();renderRoundSelect();renderEmpSelect();renderStdInfo();renderHist();calc();}catch(e){console.warn(e);}
+    try{renderStdTable();renderLevelTable();}catch(e){console.warn(e);}
+    const rb=$('spRoundBadge');if(rb){const t=(typeof curTrack==='function')?curTrack():'new';rb.innerHTML=`📌 ${esc(roundName(activeRound))} <span style="color:${t==='regular'?'var(--gold)':'var(--sky)'}">${t==='regular'?'🔁 정기·재평가':'🆕 신입사원평가'}</span>`;}
+    const wb=$('spWeightBadge');if(wb)wb.innerHTML=`· ${T('숙련도 배점','Peso')} <b style="color:var(--gold)">${profW()}</b>${T('점','pts')} (${T('정기·재평가','periódica')})`;
+  }
+  const activeStd=()=>STD.filter(s=>s.active!==false);
+  const stdById=id=>STD.find(s=>String(s.id)===String(id));
+  const levelsFor=std=>{const own=std&&Array.isArray(std.levels)&&std.levels.length?std.levels:LV;return [...own].map(x=>({level:x.level,min_pct:+x.min_pct,score_pct:+x.score_pct||0,is_fail:!!x.is_fail,color:x.color||(LV.find(l=>l.level===x.level)||{}).color||'#8a8a8a'})).sort((a,b)=>b.min_pct-a.min_pct);};
+  function judge(eff,std){const lv=levelsFor(std);if(eff==null||!lv.length)return null;for(const b of lv){if(eff>=b.min_pct)return b;}const last=lv[lv.length-1];return {...last,is_fail:true};}
+  const lvTag=(b,big)=>b?`<span class="lv-tag" style="color:${b.color};border-color:${b.color}55;background:${b.color}1a;${big?'font-size:1.05rem;padding:.2rem .8rem':''}">${esc(b.level)}</span>`:'<span style="color:var(--text2)">-</span>';
+  const lvByName=(name,std)=>{const n=String(name||'').replace(/\(과락\)$/,'');return levelsFor(std).find(b=>b.level===n)||null;};
+
+  /* ───── 평가 화면: 선택 ───── */
+  function renderStdSelect(){
+    const sel=$('spStd');if(!sel)return;const cur=sel.value;
+    sel.innerHTML='<option value="">— '+T('공정(기준표) 선택','Seleccione proceso')+' —</option>'+activeStd().map(s=>`<option value="${esc(s.id)}">${esc(s.sort_no?s.sort_no+'. ':'')}${esc(_perfIsEs()&&s.name_es?s.name_es:s.name)} · ${r1(s.std_time)}s</option>`).join('');
+    if(cur&&stdById(cur))sel.value=cur;
+    const hs=$('spHistStd');if(hs){const c=hs.value;hs.innerHTML='<option value="">'+T('전체 공정','Todos')+'</option>'+[...new Set(EV.map(e=>e.std_name).filter(Boolean))].sort().map(n=>`<option value="${esc(n)}">${esc(n)}</option>`).join('');hs.value=c;}
+  }
+  function renderRoundSelect(){
+    const sel=$('spRound');if(!sel)return;const cur=sel.value;
+    const rs=[...(evalRounds||[])];
+    sel.innerHTML='<option value="">('+T('미지정','sin ronda')+')</option>'+rs.map(r=>`<option value="${esc(r.id)}">${esc(r.name)}</option>`).join('');
+    sel.value=cur||activeRound||'';if(!sel.value&&activeRound)sel.value=activeRound;
+    const hr=$('spHistRound');if(hr){const c=hr.value;hr.innerHTML='<option value="">'+T('전체 평가구분','Todas las rondas')+'</option>'+rs.map(r=>`<option value="${esc(r.id)}">${esc(r.name)}</option>`).join('');hr.value=c;}
+    if($('spDate')&&!$('spDate').value)$('spDate').value=todayStr();
+    if($('spEvaluator')&&!$('spEvaluator').value&&window.PORTAL_USER&&window.PORTAL_USER.name)$('spEvaluator').value=window.PORTAL_USER.name;
+  }
+  function matchStd(proc){const p=String(proc||'').toLowerCase();if(!p)return null;
+    for(const s of activeStd()){const ks=String(s.match||'').split(',').map(x=>x.trim().toLowerCase()).filter(Boolean);if(ks.some(k=>p.includes(k)||k.includes(p)))return s;}return null;}
+  function empMatches(st,std){if(!std)return true;const ks=String(std.match||'').split(',').map(x=>x.trim().toLowerCase()).filter(Boolean);const p=String(st.process||'').toLowerCase();return !ks.length||ks.some(k=>p.includes(k)||k.includes(p));}
+  function renderEmpSelect(){
+    const sel=$('spEmp');if(!sel)return;const cur=sel.value;
+    const q=($('spEmpQ').value||'').trim().toLowerCase(),all=$('spEmpAll').checked,std=stdById($('spStd').value);
+    const list=(students||[]).filter(s=>s.empId&&s.name).filter(s=>all||!std||empMatches(s,std)).filter(s=>!q||String(s.empId).toLowerCase().includes(q)||String(s.name).toLowerCase().includes(q))
+      .sort((a,b)=>String(a.empId).localeCompare(String(b.empId),undefined,{numeric:true}));
+    sel.innerHTML='<option value="">— '+T('작업자 선택','Seleccione operador')+' —</option>'+list.map(s=>`<option value="${esc(s.empId)}">${esc(s.empId)} · ${esc(s.name)} · ${esc(_perfIsEs()&&s.processEs?s.processEs:s.process||'')}</option>`).join('');
+    if(cur&&list.some(s=>String(s.empId)===cur))sel.value=cur;
+    $('spEmpCnt').textContent=`(${list.length}${T('명','')})`;
+    renderPrev();
+  }
+  function onStd(){renderEmpSelect();renderStdInfo();calc();}
+  function onEmp(){
+    const st=(students||[]).find(s=>String(s.empId)===$('spEmp').value);
+    if(st&&!$('spStd').value){const m=matchStd(st.process);if(m){$('spStd').value=m.id;renderStdInfo();}}
+    renderPrev();calc();
+  }
+  function renderStdInfo(){
+    const box=$('spStdInfo'),std=stdById($('spStd').value);
+    if(!box)return;
+    if(!std){box.innerHTML=`<div style="color:var(--text2)">${T('공정(기준표)을 선택하면 표준시간·레벨 기준이 표시됩니다.','Seleccione un proceso para ver el estándar.')}</div>`;$('spStdTime').value='';renderItems(null);return;}
+    const stdT=+std.std_time,lv=levelsFor(std),w=profW();
+    const sec=parseFloat($('spSec').value);const hit=isFinite(sec)&&sec>0?judge(stdT/sec*100,std):null;
+    box.innerHTML=`<div class="t">${esc(std.name)}${std.name_es?` <span style="color:var(--text2);font-weight:400;font-size:.76rem">${esc(std.name_es)}</span>`:''}</div>
+      <div class="kv"><span>${T('표준 총소요시간','Tiempo estándar')}</span><b style="color:var(--gold)">${r1(stdT)} ${T('초','s')} <span style="color:var(--text2);font-weight:400">(1회)</span></b>
+      <span>${T('평가 조건','Condición')}</span><b>${esc(std.cond||'-')}</b>
+      <span>${T('수행항목','Ítems')}</span><b>${(std.items||[]).length}${T('개','')} <span style="color:var(--text2);font-weight:400">— ${T('아래 체크리스트','ver lista abajo')}</span></b>
+      <span>${T('레벨 기준','Niveles')}</span><b>${Array.isArray(std.levels)&&std.levels.length?T('공정 전용','propios'):T('공통','común')}</b></div>
+      <table class="sp-lv"><thead><tr><th>${T('레벨','Nivel')}</th><th>${T('달성률','Cumpl.')}</th><th>${T('작업시간 범위','Rango de tiempo')}</th><th>${T('배점 대비','% peso')}</th><th>${T('점수','Pts')} /${w}</th></tr></thead><tbody>
+      ${lv.map((b,i)=>{const maxT=b.min_pct>0?stdT/b.min_pct*100:null;const minT=i>0?stdT/lv[i-1].min_pct*100:null;
+        const rng=b.is_fail||maxT==null?`> ${r1(minT)}s`:(minT?`${r1(minT)}s ~ ${r1(maxT)}s`:`≤ ${r1(maxT)}s`);
+        return `<tr class="${hit&&hit.level===b.level?'hit':''}"><td>${lvTag(b)}</td><td>${b.is_fail?`< ${lv[i-1]?lv[i-1].min_pct:0}%`:b.min_pct+'%↑'}</td><td>${rng}</td><td>${b.score_pct}%</td><td style="color:var(--gold);font-weight:700">${r1(w*b.score_pct/100)}</td></tr>`;}).join('')}
+      </tbody></table>`;
+    $('spStdTime').value=r1(stdT);
+    renderItems(std);
+  }
+  function renderItems(std){
+    const el=$('spItemsTable'),cnt=$('spItemsCnt');if(!el)return;
+    const its=(std&&std.items)||[];cnt.textContent=its.length?`(${its.length})`:'';
+    if(!its.length){el.innerHTML=`<div style="color:var(--text2);font-size:.78rem">${T('항목 없음','Sin ítems')}</div>`;return;}
+    el.innerHTML=`<table><thead><tr><th style="width:40px">No</th><th>${T('구분','Grupo')}</th><th>${T('항목','Ítem')}</th><th>${T('범위','Rango')}</th><th>${T('단위','Unidad')}</th><th>${T('적용기준','Base')}</th><th style="text-align:right">T/T(s)</th><th>${T('종류','Tipo')}</th></tr></thead><tbody>
+      ${its.map((it,i)=>`<tr><td class="n">${it.no??i+1}</td><td style="color:var(--text2)">${esc(it.mid||'')}</td><td>${esc(it.name||'')}</td><td style="color:var(--text2)">${esc(it.range||'')}</td><td>${esc(it.unit||'')}</td><td style="color:var(--text2)">${esc(it.basis||'')}</td><td class="n">${r1(it.tt)}</td><td><span class="tag" style="background:${it.kind==='필수'?'rgba(201,168,76,.15)':'rgba(91,163,232,.15)'};color:${it.kind==='필수'?'var(--gold)':'#5ba3e8'}">${esc(it.kind||'')}</span></td></tr>`).join('')}
+      <tr><td colspan="6" style="text-align:right;color:var(--text2)">${T('합계','Total')}</td><td class="n" style="color:var(--gold);font-weight:700">${r1(its.reduce((a,b)=>a+(+b.tt||0),0))}</td><td></td></tr></tbody></table>`;
+  }
+  function renderPrev(){
+    const el=$('spPrev');if(!el)return;const emp=$('spEmp').value;const std=stdById($('spStd').value);
+    if(!emp){el.innerHTML='';return;}
+    const mine=EV.filter(e=>String(e.emp_id).toUpperCase()===emp.toUpperCase());
+    const same=std?mine.filter(e=>e.std_id===std.id||e.std_name===std.name):mine;
+    const last=same[0]||mine[0];
+    if(!last){el.innerHTML=`🕘 ${T('이전 평가','Anterior')}: <b>${T('없음 (첫 평가)','ninguna')}</b>`;return;}
+    const b=lvByName(last.level,std);
+    el.innerHTML=`🕘 ${T('이전 평가','Anterior')} <b>${esc(last.eval_date)}</b> · ${esc(last.std_name||'')} · ${T('작업시간','tiempo')} <b>${r1(last.measured_sec)}s</b> · ${T('달성률','cumpl.')} <b>${r1(last.eff_pct)}%</b> · ${lvTag(b||{level:last.level,color:'#8a8a8a'})} ${last.result&&last.result!=='합격'?`<span style="color:var(--red)">${esc(last.result)}</span>`:''} <span style="color:var(--text2)">(${T('총','')}${mine.length}${T('회','')})</span>`;
+  }
+
+  /* ───── 초시계 ───── */
+  const swElapsed=()=>SW.acc+(SW.running?(performance.now()-SW.start):0);
+  function swDraw(){$('spSwTime').innerHTML=`${(swElapsed()/1000).toFixed(1)}<small>s</small>`;}
+  function swUI(){const el=$('spSw');el.classList.toggle('running',SW.running);el.classList.toggle('paused',!SW.running&&SW.acc>0);const started=SW.running||SW.acc>0;
+    $('spSwStart').disabled=SW.running;$('spSwStart').innerHTML=`▶ <span>${!SW.running&&SW.acc>0?T('계속','Continuar'):T('평가 시작','Iniciar')}</span>`;
+    $('spSwPause').disabled=!SW.running;$('spSwDone').disabled=!started;$('spSwReset').disabled=!started;}
+  function swStart(){if(SW.running)return;if(!$('spStd').value){toast(T('먼저 공정(기준표)을 선택하세요','Seleccione el proceso primero'));return;}if(!$('spEmp').value){toast(T('작업자를 선택하세요','Seleccione el operador'));return;}
+    SW.start=performance.now();SW.running=true;clearInterval(SW.timer);SW.timer=setInterval(swDraw,100);swDraw();swUI();}
+  function swPause(){if(!SW.running)return;SW.acc+=performance.now()-SW.start;SW.running=false;clearInterval(SW.timer);swDraw();swUI();}
+  function swReset(draw){SW.running=false;SW.acc=0;SW.start=0;clearInterval(SW.timer);if(draw!==false){swDraw();swUI();}}
+  function swDone(){
+    if(!(SW.running||SW.acc>0))return;
+    if(SW.running){SW.acc+=performance.now()-SW.start;SW.running=false;clearInterval(SW.timer);}
+    const sec=Math.round(swElapsed()/100)/10;
+    $('spSec').value=sec;$('spSec').classList.add('sw-filled');setTimeout(()=>$('spSec').classList.remove('sw-filled'),3000);
+    swDraw();swUI();calc();
+    const j=currentJudge();toast(`⏱ ${T('작업시간 입력됨','Tiempo registrado')}: ${sec.toFixed(1)}s → ${j&&j.lv?j.lv.level:'-'}`);
+  }
+
+  /* ───── 계산·판정 ───── */
+  function currentJudge(){
+    const std=stdById($('spStd').value);const sec=parseFloat($('spSec').value);
+    if(!std||!isFinite(sec)||sec<=0)return null;
+    const eff=r1(std.std_time/sec*100);const lv=judge(eff,std);const defect=$('spDefect').checked,omit=$('spOmit').checked;
+    const w=profW();const fail=defect||omit;const scorePct=fail?0:(lv?lv.score_pct:0);
+    return{std,sec,eff,lv,defect,omit,result:fail?'과락':(lv&&lv.is_fail?'미달':'합격'),scorePct,score:r1(w*scorePct/100),w};
+  }
+  function calc(){
+    $('spDefectW').classList.toggle('on',$('spDefect').checked);$('spOmitW').classList.toggle('on',$('spOmit').checked);
+    const j=currentJudge(),v=$('spVerdict');
+    if(!j){$('spEff').value='';v.className='sp-verdict';v.innerHTML=`<span class="big" style="color:var(--text2)">${T('작업시간을 측정하면 레벨이 자동 판정됩니다','Mida el tiempo para ver el nivel')}</span>`;renderStdInfo();return;}
+    $('spEff').value=j.eff+'%';
+    v.className='sp-verdict '+(j.result==='합격'?'ok':j.result==='과락'?'ng':'warn');
+    const head=j.result==='합격'?`✅ ${T('합격','Aprobado')}`:j.result==='과락'?`❌ ${T('과락 — 재평가','Reprobado — reevaluar')}`:`⚠️ ${T('배치기준 미달 — 재평가','Bajo el mínimo — reevaluar')}`;
+    v.innerHTML=`<span class="big">${head}</span>${lvTag(j.lv,true)}<span class="sub">${T('표준','Est.')} ${r1(j.std.std_time)}s ÷ ${T('측정','Med.')} ${j.sec}s = <b style="color:var(--text)">${j.eff}%</b>${j.result==='과락'?` · <span style="color:var(--red)">${j.defect?T('부적합품','no conforme'):''}${j.defect&&j.omit?' · ':''}${j.omit?T('항목 누락','omisión'):''}</span>`:''}</span>
+      <span class="score"><b>${j.score}</b> / ${j.w}${T('점','')}<div class="sub">${T('숙련도 점수','Puntaje')} (${j.scorePct}%)</div></span>`;
+    renderStdInfo();
+  }
+  function clearForm(){swReset(true);$('spSec').value='';$('spDefect').checked=false;$('spOmit').checked=false;$('spOpinion').value='';calc();}
+
+  /* ───── 저장 ───── */
+  async function save(){
+    if(missing){alert('qualification_speed.sql 을 먼저 실행하세요 (exam_speed_* 테이블 없음)');return;}
+    const j=currentJudge();if(!j){toast(T('공정·작업자를 선택하고 작업시간을 측정하세요','Seleccione proceso/operador y mida el tiempo'));return;}
+    const emp=$('spEmp').value;const st=(students||[]).find(s=>String(s.empId)===emp);if(!st){toast(T('작업자를 선택하세요','Seleccione el operador'));return;}
+    if(SW.running){swPause();}
+    const date=$('spDate').value||todayStr();
+    const dup=EV.find(e=>String(e.emp_id).toUpperCase()===emp.toUpperCase()&&e.eval_date===date&&(e.std_id===j.std.id||e.std_name===j.std.name));
+    const overwrite=!!dup&&confirm(`${st.name} · ${j.std.name} 은(는) ${date} 에 이미 평가 기록이 있습니다 (${r1(dup.measured_sec)}s · ${dup.level}).\n덮어쓸까요?  (취소 = 새 기록으로 추가)`);
+    const body={factory:FAC,emp_id:emp.toUpperCase(),name:st.name,process:st.process||'',std_id:String(j.std.id).startsWith('def')?null:j.std.id,std_name:j.std.name,std_time:+j.std.std_time,
+      eval_date:date,eval_round:$('spRound').value||null,measured_sec:j.sec,defect:j.defect,omission:j.omit,evaluator:$('spEvaluator').value.trim()||null,opinion:$('spOpinion').value.trim()||null,is_dummy:false};
+    const btn=$('spSaveBtn');btn.disabled=true;
+    try{
+      const res=overwrite?await sbFetch(`exam_speed_eval?id=eq.${dup.id}`,{method:'PATCH',body:JSON.stringify(body)})
+                          :await sbFetch('exam_speed_eval',{method:'POST',body:JSON.stringify(body)});
+      const saved=Array.isArray(res)?res[0]:res;
+      toast(`💾 ${T('저장 완료','Guardado')} — ${st.name} · ${saved?saved.level:j.lv.level} · ${saved?r1(saved.eff_pct):j.eff}% · ${T('숙련도','pts')} ${j.score}/${j.w}`,4000);
+      await load(true);
+      try{window._sbCacheTime=0;sbLoadAllCached(true).then(()=>{try{if(document.getElementById('page-results')?.classList.contains('active'))renderResults();}catch(e){}});}catch(e){}
+      swReset(true);$('spSec').value='';$('spDefect').checked=false;$('spOmit').checked=false;$('spOpinion').value='';calc();renderPrev();
+    }catch(e){alert(T('저장 실패','Error')+': '+e.message);}
+    finally{btn.disabled=false;}
+  }
+
+  /* ───── 이력 ───── */
+  function renderHist(){
+    const el=$('spHistTable');if(!el)return;
+    const q=($('spHistQ').value||'').trim().toLowerCase(),sn=$('spHistStd').value,rd=$('spHistRound').value;
+    const rows=EV.filter(e=>(!q||String(e.emp_id).toLowerCase().includes(q)||String(e.name||'').toLowerCase().includes(q))&&(!sn||e.std_name===sn)&&(!rd||e.eval_round===rd));
+    $('spHistCnt').textContent=`${rows.length} / ${EV.length}${T('건','')}`;
+    if(!rows.length){el.innerHTML=`<div class="empty-state"><div class="empty-icon">⏱</div>${T('평가 기록이 없습니다','Sin registros')}</div>`;return;}
+    const w=profW();
+    el.innerHTML=`<table class="sp-hist"><thead><tr><th>${T('평가일','Fecha')}</th><th>${T('사번','N°')}</th><th>${T('이름','Nombre')}</th><th>${T('배치공정','Proceso')}</th><th>${T('기준표','Hoja')}</th><th>${T('평가구분','Ronda')}</th><th style="text-align:right">${T('표준','Est.')}(s)</th><th style="text-align:right">${T('측정','Med.')}(s)</th><th style="text-align:right">${T('달성률','Cumpl.')}</th><th>${T('레벨','Nivel')}</th><th style="text-align:right">${T('점수','Pts')} /${w}</th><th>${T('판정','Result.')}</th><th>${T('평가자','Eval.')}</th><th></th></tr></thead><tbody>
+      ${rows.slice(0,500).map(e=>{const std=stdById(e.std_id)||STD.find(s=>s.name===e.std_name);const b=lvByName(e.level,std)||{level:e.level,color:'#8a8a8a'};
+        const res=e.result==='합격'?`<span style="color:var(--green)">✅ ${T('합격','OK')}</span>`:e.result==='과락'?`<span style="color:var(--red)" title="${e.defect?'부적합품 ':''}${e.omission?'항목누락':''}">❌ ${T('과락','Reprob.')}</span>`:`<span style="color:var(--orange)">⚠️ ${esc(e.result||'')}</span>`;
+        return `<tr><td class="n">${esc(e.eval_date)}</td><td class="n">${esc(e.emp_id)}${e.is_dummy?' <span class="tag" style="background:#333;color:#aaa">TEST</span>':''}</td><td>${esc(e.name||'')}</td><td style="color:var(--text2)">${esc(e.process||'')}</td><td>${esc(e.std_name||'')}</td><td style="color:var(--text2)">${esc(roundShort(e.eval_round))}</td><td class="n">${r1(e.std_time)}</td><td class="n">${r1(e.measured_sec)}</td><td class="n"><b>${r1(e.eff_pct)}%</b></td><td>${lvTag(b)}</td><td class="n" style="color:var(--gold);font-weight:700">${r1(w*(+e.score_pct||0)/100)}</td><td>${res}</td><td style="color:var(--text2)">${esc(e.evaluator||'')}</td>
+          <td><button class="btn btn-outline btn-sm" style="padding:.15rem .45rem;font-size:.7rem" onclick="SPEED.loadInto('${esc(e.id)}')" title="이 기록의 작업자·공정을 평가 화면에 불러오기(재평가)">↩</button> <button class="btn btn-danger btn-sm" style="padding:.15rem .45rem;font-size:.7rem" onclick="SPEED.del('${esc(e.id)}')">✕</button></td></tr>`;}).join('')}
+      </tbody></table>${rows.length>500?`<div style="font-size:.74rem;color:var(--text2);margin-top:.4rem">${T('상위 500건만 표시 — 검색으로 좁히세요','Solo 500 filas')}</div>`:''}`;
+  }
+  function loadInto(id){const e=EV.find(x=>String(x.id)===String(id));if(!e)return;$('spEmpAll').checked=true;$('spEmpQ').value='';
+    const std=stdById(e.std_id)||STD.find(s=>s.name===e.std_name);if(std)$('spStd').value=std.id;renderEmpSelect();$('spEmp').value=e.emp_id;if(!$('spEmp').value){$('spEmpQ').value=e.emp_id;renderEmpSelect();$('spEmp').value=e.emp_id;}
+    renderStdInfo();renderPrev();calc();window.scrollTo({top:0,behavior:'smooth'});toast(`↩ ${e.name} · ${e.std_name} ${T('불러옴 — 재평가 시 ▶ 평가 시작','cargado')}`);}
+  async function del(id){const e=EV.find(x=>String(x.id)===String(id));if(!e)return;if(!confirm(`${e.name} · ${e.std_name} · ${e.eval_date} (${r1(e.measured_sec)}s · ${e.level}) 기록을 삭제할까요?\n해당 사번의 정기·재평가 결과 숙련도도 다시 계산됩니다.`))return;
+    try{await sbFetch(`exam_speed_eval?id=eq.${id}`,{method:'DELETE',headers:{'Prefer':'return=minimal'}});toast(T('삭제 완료','Eliminado'));await load(true);try{window._sbCacheTime=0;sbLoadAllCached(true);}catch(x){}}catch(err){alert('삭제 실패: '+err.message);}}
+  function exportHist(){if(!EV.length)return;const w=profW();const rn=id=>{const r=(evalRounds||[]).find(x=>x.id===id);return r?r.name:(id||'');};
+    const ws=XLSX.utils.json_to_sheet(EV.map(e=>({평가일:e.eval_date,사번:e.emp_id,이름:e.name,배치공정:e.process,기준표:e.std_name,평가구분:rn(e.eval_round),표준시간_초:+e.std_time,측정시간_초:+e.measured_sec,달성률_pct:+e.eff_pct,레벨:e.level,배점대비_pct:+e.score_pct,숙련도점수:r1(w*(+e.score_pct||0)/100),판정:e.result,부적합품:e.defect?'Y':'',항목누락:e.omission?'Y':'',평가자:e.evaluator||'',의견:e.opinion||'',임의데이터:e.is_dummy?'Y':''})));
+    const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'숙련도평가');
+    const ws2=XLSX.utils.json_to_sheet(STD.map(s=>({No:s.sort_no,공정:s.name,Español:s.name_es,표준시간_초:+s.std_time,평가조건:s.cond,수행항목수:(s.items||[]).length,매칭키워드:s.match,사용:s.active===false?'N':'Y'})));XLSX.utils.book_append_sheet(wb,ws2,'공정별기준');
+    const ws3=XLSX.utils.json_to_sheet(LV.map(l=>({레벨:l.level,달성률이상_pct:+l.min_pct,배점대비_pct:+l.score_pct,숙련도점수:r1(w*(+l.score_pct||0)/100),미달:l.is_fail?'Y':''})));XLSX.utils.book_append_sheet(wb,ws3,'레벨기준');
+    XLSX.writeFile(wb,`숙련도평가_신속성_${todayStr()}.xlsx`);}
+
+  /* ───── 마스터: 공정별 기준 ───── */
+  function renderStdTable(){
+    const tb=$('spStdBody');if(!tb)return;
+    tb.innerHTML=STD.map((s,i)=>`<tr data-i="${i}" style="${s.active===false?'opacity:.5':''}">
+      <td><input type="number" value="${s.sort_no??i+1}" style="width:52px;text-align:center" oninput="SPEED.edStd(${i},'sort_no',+this.value)"></td>
+      <td><input type="text" value="${esc(s.name)}" oninput="SPEED.edStd(${i},'name',this.value)"></td>
+      <td><input type="text" value="${esc(s.name_es||'')}" oninput="SPEED.edStd(${i},'name_es',this.value)"></td>
+      <td><input type="number" step="0.01" min="0" value="${r1(s.std_time)}" oninput="SPEED.edStd(${i},'std_time',+this.value)"></td>
+      <td><input type="text" value="${esc(s.cond||'')}" oninput="SPEED.edStd(${i},'cond',this.value)" placeholder="절단본수 50본 · 1,000~1,999mm"></td>
+      <td style="text-align:center"><button class="btn btn-secondary btn-sm mini" onclick="SPEED.openItems(${i})">${(s.items||[]).length}${T('개','')} ✎</button></td>
+      <td><input type="text" value="${esc(s.match||'')}" oninput="SPEED.edStd(${i},'match',this.value)" placeholder="자동절단압착공정,TWIST"></td>
+      <td style="text-align:center;font-size:.72rem;color:${Array.isArray(s.levels)&&s.levels.length?'var(--gold)':'var(--text2)'}">${Array.isArray(s.levels)&&s.levels.length?T('전용','propio'):T('공통','común')}</td>
+      <td style="text-align:center"><input type="checkbox" ${s.active===false?'':'checked'} style="width:auto" onchange="SPEED.edStd(${i},'active',this.checked)"></td>
+      <td><button class="btn btn-danger btn-sm mini" onclick="SPEED.delStd(${i})">✕</button></td></tr>`).join('')||`<tr><td colspan="10" style="color:var(--text2);text-align:center">${T('공정이 없습니다 — 「엑셀 기준표 기본값 불러오기」 또는 「공정 추가」','Sin procesos')}</td></tr>`;
+    $('spStdMsg').textContent=missing?'⚠️ qualification_speed.sql 미실행 — 저장 불가':`${STD.length}${T('개 공정','procesos')} · ${T('변경 후 「저장」을 눌러야 서버에 반영됩니다','guarde para aplicar')}`;
+  }
+  function edStd(i,k,v){if(!STD[i])return;STD[i][k]=v;STD[i]._dirty=true;}
+  function addStd(){STD.push({id:'new'+Date.now(),factory:FAC,sort_no:STD.length+1,name:'',name_es:'',cond:'',std_time:0,items:[],levels:null,match:'',active:true,_new:true,_dirty:true});renderStdTable();}
+  function delStd(i){const s=STD[i];if(!s)return;const used=EV.filter(e=>e.std_id===s.id).length;if(!confirm(`「${s.name}」 기준을 삭제할까요?${used?`\n평가 기록 ${used}건은 남고 기준표 연결만 해제됩니다.`:''}`))return;
+    if(s._new||String(s.id).startsWith('def')){STD.splice(i,1);renderStdTable();return;}(window.__spDel=window.__spDel||[]).push(s.id);STD.splice(i,1);renderStdTable();}
+  async function saveStd(){
+    if(missing){alert('qualification_speed.sql 을 먼저 실행하세요');return;}
+    const names=STD.map(s=>String(s.name||'').trim());if(names.some(n=>!n)){alert('공정 이름이 비어 있는 행이 있습니다');return;}if(new Set(names).size!==names.length){alert('공정 이름이 중복됩니다');return;}
+    if(STD.some(s=>!(+s.std_time>0))){alert('표준시간은 0보다 커야 합니다');return;}
+    $('spStdMsg').textContent='저장 중…';
+    try{
+      for(const id of (window.__spDel||[])){await sbFetch(`exam_speed_std?id=eq.${id}`,{method:'DELETE',headers:{'Prefer':'return=minimal'}});}window.__spDel=[];
+      for(const s of STD){const body={factory:FAC,sort_no:+s.sort_no||0,name:s.name.trim(),name_es:s.name_es||null,cond:s.cond||null,cut_qty:s.cut_qty??null,wire_len:s.wire_len||null,crimp_info:s.crimp_info||null,std_time:+s.std_time,items:s.items||[],levels:(Array.isArray(s.levels)&&s.levels.length)?s.levels:null,match:s.match||null,active:s.active!==false,updated_at:new Date().toISOString()};
+        if(s._new||String(s.id).startsWith('def')){const r=await sbFetch('exam_speed_std?on_conflict=factory,name',{method:'POST',headers:{'Prefer':'resolution=merge-duplicates,return=representation'},body:JSON.stringify(body)});if(r&&r[0]){s.id=r[0].id;delete s._new;}}
+        else if(s._dirty){await sbFetch(`exam_speed_std?id=eq.${s.id}`,{method:'PATCH',headers:{'Prefer':'return=minimal'},body:JSON.stringify(body)});}
+        delete s._dirty;}
+      toast(`💾 ${T('공정별 기준 저장 완료','Maestro guardado')}`);await load(true);try{if(typeof renderCriteria==='function'&&document.getElementById('page-criteria')?.classList.contains('active'))renderCriteria();}catch(e){}
+    }catch(e){alert('저장 실패: '+e.message);$('spStdMsg').textContent='⚠️ '+e.message;}
+  }
+  async function seedDefaults(){
+    if(!confirm(`엑셀 「작업자 신속성 평가 항목 기준표」 ${SPEED_DEFAULTS.length}개 공정의 표준시간·수행항목을 불러옵니다.\n같은 이름의 공정은 덮어쓰고, 다른 공정은 그대로 둡니다. 계속할까요?`))return;
+    if(missing){STD=SPEED_DEFAULTS.map((d,i)=>({...d,id:'def'+i,factory:FAC,active:true,levels:null}));renderStdTable();return;}
+    try{const rows=SPEED_DEFAULTS.map(d=>({factory:FAC,sort_no:d.sort_no,name:d.name,name_es:d.name_es,cond:d.cond,cut_qty:d.cut_qty??null,wire_len:d.wire_len||null,crimp_info:d.crimp_info||null,std_time:d.std_time,items:d.items,match:d.match,active:true,updated_at:new Date().toISOString()}));
+      await sbFetch('exam_speed_std?on_conflict=factory,name',{method:'POST',headers:{'Prefer':'resolution=merge-duplicates,return=minimal'},body:JSON.stringify(rows)});
+      toast(`📥 ${rows.length}${T('개 공정 기본값 적용','procesos cargados')}`);await load(true);}
+    catch(e){alert('불러오기 실패: '+e.message);}
+  }
+
+  /* ───── 마스터: 항목·전용 레벨 모달 ───── */
+  function openItems(i){const s=STD[i];if(!s)return;edit={idx:i,items:JSON.parse(JSON.stringify(s.items||[])),own:Array.isArray(s.levels)&&s.levels.length?JSON.parse(JSON.stringify(s.levels)):null};
+    $('spItemTitle').textContent=`📋 ${s.name} — ${T('수행항목 · 레벨 기준','ítems · niveles')}`;$('spOwnLv').checked=!!edit.own;$('spOwnLvBox').style.display=edit.own?'block':'none';renderItemRows();renderOwnLv();$('spItemModal').classList.add('open');}
+  function closeItems(){$('spItemModal').classList.remove('open');}
+  function renderItemRows(){const tb=$('spItemBody');tb.innerHTML=edit.items.map((it,k)=>`<tr>
+      <td><input type="number" value="${it.no??k+1}" style="width:50px;text-align:center" oninput="SPEED.edItem(${k},'no',+this.value)"></td>
+      <td><input type="text" value="${esc(it.mid||'')}" oninput="SPEED.edItem(${k},'mid',this.value)"></td>
+      <td><input type="text" value="${esc(it.name||'')}" oninput="SPEED.edItem(${k},'name',this.value)"></td>
+      <td><input type="text" value="${esc(it.unit||'')}" oninput="SPEED.edItem(${k},'unit',this.value)"></td>
+      <td><input type="text" value="${esc(it.basis||'')}" oninput="SPEED.edItem(${k},'basis',this.value)"></td>
+      <td><input type="number" step="0.001" value="${it.tt??0}" style="text-align:right" oninput="SPEED.edItem(${k},'tt',+this.value)"></td>
+      <td><select style="padding:.3rem" onchange="SPEED.edItem(${k},'kind',this.value)"><option value="필수" ${it.kind==='필수'?'selected':''}>필수</option><option value="적용" ${it.kind==='적용'?'selected':''}>적용</option><option value="선택" ${it.kind==='선택'?'selected':''}>선택</option></select></td>
+      <td><button class="btn btn-danger btn-sm mini" style="padding:.15rem .4rem" onclick="SPEED.delItemRow(${k})">✕</button></td></tr>`).join('');
+    $('spItemSum').textContent=r1(edit.items.reduce((a,b)=>a+(+b.tt||0),0));}
+  function edItem(k,key,v){if(edit.items[k]){edit.items[k][key]=v;if(key==='tt')$('spItemSum').textContent=r1(edit.items.reduce((a,b)=>a+(+b.tt||0),0));}}
+  function addItemRow(){edit.items.push({no:edit.items.length+1,mid:'',name:'',unit:'1회',basis:'',tt:0,kind:'필수'});renderItemRows();}
+  function delItemRow(k){edit.items.splice(k,1);renderItemRows();}
+  function itemSumToStd(){const s=STD[edit.idx];if(!s)return;s.std_time=r1(edit.items.reduce((a,b)=>a+(+b.tt||0),0));s._dirty=true;renderStdTable();toast(`Σ ${T('표준시간','Estándar')} = ${s.std_time}s (${T('저장 필요','guarde')})`);}
+  function toggleOwnLv(){if($('spOwnLv').checked){if(!edit.own)edit.own=LV.map(l=>({level:l.level,min_pct:+l.min_pct,score_pct:+l.score_pct,is_fail:!!l.is_fail,color:l.color}));$('spOwnLvBox').style.display='block';}else{edit.own=null;$('spOwnLvBox').style.display='none';}renderOwnLv();}
+  function renderOwnLv(){const tb=$('spOwnLvBody');if(!edit.own){tb.innerHTML='';return;}tb.innerHTML=edit.own.map((l,k)=>`<tr><td><input type="text" value="${esc(l.level)}" style="width:80px" oninput="SPEED.edOwn(${k},'level',this.value)"></td><td><input type="number" value="${l.min_pct}" oninput="SPEED.edOwn(${k},'min_pct',+this.value)"></td><td><input type="number" value="${l.score_pct}" oninput="SPEED.edOwn(${k},'score_pct',+this.value)"></td><td style="text-align:center"><input type="checkbox" ${l.is_fail?'checked':''} style="width:auto" onchange="SPEED.edOwn(${k},'is_fail',this.checked)"></td><td><button class="btn btn-danger btn-sm mini" style="padding:.15rem .4rem" onclick="SPEED.delOwn(${k})">✕</button></td></tr>`).join('');}
+  function edOwn(k,key,v){if(edit.own&&edit.own[k])edit.own[k][key]=v;}
+  function addOwnLv(){if(!edit.own)edit.own=[];edit.own.push({level:'',min_pct:0,score_pct:0,is_fail:false});renderOwnLv();}
+  function delOwn(k){edit.own.splice(k,1);renderOwnLv();}
+  function applyItems(){const s=STD[edit.idx];if(!s)return;s.items=edit.items.filter(x=>String(x.name||'').trim());s.levels=(edit.own&&edit.own.filter(x=>String(x.level||'').trim()).length)?edit.own.filter(x=>String(x.level||'').trim()):null;s._dirty=true;closeItems();renderStdTable();toast(T('적용됨 — 「저장」을 눌러 서버에 반영','Aplicado — guarde'));}
+
+  /* ───── 마스터: 공통 레벨 ───── */
+  function renderLevelTable(){const tb=$('spLevelBody');if(!tb)return;const w=profW();$('spLvW').textContent=`(${T('정기 배점','peso')} ${w}${T('점','')})`;
+    LV.sort((a,b)=>b.min_pct-a.min_pct);
+    tb.innerHTML=LV.map((l,k)=>`<tr><td><input type="text" value="${esc(l.level)}" style="width:90px;font-weight:700;color:${l.color||'var(--text)'}" oninput="SPEED.edLv(${k},'level',this.value)"></td>
+      <td><input type="number" step="0.1" value="${l.min_pct}" oninput="SPEED.edLv(${k},'min_pct',+this.value)"> %</td>
+      <td><input type="number" value="${l.score_pct}" oninput="SPEED.edLv(${k},'score_pct',+this.value)"> %</td>
+      <td style="color:var(--gold);font-weight:700;font-family:var(--mono)">${r1(w*(+l.score_pct||0)/100)}</td>
+      <td style="text-align:center"><input type="checkbox" ${l.is_fail?'checked':''} style="width:auto" onchange="SPEED.edLv(${k},'is_fail',this.checked)"></td>
+      <td><input type="color" value="${l.color||'#8a8a8a'}" oninput="SPEED.edLv(${k},'color',this.value)"></td>
+      <td><button class="btn btn-danger btn-sm mini" style="padding:.15rem .4rem" onclick="SPEED.delLv(${k})">✕</button></td></tr>`).join('');
+    $('spLevelMsg').textContent=missing?'⚠️ qualification_speed.sql 미실행 — 저장 불가':T('달성률이 높은 레벨부터 적용 · 변경 후 「저장」','Guarde para aplicar');}
+  function edLv(k,key,v){if(LV[k]){LV[k][key]=v;if(key==='score_pct')renderLevelTable();}}
+  function addLevel(){LV.push({factory:FAC,level:'',min_pct:0,score_pct:0,color:'#8a8a8a',sort_no:LV.length+1,is_fail:false});renderLevelTable();}
+  function delLv(k){LV.splice(k,1);renderLevelTable();}
+  async function saveLevels(){
+    if(missing){alert('qualification_speed.sql 을 먼저 실행하세요');return;}
+    const rows=LV.filter(l=>String(l.level||'').trim());if(!rows.length){alert('레벨이 없습니다');return;}
+    if(new Set(rows.map(l=>l.level.trim())).size!==rows.length){alert('레벨 이름이 중복됩니다');return;}
+    try{await sbFetch(`exam_speed_level?factory=eq.${FAC}`,{method:'DELETE',headers:{'Prefer':'return=minimal'}});
+      await sbFetch('exam_speed_level',{method:'POST',headers:{'Prefer':'return=minimal'},body:JSON.stringify(rows.sort((a,b)=>b.min_pct-a.min_pct).map((l,k)=>({factory:FAC,level:l.level.trim(),min_pct:+l.min_pct||0,score_pct:+l.score_pct||0,color:l.color||null,sort_no:k+1,is_fail:!!l.is_fail})))});
+      toast(`💾 ${T('레벨 기준 저장 완료','Niveles guardados')}`);await load(true);try{if(typeof renderCriteria==='function'&&document.getElementById('page-criteria')?.classList.contains('active'))renderCriteria();}catch(e){}
+    }catch(e){alert('저장 실패: '+e.message);}
+  }
+
+  /* ───── 외부 제공 ───── */
+  function latestOf(emp){const e=String(emp||'').toUpperCase();return EV.find(x=>String(x.emp_id).toUpperCase()===e)||null;}
+  function levelsHtml(){const w=profW();return `<table class="results-table"><thead><tr><th>${T('레벨','Nivel')}</th><th>${T('달성률','Cumplimiento')}</th><th>${T('배점 대비','% del peso')}</th><th>${T('정기평가 점수','Pts periódica')} (/${w})</th></tr></thead><tbody>${levelsFor(null).map((b,i,arr)=>`<tr><td>${lvTag(b)}</td><td>${b.is_fail?`< ${arr[i-1]?arr[i-1].min_pct:0}%`:b.min_pct+'% ↑'}</td><td>${b.score_pct}%</td><td style="color:var(--gold);font-weight:700">${r1(w*b.score_pct/100)}</td></tr>`).join('')}</tbody></table>`;}
+  return{load,renderAll,onStd,onEmp,renderEmpSelect,swStart,swPause,swReset,swDone,calc,clearForm,save,renderHist,loadInto,del,exportHist,
+    renderStdTable,edStd,addStd,delStd,saveStd,seedDefaults,openItems,closeItems,edItem,addItemRow,delItemRow,itemSumToStd,toggleOwnLv,edOwn,addOwnLv,delOwn,applyItems,
+    renderLevelTable,edLv,addLevel,delLv,saveLevels,latestOf,levelsHtml,lvTag,lvByName,judge,levelsFor,
+    get STD(){return STD;},get LV(){return LV;},get EV(){return EV;},get missing(){return missing;},get loaded(){return loaded;}};
+})();
+
 // ════ ⑦ 관리자 모드 (2026-10-30) — 진단·배점설계·숙련도데이터·임의데이터·시뮬레이션 (SB_URL/SB_KEY/PERF_SHEETS/XLSX는 본문 전역 사용) ════
 (function(){
 /* ═══════════ Supabase ═══════════ */
@@ -9437,6 +9970,7 @@ const addDays=(d,n)=>{const x=new Date(d+'T00:00:00');x.setDate(x.getDate()+n);r
 /* ═══════════ 상태 ═══════════ */
 let MIGRATED=true;
 let CFG={},ROUNDS=[],GRADES=[],PITEMS=[],QUESTIONS=[],STUDENTS=[],RESULTS=[],FINAL={},PROD=[],HEALTH=null,PERF=null;
+let SPD=[],SPLV=[],SPSTD=[],SPEED_OK=false;   // 숙련도(신속성) 평가 기록·레벨 기준·공정별 기준 (2026-11-03)
 let W={new:{theory:30,perf:40,crimp:15,defect:15,prof:0},regular:{theory:20,perf:30,crimp:10,defect:10,prof:30}};
 let BANDS=[{min:100,pct:100},{min:95,pct:90},{min:90,pct:80},{min:85,pct:70},{min:80,pct:60},{min:70,pct:45},{min:0,pct:30}];
 let RULE={minDays:10,periodDays:30,defectCapPpm:3000}, MINP={theory:0,perf:0,msa:0,prof:0};
@@ -9484,6 +10018,7 @@ async function loadAll(force){
     GRADES=grades;PITEMS=pitems.map(x=>({name:x.name,max:+x.max_score}));QUESTIONS=qs;STUDENTS=students;RESULTS=results;
     try{const f=await sb('v_qual_final_status?select=id,final_status,msa_result,msa_grade,msa_grr,msa_group,resigned');FINAL={};f.forEach(x=>FINAL[x.id]=x);}catch(e){FINAL={};}
     try{PROD=await sb('v_qual_productivity?select=*&order=emp_id.asc');}catch(e){PROD=null;}
+    try{[SPD,SPLV,SPSTD]=await Promise.all([sb('exam_speed_eval?select=*&order=eval_date.desc,created_at.desc&limit=4000'),sb('exam_speed_level?select=*&factory=eq.1&order=min_pct.desc'),sb('exam_speed_std?select=id,name,name_es,std_time,match,active,levels,sort_no&order=sort_no.asc')]);SPEED_OK=true;}catch(e){SPD=[];SPLV=[];SPSTD=[];SPEED_OK=false;}
     try{HEALTH=await sb('v_qual_health?select=k,v');}catch(e){HEALTH=null;}
     if(!PERF)loadPerfSheets();
     renderDiag();renderWeights();fillRoundSelects();renderProd();dInit();renderSim();
@@ -9513,9 +10048,10 @@ function renderDiag(){
     ['results_emp_not_in_students','명단에 없는 사번(퇴사 등)','ok'],['students_total','응시자 명단','ok'],
     ['students_no_hire','입사일 없음',H.students_no_hire>0?'warn':'ok'],['students_no_process','공정 없음',H.students_no_process>0?'warn':'ok'],
     ['theory_rawmax_variants','이론 원점수 체계 종류',H.theory_rawmax_variants>1?'warn':'ok'],['grade_dup_minscore','등급 기준 동점 중복',H.grade_dup_minscore>0?'warn':'ok'],
-    ['evaluating_now','이론 미시행 기록(평가중)','warn'],['productivity_rows','생산실적 행',H.productivity_rows>0?'ok':'warn'],
+    ['evaluating_now','이론 미시행 기록(평가중)','warn'],['speed_rows','숙련도(신속성) 평가 기록',(SPD&&SPD.length)?'ok':'warn'],
     ['msa_var_sessions_f1','MSA 계량형 세션','ok'],['msa_att_sessions_f1','MSA 계수형 세션','ok'],
     ['dummy_results','임의 기록',H.dummy_results>0?'warn':'ok'],['dummy_students','임의 응시자',H.dummy_students>0?'warn':'ok']];
+  H.speed_rows=SPEED_OK?(SPD||[]).length:'-';
   el.innerHTML=items.map(([k,l,c])=>`<div class="kpi ${c}"><div class="v">${H[k]??'-'}</div><div class="l">${l}</div></div>`).join('');
   const acts=[];
   if(H.results_unassigned_round>0)acts.push(['warn',`평가구분 미지정 기록 ${H.results_unassigned_round}건`,'④ 결과 이력 → 행 선택 → 「평가구분 일괄 지정」 (10월 입사자 MSA 자동등록분은 NEW-2026-10)']);
@@ -9525,7 +10061,8 @@ function renderDiag(){
   if(H.students_no_process>0)acts.push(['warn',`공정 없는 응시자 ${H.students_no_process}명`,'근태관리 지정공정 입력 → 배포 탭 접속 시 자동 반영']);
   if(H.grade_dup_minscore>0)acts.push(['warn',`등급 기준 동점 라벨 ${H.grade_dup_minscore}쌍`,'⑥ 등급 기준 마스터에서 하나로 정리']);
   if(H.evaluating_now>0)acts.push(['ok',`이론 미시행(평가중) 기록 ${H.evaluating_now}건`,'모바일 이론 응시 진행 후 자동 완료 — 조치 불필요']);
-  if(!(H.productivity_rows>0))acts.push(['warn','생산실적 데이터 없음','정기·재평가 전 ③ 숙련도 데이터 탭에서 MES/작업일보 붙여넣기 — 없으면 정기평가 숙련도가 「자료부족·평가중」']);
+  if(!SPEED_OK)acts.push(['bad','qualification_speed.sql 미실행','Supabase SQL Editor에서 실행 — 숙련도(신속성) 평가 테이블·판정 트리거 생성 전에는 정기평가 숙련도가 「평가중」']);
+  else if(!(SPD&&SPD.length))acts.push(['warn','숙련도(신속성) 평가 기록 없음','정기·재평가 전 ⑥ 숙련도·다기능 → ⏱ 숙련도 평가에서 초시계 측정·저장 — 없으면 정기평가 숙련도가 「평가중」']);
   if(H.dummy_results>0||H.dummy_students>0||H.dummy_productivity>0)acts.push(['warn',`임의(테스트) 데이터 존재 — 기록 ${H.dummy_results||0} · 응시자 ${H.dummy_students||0} · 생산실적 ${H.dummy_productivity||0}`,'실운영 통계에 섞이지 않게 확인 후 ④ 「임의데이터 전체 삭제」']);
   const col={bad:'var(--red)',warn:'var(--orange)',ok:'var(--green)'};
   document.getElementById('diagActions').innerHTML=acts.length?`<ul class="diag" style="list-style:none">${acts.map(a=>`<li><span style="color:${col[a[0]]};font-weight:700">●</span> <b>${a[1]}</b><span class="fix">→ ${a[2]}</span></li>`).join('')}</ul>`:'<span style="color:var(--green)">✅ 정리할 항목 없음</span>';
@@ -9595,23 +10132,33 @@ async function importProd(){
   catch(e){alert('등록 실패: '+e.message);}
 }
 function renderProd(){
-  const el=document.getElementById('prodTable');
-  if(PROD===null){el.innerHTML='<div class="muted">⚠️ v_qual_productivity 없음 — qualification_admin.sql 실행 필요</div>';return;}
+  const el=document.getElementById('prodTable');if(!el)return;
+  if(!SPEED_OK){el.innerHTML='<div class="muted">⚠️ exam_speed_eval 없음 — qualification_speed.sql 실행 필요</div>';document.getElementById('prodCnt').textContent='';return;}
   const q=(document.getElementById('prodQ').value||'').toLowerCase(),dm=document.getElementById('prodDummy').value;
-  const nameOf={};STUDENTS.forEach(s=>nameOf[s.emp_id]=s.name);
-  let rows=PROD.filter(p=>(dm==='all'||(dm==='dummy')===!!p.is_dummy)&&(!q||p.emp_id.toLowerCase().includes(q)||String(p.emp_name||nameOf[p.emp_id]||'').toLowerCase().includes(q)));
-  document.getElementById('prodCnt').textContent=`${rows.length}행`;
+  const rows=(SPD||[]).filter(p=>(dm==='all'||(dm==='dummy')===!!p.is_dummy)&&(!q||String(p.emp_id).toLowerCase().includes(q)||String(p.name||'').toLowerCase().includes(q)||String(p.std_name||'').toLowerCase().includes(q)));
+  document.getElementById('prodCnt').textContent=`${rows.length}건`;
   if(!rows.length){el.innerHTML='<div class="muted">데이터 없음</div>';return;}
-  const rn=id=>{const r=ROUNDS.find(x=>x.id===id);return r?r.name:(id||'미지정');};
-  el.innerHTML=`<table><thead><tr><th>사번</th><th>이름</th><th>평가구분</th><th>기간</th><th>실적일</th><th>평균 달성률</th><th>불량 ppm</th><th>숙련도 점수(정기 ${W.regular.prof}점)</th><th></th></tr></thead><tbody>${rows.map(p=>{
-    const sc=profScore(p.eff_pct,p.days,p.defect_ppm,W.regular.prof);
-    return `<tr><td class="mono">${esc(p.emp_id)}${p.is_dummy?' <span class="pill p-g">TEST</span>':''}</td><td>${esc(p.emp_name||nameOf[p.emp_id]||'')}</td><td class="muted">${esc(rn(p.eval_round))}</td><td class="mono">${p.from_date}~${p.to_date}</td><td>${p.days}</td>
-      <td><b style="color:${p.eff_pct>=100?'var(--green)':p.eff_pct>=80?'var(--text)':'var(--red)'}">${p.eff_pct}%</b><div class="bar" style="width:110px"><i style="width:${Math.min(100,p.eff_pct)}%"></i></div></td><td>${p.defect_ppm??'-'}</td>
-      <td>${sc==null?'<span class="pill p-ing">일수부족</span>':`<b>${sc}</b> / ${W.regular.prof}`}</td>
-      <td><button class="btn sm red" onclick="QA.delProd('${esc(p.emp_id)}','${esc(p.eval_round||'')}')">삭제</button></td></tr>`;}).join('')}</tbody></table>`;
+  const rn=id=>{const r=ROUNDS.find(x=>x.id===id);return r?r.name:(id||'미지정');};const wP=W.regular.prof;
+  el.innerHTML=`<table><thead><tr><th>평가일</th><th>사번</th><th>이름</th><th>배치공정</th><th>기준표</th><th>평가구분</th><th>표준(s)</th><th>측정(s)</th><th>달성률</th><th>레벨</th><th>숙련도 점수(정기 ${wP}점)</th><th>판정</th><th>평가자</th><th></th></tr></thead><tbody>${rows.slice(0,800).map(p=>{
+    const lv=(SPLV||[]).find(l=>l.level===p.level);const col=lv&&lv.color?lv.color:'#8a8a8a';
+    return `<tr><td class="mono">${esc(p.eval_date)}</td><td class="mono">${esc(p.emp_id)}${p.is_dummy?' <span class="pill p-g">TEST</span>':''}</td><td>${esc(p.name||'')}</td><td class="muted">${esc(p.process||'')}</td><td>${esc(p.std_name||'')}</td><td class="muted">${esc(rn(p.eval_round))}</td><td class="mono">${r1(p.std_time)}</td><td class="mono">${r1(p.measured_sec)}</td>
+      <td><b style="color:${p.eff_pct>=100?'var(--green)':p.eff_pct>=72?'var(--text)':'var(--red)'}">${r1(p.eff_pct)}%</b></td><td><span class="pill" style="color:${col};border-color:${col}66">${esc(p.level||'-')}</span></td>
+      <td>${p.result==='과락'?'<span class="pill p-ng">과락 0</span>':`<b>${r1(wP*(+p.score_pct||0)/100)}</b> / ${wP}`}</td><td>${p.result==='합격'?'<span class="pill p-ok">합격</span>':p.result==='과락'?`<span class="pill p-ng" title="${p.defect?'부적합품 ':''}${p.omission?'항목누락':''}">과락</span>`:`<span class="pill p-ing">${esc(p.result||'-')}</span>`}</td><td class="muted">${esc(p.evaluator||'')}</td>
+      <td><button class="btn sm red" onclick="QA.delProd('${esc(p.id)}')">삭제</button></td></tr>`;}).join('')}</tbody></table>${rows.length>800?'<div class="muted">상위 800건만 표시</div>':''}`;
 }
-async function delProd(emp,round){if(!confirm(`${emp} 의 생산실적(${round||'미지정'})을 삭제할까요?`))return;await sb(`exam_productivity?emp_id=eq.${encodeURIComponent(emp)}&eval_round=${round?'eq.'+encodeURIComponent(round):'is.null'}`,{method:'DELETE',headers:{'Prefer':'return=minimal'}});await loadAll();}
-function exportProd(){if(!PROD||!PROD.length)return;const ws=XLSX.utils.json_to_sheet(PROD.map(p=>({사번:p.emp_id,이름:p.emp_name,평가구분:p.eval_round,시작:p.from_date,종료:p.to_date,실적일:p.days,평균달성률:p.eff_pct,불량ppm:p.defect_ppm,임의데이터:p.is_dummy?'Y':''})));const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'숙련도');XLSX.writeFile(wb,`숙련도요약_${today()}.xlsx`);}
+async function delProd(id){const p=(SPD||[]).find(x=>String(x.id)===String(id));if(!p)return;if(!confirm(`${p.name||p.emp_id} · ${p.std_name} · ${p.eval_date} (${r1(p.measured_sec)}s · ${p.level}) 기록을 삭제할까요?\n해당 사번의 정기·재평가 결과 숙련도가 다시 계산됩니다.`))return;
+  try{await sb(`exam_speed_eval?id=eq.${id}`,{method:'DELETE',headers:{'Prefer':'return=minimal'}});toast('삭제 완료');await loadAll();mainRefresh();try{SPEED.load(true);}catch(e){}}catch(e){alert('삭제 실패: '+e.message);}}
+function exportProd(){if(!SPD||!SPD.length)return;const wP=W.regular.prof;const rn=id=>{const r=ROUNDS.find(x=>x.id===id);return r?r.name:(id||'');};
+  const ws=XLSX.utils.json_to_sheet(SPD.map(p=>({평가일:p.eval_date,사번:p.emp_id,이름:p.name,배치공정:p.process,기준표:p.std_name,평가구분:rn(p.eval_round),표준시간_초:+p.std_time,측정시간_초:+p.measured_sec,달성률_pct:+p.eff_pct,레벨:p.level,배점대비_pct:+p.score_pct,숙련도점수:r1(wP*(+p.score_pct||0)/100),판정:p.result,부적합품:p.defect?'Y':'',항목누락:p.omission?'Y':'',평가자:p.evaluator||'',임의데이터:p.is_dummy?'Y':''})));
+  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'숙련도평가');XLSX.writeFile(wb,`숙련도평가기록_${today()}.xlsx`);}
+function goSpeed(){try{switchTab('skills',document.querySelector('.tab-nav .tab-btn[onclick*="skills"]'));switchSkillsSubtab('speed',document.querySelector('#page-skills .subtab-btn'));}catch(e){}}
+function goSpeedMaster(){try{switchTab('skills',document.querySelector('.tab-nav .tab-btn[onclick*="skills"]'));const b=[...document.querySelectorAll('#page-skills .subtab-btn')].find(x=>/speedmaster/.test(x.getAttribute('onclick')));switchSkillsSubtab('speedmaster',b);}catch(e){}}
+/* 숙련도(신속성) 레벨 판정 — 서버 exam_speed_level_of 와 동일 규칙 */
+function speedLevelsFor(std){const own=std&&Array.isArray(std.levels)&&std.levels.length?std.levels:(SPLV||[]);return [...own].map(x=>({level:x.level,min_pct:+x.min_pct,score_pct:+x.score_pct||0,is_fail:!!x.is_fail})).sort((a,b)=>b.min_pct-a.min_pct);}
+function speedJudge(eff,std){const lv=speedLevelsFor(std);if(!lv.length||eff==null)return null;for(const b of lv){if(eff>=b.min_pct)return b;}return Object.assign({},lv[lv.length-1],{is_fail:true});}
+function speedScore(rec,weight){if(!rec)return null;if(rec.result==='과락')return 0;return r1(weight*(+rec.score_pct||0)/100);}
+function speedStdFor(p){const act=(SPSTD||[]).filter(s=>s.active!==false);if(!act.length)return null;const pr=String(p.process||p.sheet&&p.sheet.kr||'').toLowerCase();
+  for(const s of act){const ks=String(s.match||'').split(',').map(x=>x.trim().toLowerCase()).filter(Boolean);if(ks.some(k=>pr.includes(k)||k.includes(pr)))return s;}return act[0];}
 function profScore(eff,days,ppm,weight){
   if(eff==null||days==null||days<(RULE.minDays||10))return null;
   let e=+eff;if(ppm!=null&&ppm>(RULE.defectCapPpm||3000))e-=5;
@@ -9736,12 +10283,11 @@ function dPreview(){
   // MSA 계량형 측정값
   const varG=groups.map((g,gi)=>{const mem=g.map(i=>people[i]);const r=genVarGroup(mem,passG.has(gi));return{gi,members:g,data:r};});
   varG.forEach(v=>{if(v.data)v.members.forEach(i=>{people[i].crimpPass=v.data.V.result==='Aprobado';people[i].crimpW=people[i].crimpPass?Wt.crimp:0;people[i].msaGrade=v.data.V.grade;people[i].msaGrr=v.data.V.pctS;});});
-  // 숙련도 실적
-  const days=+document.getElementById('dProdDays').value||0,genProd=document.getElementById('dGenProd').checked&&track!=='new'&&days>0;
-  const genProdFor=p=>{p.prod=[];if(!genProd)return;const mean=p.profLevel==='hi'?rf(1.0,1.08):p.profLevel==='lo'?rf(.68,.79):rf(.86,.99);const uph=PROC_UPH[p.sheet.key]||200;
-    let d=addDays(p.date,-1),k=0;while(p.prod.length<days&&k<60){k++;const dow=new Date(d+'T00:00:00').getDay();if(dow!==0&&dow!==6){const h=ri(0,10)<2?rf(6,7.5):8;const target=Math.round(uph*h),eff=Math.max(.4,mean+nrand()*.05),actual=Math.round(target*eff);const ppm=p.profLevel==='lo'?rf(2500,6000):rf(300,2000);p.prod.push({date:d,target,actual,hours:+h.toFixed(1),defect:Math.round(actual*ppm/1e6)});}d=addDays(d,-1);}
-    const eff=p.prod.length?p.prod.reduce((a,b)=>a+b.actual/b.target*100,0)/p.prod.length:null;const ppm=p.prod.length?Math.round(p.prod.reduce((a,b)=>a+b.defect,0)/p.prod.reduce((a,b)=>a+b.actual,0)*1e6):null;
-    p.profEff=eff==null?null:r1(eff);p.profPpm=ppm;p.profW=eff==null?null:profScore(eff,p.prod.length,ppm,Wt.prof);};
+  // 숙련도(신속성) 평가 기록 — 공정별 표준 총소요시간 대비 측정시간 (hi: L1~L2 · mid: L3~L5 · lo: 미달)
+  const genProd=document.getElementById('dGenProd').checked&&track!=='new';
+  const genProdFor=p=>{p.prod=[];p.speed=null;p.profEff=null;p.profW=null;if(!genProd)return;const std=speedStdFor(p);if(!std)return;
+    const eff=p.profLevel==='hi'?rf(100,118):p.profLevel==='lo'?rf(58,71.5):rf(74,99.5);const sec=Math.round(+std.std_time/eff*100*10)/10;const j=speedJudge(r1(+std.std_time/sec*100),std);
+    p.speed={std,sec,eff:r1(+std.std_time/sec*100),level:j?j.level:null,score_pct:j?j.score_pct:0,fail:!!(j&&j.is_fail)};p.profEff=p.speed.eff;p.profW=r1(Wt.prof*p.speed.score_pct/100);};
   people.forEach(genProdFor);
   const pass=+CFG.passingScore||60;
   const calc=p=>{p.pracRaw=r1(p.perfW+p.crimpW+p.defectW);p.total=r1(p.theoryW+p.pracRaw+(p.profW||0));
@@ -9772,14 +10318,14 @@ function renderPreview(){
   document.getElementById('dTable').innerHTML=`<table><thead><tr><th>No</th><th>사번</th><th>이름</th><th>공정</th><th>입사일</th><th>평가일</th><th>이론 /${W_.theory}</th><th>작업수행 /${W_.perf}</th><th>압착고 /${W_.crimp}</th><th>불량판별 /${W_.defect}</th>${P.track==='regular'?`<th>숙련도 /${W_.prof}</th>`:''}<th>총점</th><th>판정</th></tr></thead><tbody>${ps.map((p,i)=>`<tr><td class="muted">${i+1}</td><td class="mono">${p.emp}</td><td>${esc(p.name)}</td><td class="muted">${esc(p.process)}</td><td class="mono">${p.hire}</td><td class="mono">${p.date}</td>
     <td>${p.theoryW} <span class="muted">(${p.theoryRaw}/${P.nQ})</span></td><td>${p.perfW} <span class="muted">(${p.perfSum}/${p.sheet.max})</span></td>
     <td>${p.crimpW} <span class="muted">${p.group+1}조·${p.msaGrade||''} ${p.msaGrr!=null?p.msaGrr.toFixed(1)+'%':''}</span></td><td>${p.defectW} <span class="muted">${(p.attE*100).toFixed(0)}%</span></td>
-    ${P.track==='regular'?`<td>${p.profW==null?'<span class="pill p-ing">평가중</span>':p.profW} <span class="muted">${p.profEff!=null?p.profEff+'% · '+p.prod.length+'일':''}</span></td>`:''}
+    ${P.track==='regular'?`<td>${p.profW==null?'<span class="pill p-ing">평가중</span>':p.profW} <span class="muted">${p.speed?p.speed.eff+'% · '+p.speed.level+' · '+p.speed.sec+'s':''}</span></td>`:''}
     <td><b>${p.total}</b></td><td>${p.final==='최종합격'?'<span class="pill p-ok">최종합격</span>':'<span class="pill p-ng">불합격</span>'}${p.cutFail.length?`<div class="muted">과락: ${p.cutFail.join('·')}</div>`:''}</td></tr>`).join('')}</tbody></table>`;
 }
 function dlog(m){const e=document.getElementById('dLog');e.textContent=(e.textContent==='-'?'':e.textContent+'\n')+`[${new Date().toLocaleTimeString('ko-KR')}] ${m}`;e.scrollTop=e.scrollHeight;}
 async function dApply(){
   if(!DPLAN){alert('먼저 미리보기');return;}const P=DPLAN;
   if(!MIGRATED){alert('먼저 Supabase에서 qualification_admin.sql 을 실행하세요 (is_dummy·track 컬럼, exam_productivity 등).');return;}
-  if(!confirm(`${P.people.length}명의 임의데이터를 Supabase에 적용합니다.\n(응시자·평가결과${document.getElementById('dGenMsa').checked?'·MSA 세션/측정값':''}${P.track==='regular'&&document.getElementById('dGenProd').checked?'·생산실적':''})\n모든 데이터는 is_dummy / 사번 99 규칙으로 표시되어 「임의데이터 전체 삭제」로 한 번에 지울 수 있습니다.`))return;
+  if(!confirm(`${P.people.length}명의 임의데이터를 Supabase에 적용합니다.\n(응시자·평가결과${document.getElementById('dGenMsa').checked?'·MSA 세션/측정값':''}${P.track==='regular'&&document.getElementById('dGenProd').checked?'·숙련도(신속성) 평가':''})\n모든 데이터는 is_dummy / 사번 99 규칙으로 표시되어 「임의데이터 전체 삭제」로 한 번에 지울 수 있습니다.`))return;
   const btn=document.getElementById('dApplyBtn');btn.disabled=true;document.getElementById('dLog').textContent='-';
   const origActive=CFG.activeRound||'';let roundId=P.round;
   try{
@@ -9817,10 +10363,11 @@ async function dApply(){
       const aid=a[0].id;const ev=[];P.people.forEach(p=>p.attTrials.forEach((tr,t)=>ev.push({session_id:aid,employee_id:p.emp,employee_name:p.name,trial:t+1,answers:tr})));
       await sbInsertMany('msa_evaluations',ev);dlog(`MSA 계수형 세션 1 · 평가 ${ev.length}건`);
     }
-    // 4) 생산실적
+    // 4) 숙련도(신속성) 평가 기록 → AFTER 트리거가 정기·재평가 결과의 숙련도를 재판정
     if(P.track==='regular'&&document.getElementById('dGenProd').checked){
-      const rows=[];P.people.forEach(p=>p.prod.forEach(d=>rows.push({factory:'1',emp_id:p.emp,emp_name:p.name,work_date:d.date,process:p.process,target_qty:d.target,actual_qty:d.actual,work_hours:d.hours,defect_qty:d.defect,source:'dummy',eval_round:roundId,is_dummy:true})));
-      if(rows.length){await sbInsertMany('exam_productivity',rows,400);dlog(`생산실적 ${rows.length}행`);}
+      if(!SPEED_OK){dlog('⚠️ exam_speed_eval 없음(qualification_speed.sql 미실행) — 숙련도 기록 생략');}
+      else{const rows=[];P.people.forEach(p=>{if(p.speed)rows.push({factory:'1',emp_id:p.emp,name:p.name,process:p.process,std_id:p.speed.std.id,std_name:p.speed.std.name,std_time:+p.speed.std.std_time,eval_date:p.date,eval_round:roundId,measured_sec:p.speed.sec,defect:false,omission:false,evaluator:'관리자(임의데이터)',is_dummy:true});});
+      if(rows.length){await sbInsertMany('exam_speed_eval',rows,200);dlog(`숙련도(신속성) 평가 ${rows.length}건`);}}
     }
     // 5) 트리거가 덮어쓴 값 정합화 (최종 점수 재기록)
     for(const c of chunk(P.people,40)){await Promise.all(c.map(p=>idOf[p.emp]?sb(`exam_results?id=eq.${idOf[p.emp]}`,{method:'PATCH',headers:{'Prefer':'return=minimal'},body:JSON.stringify(mkRow(p))}):null));}
@@ -9835,7 +10382,7 @@ async function dApply(){
 }
 function mainRefresh(){try{window._sbCacheTime=0;window.sbLoadAllCached(true).then(()=>{try{window._roundRefreshAll();}catch(e){}});}catch(e){}}
 async function dPurge(){
-  if(!confirm('임의데이터(사번 M0YYMM99xx · is_dummy · [TEST] MSA 세션 · 생산실적)를 전부 삭제할까요?\n실데이터는 건드리지 않습니다.'))return;
+  if(!confirm('임의데이터(사번 M0YYMM99xx · is_dummy · [TEST] MSA 세션 · 숙련도 평가 · 생산실적)를 전부 삭제할까요?\n실데이터는 건드리지 않습니다.'))return;
   try{const r=await sb('rpc/qual_dummy_purge',{method:'POST',body:'{}'});dlog('삭제: '+JSON.stringify(r));toast('임의데이터 삭제 완료');
     const dr=ROUNDS.filter(x=>/\(TEST\)$/.test(x.name));if(dr.length&&confirm(`TEST 평가구분 ${dr.length}개도 삭제할까요?`)){ROUNDS=ROUNDS.filter(x=>!dr.includes(x));await cfgSet({evalRounds:JSON.stringify(ROUNDS)});if(dr.some(x=>x.id===CFG.activeRound))await cfgSet({activeRound:''});}
     await loadAll();mainRefresh();}
@@ -9853,9 +10400,9 @@ function renderSim(){
   rs=latestPerEmp(rs);
   const dates=rs.map(r=>r.date).filter(Boolean).sort();
   const fEl=document.getElementById('sFrom'),tEl=document.getElementById('sTo');
-  if(!tEl.value||tEl.dataset.round!==round){tEl.value=dates.length?dates[dates.length-1]:today();tEl.dataset.round=round;fEl.value=addDays(tEl.value,-(RULE.periodDays||30));}
+  if(!tEl.value||tEl.dataset.round!==round){tEl.value=dates.length?dates[dates.length-1]:today();tEl.dataset.round=round;fEl.value=addDays(tEl.value,-120);}
   const from=fEl.value,to=tEl.value;
-  const prodBy={};(PROD||[]).forEach(p=>{(prodBy[p.emp_id]=prodBy[p.emp_id]||[]).push(p);});
+  const spdBy={};(SPD||[]).forEach(p=>{const k=String(p.emp_id).toUpperCase();(spdBy[k]=spdBy[k]||[]).push(p);});
   const gradeOf=t=>{for(const g of GRADES){if(t>=+g.min_score)return g;}return null;};
   SIMROWS=rs.map(r=>{
     const its=r.practical_item_scores||[];const g=k=>its.find(x=>itemKind(x.name)===k);
@@ -9865,16 +10412,16 @@ function renderSim(){
     const pfR=pf&&pf.sheet&&pf.sheet.max?pf.sheet.sum/pf.sheet.max:rate(pf);
     const fs=FINAL[r.id];const crR=rate(cr)??(fs&&fs.msa_result?(fs.msa_result==='Aprobado'?1:0):null),dfR=rate(df);
     const T=th==null?null:r1(th*Wt.theory),Pf=pfR==null?null:r1(pfR*Wt.perf),C=crR==null?null:r1(crR*Wt.crimp),D=dfR==null?null:r1(dfR*Wt.defect);
-    let prof=null,profEff=null,profDays=0,profPpm=null;
-    if(Wt.prof>0){const pl=(prodBy[r.emp_id]||[]);// 기간 겹치는 요약 사용 (뷰는 회차별 집계) → 가장 많이 겹치는 것
-      const pick=pl.filter(p=>p.to_date>=from&&p.from_date<=to).sort((a,b)=>b.days-a.days)[0];
-      if(pick){profEff=+pick.eff_pct;profDays=+pick.days;profPpm=pick.defect_ppm==null?null:+pick.defect_ppm;prof=profScore(profEff,profDays,profPpm,Wt.prof);}}
+    let prof=null,profEff=null,profDays=0,profPpm=null,profLv=null;
+    if(Wt.prof>0){const pl=(spdBy[String(r.emp_id).toUpperCase()]||[]);// 같은 평가구분 기록 우선 → 없으면 기간 내 최신 기록
+      const pick=pl.find(p=>p.eval_round&&p.eval_round===round)||pl.find(p=>p.eval_date>=from&&p.eval_date<=to)||null;
+      if(pick){profEff=+pick.eff_pct;profLv=String(pick.level||'')+(pick.result==='과락'?'(과락)':'');prof=speedScore(pick,Wt.prof);profDays=1;}}
     const miss=[];if(T==null)miss.push('이론');if(Pf==null)miss.push('작업수행');if(C==null&&D==null)miss.push('MSA');if(Wt.prof>0&&prof==null)miss.push('숙련도');
     const total=r1((T||0)+(Pf||0)+(C||0)+(D||0)+(prof||0));
     const cut=[];if(MINP.theory&&T!=null&&T<Wt.theory*MINP.theory/100)cut.push('이론');if(MINP.perf&&Pf!=null&&Pf<Wt.perf*MINP.perf/100)cut.push('작업수행');if(MINP.msa&&(C!=null||D!=null)&&((C||0)+(D||0))<(Wt.crimp+Wt.defect)*MINP.msa/100)cut.push('MSA');if(MINP.prof&&Wt.prof&&prof!=null&&prof<Wt.prof*MINP.prof/100)cut.push('숙련도');
     const msaOk=fs?fs.msa_result==='Aprobado':(crR===1);
     const status=miss.length?'평가중':(total>=pass&&!cut.length&&msaOk)?'합격':'불합격';
-    return{r,T,Pf,C,D,prof,profEff,profDays,profPpm,total,miss,cut,status,grade:status==='합격'?gradeOf(total):null,oldTotal:+r.total_score,oldPassed:!!r.passed,fs};
+    return{r,T,Pf,C,D,prof,profEff,profDays,profPpm,profLv,total,miss,cut,status,grade:status==='합격'?gradeOf(total):null,oldTotal:+r.total_score,oldPassed:!!r.passed,fs};
   }).sort((a,b)=>String(a.r.emp_id).localeCompare(String(b.r.emp_id),undefined,{numeric:true}));
   const n=SIMROWS.length,p=SIMROWS.filter(x=>x.status==='합격').length,f=SIMROWS.filter(x=>x.status==='불합격').length,ing=n-p-f;
   const changed=SIMROWS.filter(x=>x.status!=='평가중'&&(x.status==='합격')!==x.oldPassed).length;
@@ -9882,22 +10429,22 @@ function renderSim(){
   const dash='<span class="muted">-</span>';
   document.getElementById('sTable').innerHTML=n?`<table><thead><tr><th>No</th><th>사번</th><th>이름</th><th>공정</th><th>이론 /${Wt.theory}</th><th>작업수행 /${Wt.perf}</th><th>압착고 /${Wt.crimp}</th><th>불량판별 /${Wt.defect}</th>${Wt.prof?`<th>숙련도 /${Wt.prof}</th>`:''}<th>총점</th><th>기존</th><th>판정</th><th>등급</th></tr></thead><tbody>${SIMROWS.map((x,i)=>`<tr><td class="muted">${i+1}</td><td class="mono">${esc(x.r.emp_id)}${(x.r.is_dummy||isDummyEmp(x.r.emp_id))?' <span class="pill p-g">TEST</span>':''}</td><td>${esc(x.r.name)}</td><td class="muted">${esc(x.r.process)}</td>
     <td>${x.T??dash}</td><td>${x.Pf??dash}</td><td>${x.C??dash} <span class="muted">${x.fs&&x.fs.msa_grade?x.fs.msa_grade:''}</span></td><td>${x.D??dash}</td>
-    ${Wt.prof?`<td>${x.prof==null?(x.profDays?`<span class="pill p-ing">일수 ${x.profDays}</span>`:dash):x.prof} <span class="muted">${x.profEff!=null?x.profEff+'%':''}</span></td>`:''}
+    ${Wt.prof?`<td>${x.prof==null?dash:x.prof} <span class="muted">${x.profEff!=null?x.profEff+'% · '+(x.profLv||''):''}</span></td>`:''}
     <td><b>${x.miss.length?'-':x.total}</b></td><td class="muted">${x.oldTotal} ${x.oldPassed?'✅':'❌'}</td>
     <td>${x.status==='평가중'?`<span class="pill p-ing">평가중</span><div class="muted">${x.miss.join('·')}</div>`:x.status==='합격'?'<span class="pill p-ok">합격</span>':`<span class="pill p-ng">불합격</span>${x.cut.length?`<div class="muted">과락 ${x.cut.join('·')}</div>`:''}`}</td>
     <td>${x.grade?`<span class="pill" style="color:${x.grade.color};border-color:${x.grade.color}66">${esc(x.grade.label)}</span>`:dash}</td></tr>`).join('')}</tbody></table>`:'<div class="muted">해당 평가구분 기록 없음</div>';
 }
-function exportSim(){if(!SIMROWS.length)return;const ws=XLSX.utils.json_to_sheet(SIMROWS.map((x,i)=>({No:i+1,사번:x.r.emp_id,이름:x.r.name,공정:x.r.process,평가일:x.r.date,이론:x.T,작업수행:x.Pf,압착고:x.C,불량판별:x.D,숙련도:x.prof,달성률:x.profEff,실적일:x.profDays,총점:x.miss.length?'':x.total,기존총점:x.oldTotal,기존판정:x.oldPassed?'합격':'불합격',판정:x.status,과락:x.cut.join('·'),등급:x.grade?x.grade.label:''})));const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'시뮬레이션');XLSX.writeFile(wb,`숙련도반영_시뮬레이션_${today()}.xlsx`);}
+function exportSim(){if(!SIMROWS.length)return;const ws=XLSX.utils.json_to_sheet(SIMROWS.map((x,i)=>({No:i+1,사번:x.r.emp_id,이름:x.r.name,공정:x.r.process,평가일:x.r.date,이론:x.T,작업수행:x.Pf,압착고:x.C,불량판별:x.D,숙련도:x.prof,달성률:x.profEff,레벨:x.profLv||'',총점:x.miss.length?'':x.total,기존총점:x.oldTotal,기존판정:x.oldPassed?'합격':'불합격',판정:x.status,과락:x.cut.join('·'),등급:x.grade?x.grade.label:''})));const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'시뮬레이션');XLSX.writeFile(wb,`숙련도반영_시뮬레이션_${today()}.xlsx`);}
 async function saveSim(){
   const rows=SIMROWS.filter(x=>x.status!=='평가중');if(!rows.length){alert('반영할 행 없음');return;}
   const round=document.getElementById('sRound').value,tk0=document.getElementById('sTrack').value;const track=tk0==='auto'?trackOf(ROUNDS.find(x=>x.id===round)):tk0;const Wt=W[track];
-  if(!confirm(`${rows.length}건의 exam_results에 track=${track}, 숙련도 점수, 총점·합격을 기록합니다.\n(메인 앱에서 해당 기록을 재저장하면 숙련도가 빠질 수 있음 — 패치 전까지 참고용)`))return;
+  if(!confirm(`${rows.length}건의 exam_results에 track=${track}, 숙련도 점수, 총점·합격을 기록합니다.\n(서버 트리거가 숙련도(신속성) 평가 기록으로 총점·합격을 다시 판정합니다)`))return;
   let ok=0,fail=0;
   for(const c of chunk(rows,40)){await Promise.all(c.map(async x=>{try{await sb(`exam_results?id=eq.${x.r.id}`,{method:'PATCH',headers:{'Prefer':'return=minimal'},body:JSON.stringify({track,prof_raw:x.profEff,prof_pct:Wt.prof||null,prof_weighted:x.prof,total_score:x.total,passed:x.status==='합격'})});ok++;}catch(e){fail++;}}));}
   toast(`반영 ${ok}건${fail?' · 실패 '+fail:''}`);await loadAll();mainRefresh();
 }
 
-window.QA={addBand,cfgSet,dApply,dInit,dPreview,dPurge,dRenderProcs,dRoundChg,dSyncTargets,dTypeChg,delProd,dlog,enter,exportProd,exportSim,fillRoundSelects,gateIn,genAttAnswers,genVarGroup,go,grr,importProd,itemName,latestPerEmp,loadAll,loadPerfSheets,mainRefresh,nrand,perfSheetFor,pickN,profScore,renderBands,renderDiag,renderPreview,renderProd,renderSim,renderWeights,roundOpts,savePin,saveSim,saveWeights,sb,sbInsertMany,shuffle,toast,wSum,get W(){return W;},get BANDS(){return BANDS;}};
+window.QA={goSpeed,goSpeedMaster,speedScore,speedJudge,addBand,cfgSet,dApply,dInit,dPreview,dPurge,dRenderProcs,dRoundChg,dSyncTargets,dTypeChg,delProd,dlog,enter,exportProd,exportSim,fillRoundSelects,gateIn,genAttAnswers,genVarGroup,go,grr,importProd,itemName,latestPerEmp,loadAll,loadPerfSheets,mainRefresh,nrand,perfSheetFor,pickN,profScore,renderBands,renderDiag,renderPreview,renderProd,renderSim,renderWeights,roundOpts,savePin,saveSim,saveWeights,sb,sbInsertMany,shuffle,toast,wSum,get W(){return W;},get BANDS(){return BANDS;}};
 })();
 </script>
 <script>
