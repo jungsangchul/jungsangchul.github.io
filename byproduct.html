@@ -268,6 +268,11 @@ table.cfg input{width:17px;height:17px}
 @media(max-width:1100px){.k6{grid-template-columns:repeat(3,minmax(0,1fr))}.flow{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:900px){.g2,.g21{grid-template-columns:1fr}.k4{grid-template-columns:repeat(2,minmax(0,1fr))}.k3{grid-template-columns:1fr}}
 @media(max-width:640px){.k6{grid-template-columns:repeat(2,minmax(0,1fr))}.bar-h .r{grid-template-columns:56px 1fr 70px}}
+.tw tfoot tr.ft-m td,.tw tfoot tr.ft-a td,.tw tfoot tr.ft-d td{height:38px;padding-top:0;padding-bottom:0;line-height:1.2}
+.tw tfoot tr.ft-m td{bottom:76px}.tw tfoot tr.ft-a td{bottom:38px;color:var(--ac2)}.tw tfoot tr.ft-d td{bottom:0;background:#171717}
+.tw tfoot td .mini{font-weight:400;font-family:var(--mono);font-size:11.5px;letter-spacing:.04em}
+.tw tfoot .dz{color:var(--grn)}.tw tfoot .dp{color:var(--red)}.tw tfoot .dn{color:var(--amb)}
+.tw tr.allrow td{background:rgba(201,168,76,.05);border-bottom:1px solid rgba(201,168,76,.3)}
 
 </style>
 
@@ -579,8 +584,8 @@ const T={
  tab_in:['부산물 측정 입력','Registro de pesaje'],tab_rs:['산출 현황','Resultados'],tab_us:['자재사용량 (32040)','Consumo de material (32040)'],tab_mw:['단위중량 마스터','Peso unitario'],tab_cf:['호기 · 종류비율 설정','Máquinas · Ratios'],
  in_title:['부산물 발생량 측정 입력','Registro de pesaje de subproductos'],today:['오늘','Hoy'],worker:['측정자','Medido por'],paste_tot:['총량 붙여넣기','Pegar totales'],save:['저장','Guardar'],
  in_mc:['호기별 측정 (kg)','Pesaje por máquina (kg)'],only_val:['입력된 호기만','Solo con datos'],
- in_hint:['전선(Wire)·단자(Terminal)·방수씰(Seal)·스크랩(Scrap)은 종류별로 따로 계량하여 kg으로 입력합니다. 사진은 호기별로 첨부(카메라 촬영 가능)되며, 입력 후 반드시 <b>저장</b>을 눌러 주세요. 호기 미구분 총량은 「총량 붙여넣기」 또는 맨 위 「합계 직접입력」 행을 사용합니다.',
-  'Pese por separado cable (Wire), terminal, sello (Seal) y scrap e ingrese en kg. Las fotos se adjuntan por máquina (puede usar la cámara). Pulse <b>Guardar</b> después de capturar. Para un total sin máquina use «Pegar totales» o la fila «Total directo».'],
+ in_hint:['전선(Wire)·단자(Terminal)·방수씰(Seal)·스크랩(Scrap)은 종류별로 따로 계량하여 kg으로 입력합니다. 사진은 호기별로 첨부(카메라 촬영 가능)되며, 입력 후 반드시 <b>저장</b>을 눌러 주세요. 전체를 한 번에 계량한 값은 맨 위 「일괄 측정」 행(또는 「총량 붙여넣기」)에 넣으면, 하단에 호기별 합계와의 차이가 표시됩니다.',
+  'Pese por separado cable (Wire), terminal, sello (Seal) y scrap e ingrese en kg. Las fotos se adjuntan por máquina (puede usar la cámara). Pulse <b>Guardar</b> después de capturar. El pesaje de todas las máquinas juntas va en la fila «Pesaje total» (o «Pegar totales»); abajo se muestra la diferencia con Σ por máquina.'],
  rs_title:['부산물 산출 현황','Resultados de subproductos'],excel:['엑셀 다운로드','Descargar Excel'],by_month:['월별','Mensual'],by_range:['기간 지정','Rango'],month:['월','Mes'],from:['시작','Desde'],to:['종료','Hasta'],refresh:['새로고침','Actualizar'],
  rs_daily:['일별 발생 추이 (kg)','Tendencia diaria (kg)'],rs_mc:['호기별 발생량 TOP (kg)','Top máquinas (kg)'],rs_wire:['전선 · 선종/SQ별 산출','Cable · por tipo/SQ'],rs_term:['단자 · 품목별 산출','Terminal · por ítem'],rs_seal:['방수씰 · 품목별 산출','Sello · por ítem'],rs_cat:['부산물 종류별 발생량 (비율 적용)','Por tipo de subproducto (ratio)'],rs_days:['일별 · 호기별 측정 내역','Detalle diario por máquina'],
  us_title:['일별 자재사용량 (MES 32040 동기화)','Consumo diario de material (MES 32040)'],
@@ -718,20 +723,27 @@ function inShift(n){$('in-date').value=addDays($('in-date').value||today(),n);in
 function inToday(){$('in-date').value=today();inLoad()}
 function inVal(mc,k){const el=document.querySelector(`#in-tw input[data-mc="${mc}"][data-k="${k}"]`);return el?(parseFloat(el.value)||0):(Number((IN.rows[mc]||{})[k])||0)}
 const rowSum=r=>KINDS.reduce((s,[k])=>s+(Number(r[k])||0),0);
+/* 합계: 호기별 Σ(m) vs 일괄 측정(ALL 행, a) → 차이 = 일괄 − 호기별. 일 총량은 일괄 측정값이 있으면 그 값, 없으면 호기별 Σ */
+const zeroT=()=>({wire_kg:0,term_kg:0,seal_kg:0,scrap_kg:0});
+function inTotals(fromInputs){
+  const m=zeroT(),a=zeroT();
+  const mcs=new Set(Object.keys(IN.rows));document.querySelectorAll('#in-tw input[data-mc]').forEach(i=>mcs.add(i.dataset.mc));
+  mcs.forEach(mc=>{KINDS.forEach(([k])=>{const v=fromInputs?inVal(mc,k):(Number((IN.rows[mc]||{})[k])||0);if(mc===ALL)a[k]+=v;else m[k]+=v})});
+  const day=rowSum(a)>0?a:m;return {m,a,day};
+}
 function inRender(){
   const only=$('in-onlyval').checked;
   const list=[{mc:ALL,active:true},...S.mc.filter(m=>m.active)];
   const extra=Object.keys(IN.rows).filter(m=>m!==ALL&&!S.mc.some(x=>x.mc===m)).map(m=>({mc:m,active:false}));
-  const all=[...list,...extra];
-  const tot={wire_kg:0,term_kg:0,seal_kg:0,scrap_kg:0};let cnt=0;
+  const all=[...list,...extra];let cnt=0;
   const tr=all.map(m=>{
     const r=IN.rows[m.mc]||{};const sum=rowSum(r);
-    const has=sum||r.memo;if(has)cnt++;KINDS.forEach(([k])=>tot[k]+=Number(r[k])||0);
+    const has=sum||r.memo;if(has&&m.mc!==ALL)cnt++;
     if(only&&!has)return '';
     const ph=(IN.photos[m.mc]||[]).length;
     const isAll=m.mc===ALL;
-    return `<tr class="${has?'has':''}${m.active?'':' off'}">
-      <td><span class="mc-tag${isAll?' all':''}">${isAll?L('합계 직접입력','Total directo'):esc(m.mc)}</span>${isAll?`<div class="mini">${L('호기 미구분 총량','sin máquina')}</div>`:''}</td>
+    return `<tr class="${has?'has':''}${m.active?'':' off'}${isAll?' allrow':''}">
+      <td><span class="mc-tag${isAll?' all':''}">${isAll?L('일괄 측정','Pesaje total'):esc(m.mc)}</span>${isAll?`<div class="mini">${L('호기 미구분 · 전체 한번에 계량','todas las máquinas juntas')}</div>`:''}</td>
       ${KINDS.map(([k])=>`<td><input class="cell" type="number" step="0.01" min="0" data-mc="${esc(m.mc)}" data-k="${k}" value="${Number(r[k])||''}" oninput="inChg(this)"></td>`).join('')}
       <td class="n" data-sum="${esc(m.mc)}">${sum?num(sum):'<span class="mu">–</span>'}</td>
       <td class="c"><button class="pbtn${ph?' has':''}" data-ph="${esc(m.mc)}" onclick="phOpen('${esc(m.mc)}',this)"><svg viewBox="0 0 24 24"><path d="M4 7h3l2-2.5h6L17 7h3v12H4z"/><circle cx="12" cy="13" r="3.5"/></svg>${ph?ph:'+'}</button></td>
@@ -739,21 +751,34 @@ function inRender(){
   $('in-tw').innerHTML=`<table><colgroup><col style="width:118px"><col><col><col><col><col style="width:84px"><col style="width:64px"><col style="width:20%"></colgroup>
     <thead><tr><th>${L('호기','Máquina')}</th>${KINDS.map(([k,n])=>`<th class="n">${n} <small>kg</small></th>`).join('')}<th class="n">${L('합계','Total')}</th><th class="c">${L('사진','Foto')}</th><th>${L('메모','Nota')}</th></tr></thead>
     <tbody>${tr||`<tr><td colspan="8" class="empty">${L('입력된 호기가 없습니다','Sin datos')}</td></tr>`}</tbody>
-    <tfoot><tr><td>${L('합계','Total')}</td>${KINDS.map(([k])=>`<td class="n" id="in-f-${k}">${num(tot[k])}</td>`).join('')}<td class="n" id="in-fa">${num(rowSum(tot))}</td><td></td><td></td></tr></tfoot></table>`;
+    <tfoot>
+      <tr class="ft-m"><td>${L('호기별 합계','Σ máquinas')}</td>${KINDS.map(([k])=>`<td class="n" id="in-fm-${k}"></td>`).join('')}<td class="n" id="in-fm-a"></td><td></td><td></td></tr>
+      <tr class="ft-a"><td>${L('일괄 측정','Pesaje total')}</td>${KINDS.map(([k])=>`<td class="n" id="in-fa-${k}"></td>`).join('')}<td class="n" id="in-fa-a"></td><td></td><td></td></tr>
+      <tr class="ft-d"><td>${L('차이','Dif.')} <span class="mini">${L('일괄−호기별','total−Σ')}</span></td>${KINDS.map(([k])=>`<td class="n" id="in-fd-${k}"></td>`).join('')}<td class="n" id="in-fd-a"></td><td colspan="2" class="mini" id="in-fd-msg"></td></tr>
+    </tfoot></table>`;
   $('in-cnt').textContent=L(`입력 ${cnt}개 호기 · 전체 ${all.length-1}호기`,`${cnt} máquinas con datos · ${all.length-1} total`);
-  inKpi(tot);
+  inFoot(inTotals(false));
 }
-function inKpi(t){
-  $('in-kpi').innerHTML=KINDS.map(([k,n,c])=>`<div class="kpi ${c}"><span>${n}</span><b>${num(t[k])}<small>kg</small></b><div class="d">${esc(IN.date)}</div></div>`).join('')+`<div class="kpi g"><span>${L('합계','Total')}</span><b>${num(rowSum(t))}<small>kg</small></b><div class="d">${esc(IN.date)}</div></div>`;
+function inFoot(T){
+  const dcell=(d,hasBoth)=>{if(!hasBoth)return '<span class="mu">–</span>';const c=Math.abs(d)<.005?'dz':d>0?'dp':'dn';return `<span class="${c}">${d>0?'+':''}${num(d)}</span>`};
+  const hasBoth=rowSum(T.a)>0&&rowSum(T.m)>0;
+  KINDS.forEach(([k])=>{$('in-fm-'+k).textContent=num(T.m[k]);$('in-fa-'+k).textContent=rowSum(T.a)>0?num(T.a[k]):'–';$('in-fd-'+k).innerHTML=dcell(T.a[k]-T.m[k],hasBoth)});
+  $('in-fm-a').textContent=num(rowSum(T.m));$('in-fa-a').textContent=rowSum(T.a)>0?num(rowSum(T.a)):'–';
+  const dd=rowSum(T.a)-rowSum(T.m);$('in-fd-a').innerHTML=dcell(dd,hasBoth);
+  $('in-fd-msg').textContent=!hasBoth?L('일괄 측정값과 호기별 입력이 모두 있을 때 차이를 표시합니다','Se muestra cuando hay pesaje total y por máquina')
+    :Math.abs(dd)<.005?L('일치','Coincide'):L(`일괄 측정이 호기별 합계보다 ${num(Math.abs(dd))} kg ${dd>0?'많음':'적음'} (${pct(Math.abs(dd)/rowSum(T.m)*100)})`,`Total ${dd>0?'mayor':'menor'} que Σ por ${num(Math.abs(dd))} kg (${pct(Math.abs(dd)/rowSum(T.m)*100)})`);
+  inKpi(T);
+}
+function inKpi(T){
+  const t=T.day,src=rowSum(T.a)>0?L('일괄 측정 기준','pesaje total'):L('호기별 합계 기준','Σ máquinas');
+  $('in-kpi').innerHTML=KINDS.map(([k,n,c])=>`<div class="kpi ${c}"><span>${n}</span><b>${num(t[k])}<small>kg</small></b><div class="d">${src}</div></div>`).join('')+`<div class="kpi g"><span>${L('합계','Total')}</span><b>${num(rowSum(t))}<small>kg</small></b><div class="d">${esc(IN.date)} · ${src}</div></div>`;
 }
 function inChg(el){
   el.classList.add('ch');IN.dirty=true;
   const mc=el.dataset.mc;if(el.dataset.k==='memo')return;
   const sum=KINDS.reduce((s,[k])=>s+inVal(mc,k),0);
   const c=document.querySelector(`#in-tw td[data-sum="${mc}"]`);if(c)c.innerHTML=sum?num(sum):'<span class="mu">–</span>';
-  const tot={};KINDS.forEach(([k])=>{let v=0;document.querySelectorAll(`#in-tw input[data-k="${k}"]`).forEach(i=>v+=parseFloat(i.value)||0);tot[k]=v});
-  Object.keys(IN.rows).forEach(m=>{if(!document.querySelector(`#in-tw input[data-mc="${m}"]`))KINDS.forEach(([k])=>tot[k]+=Number(IN.rows[m][k])||0)});
-  KINDS.forEach(([k])=>$('in-f-'+k).textContent=num(tot[k]));$('in-fa').textContent=num(rowSum(tot));inKpi(tot);
+  inFoot(inTotals(true));
 }
 async function inSave(){
   const worker=$('in-worker').value.trim();const ups=[],dels=[];
@@ -776,7 +801,7 @@ async function inSave(){
 /* 총량 붙여넣기: 날짜 / Wire / Terminal / Scrap / (Seal) */
 function inPasteOpen(btn){
   $('paste-title').textContent=L('일별 부산물 총량 붙여넣기','Pegar totales diarios');
-  $('paste-hint').innerHTML=L('엑셀 「일별부산물중량」 시트: <b>Date · Wire · Terminal · Scrap</b> (5번째 열에 Seal이 있으면 같이 반영) 순서로 복사해 붙여넣기 (머리글 포함 가능). 호기 미구분 「합계 직접입력(ALL)」 행으로 저장되며 같은 날짜는 덮어씁니다.','Hoja «일별부산물중량»: columnas <b>Date · Wire · Terminal · Scrap</b> (5ª columna Seal opcional). Se guarda como fila «Total directo (ALL)»; misma fecha se sobrescribe.');
+  $('paste-hint').innerHTML=L('엑셀 「일별부산물중량」 시트: <b>Date · Wire · Terminal · Scrap</b> (5번째 열에 Seal이 있으면 같이 반영) 순서로 복사해 붙여넣기 (머리글 포함 가능). 「일괄 측정(ALL)」 행으로 저장되며 같은 날짜는 덮어씁니다.','Hoja «일별부산물중량»: columnas <b>Date · Wire · Terminal · Scrap</b> (5ª columna Seal opcional). Se guarda como fila «Pesaje total (ALL)»; misma fecha se sobrescribe.');
   $('paste-ta').value='';$('paste-prev').textContent='';
   $('paste-ta').oninput=()=>{const rows=parseTot($('paste-ta').value);$('paste-prev').innerHTML=rows.length?L(`<b>${rows.length}</b>일 인식 · ${rows[0].d} ~ ${rows[rows.length-1].d}`,`<b>${rows.length}</b> días · ${rows[0].d} ~ ${rows[rows.length-1].d}`):L('인식된 행 없음','Sin filas')};
   $('paste-ok').onclick=async()=>{
@@ -807,7 +832,7 @@ function parseTot(txt){
 const PH={mc:null,kind:'wire'};
 document.querySelectorAll('#photo-kind button').forEach(b=>b.onclick=()=>{PH.kind=b.dataset.k;document.querySelectorAll('#photo-kind button').forEach(x=>x.classList.toggle('on',x===b))});
 async function phOpen(mc,btn){
-  PH.mc=mc;$('photo-title').textContent=L(`사진 · ${IN.date} · ${mc===ALL?'합계':mc}`,`Fotos · ${IN.date} · ${mc===ALL?'Total':mc}`);
+  PH.mc=mc;$('photo-title').textContent=L(`사진 · ${IN.date} · ${mc===ALL?'일괄 측정':mc}`,`Fotos · ${IN.date} · ${mc===ALL?'Total':mc}`);
   if(!$('mdl-photo').classList.contains('on'))mdlOpen('mdl-photo',btn);
   $('photo-list').innerHTML=`<div class="mini"><span class="fs-spin"></span>${L('불러오는 중','Cargando')}</div>`;
   try{const ph=await sbGet(`byp_photo?plant=eq.${PLANT}&d=eq.${IN.date}&mc=eq.${encodeURIComponent(mc)}&select=id,kind,data,created_at&order=id`);
@@ -849,10 +874,14 @@ async function rsLoad(){
 }
 function rsCalc(){
   const D=RS.data;if(!D)return null;
-  const tot={w:0,t:0,j:0,s:0};const byDay={},byMc={};
+  const tot={w:0,t:0,j:0,s:0};const byDay={},byMc={},dm={},da={};
   D.daily.forEach(r=>{const v={w:+r.wire_kg||0,t:+r.term_kg||0,j:+r.seal_kg||0,s:+r.scrap_kg||0};
-    const dd=byDay[r.d]||(byDay[r.d]={w:0,t:0,j:0,s:0});const mm=byMc[r.mc]||(byMc[r.mc]={w:0,t:0,j:0,s:0});
-    for(const k in v){tot[k]+=v[k];dd[k]+=v[k];mm[k]+=v[k]}});
+    const tgt=r.mc===ALL?(da[r.d]||(da[r.d]={w:0,t:0,j:0,s:0})):(dm[r.d]||(dm[r.d]={w:0,t:0,j:0,s:0}));
+    const mm=byMc[r.mc]||(byMc[r.mc]={w:0,t:0,j:0,s:0});
+    for(const k in v){tgt[k]+=v[k];mm[k]+=v[k]}});
+  // 일 총량: 일괄 측정(ALL)이 있으면 그 값, 없으면 호기별 Σ (이중 합산 방지)
+  new Set([...Object.keys(dm),...Object.keys(da)]).forEach(d=>{const A=da[d],M=dm[d];const use=(A&&(A.w+A.t+A.j+A.s)>0)?A:M;byDay[d]={...use};for(const k in use)tot[k]+=use[k]});
+  const diffDays=Object.keys(da).filter(d=>dm[d]&&(da[d].w+da[d].t+da[d].j+da[d].s)>0).map(d=>{const A=da[d],M=dm[d];return {d,a:A.w+A.t+A.j+A.s,m:M.w+M.t+M.j+M.s}});
   const U=D.usage,W=tot.w,Tm=tot.t,Jl=tot.j,Sc=tot.s;
   const wire=Object.values(U.wire).map(o=>{const ratio=U.wTot?o.qty/U.wTot:0;const uw=S.wireW[wk(o.wtype,o.sq)]||0;const kg=W*ratio;return {...o,ratio,uw,avg:ratio*uw,kg,m:uw?kg/uw:null}}).sort((a,b)=>b.qty-a.qty);
   const wCov=wire.filter(x=>x.uw).reduce((s,x)=>s+x.ratio,0);const wAvg=wCov?wire.reduce((s,x)=>s+x.avg,0)/wCov:0;const wMissing=wire.filter(x=>!x.uw).length;
@@ -860,7 +889,7 @@ function rsCalc(){
   const TT=calcItems(U.term,U.tTot,Tm),JJ=calcItems(U.seal,U.jTot,Jl);
   const cat=S.ratio.map(c=>({...c,w:W*(+c.wire_pct||0)/100,t:Tm*(+c.term_pct||0)/100,j:Jl*(+c.seal_pct||0)/100,s:Sc*(+c.scrap_pct||0)/100}));
   const sums={w:S.ratio.reduce((s,c)=>s+(+c.wire_pct||0),0),t:S.ratio.reduce((s,c)=>s+(+c.term_pct||0),0),j:S.ratio.reduce((s,c)=>s+(+c.seal_pct||0),0),s:S.ratio.reduce((s,c)=>s+(+c.scrap_pct||0),0)};
-  return {W,Tm,Jl,Sc,all:W+Tm+Jl+Sc,byDay,byMc,wire,wAvg,wCov,wMissing,wM,TT,JJ,cat,sums,U};
+  return {W,Tm,Jl,Sc,all:W+Tm+Jl+Sc,byDay,byMc,diffDays,wire,wAvg,wCov,wMissing,wM,TT,JJ,cat,sums,U};
 }
 function itemTable(R){
   return `<table><colgroup><col style="width:21%"><col style="width:17%"><col style="width:14%"><col style="width:10%"><col style="width:14%"><col style="width:12%"><col></colgroup><thead><tr><th>${L('유라코드','Código')}</th><th>${L('업체품명','Nombre')}</th><th class="n">${L('사용량','Uso')} <small>ea</small></th><th class="n">${L('비율','Ratio')}</th><th class="n">${L('단위중량','Peso unit.')} <small>kg/ea</small></th><th class="n">${L('발생중량','kg gen.')} <small>kg</small></th><th class="n">${L('환산','EA gen.')} <small>ea</small></th></tr></thead><tbody>
@@ -903,7 +932,7 @@ function rsRender(){
     ${C.cat.map(c=>`<tr><td><span class="cat-grp ${c.grp}">${grpN[c.grp]||c.grp}</span></td><td class="b">${esc(c.cat)}</td><td class="n">${pct(c.wire_pct)}</td><td class="n">${num(c.w,3)}</td><td class="n">${pct(c.term_pct)}</td><td class="n">${num(c.t,3)}</td><td class="n">${pct(c.seal_pct)}</td><td class="n">${num(c.j,3)}</td><td class="n">${pct(c.scrap_pct)}</td><td class="n">${num(c.s,3)}</td><td class="n b">${num(c.w+c.t+c.j+c.s,3)}</td></tr>`).join('')}</tbody>
     <tfoot><tr><td colspan="2">${L('합계','Total')}</td><td class="n ${sc('w')}">${pct(C.sums.w)}</td><td class="n">${num(C.W,3)}</td><td class="n ${sc('t')}">${pct(C.sums.t)}</td><td class="n">${num(C.Tm,3)}</td><td class="n ${C.Jl?sc('j'):''}">${pct(C.sums.j)}</td><td class="n">${num(C.Jl,3)}</td><td class="n ${sc('s')}">${pct(C.sums.s)}</td><td class="n">${num(C.Sc,3)}</td><td class="n">${num(C.all,3)}</td></tr></tfoot></table>`;
   $('rs-days').innerHTML=`<table><colgroup><col style="width:110px"><col style="width:100px"><col><col><col><col><col><col style="width:100px"><col style="width:18%"></colgroup><thead><tr><th>${L('날짜','Fecha')}</th><th>${L('호기','Máquina')}</th><th class="n">Wire</th><th class="n">Terminal</th><th class="n">Seal</th><th class="n">Scrap</th><th class="n">${L('합계','Total')}</th><th>${L('측정자','Medido por')}</th><th>${L('메모','Nota')}</th></tr></thead><tbody>
-    ${D.daily.map(r=>`<tr><td>${r.d}</td><td><span class="mc-tag${r.mc===ALL?' all':''}" style="font-size:14px">${r.mc===ALL?L('합계','Total'):esc(r.mc)}</span></td><td class="n">${num(r.wire_kg)}</td><td class="n">${num(r.term_kg)}</td><td class="n">${num(r.seal_kg)}</td><td class="n">${num(r.scrap_kg)}</td><td class="n b">${num(rowSum(r))}</td><td>${esc(r.worker||'')}</td><td title="${esc(r.memo||'')}">${esc(r.memo||'')}</td></tr>`).join('')||`<tr><td colspan="9" class="empty">${L('측정 데이터 없음','Sin datos')}</td></tr>`}</tbody></table>`;
+    ${D.daily.map(r=>`<tr><td>${r.d}</td><td><span class="mc-tag${r.mc===ALL?' all':''}" style="font-size:14px">${r.mc===ALL?L('일괄','Total'):esc(r.mc)}</span></td><td class="n">${num(r.wire_kg)}</td><td class="n">${num(r.term_kg)}</td><td class="n">${num(r.seal_kg)}</td><td class="n">${num(r.scrap_kg)}</td><td class="n b">${num(rowSum(r))}</td><td>${esc(r.worker||'')}</td><td title="${esc(r.memo||'')}">${esc(r.memo||'')}</td></tr>`).join('')||`<tr><td colspan="9" class="empty">${L('측정 데이터 없음','Sin datos')}</td></tr>`}</tbody></table>`;
 }
 function rsChart(C,days){
   const el=$('rs-chart');if(!days.length){el.innerHTML=`<div class="mini" style="padding:30px;text-align:center">${L('데이터 없음','Sin datos')}</div>`;return}
@@ -922,10 +951,10 @@ function rsChart(C,days){
 function rsMcBar(C){
   const arr=Object.entries(C.byMc).filter(([m])=>m!==ALL).map(([m,o])=>({m,...o,tot:o.w+o.t+o.j+o.s})).sort((a,b)=>b.tot-a.tot).slice(0,15);
   const all=C.byMc[ALL];
-  if(!arr.length){$('rs-mcbar').innerHTML=`<div class="mini" style="padding:30px;text-align:center">${all?L('호기별 측정 데이터 없음 (합계 직접입력만 있음)','Sin datos por máquina (solo total directo)'):L('데이터 없음','Sin datos')}</div>`;return}
+  if(!arr.length){$('rs-mcbar').innerHTML=`<div class="mini" style="padding:30px;text-align:center">${all?L('호기별 측정 데이터 없음 (일괄 측정만 있음)','Sin datos por máquina (solo pesaje total)'):L('데이터 없음','Sin datos')}</div>`;return}
   const max=arr[0].tot||1;
   $('rs-mcbar').innerHTML=arr.map(x=>`<div class="r"><span class="k">${esc(x.m)}</span><div class="b">${['w','t','j','s'].map(k=>`<i style="width:${x[k]/max*100}%;background:${KCOL[k]}"></i>`).join('')}</div><span class="v">${num(x.tot)} kg</span></div>`).join('')
-    +(all?`<div class="mini" style="margin-top:6px">+ ${L('합계 직접입력','Total directo')} ${num(all.w+all.t+all.j+all.s)} kg</div>`:'');
+    +(all?`<div class="mini" style="margin-top:8px">${L('일괄 측정','Pesaje total')} ${num(all.w+all.t+all.j+all.s)} kg · ${L('호기별 Σ','Σ máquinas')} ${num(arr.reduce((s,x)=>s+x.tot,0))} kg${C.diffDays.length?` · ${L('차이','dif.')} ${(()=>{const d=C.diffDays.reduce((s,x)=>s+x.a-x.m,0);return (d>0?'+':'')+num(d)})()} kg (${C.diffDays.length}${L('일','d')})`:''}</div>`:'');
 }
 function loadExcelJS(){if(window.ExcelJS)return Promise.resolve();return new Promise((ok,ng)=>{const s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js';s.onload=ok;s.onerror=()=>ng(new Error(L('엑셀 모듈을 불러오지 못했습니다','No se pudo cargar Excel')));document.head.appendChild(s)})}
 async function rsExcel(){
