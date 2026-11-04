@@ -651,11 +651,13 @@ async function sbDel(table,q){const r=await fetch(SUPABASE_URL+'/rest/v1/'+table
 
 /* ── 공통 상태 ── */
 const S={mc:[],ratio:[],wireW:{},master:{},usCache:{}};
-const wireKey=name=>{ // "CIVUS 00.35 L" → {wtype:'CIVUS', sq:'00.35'}
+/* 선경(SQ) 정규화: "00.35"→"0.35", "01.25"→"1.25", "3"→"3.00", "2*01.25"→"2*1.25" */
+const normSq=t=>{t=String(t||'').trim();if(!t)return '-';const m=t.match(/^(\d+)\*(\d+(?:\.\d+)?)$/);if(m)return m[1]+'*'+Number(m[2]).toFixed(2);const n=parseFloat(t);return isNaN(n)?t:n.toFixed(2)};
+const wireKey=name=>{ // "CIVUS 00.35 L" / "FLRY-B 0.35 R/B" / "AVSS-BS 2*01.25 G,W" → {wtype, sq}
   const t=String(name||'').trim().split(/\s+/);
-  let wtype=t[0]||'-',sq='-';
-  for(let i=1;i<t.length;i++){if(/^\d+(\.\d+)?$/.test(t[i])){sq=t[i];break}}
-  if(sq==='-'&&t.length>1){const m=String(name).match(/(\d+\.\d+)/);if(m)sq=m[1]}
+  let wtype=(t[0]||'-').toUpperCase(),sq='-';
+  for(let i=1;i<t.length;i++){if(/^(\d+\*)?\d+(\.\d+)?$/.test(t[i])){sq=normSq(t[i]);break}}
+  if(sq==='-'&&t.length>1){const m=String(name).match(/(\d+\.\d+)/);if(m)sq=normSq(m[1])}
   return {wtype,sq};
 };
 const wk=(w,s)=>w+'|'+s;
@@ -666,7 +668,7 @@ async function loadBase(){
     sbGet(`byp_ratio?plant=eq.${PLANT}&order=ord,cat`),
     sbGet(`byp_wire_w?plant=eq.${PLANT}`),
     sbGet(`byp_master?plant=eq.${PLANT}`)]);
-  S.mc=mc;S.ratio=ratio;S.wireW={};ww.forEach(r=>S.wireW[wk(r.wtype,r.sq)]=Number(r.unit_w)||0);
+  S.mc=mc;S.ratio=ratio;S.wireW={};ww.forEach(r=>S.wireW[wk(String(r.wtype).toUpperCase(),normSq(r.sq))]=Number(r.unit_w)||0);
   S.master={};mm.forEach(r=>S.master[r.code]=r);
 }
 async function getUsage(from,to){
@@ -1067,9 +1069,9 @@ function mwRender(){
   const cntMiss=arr=>arr.filter(x=>!x.uw).length;
   const wl=MW.wire.map(x=>({...x,uw:S.wireW[wk(x.wtype,x.sq)]||0})),tl=MW.T.map(x=>({...x,uw:mUw(x.code)})),jl=MW.J.map(x=>({...x,uw:mUw(x.code)}));
   $('mw-cW').textContent=cntMiss(wl)+'/'+wl.length;$('mw-cT').textContent=cntMiss(tl)+'/'+tl.length;$('mw-cJ').textContent=cntMiss(jl)+'/'+jl.length;
-  $('mw-hint').innerHTML=k==='W'?L('최근 120일 사용량(32040)에 나타난 <b>선종·선경(SQ)</b>이 자동으로 나열됩니다. 전선은 색상과 무관하게 선종/SQ 단위로 kg/m을 입력합니다. 빨간 칸 = 미등록. 입력 후 <b>저장</b>.','Se listan los <b>tipos/SQ</b> del consumo (120 días). Ingrese kg/m por tipo/SQ (sin color). Rojo = sin peso. Pulse <b>Guardar</b>.')
-    :k==='T'?L('최근 120일 사용량(03T1)에 나타난 <b>단자 품목</b>이 자동으로 나열됩니다. 엑셀 「단위중량마스터」 시트(유라코드·업체품명·단위중량)를 복사해 「붙여넣기 입력」으로 한 번에 등록할 수 있습니다. 빨간 칸 = 미등록.','Se listan las <b>terminales</b> del consumo (03T1, 120 días). Puede pegar la hoja «단위중량마스터» (código · nombre · peso). Rojo = sin peso.')
-    :L('최근 120일 사용량(08J1)에 나타난 <b>방수씰 품목</b>이 자동으로 나열됩니다. kg/ea를 입력하거나 「붙여넣기 입력」(유라코드·업체품명·단위중량)으로 등록합니다. 빨간 칸 = 미등록.','Se listan los <b>sellos</b> del consumo (08J1, 120 días). Ingrese kg/pza o pegue (código · nombre · peso). Rojo = sin peso.');
+  $('mw-hint').innerHTML=k==='W'?L('최근 120일 사용량(32040)에 나타난 <b>선종·선경(SQ)</b>이 자동으로 나열됩니다. 전선은 색상과 무관하게 선종/SQ 단위로 kg/m을 씁니다 — 직접 입력하거나, 「붙여넣기 입력」에 품번별(품번·이름·kg/m) 목록을 넣으면 이름에서 선종·선경을 분석해 자동 변환됩니다. 빨간 칸 = 미등록. 입력 후 <b>저장</b>.','Se listan los <b>tipos/SQ</b> del consumo (120 días). Ingrese kg/m por tipo/SQ (sin color). Rojo = sin peso. Pulse <b>Guardar</b>.')
+    :k==='T'?L('최근 120일 사용량(03T1)에 나타난 <b>단자 품목</b>이 자동으로 나열됩니다. 「붙여넣기 입력」(품번·이름·단위중량)으로 전선·단자·방수씰을 한 번에 등록할 수 있습니다. 빨간 칸 = 미등록.','Se listan las <b>terminales</b> del consumo (03T1, 120 días). Puede pegar la hoja «단위중량마스터» (código · nombre · peso). Rojo = sin peso.')
+    :L('최근 120일 사용량(08J1)에 나타난 <b>방수씰 품목</b>이 자동으로 나열됩니다. kg/ea를 입력하거나 「붙여넣기 입력」(품번·이름·단위중량)으로 등록합니다. 빨간 칸 = 미등록.','Se listan los <b>sellos</b> del consumo (08J1, 120 días). Ingrese kg/pza o pegue (código · nombre · peso). Rojo = sin peso.');
   if(k==='W'){
     const list=wl.filter(x=>(!q||x.wtype.includes(q)||x.sq.includes(q))&&(!miss||!x.uw));
     $('mw-tw').innerHTML=`<table><colgroup><col style="width:30%"><col style="width:16%"><col><col style="width:26%"></colgroup><thead><tr><th>${L('선종','Tipo')}</th><th>SQ</th><th class="n">${L('최근 사용량','Uso reciente')} <small>m · 120d</small></th><th class="n">${L('단위중량','Peso unit.')} <small>kg/m</small></th></tr></thead><tbody>
@@ -1091,19 +1093,44 @@ async function mwSave(){
   try{if(k==='W'){await sbUpsert('byp_wire_w',rows,'plant,wtype,sq');rows.forEach(r=>S.wireW[wk(r.wtype,r.sq)]=r.unit_w)}else{await sbUpsert('byp_master',rows,'plant,code');rows.forEach(r=>S.master[r.code]=r)}
     toast(L(`단위중량 ${rows.length}건 저장`,`${rows.length} guardados`));RS.data=null;mwRender()}catch(e){toast(e.message,true)}finally{load(false)}
 }
+/* 통합 붙여넣기: 품번 · 이름 · 단위중량(kg/개 또는 kg/m) — 품번 첫 글자로 W(전선)/T(단자)/J(방수씰) 자동 구분
+   전선은 이름을 선종·선경으로 분석해 선종/SQ별 kg/m(동일 그룹 여러 색상 → 중앙값)으로 자동 변환 */
+const median=arr=>{const a=[...arr].sort((x,y)=>x-y);const n=a.length;return n?(n%2?a[(n-1)/2]:(a[n/2-1]+a[n/2])/2):0};
+function parseMasterPaste(txt){
+  const rows=[],skipped=[];const now=new Date().toISOString();
+  String(txt||'').split(/\r?\n/).forEach(l=>{
+    const c=l.split('\t').map(x=>x.trim());if(c.length<2)return;
+    const code=(c[0]||'').toUpperCase();let name=c[1]||'',uw=pnum(c[2]);
+    if(c.length===2){uw=pnum(c[1]);name=''}         // 품번·중량만 있는 2열
+    if(!code||!uw||uw<=0)return;
+    const k=code[0];
+    if(k!=='W'&&k!=='T'&&k!=='J'){skipped.push(code);return}
+    rows.push({code,name,uw,kind:k});
+  });
+  const groups={};
+  rows.filter(r=>r.kind==='W').forEach(r=>{const {wtype,sq}=wireKey(r.name);if(sq==='-'||wtype==='-')return;const g=groups[wk(wtype,sq)]||(groups[wk(wtype,sq)]={wtype,sq,vals:[],codes:[]});g.vals.push(r.uw);g.codes.push(r.code)});
+  const wireRows=Object.values(groups).map(g=>({plant:PLANT,wtype:g.wtype,sq:g.sq,unit_w:+median(g.vals).toFixed(6),updated_at:now,n:g.codes.length,spread:Math.max(...g.vals)-Math.min(...g.vals)}));
+  const masterRows=rows.map(r=>({plant:PLANT,code:r.code,name:r.name||null,kind:r.kind,unit_w:r.uw,updated_at:now}));
+  const noKey=rows.filter(r=>r.kind==='W'&&wireKey(r.name).sq==='-').length;
+  return {rows,masterRows,wireRows,skipped,noKey,nW:rows.filter(r=>r.kind==='W').length,nT:rows.filter(r=>r.kind==='T').length,nJ:rows.filter(r=>r.kind==='J').length};
+}
 function mwPasteOpen(btn){
-  const k=MW.kind,isW=k==='W';
-  $('paste-title').textContent=isW?L('전선 단위중량 붙여넣기','Pegar peso unitario · cable'):k==='T'?L('단자 단위중량 붙여넣기','Pegar peso unitario · terminal'):L('방수씰 단위중량 붙여넣기','Pegar peso unitario · sello');
-  $('paste-hint').innerHTML=isW?L('열 순서: <b>선종 · 선경(SQ) · 단위중량(kg/m)</b> (예: CIVUS\t00.35\t0.0052). 머리글이 있어도 됩니다.','Columnas: <b>Tipo · SQ · kg/m</b> (ej. CIVUS\t00.35\t0.0052).')
-    :L('엑셀 「단위중량마스터」 시트 열 순서: <b>유라코드 · 업체품명 · 단위중량(kg)</b>. 머리글이 있어도 됩니다. 유라코드 첫 글자로 단자(T)/방수씰(J)을 자동 구분해 저장합니다.','Hoja «단위중량마스터»: <b>Código Yura · Nombre · Peso (kg)</b>. Se clasifica por la primera letra del código (T=terminal, J=sello).');
+  $('paste-title').textContent=L('단위중량 붙여넣기 (전선·단자·방수씰 통합)','Pegar peso unitario (cable · terminal · sello)');
+  $('paste-hint').innerHTML=L('열 순서: <b>품번 · 이름 · 단위중량(kg/개, 전선은 kg/m)</b> — 머리글이 있어도 되고, 전선·단자·방수씰이 섞여 있어도 됩니다(품번 첫 글자 W/T/J로 자동 구분). <b>전선</b>은 이름(예: CIVUS 0.35 B, FLRY-B 0.35 R/B)에서 <b>선종·선경(SQ)</b>을 분석해 선종/SQ별 kg/m로 자동 변환됩니다 — 같은 선종/SQ에 색상별 값이 여러 개면 중앙값 사용.',
+    'Columnas: <b>Código · Nombre · Peso (kg/pza, cable kg/m)</b>. Puede mezclar cable/terminal/sello (se clasifica por la primera letra W/T/J). El <b>cable</b> se convierte automáticamente a kg/m por <b>tipo·SQ</b> analizando el nombre (mediana si hay varios colores).');
   $('paste-ta').value='';$('paste-prev').textContent='';
-  const parse=()=>{const out=[];$('paste-ta').value.split(/\r?\n/).forEach(l=>{const c=l.split('\t').map(s=>s.trim());if(c.length<2)return;const uw=pnum(c[2]);if(!c[0]||!uw)return;
-    if(isW){if(!/^\d/.test(c[1]||''))return;out.push({plant:PLANT,wtype:c[0].toUpperCase(),sq:c[1],unit_w:uw,updated_at:new Date().toISOString()})}
-    else{const code=c[0].toUpperCase();const kind=code[0]==='J'?'J':code[0]==='T'?'T':k;out.push({plant:PLANT,code,name:c[1]||null,kind,unit_w:uw,updated_at:new Date().toISOString()})}});return out};
-  $('paste-ta').oninput=()=>{const r=parse();$('paste-prev').innerHTML=r.length?L(`<b>${r.length}</b>건 인식`,`<b>${r.length}</b> filas`):L('인식된 행 없음','Sin filas')};
-  $('paste-ok').onclick=async()=>{const r=parse();if(!r.length){toast(L('인식된 행이 없습니다','Sin filas'),true);return}load(true);
-    try{if(isW){await sbUpsert('byp_wire_w',r,'plant,wtype,sq');r.forEach(x=>S.wireW[wk(x.wtype,x.sq)]=x.unit_w)}else{await sbUpsert('byp_master',r,'plant,code');r.forEach(x=>S.master[x.code]=x)}
-      mdlClose('mdl-paste');toast(L(`${r.length}건 반영`,`${r.length} aplicados`));RS.data=null;await mwLoad()}catch(e){toast(e.message,true)}finally{load(false)}};
+  const prev=()=>{const P=parseMasterPaste($('paste-ta').value);if(!P.rows.length){$('paste-prev').innerHTML=L('인식된 행 없음','Sin filas');return P}
+    const sp=P.wireRows.filter(g=>g.spread>0).length;
+    $('paste-prev').innerHTML=L(`인식 <b>${P.rows.length}</b>건 — 전선 ${P.nW}품번 → <b>${P.wireRows.length}</b>개 선종/SQ 그룹${sp?` (색상별 값 차이 ${sp}그룹 → 중앙값)`:''}${P.noKey?` · 선종/SQ 분석 불가 ${P.noKey}건`:''} · 단자 <b>${P.nT}</b> · 방수씰 <b>${P.nJ}</b>${P.skipped.length?` · 제외 ${P.skipped.length}건(${P.skipped.slice(0,3).join(', ')}…)`:''}`,
+      `<b>${P.rows.length}</b> filas — cable ${P.nW} → <b>${P.wireRows.length}</b> grupos tipo/SQ${P.noKey?` · sin SQ ${P.noKey}`:''} · terminal <b>${P.nT}</b> · sello <b>${P.nJ}</b>${P.skipped.length?` · omitidos ${P.skipped.length}`:''}`)
+      +(P.wireRows.length?`<div class="mini" style="margin-top:6px;max-height:120px;overflow:auto">${P.wireRows.sort((a,b)=>a.wtype.localeCompare(b.wtype)||a.sq.localeCompare(b.sq)).map(g=>`${esc(g.wtype)} ${esc(g.sq)} → <b>${g.unit_w}</b> kg/m (${g.n})`).join(' · ')}</div>`:'');
+    return P};
+  $('paste-ta').oninput=prev;
+  $('paste-ok').onclick=async()=>{const P=parseMasterPaste($('paste-ta').value);if(!P.rows.length){toast(L('인식된 행이 없습니다','Sin filas'),true);return}load(true);
+    try{await sbUpsert('byp_master',P.masterRows,'plant,code');P.masterRows.forEach(x=>S.master[x.code]=x);
+      if(P.wireRows.length){const wr=P.wireRows.map(({plant,wtype,sq,unit_w,updated_at})=>({plant,wtype,sq,unit_w,updated_at}));await sbUpsert('byp_wire_w',wr,'plant,wtype,sq');wr.forEach(x=>S.wireW[wk(x.wtype,x.sq)]=x.unit_w)}
+      mdlClose('mdl-paste');toast(L(`반영 완료 — 전선 ${P.wireRows.length}그룹 · 단자 ${P.nT} · 방수씰 ${P.nJ}`,`Aplicado — cable ${P.wireRows.length} · terminal ${P.nT} · sello ${P.nJ}`));RS.data=null;US.data=null;await mwLoad()}
+    catch(e){toast(e.message,true)}finally{load(false)}};
   mdlOpen('mdl-paste',btn);setTimeout(()=>$('paste-ta').focus({preventScroll:true}),80);
 }
 
