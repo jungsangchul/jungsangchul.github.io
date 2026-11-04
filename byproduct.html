@@ -652,7 +652,9 @@ async function sbDel(table,q){const r=await fetch(SUPABASE_URL+'/rest/v1/'+table
 /* ── 공통 상태 ── */
 const S={mc:[],ratio:[],wireW:{},master:{},usCache:{}};
 /* 선경(SQ) 정규화: "00.35"→"0.35", "01.25"→"1.25", "3"→"3.00", "2*01.25"→"2*1.25" */
-const normSq=t=>{t=String(t||'').trim();if(!t)return '-';const m=t.match(/^(\d+)\*(\d+(?:\.\d+)?)$/);if(m)return m[1]+'*'+Number(m[2]).toFixed(2);const n=parseFloat(t);return isNaN(n)?t:n.toFixed(2)};
+/* 선경(SQ) 정규화 — MES 32040 표기(00.35 · 01.25 · 03.00)로 통일: "0.35"→"00.35", "1.25"→"01.25", "3"→"03.00", "2*1.25"→"2*01.25" */
+const fmtSq=n=>{const f=Number(n).toFixed(2);return f.length<5?'0'.repeat(5-f.length)+f:f};
+const normSq=t=>{t=String(t||'').trim();if(!t)return '-';const m=t.match(/^(\d+)\*(\d+(?:\.\d+)?)$/);if(m)return m[1]+'*'+fmtSq(m[2]);const n=parseFloat(t);return isNaN(n)?t:fmtSq(n)};
 const wireKey=name=>{ // "CIVUS 00.35 L" / "FLRY-B 0.35 R/B" / "AVSS-BS 2*01.25 G,W" → {wtype, sq}
   const t=String(name||'').trim().split(/\s+/);
   let wtype=(t[0]||'-').toUpperCase(),sq='-';
@@ -1099,7 +1101,10 @@ const median=arr=>{const a=[...arr].sort((x,y)=>x-y);const n=a.length;return n?(
 function parseMasterPaste(txt){
   const rows=[],skipped=[];const now=new Date().toISOString();
   String(txt||'').split(/\r?\n/).forEach(l=>{
-    const c=l.split('\t').map(x=>x.trim());if(c.length<2)return;
+    l=l.replace(/\u00a0/g,' ');let c;
+    if(l.includes('\t'))c=l.split('\t').map(x=>x.trim());
+    else{const m=l.trim().match(/^(\S+)\s+(.*?)\s*([\d.,]+)\s*$/);if(!m)return;c=[m[1],m[2].trim(),m[3]]}   // 공백 구분(품번 이름… 숫자)도 허용
+    if(c.length<2)return;
     const code=(c[0]||'').toUpperCase();let name=c[1]||'',uw=pnum(c[2]);
     if(c.length===2){uw=pnum(c[1]);name=''}         // 품번·중량만 있는 2열
     if(!code||!uw||uw<=0)return;
