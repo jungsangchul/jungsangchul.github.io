@@ -274,6 +274,35 @@ table.cfg input{width:17px;height:17px}
 .tw tfoot .dz{color:var(--grn)}.tw tfoot .dp{color:var(--red)}.tw tfoot .dn{color:var(--amb)}
 .tw tr.allrow td{background:rgba(201,168,76,.05);border-bottom:1px solid rgba(201,168,76,.3)}
 
+/* ── 모바일: 측정 입력 표를 호기별 카드형으로 ── */
+@media(max-width:760px){
+  #in-tw{max-height:none!important;overflow:visible}
+  #in-tw table{display:block;table-layout:auto}
+  #in-tw thead{display:none}
+  #in-tw tbody,#in-tw tfoot{display:block}
+  #in-tw tbody tr{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px 6px;padding:10px 8px;border-bottom:1px solid var(--line2);align-items:end;background:none}
+  #in-tw tbody tr.has{background:rgba(201,168,76,.05)}
+  #in-tw tbody tr.allrow{background:rgba(201,168,76,.07);border-bottom:1px solid rgba(201,168,76,.35)}
+  #in-tw tbody td{display:block;border:0;padding:0;overflow:visible;white-space:normal}
+  #in-tw tbody td:first-child{grid-column:1/3;grid-row:1;align-self:center}
+  #in-tw tbody td.sc{grid-column:3/4;grid-row:1;align-self:center;text-align:right;font-size:15px;font-weight:700;color:#fff}
+  #in-tw tbody td.sc::before{content:attr(data-l);display:block;font-family:var(--mono);font-size:11px;color:var(--mute);font-weight:400;letter-spacing:.06em}
+  #in-tw tbody td.c{grid-column:4/5;grid-row:1;align-self:center;text-align:right}
+  #in-tw tbody td.ic{grid-row:2;min-width:0}
+  #in-tw tbody td.ic::before{content:attr(data-l);display:block;font-family:var(--mono);font-size:11px;color:var(--ac);letter-spacing:.06em;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #in-tw tbody td.mc{grid-column:1/-1;grid-row:3}
+  #in-tw tbody td.mc input{width:100%!important}
+  #in-tw input.cell{height:38px;padding:0 6px;font-size:15px}
+  #in-tw input.cell.tx{height:34px;font-size:13px}
+  #in-tw tfoot tr{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px 6px;padding:8px;border-bottom:1px solid var(--line2);position:static}
+  #in-tw tfoot td{display:block;position:static!important;border:0;padding:0;height:auto!important;font-size:13px;text-align:right;overflow:visible;white-space:normal}
+  #in-tw tfoot td.fl{grid-column:1/-1;text-align:left;font-size:14px;margin-bottom:2px}
+  #in-tw tfoot td.n::before{content:attr(data-l);display:block;font-family:var(--mono);font-size:10.5px;color:var(--mute);font-weight:400;letter-spacing:.04em}
+  #in-tw tfoot td.e{display:none}
+  #in-tw tfoot td.msg{grid-column:1/-1;text-align:left;margin-top:4px;font-size:12px}
+  #in-tw tfoot tr.ft-d{background:#171717}
+}
+
 </style>
 
 <!-- ═══ 포털 공통 (yh-common-v2): 제목 서체 · 닫기 버튼 · 최소 글자 크기 ═══ -->
@@ -692,7 +721,7 @@ function aggUsage(rows){
     const q=Number(r.qty)||0,g=String(r.grp||'').toUpperCase(),c=String(r.code||'').toUpperCase();
     const isW=g==='01W1'||(!g&&c[0]==='W'),isT=g==='03T1'||(!g&&c[0]==='T'),isJ=g==='08J1'||(!g&&c[0]==='J');
     const dd=daily[r.udate]||(daily[r.udate]={w:0,t:0,j:0,o:0});
-    if(isW){const mm=S.master[c];const nm=(mm&&mm.kind==='W'&&mm.name)?mm.name:r.name;const k=wireKey(nm);const o=wire[wk(k.wtype,k.sq)]||(wire[wk(k.wtype,k.sq)]={...k,qty:0,codes:{}});o.qty+=q;(o.codes[c]=o.codes[c]||{code:c,name:r.name,qty:0}).qty+=q;wTot+=q;dd.w+=q}
+    if(isW){const k=wireKey(r.name);/* 선종/SQ 표기는 32040 자재명 기준(예: SLDW2 00.35), 단위중량은 품번 기준 */const o=wire[wk(k.wtype,k.sq)]||(wire[wk(k.wtype,k.sq)]={...k,qty:0,codes:{}});o.qty+=q;(o.codes[c]=o.codes[c]||{code:c,name:r.name,qty:0}).qty+=q;wTot+=q;dd.w+=q}
     else if(isT){const o=term[c]||(term[c]={code:c,name:r.name,qty:0});o.qty+=q;tTot+=q;dd.t+=q}
     else if(isJ){const o=seal[c]||(seal[c]={code:c,name:r.name,qty:0});o.qty+=q;jTot+=q;dd.j+=q}
     else dd.o+=q;
@@ -755,17 +784,17 @@ function inRender(){
     const isAll=m.mc===ALL;
     return `<tr class="${has?'has':''}${m.active?'':' off'}${isAll?' allrow':''}">
       <td><span class="mc-tag${isAll?' all':''}">${isAll?L('일괄 측정','Pesaje total'):esc(m.mc)}</span>${isAll?`<div class="mini">${L('호기 미구분 · 전체 한번에 계량','todas las máquinas juntas')}</div>`:''}</td>
-      ${KINDS.map(([k])=>`<td><input class="cell" type="number" step="0.01" min="0" data-mc="${esc(m.mc)}" data-k="${k}" value="${Number(r[k])||''}" oninput="inChg(this)"></td>`).join('')}
-      <td class="n" data-sum="${esc(m.mc)}">${sum?num(sum):'<span class="mu">–</span>'}</td>
+      ${KINDS.map(([k,n])=>`<td class="ic" data-l="${n}"><input class="cell" type="number" step="0.01" min="0" inputmode="decimal" data-mc="${esc(m.mc)}" data-k="${k}" value="${Number(r[k])||''}" oninput="inChg(this)"></td>`).join('')}
+      <td class="n sc" data-l="${L('합계','Total')}" data-sum="${esc(m.mc)}">${sum?num(sum):'<span class="mu">–</span>'}</td>
       <td class="c"><button class="pbtn${ph?' has':''}" data-ph="${esc(m.mc)}" onclick="phOpen('${esc(m.mc)}',this)"><svg viewBox="0 0 24 24"><path d="M4 7h3l2-2.5h6L17 7h3v12H4z"/><circle cx="12" cy="13" r="3.5"/></svg>${ph?ph:'+'}</button></td>
-      <td><input class="cell tx" data-mc="${esc(m.mc)}" data-k="memo" value="${esc(r.memo||'')}" oninput="inChg(this)" placeholder="…"></td></tr>`}).join('');
+      <td class="mc"><input class="cell tx" data-mc="${esc(m.mc)}" data-k="memo" value="${esc(r.memo||'')}" oninput="inChg(this)" placeholder="${L('메모','Nota')}…"></td></tr>`}).join('');
   $('in-tw').innerHTML=`<table><colgroup><col style="width:118px"><col><col><col><col><col style="width:84px"><col style="width:64px"><col style="width:20%"></colgroup>
     <thead><tr><th>${L('호기','Máquina')}</th>${KINDS.map(([k,n])=>`<th class="n">${n} <small>kg</small></th>`).join('')}<th class="n">${L('합계','Total')}</th><th class="c">${L('사진','Foto')}</th><th>${L('메모','Nota')}</th></tr></thead>
     <tbody>${tr||`<tr><td colspan="8" class="empty">${L('입력된 호기가 없습니다','Sin datos')}</td></tr>`}</tbody>
     <tfoot>
-      <tr class="ft-m"><td>${L('호기별 합계','Σ máquinas')}</td>${KINDS.map(([k])=>`<td class="n" id="in-fm-${k}"></td>`).join('')}<td class="n" id="in-fm-a"></td><td></td><td></td></tr>
-      <tr class="ft-a"><td>${L('일괄 측정','Pesaje total')}</td>${KINDS.map(([k])=>`<td class="n" id="in-fa-${k}"></td>`).join('')}<td class="n" id="in-fa-a"></td><td></td><td></td></tr>
-      <tr class="ft-d"><td>${L('차이','Dif.')} <span class="mini">${L('일괄−호기별','total−Σ')}</span></td>${KINDS.map(([k])=>`<td class="n" id="in-fd-${k}"></td>`).join('')}<td class="n" id="in-fd-a"></td><td colspan="2" class="mini" id="in-fd-msg"></td></tr>
+      <tr class="ft-m"><td class="fl">${L('호기별 합계','Σ máquinas')}</td>${KINDS.map(([k,n])=>`<td class="n" data-l="${n}" id="in-fm-${k}"></td>`).join('')}<td class="n" data-l="${L('합계','Total')}" id="in-fm-a"></td><td class="e"></td><td class="e"></td></tr>
+      <tr class="ft-a"><td class="fl">${L('일괄 측정','Pesaje total')}</td>${KINDS.map(([k,n])=>`<td class="n" data-l="${n}" id="in-fa-${k}"></td>`).join('')}<td class="n" data-l="${L('합계','Total')}" id="in-fa-a"></td><td class="e"></td><td class="e"></td></tr>
+      <tr class="ft-d"><td class="fl">${L('차이','Dif.')} <span class="mini">${L('일괄−호기별','total−Σ')}</span></td>${KINDS.map(([k,n])=>`<td class="n" data-l="${n}" id="in-fd-${k}"></td>`).join('')}<td class="n" data-l="${L('합계','Total')}" id="in-fd-a"></td><td colspan="2" class="mini msg" id="in-fd-msg"></td></tr>
     </tfoot></table>`;
   $('in-cnt').textContent=L(`입력 ${cnt}개 호기 · 전체 ${all.length-1}호기`,`${cnt} máquinas con datos · ${all.length-1} total`);
   inFoot(inTotals(false));
@@ -1078,7 +1107,7 @@ function mwRender(){
   const cntMiss=arr=>arr.filter(x=>!x.uw).length;
   const wl=MW.wire.map(x=>{const w=wireUw(x);return {...x,uw:w.uw,gw:S.wireW[wk(x.wtype,x.sq)]||0,nC:w.nC,nAll:w.nAll,src:w.src}}),tl=MW.T.map(x=>({...x,uw:mUw(x.code)})),jl=MW.J.map(x=>({...x,uw:mUw(x.code)}));
   $('mw-cW').textContent=cntMiss(wl)+'/'+wl.length;$('mw-cT').textContent=cntMiss(tl)+'/'+tl.length;$('mw-cJ').textContent=cntMiss(jl)+'/'+jl.length;
-  $('mw-hint').innerHTML=k==='W'?L('최근 120일 사용량(32040)에 나타난 <b>선종·선경(SQ)</b>이 자동으로 나열됩니다. 「붙여넣기 입력」으로 등록한 <b>품번별 kg/m</b>가 우선 적용되며(사용량 가중평균, 32040 자재명이 달라도 품번으로 매칭 — 예: WSH12-11300 → CIVUS-BS 2*00.35), 품번 등록이 없는 선종/SQ는 오른쪽 <b>기본값</b> 칸에 직접 입력합니다. 빨간 칸 = 미등록. 입력 후 <b>저장</b>.','Se listan los <b>tipos/SQ</b> del consumo (120 días). Ingrese kg/m por tipo/SQ (sin color). Rojo = sin peso. Pulse <b>Guardar</b>.')
+  $('mw-hint').innerHTML=k==='W'?L('최근 120일 사용량(32040)에 나타난 <b>선종·선경(SQ)</b>이 자동으로 나열됩니다. 선종·선경 표기는 32040 자재명 기준(예: SLDW2 00.35)이고, 단위중량은 「붙여넣기 입력」으로 등록한 <b>품번별 kg/m</b>가 우선 적용됩니다(마스터 이름이 달라도 품번으로 매칭, 사용량 가중평균). 품번 등록이 없는 선종/SQ는 오른쪽 <b>기본값</b> 칸에 직접 입력합니다. 빨간 칸 = 미등록. 입력 후 <b>저장</b>.','Se listan los <b>tipos/SQ</b> del consumo (120 días). Ingrese kg/m por tipo/SQ (sin color). Rojo = sin peso. Pulse <b>Guardar</b>.')
     :k==='T'?L('최근 120일 사용량(03T1)에 나타난 <b>단자 품목</b>이 자동으로 나열됩니다. 「붙여넣기 입력」(품번·이름·단위중량)으로 전선·단자·방수씰을 한 번에 등록할 수 있습니다. 빨간 칸 = 미등록.','Se listan las <b>terminales</b> del consumo (03T1, 120 días). Puede pegar la hoja «단위중량마스터» (código · nombre · peso). Rojo = sin peso.')
     :L('최근 120일 사용량(08J1)에 나타난 <b>방수씰 품목</b>이 자동으로 나열됩니다. kg/ea를 입력하거나 「붙여넣기 입력」(품번·이름·단위중량)으로 등록합니다. 빨간 칸 = 미등록.','Se listan los <b>sellos</b> del consumo (08J1, 120 días). Ingrese kg/pza o pegue (código · nombre · peso). Rojo = sin peso.');
   if(k==='W'){
