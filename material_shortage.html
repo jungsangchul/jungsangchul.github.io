@@ -771,8 +771,14 @@ function parseUsage(txt){
     if(gi>=0){for(let i=gi+1;i<c.length;i++)if(isNum(c[i])){q=num(c[i]);qi=i;break}}
     else{for(let i=c.length-1;i>ci+1;i--)if(isNum(c[i])){q=num(c[i]);qi=i;break}
          if(isNaN(q)&&isNum(c[ci+1])&&c.length===ci+2){q=num(c[ci+1]);qi=ci+1}}   // 코드·수량 2열
-    const name=qi!==ci+1&&gi!==ci+1?(c[ci+1]||''):'';
-    return{code:c[ci].toUpperCase(),name,grp:gi>=0?c[gi].toUpperCase():'',qty:q,_rd:rowDate(c,ci)}}).filter(r=>r&&!isNaN(r.qty));
+    const grp=gi>=0?c[gi].toUpperCase():'';
+    const name=normWireName(qi!==ci+1&&gi!==ci+1?(c[ci+1]||''):'',c[ci].toUpperCase(),grp);
+    return{code:c[ci].toUpperCase(),name,grp,qty:q,_rd:rowDate(c,ci)}}).filter(r=>r&&!isNaN(r.qty));
+}
+/* 전선 자재명 SQ 표기 통일: "FLRY-B 0.5 L/B" → "FLRY-B 00.50 L/B" (이미 00.50 형식이면 그대로). 전선(코드 W… / 품목그룹 01W…)만 적용 */
+function normWireName(name,code,grp){
+  if(!name||!(/^W/.test(code||'')||/^01W/.test(grp||'')))return name;
+  return String(name).trim().replace(/(^|\s)(\d{1,3})(?:[.,](\d{1,2}))?(?=\s|$)/,(m,p,i,f)=>p+i.padStart(2,'0')+'.'+(f||'').padEnd(2,'0'));
 }
 /* 현장입고 ERP 30810: 실사일자·유라코드·업체품명·단위·실사수량·바코드·업체바코드·사용 */
 function parseErp(txt){
@@ -846,8 +852,8 @@ const DAILY=[
   hint:['ERP 30810 형식(실사일자·유라코드·업체품명·단위·실사수량·바코드·업체바코드·사용)을 붙여넣으세요. 머릿글이 없어도 인식합니다. 같은 바코드는 1번만 반영되며, 재업로드 시 바코드가 같고 수량이 다르면 수정됩니다.',
         'Pegue el formato ERP 30810 (fecha, código, nombre, unidad, cantidad, código de barras, cód. proveedor, uso), con o sin encabezado. Códigos de barras repetidos se cuentan una vez; al recargar, si la cantidad cambia se actualiza.']},
  {key:'use',kind:'usage',table:'mshort_usage',dcol:'udate',ko:'사용량',es:'Consumo',parser:parseUsage,
-  hint:['날짜 지정 후 자재코드·업체명·품목그룹·사용량을 붙여넣으세요. 머릿글·빈 열·앞쪽 순번/날짜 열이 있어도 코드와 품목그룹(08J1·03T1·01W1) 기준으로 인식합니다.',
-        'Seleccione fecha y pegue código, proveedor, grupo, consumo. Se reconoce sin encabezado.']},
+  hint:['날짜 지정 후 자재코드·업체명·품목그룹·사용량을 붙여넣으세요. 머릿글·빈 열·앞쪽 순번/날짜 열이 있어도 코드와 품목그룹(08J1·03T1·01W1) 기준으로 인식합니다. 전선 자재명의 SQ 표기는 00.50 형식으로 통일해 저장합니다(예: FLRY-B 0.5 L/B → FLRY-B 00.50 L/B).',
+        'Seleccione fecha y pegue código, proveedor, grupo, consumo. Se reconoce sin encabezado. El calibre (SQ) de los cables se unifica al formato 00.50 (ej. FLRY-B 0.5 L/B → FLRY-B 00.50 L/B).']},
  {key:'ret',kind:'return',table:'mshort_return',dcol:'rtdate',ko:'반품현황',es:'Devoluciones',parser:parseRet,erp:true,bc:true,rowDateLabel:['행의 반입일시 사용 (없으면 지정 날짜)','Usar fecha de devolución de cada fila (si falta, la seleccionada)'],
   hint:['ERP 24170 (Scan) 반품 입고현황(반입바코드·수량·원본바코드·수량·단위·자재코드·자재명·반입처·입고저장위치·반입일시·작업자·구분)을 붙여넣으세요. 머릿글이 없어도 인식합니다. 같은 반입바코드는 1번만 반영되며, 재업로드 시 수량이 다르면 수정됩니다. 반품 수량은 현재고에서 차감됩니다.',
         'Pegue el formato ERP 24170 (devoluciones escaneadas), con o sin encabezado. Códigos de barras repetidos se cuentan una vez; al recargar, si la cantidad cambia se actualiza. Las devoluciones se restan del stock actual.']}
