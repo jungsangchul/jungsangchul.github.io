@@ -664,6 +664,13 @@ const wireKey=name=>{ // "CIVUS 00.35 L" / "FLRY-B 0.35 R/B" / "AVSS-BS 2*01.25 
 };
 const wk=(w,s)=>w+'|'+s;
 const mUw=code=>{const m=S.master[code];return m?(Number(m.unit_w)||0):0};
+/* 전선 그룹 유효 단위중량(kg/m): 품번별 마스터 중량이 있으면 사용량 가중평균(품번 기준), 없는 품번은 선종/SQ 그룹값으로 보완 */
+function wireUw(g){
+  const gw=S.wireW[wk(g.wtype,g.sq)]||0;const codes=g.codes?Object.values(g.codes):[];
+  let ws=0,wq=0,q0=0,nC=0;codes.forEach(c=>{const u=mUw(c.code);if(u>0){ws+=c.qty*u;wq+=c.qty;nC++}else q0+=c.qty});
+  if(wq>0){if(q0>0&&gw>0){ws+=q0*gw;wq+=q0}return {uw:ws/wq,nC,nAll:codes.length,src:'code'}}
+  return {uw:gw,nC:0,nAll:codes.length,src:gw?'group':''};
+}
 async function loadBase(){
   const [mc,ratio,ww,mm]=await Promise.all([
     sbGet(`byp_machine?plant=eq.${PLANT}&order=ord,mc`),
@@ -685,7 +692,7 @@ function aggUsage(rows){
     const q=Number(r.qty)||0,g=String(r.grp||'').toUpperCase(),c=String(r.code||'').toUpperCase();
     const isW=g==='01W1'||(!g&&c[0]==='W'),isT=g==='03T1'||(!g&&c[0]==='T'),isJ=g==='08J1'||(!g&&c[0]==='J');
     const dd=daily[r.udate]||(daily[r.udate]={w:0,t:0,j:0,o:0});
-    if(isW){const k=wireKey(r.name);const o=wire[wk(k.wtype,k.sq)]||(wire[wk(k.wtype,k.sq)]={...k,qty:0});o.qty+=q;wTot+=q;dd.w+=q}
+    if(isW){const mm=S.master[c];const nm=(mm&&mm.kind==='W'&&mm.name)?mm.name:r.name;const k=wireKey(nm);const o=wire[wk(k.wtype,k.sq)]||(wire[wk(k.wtype,k.sq)]={...k,qty:0,codes:{}});o.qty+=q;(o.codes[c]=o.codes[c]||{code:c,name:r.name,qty:0}).qty+=q;wTot+=q;dd.w+=q}
     else if(isT){const o=term[c]||(term[c]={code:c,name:r.name,qty:0});o.qty+=q;tTot+=q;dd.t+=q}
     else if(isJ){const o=seal[c]||(seal[c]={code:c,name:r.name,qty:0});o.qty+=q;jTot+=q;dd.j+=q}
     else dd.o+=q;
@@ -887,7 +894,7 @@ function rsCalc(){
   new Set([...Object.keys(dm),...Object.keys(da)]).forEach(d=>{const A=da[d],M=dm[d];const use=(A&&(A.w+A.t+A.j+A.s)>0)?A:M;byDay[d]={...use};for(const k in use)tot[k]+=use[k]});
   const diffDays=Object.keys(da).filter(d=>dm[d]&&(da[d].w+da[d].t+da[d].j+da[d].s)>0).map(d=>{const A=da[d],M=dm[d];return {d,a:A.w+A.t+A.j+A.s,m:M.w+M.t+M.j+M.s}});
   const U=D.usage,W=tot.w,Tm=tot.t,Jl=tot.j,Sc=tot.s;
-  const wire=Object.values(U.wire).map(o=>{const ratio=U.wTot?o.qty/U.wTot:0;const uw=S.wireW[wk(o.wtype,o.sq)]||0;const kg=W*ratio;return {...o,ratio,uw,avg:ratio*uw,kg,m:uw?kg/uw:null}}).sort((a,b)=>b.qty-a.qty);
+  const wire=Object.values(U.wire).map(o=>{const ratio=U.wTot?o.qty/U.wTot:0;const uw=wireUw(o).uw;const kg=W*ratio;return {...o,ratio,uw,avg:ratio*uw,kg,m:uw?kg/uw:null}}).sort((a,b)=>b.qty-a.qty);
   const wCov=wire.filter(x=>x.uw).reduce((s,x)=>s+x.ratio,0);const wAvg=wCov?wire.reduce((s,x)=>s+x.avg,0)/wCov:0;const wMissing=wire.filter(x=>!x.uw).length;
   const wMissKg=wire.filter(x=>!x.uw).reduce((s,x)=>s+x.kg,0);const wM=wire.reduce((s,x)=>s+(x.m||0),0)+(wAvg?wMissKg/wAvg:0);
   const TT=calcItems(U.term,U.tTot,Tm),JJ=calcItems(U.seal,U.jTot,Jl);
@@ -1032,7 +1039,7 @@ function usRender(){
   const D=US.data;if(!D)return;const A=D.agg;
   const days=Object.keys(A.daily).sort();
   $('us-info').textContent=L(`${D.rows.length.toLocaleString()}행 · ${days.length}일`,`${D.rows.length.toLocaleString()} filas · ${days.length} días`);
-  const wire=Object.values(A.wire).map(o=>({...o,ratio:A.wTot?o.qty/A.wTot:0,uw:S.wireW[wk(o.wtype,o.sq)]||0})).sort((a,b)=>b.qty-a.qty);
+  const wire=Object.values(A.wire).map(o=>({...o,ratio:A.wTot?o.qty/A.wTot:0,uw:wireUw(o).uw})).sort((a,b)=>b.qty-a.qty);
   const wCov=wire.filter(x=>x.uw).reduce((s,x)=>s+x.ratio,0);const wAvg=wCov?wire.reduce((s,x)=>s+x.ratio*x.uw,0)/wCov:0;
   const TT=usItemTable(A.term,A.tTot),JJ=usItemTable(A.seal,A.jTot);
   $('us-kpi').innerHTML=`<div class="kpi w"><span>${L('전선 사용량','Uso cable')}</span><b>${num(A.wTot,0)}<small>m</small></b><div class="d">${wire.length} ${L('선종/SQ','tipos/SQ')} · ${wAvg?wAvg.toFixed(5):'–'} kg/m · ${L('미등록','sin peso')} ${wire.filter(x=>!x.uw).length}</div></div>
@@ -1055,7 +1062,7 @@ async function mwLoad(){
   try{
     const to=today(),from=addDays(to,-120);
     const rows=await getUsage(from,to);const A=aggUsage(rows);
-    const wmap={};Object.values(A.wire).forEach(o=>wmap[wk(o.wtype,o.sq)]={wtype:o.wtype,sq:o.sq,qty:o.qty});
+    const wmap={};Object.values(A.wire).forEach(o=>wmap[wk(o.wtype,o.sq)]={wtype:o.wtype,sq:o.sq,qty:o.qty,codes:o.codes});
     Object.keys(S.wireW).forEach(k=>{if(!wmap[k]){const [wtype,sq]=k.split('|');wmap[k]={wtype,sq,qty:0}}});
     MW.wire=Object.values(wmap).sort((a,b)=>a.wtype.localeCompare(b.wtype)||a.sq.localeCompare(b.sq));
     const build=(map,kind)=>{const m={};Object.values(map).forEach(o=>m[o.code]={code:o.code,name:o.name,qty:o.qty});
@@ -1069,15 +1076,15 @@ function mwRender(){
   if(!MW.ready)return;
   const q=($('mw-q').value||'').trim().toUpperCase(),miss=$('mw-miss').checked,k=MW.kind;
   const cntMiss=arr=>arr.filter(x=>!x.uw).length;
-  const wl=MW.wire.map(x=>({...x,uw:S.wireW[wk(x.wtype,x.sq)]||0})),tl=MW.T.map(x=>({...x,uw:mUw(x.code)})),jl=MW.J.map(x=>({...x,uw:mUw(x.code)}));
+  const wl=MW.wire.map(x=>{const w=wireUw(x);return {...x,uw:w.uw,gw:S.wireW[wk(x.wtype,x.sq)]||0,nC:w.nC,nAll:w.nAll,src:w.src}}),tl=MW.T.map(x=>({...x,uw:mUw(x.code)})),jl=MW.J.map(x=>({...x,uw:mUw(x.code)}));
   $('mw-cW').textContent=cntMiss(wl)+'/'+wl.length;$('mw-cT').textContent=cntMiss(tl)+'/'+tl.length;$('mw-cJ').textContent=cntMiss(jl)+'/'+jl.length;
-  $('mw-hint').innerHTML=k==='W'?L('최근 120일 사용량(32040)에 나타난 <b>선종·선경(SQ)</b>이 자동으로 나열됩니다. 전선은 색상과 무관하게 선종/SQ 단위로 kg/m을 씁니다 — 직접 입력하거나, 「붙여넣기 입력」에 품번별(품번·이름·kg/m) 목록을 넣으면 이름에서 선종·선경을 분석해 자동 변환됩니다. 빨간 칸 = 미등록. 입력 후 <b>저장</b>.','Se listan los <b>tipos/SQ</b> del consumo (120 días). Ingrese kg/m por tipo/SQ (sin color). Rojo = sin peso. Pulse <b>Guardar</b>.')
+  $('mw-hint').innerHTML=k==='W'?L('최근 120일 사용량(32040)에 나타난 <b>선종·선경(SQ)</b>이 자동으로 나열됩니다. 「붙여넣기 입력」으로 등록한 <b>품번별 kg/m</b>가 우선 적용되며(사용량 가중평균, 32040 자재명이 달라도 품번으로 매칭 — 예: WSH12-11300 → CIVUS-BS 2*00.35), 품번 등록이 없는 선종/SQ는 오른쪽 <b>기본값</b> 칸에 직접 입력합니다. 빨간 칸 = 미등록. 입력 후 <b>저장</b>.','Se listan los <b>tipos/SQ</b> del consumo (120 días). Ingrese kg/m por tipo/SQ (sin color). Rojo = sin peso. Pulse <b>Guardar</b>.')
     :k==='T'?L('최근 120일 사용량(03T1)에 나타난 <b>단자 품목</b>이 자동으로 나열됩니다. 「붙여넣기 입력」(품번·이름·단위중량)으로 전선·단자·방수씰을 한 번에 등록할 수 있습니다. 빨간 칸 = 미등록.','Se listan las <b>terminales</b> del consumo (03T1, 120 días). Puede pegar la hoja «단위중량마스터» (código · nombre · peso). Rojo = sin peso.')
     :L('최근 120일 사용량(08J1)에 나타난 <b>방수씰 품목</b>이 자동으로 나열됩니다. kg/ea를 입력하거나 「붙여넣기 입력」(품번·이름·단위중량)으로 등록합니다. 빨간 칸 = 미등록.','Se listan los <b>sellos</b> del consumo (08J1, 120 días). Ingrese kg/pza o pegue (código · nombre · peso). Rojo = sin peso.');
   if(k==='W'){
     const list=wl.filter(x=>(!q||x.wtype.includes(q)||x.sq.includes(q))&&(!miss||!x.uw));
-    $('mw-tw').innerHTML=`<table><colgroup><col style="width:30%"><col style="width:16%"><col><col style="width:26%"></colgroup><thead><tr><th>${L('선종','Tipo')}</th><th>SQ</th><th class="n">${L('최근 사용량','Uso reciente')} <small>m · 120d</small></th><th class="n">${L('단위중량','Peso unit.')} <small>kg/m</small></th></tr></thead><tbody>
-      ${list.map(x=>`<tr><td class="b">${esc(x.wtype)}</td><td>${esc(x.sq)}</td><td class="n ${x.qty?'':'mute'}">${num(x.qty,0)}</td><td><input class="cell ${x.uw?'':'miss'}" type="number" step="0.00001" min="0" data-w="${esc(x.wtype)}" data-s="${esc(x.sq)}" value="${x.uw||''}" oninput="this.classList.add('ch');this.classList.remove('miss')" placeholder="kg/m"></td></tr>`).join('')||`<tr><td colspan="4" class="empty">${L('데이터 없음','Sin datos')}</td></tr>`}</tbody></table>`;
+    $('mw-tw').innerHTML=`<table><colgroup><col style="width:22%"><col style="width:12%"><col style="width:18%"><col><col style="width:22%"></colgroup><thead><tr><th>${L('선종','Tipo')}</th><th>SQ</th><th class="n">${L('최근 사용량','Uso reciente')} <small>m · 120d</small></th><th class="n">${L('적용 단위중량','kg/m aplicado')} <small>${L('품번 기준','por código')}</small></th><th class="n">${L('선종/SQ 기본값','Valor tipo/SQ')} <small>kg/m</small></th></tr></thead><tbody>
+      ${list.map(x=>`<tr><td class="b">${esc(x.wtype)}</td><td>${esc(x.sq)}</td><td class="n ${x.qty?'':'mute'}">${num(x.qty,0)}</td><td class="n ${x.uw?'':'neg'}">${x.uw?`<b>${x.uw.toFixed(6)}</b> <span class="mini">${x.src==='code'?L(`품번 ${x.nC}/${x.nAll}`,`cód. ${x.nC}/${x.nAll}`):L('기본값','base')}</span>`:L('없음','—')}</td><td><input class="cell ${x.uw?'':'miss'}" type="number" step="0.00001" min="0" data-w="${esc(x.wtype)}" data-s="${esc(x.sq)}" value="${x.gw||''}" oninput="this.classList.add('ch');this.classList.remove('miss')" placeholder="kg/m"></td></tr>`).join('')||`<tr><td colspan="5" class="empty">${L('데이터 없음','Sin datos')}</td></tr>`}</tbody></table>`;
     $('mw-info').textContent=L(`${list.length}개 표시 · 미등록 ${cntMiss(wl)}/${wl.length}`,`${list.length} mostrados · sin peso ${cntMiss(wl)}/${wl.length}`);
   }else{
     const src=k==='T'?tl:jl;const list=src.filter(x=>(!q||x.code.includes(q)||String(x.name||'').toUpperCase().includes(q))&&(!miss||!x.uw));
