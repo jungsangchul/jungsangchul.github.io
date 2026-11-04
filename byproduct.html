@@ -1,0 +1,1088 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>가공생산팀 부산물 관리</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;700&family=Space+Mono:wght@400;700&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<style>
+:root{
+  --bg:#0a0a0a; --panel:#141414; --panel2:#181818; --panel3:#1f1f1f; --surface:#111111; --card:#141414;
+  --ink:#f0f0f0; --ink2:#c8c8c8; --mute:#8f8f8f; --dim:#5a5a5a; --line:#1e1e1e; --line2:#2a2a2a;
+  --ac:#c9a84c; --ac2:#e2c46a; --ac-soft:rgba(201,168,76,.14); --ac-glow:rgba(201,168,76,.28);
+  --orange:#d4651a; --purple:#7c5cbf; --blue:#6fb8dd; --pri:#c9a84c; --pri2:rgba(201,168,76,.12);
+  --red:#e05c5c; --redbg:rgba(224,92,92,.10); --amb:#e0a84a; --ambbg:rgba(224,168,74,.10); --grn:#4caf7d; --grnbg:rgba(76,175,125,.14);
+  --code:'Barlow Condensed','Arial Narrow','Malgun Gothic',sans-serif;
+  --mono:'Space Mono',Consolas,'Courier New',monospace;
+  --body:'Noto Sans KR','Malgun Gothic','Apple SD Gothic Neo',sans-serif;
+  --sh2:0 8px 20px rgba(0,0,0,.35); --r:8px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased}
+button,input,textarea,select{font:inherit;color:inherit}
+button{cursor:pointer}
+::placeholder{color:var(--dim)}
+:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+::selection{background:var(--ac);color:#0a0a0a}
+input,select,textarea{color-scheme:dark}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+
+/* ── 헤더 (포털 공통) ── */
+.top{position:sticky;top:0;z-index:100}
+header{background:linear-gradient(180deg,#141414 0%,#0e0e0e 100%);border-bottom:1px solid var(--line2);box-shadow:0 1px 0 rgba(255,255,255,.03),0 8px 24px rgba(0,0,0,.35)}
+header::before{content:'';display:block;height:2px;background:linear-gradient(90deg,var(--ac) 0%,var(--orange) 45%,var(--purple) 100%);opacity:.9}
+.bar{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 32px}
+.brand{display:flex;align-items:center;gap:14px;min-width:0}
+.brand-text{display:flex;flex-direction:column;gap:4px;min-width:0}
+.bar h1{font-family:var(--mono);font-size:16px;font-weight:700;letter-spacing:.1em;margin:0;line-height:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:linear-gradient(90deg,#fafafa 0%,#d9d0b4 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.brand-sub{font-size:12px;color:#a8a8a8;letter-spacing:.26em;text-transform:uppercase;line-height:1;display:flex;align-items:center;gap:8px;white-space:nowrap}
+.brand-sub::before{content:'';width:14px;height:1px;background:var(--ac)}
+.hdr-right{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.lang{display:flex;gap:6px}
+.lang button{background:none;border:1px solid var(--line2);border-radius:999px;color:var(--mute);height:40px;padding:0 15px;font-size:12.5px;font-weight:700;transition:background .15s,color .15s,border-color .15s}
+.lang button:hover{color:var(--ink)}
+.lang button.on{background:rgba(74,158,201,.10);border-color:rgba(74,158,201,.32);color:var(--blue)}
+.lang button#lg-ko.on{background:rgba(201,168,76,.10);border-color:rgba(201,168,76,.32);color:var(--ac)}
+#langBtn{display:none}
+header .who{display:flex;align-items:center;gap:8px;height:40px;padding:0 6px 0 15px;border:1px solid var(--line2);border-radius:999px;font-size:12.5px;font-weight:700;color:var(--mute)}
+header .who input{width:110px;height:28px;padding:0 10px;background:#0d0d0d;border:1px solid var(--line2);color:#fff;border-radius:999px;font-size:13px;font-weight:600}
+header .who input:focus{border-color:var(--ac);outline:none}
+.system-bar{padding:7px 32px;background:#0b0b0b;border-bottom:1px solid var(--line);font-family:var(--mono);font-size:12.5px;color:#b0b0b0;letter-spacing:.16em;text-transform:uppercase;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.system-bar>span:first-child{display:flex;align-items:center;gap:8px}
+.system-bar>span:first-child::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--ac);box-shadow:0 0 6px var(--ac);animation:pulse 2.4s ease-in-out infinite}
+.system-bar .plant{color:var(--ac2);font-weight:700;white-space:nowrap}
+nav.tabs{display:flex;gap:6px;padding:12px 32px;background:var(--surface);border-bottom:1px solid var(--line2);overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;margin:0}
+nav.tabs::-webkit-scrollbar{display:none}
+nav.tabs button{flex-shrink:0;display:inline-flex;align-items:center;gap:7px;background:none;border:1px solid transparent;border-radius:999px;color:var(--mute);font-size:13.5px;font-weight:600;padding:8px 16px;letter-spacing:.02em;white-space:nowrap;transition:color .15s,background .15s,border-color .15s,box-shadow .15s}
+nav.tabs button svg{width:16px;height:16px;flex-shrink:0;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;opacity:.85}
+nav.tabs button:hover{color:var(--ink);background:rgba(255,255,255,.04)}
+nav.tabs button.on{color:var(--ac);background:rgba(201,168,76,.12);border-color:rgba(201,168,76,.35);box-shadow:0 0 0 1px rgba(201,168,76,.08),0 4px 14px rgba(201,168,76,.08)}
+nav.tabs button.on svg{opacity:1}
+@media(max-width:760px){.bar,.system-bar,nav.tabs{padding-left:16px;padding-right:16px}.bar{padding:10px 16px;flex-wrap:wrap}.brand{width:100%}.hdr-right{width:100%;justify-content:flex-end}.brand-sub{display:none}.lang button{height:34px;padding:0 12px}header .who{height:34px}header .who input{width:84px;height:24px}.system-bar>span:first-child{display:none}.system-bar{justify-content:flex-end}}
+/* ── 본문 ── */
+main{padding:22px 24px 90px;max-width:1680px;margin:0 auto}
+.tab{display:none}.tab.on{display:block}
+.card{background:linear-gradient(180deg,#181818,#141414);border:1px solid var(--line2);border-radius:var(--r);padding:16px 18px;margin-bottom:14px;box-shadow:var(--sh2)}
+.card h3{margin:0 0 12px;font-family:var(--mono);font-size:14.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--ac);display:flex;align-items:center;gap:10px}
+.card h3::after{content:'';flex:1;height:1px;background:var(--line)}
+.mbd h4{margin:14px 0 8px;font-family:var(--mono);font-size:13.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--mute)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+.row.hd{justify-content:space-between;margin-bottom:8px}.row.hd h3{margin:0}
+.sp{flex:1}
+label.f,.f{display:flex;flex-direction:column;gap:5px;font-family:var(--mono);font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink2);font-weight:700}
+input,select,textarea{font:inherit;font-family:var(--body);font-size:14px;letter-spacing:0;text-transform:none;border:1px solid var(--line2);border-radius:6px;padding:0 11px;height:40px;background:#0d0d0d;color:#fff;transition:border-color .15s,box-shadow .15s}
+input[type=checkbox],input[type=radio]{height:auto;padding:0;accent-color:var(--ac)}
+input:focus,select:focus,textarea:focus{border-color:var(--ac);box-shadow:0 0 0 4px var(--ac-soft);outline:none}
+textarea{width:100%;min-height:150px;height:auto;padding:10px 12px;font-family:Consolas,'Space Mono',monospace;font-size:13.5px;line-height:1.5;resize:vertical}
+.chkl{display:flex;gap:8px;align-items:center;font-size:13px;color:var(--ink2);padding-bottom:8px;cursor:pointer;user-select:none;font-family:var(--body);letter-spacing:0;text-transform:none}
+.btn{height:40px;border:0;border-radius:6px;background:linear-gradient(180deg,#d9b85c 0%,#c9a84c 100%);color:#0a0a0a;padding:0 16px;font-weight:700;white-space:nowrap;box-shadow:0 4px 16px var(--ac-glow),inset 0 1px 0 rgba(255,255,255,.3);transition:transform .08s,filter .15s;font-family:var(--body);font-size:14px;letter-spacing:0;text-transform:none}
+.btn:hover{filter:brightness(1.07)}
+.btn:active{transform:translateY(1px)}
+.btn.sec{background:rgba(255,255,255,.03);color:var(--ink2);border:1px solid var(--line2);box-shadow:none}
+.btn.sec:hover{background:rgba(255,255,255,.06);border-color:#555;color:var(--ink);filter:none}
+.btn.red{background:rgba(224,92,92,.10);color:var(--red);border:1px solid rgba(224,92,92,.4);box-shadow:none}
+.btn.red:hover{background:rgba(224,92,92,.18);filter:none}
+.btn.sm{height:30px;padding:0 10px;font-size:13px;border-radius:5px}
+.btn:disabled{opacity:.4;cursor:not-allowed;filter:none;transform:none}
+.hint{color:var(--mute);font-size:13.5px;line-height:1.6;font-family:var(--body);letter-spacing:0;text-transform:none}
+.hint b{color:var(--ink2)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px}
+.kpi{background:linear-gradient(180deg,#181818,#141414);border:1px solid var(--line2);border-radius:var(--r);padding:12px 14px;cursor:pointer;transition:border-color .15s,background .15s,transform .15s}
+.kpi:hover{border-color:#3a3a3a;background:#1b1b1b;transform:translateY(-1px)}
+.kpi>span{font-family:var(--mono);font-size:14px;font-weight:700;color:var(--ink2);display:block;letter-spacing:.12em;text-transform:uppercase}
+.kpi b{display:block;font-family:var(--code);font-size:32px;line-height:1;font-weight:700;color:#fff;margin-top:8px}
+.kpi b.s{font-family:var(--body);font-size:14px;margin-top:8px;color:var(--ink2)}
+.kpi.r b{color:var(--red)}.kpi.a b{color:var(--amb)}.kpi.g b{color:var(--grn)}
+.tw{overflow:auto;max-height:65vh;border:1px solid var(--line2);border-radius:var(--r);background:var(--panel)}
+.tw.m{max-height:42vh}
+.carc{min-width:120px;white-space:nowrap;line-height:1.35;padding-top:6px;padding-bottom:6px}
+.carc .cl{display:block;font-size:12px;color:var(--ink2);}
+.carc .cl+.cl{margin-top:2px}
+.carc .cl b{color:var(--ac);font-weight:700;margin-right:4px}
+table{border-collapse:separate;border-spacing:0;width:100%;font-size:14.5px;background:transparent}
+th,td{padding:8px 8px;border-bottom:1px solid var(--line);white-space:normal;overflow-wrap:break-word;vertical-align:middle;color:var(--ink2)}
+td.n{white-space:nowrap}
+th{line-height:1.25;vertical-align:bottom}
+td:nth-child(2){white-space:nowrap}
+th.n{min-width:56px}
+th{position:sticky;top:0;background:#101010;text-align:left;font-family:var(--body);font-size:13.5px;letter-spacing:.02em;font-weight:700;color:#e8e8e8;cursor:pointer;z-index:1;box-shadow:0 1px 0 var(--line2);word-break:keep-all;white-space:nowrap;padding:10px 8px 9px}
+th small{display:block;font-family:var(--mono);font-size:12px;font-weight:400;letter-spacing:.04em;color:var(--ac);opacity:.85;margin-top:3px;line-height:1}
+th:hover{color:#fff;background:#151515}
+th:hover{color:var(--ac)}
+tbody tr:hover td{background:rgba(255,255,255,.025)}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+td.b{font-weight:700;color:#fff}
+td.mute{color:var(--mute)}
+td.empty{text-align:center;color:var(--mute);padding:24px}
+tr.click{cursor:pointer}
+tr.short td{background:var(--redbg)}tr.care td{background:var(--ambbg)}tr.ex td{color:var(--dim);text-decoration:line-through}
+tr.mutedr td{color:var(--dim)}
+.neg{color:var(--red);font-weight:700}
+.tag{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12.5px;font-weight:700;white-space:nowrap;border:1px solid transparent;letter-spacing:.03em}
+.tag.xt{background:rgba(111,184,221,.10);color:var(--blue);border-color:rgba(111,184,221,.3);margin-left:6px;font-size:12px}
+.tag.short{background:rgba(224,92,92,.14);color:var(--red);border-color:rgba(224,92,92,.4)}
+.tag.care{background:rgba(224,168,74,.14);color:var(--amb);border-color:rgba(224,168,74,.4)}
+.tag.ok{background:var(--grnbg);color:var(--grn);border-color:rgba(76,175,125,.4)}
+.tag.none{background:rgba(255,255,255,.04);color:var(--mute);border-color:var(--line2)}
+.tag.az{background:rgba(201,168,76,.14);color:var(--ac);border-color:rgba(201,168,76,.4);margin-left:4px;font-size:12px;padding:1px 7px}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{background:var(--pri2);color:var(--ac);border:1px solid rgba(201,168,76,.3);border-radius:999px;padding:4px 6px 4px 12px;font-weight:700;display:flex;align-items:center;gap:6px;font-family:var(--code);font-size:15px}
+.chip small{color:var(--mute);font-weight:400;font-family:var(--body);font-size:12px}
+.chip button{border:0;background:rgba(255,255,255,.08);color:var(--red);border-radius:50%;width:20px;height:20px;cursor:pointer;font-weight:700;display:inline-flex;align-items:center;justify-content:center;line-height:1}
+.chip button:hover{background:rgba(224,92,92,.25)}
+.grid2{display:grid;grid-template-columns:2fr 1fr;gap:14px}
+.grid2>.card{min-width:0}
+@media(max-width:900px){.grid2{grid-template-columns:1fr}}
+.dl{max-height:420px;overflow:auto;border:1px solid var(--line2);border-radius:var(--r);background:var(--panel)}
+.dl div{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-bottom:1px solid var(--line);gap:8px;cursor:pointer;color:var(--ink2);font-variant-numeric:tabular-nums}
+.dl div:last-child{border-bottom:0}
+.dl div:hover{background:var(--panel2)}.dl div.sel{background:var(--pri2);color:var(--ac2)}
+.dl small{color:var(--mute);font-size:12px}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#181818;color:#fff;padding:11px 20px;border-radius:999px;border:1px solid rgba(201,168,76,.45);box-shadow:0 10px 30px rgba(0,0,0,.6);display:none;z-index:99;max-width:90vw;font-weight:600}
+.toast.err{background:#1d1111;border-color:rgba(224,92,92,.5);color:var(--red)}
+.load{position:fixed;inset:0;background:rgba(10,10,10,.65);backdrop-filter:blur(2px);display:none;align-items:center;justify-content:center;z-index:98;font-family:var(--mono);font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--ac)}
+.prev{font-size:12px;color:var(--mute);margin:8px 0}
+.prev b{color:var(--ink)}
+td.adjc{cursor:pointer;text-decoration:underline dotted var(--dim);color:var(--ac2)}
+.adjbox{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin:10px 0}
+.adjbox div{background:#0f0f0f;border:1px solid var(--line2);border-radius:6px;padding:9px 11px;font-family:var(--mono);font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim);min-width:0}
+.adjbox b{display:block;font-family:var(--code);font-size:24px;line-height:1.1;color:#fff;margin-top:6px;letter-spacing:0;text-transform:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tyf{display:flex;flex-direction:column;gap:5px}.tyc{display:flex;gap:4px;flex-wrap:wrap}
+.tyc label{display:flex;align-items:center;gap:5px;height:40px;padding:0 11px;border:1px solid var(--line2);border-radius:999px;font-family:var(--body);font-size:12.5px;letter-spacing:0;text-transform:none;cursor:pointer;user-select:none;background:rgba(255,255,255,.02);color:var(--mute);font-weight:600;transition:border-color .15s,color .15s,background .15s}
+.tyc label:hover{color:var(--ink)}
+.tyc label:has(input:checked){background:rgba(201,168,76,.12);border-color:rgba(201,168,76,.35);color:var(--ac)}
+.tyc input{margin:0;display:none}.tyc b{color:var(--dim);font-weight:600;font-variant-numeric:tabular-nums}
+table.cfg{width:auto;margin-bottom:10px}
+table.cfg th,table.cfg td{text-align:center;padding:8px 14px;cursor:default}
+table.cfg td:first-child{text-align:left;font-weight:600;color:#fff}
+table.cfg input{width:17px;height:17px}
+.mc{width:150px;height:30px;padding:0 8px;font-size:12px}
+.mdl{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(3px);display:none;align-items:flex-start;justify-content:center;z-index:90;padding:4vh 12px;overflow:auto}
+.mdl.on{display:flex}
+.mbox{background:var(--panel);border:1px solid var(--line2);border-radius:10px;width:min(1100px,100%);box-shadow:0 24px 60px rgba(0,0,0,.6);overflow:hidden}
+.mhd{background:linear-gradient(180deg,#1a1a1a,#141414);border-bottom:1px solid var(--line2);color:#fff;padding:12px 18px;display:flex;align-items:center;gap:10px}
+.mhd b{flex:1;font-size:15px}
+.mhd button{background:transparent;border:0;color:var(--mute);font-size:22px;cursor:pointer;line-height:1}
+.mhd button:hover{color:#fff}
+.mbd{padding:16px 18px}
+@media(max-width:640px){main{padding:14px 14px 80px}}
+
+/* ── 부산물 관리 전용 ── */
+.fs-head2{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.fs-head2 h2{margin:0;font-family:'IBM Plex Sans KR','Noto Sans KR',sans-serif;font-size:18px;font-weight:700;color:var(--ink)}
+.fs-pl{display:inline-block;padding:2px 10px;border-radius:999px;font-size:12px;font-weight:700}
+.fs-pl.p1{background:rgba(212,101,26,.15);color:#f08a45;border:1px solid rgba(212,101,26,.5)}
+.fs-pl.p2{background:rgba(124,92,191,.15);color:#a98af0;border:1px solid rgba(124,92,191,.5)}
+.fs-head2 .s{font-family:var(--mono);font-size:12px;letter-spacing:.12em;color:var(--mute);text-transform:uppercase}
+.fs-head2 .sp{flex:1}
+.fs-body{display:flex;flex-direction:column;gap:12px}
+.fs-seg{display:inline-flex;border:1px solid var(--line2);border-radius:999px;overflow:hidden}
+.fs-seg button{background:none;border:none;color:var(--ink2);padding:7px 14px;font-family:inherit;font-size:13px;cursor:pointer}
+.fs-seg button.on{background:var(--ac);color:#0a0a0a;font-weight:700}
+.fs-spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(201,168,76,.25);border-top-color:var(--ac);border-radius:50%;animation:fsr .8s linear infinite;vertical-align:-2px;margin-right:6px}
+@keyframes fsr{to{transform:rotate(360deg)}}
+.tw{overflow:auto}
+.tw table{table-layout:fixed;width:100%}
+.tw th,.tw td{overflow:hidden;text-overflow:ellipsis}
+.tw th{background:#101010}
+.tw td.n,.tw th.n{text-align:right;font-family:var(--mono);font-size:13px}
+.tw td.c,.tw th.c{text-align:center}
+.tw tfoot td{position:sticky;bottom:0;background:#131313;color:#fff;font-weight:700;border-top:1px solid var(--line2);box-shadow:0 -1px 0 var(--line2)}
+.tw input.cell{height:32px;width:100%;min-width:0;padding:0 8px;text-align:right;font-family:var(--mono);font-size:13px;background:#0b0b0b;border-color:#262626}
+.tw input.cell.tx{text-align:left;font-family:var(--body)}
+.tw input.cell:focus{background:#0e0e0e}
+.tw input.cell.ch{border-color:rgba(201,168,76,.6);background:rgba(201,168,76,.06)}
+.tw input.cell.miss{border-color:rgba(224,92,92,.45);background:rgba(224,92,92,.05)}
+.tw tr.has td{background:rgba(201,168,76,.035)}
+.tw tr.off td{color:var(--dim)}
+.mc-tag{display:inline-block;font-family:var(--code);font-size:16px;font-weight:700;color:#fff;letter-spacing:.02em}
+.mc-tag.all{color:var(--ac)}
+.k4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.k3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.k6{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px}
+.kpi{cursor:default;position:relative;overflow:hidden}
+.kpi::after{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--line2)}
+.kpi.w::after{background:#6fb8dd}.kpi.t::after{background:#e0a84a}.kpi.s::after{background:#a98af0}.kpi.g::after{background:var(--ac)}
+.kpi b{font-size:28px}
+.kpi b small{font-family:var(--mono);font-size:12px;color:var(--mute);margin-left:5px;font-weight:400}
+.kpi.w b{color:#8fcbe8}.kpi.t b{color:#eebb62}.kpi.s b{color:#bba4f4}.kpi.g b{color:var(--ac2)}
+.kpi .d{font-size:12px;color:var(--mute);margin-top:4px}
+.pbtn{height:32px;padding:0 10px;border-radius:999px;border:1px solid var(--line2);background:rgba(255,255,255,.02);color:var(--ink2);font-size:12.5px;font-weight:600;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.pbtn:hover{border-color:var(--ac);color:var(--ac)}
+.pbtn.has{border-color:rgba(201,168,76,.45);color:var(--ac);background:rgba(201,168,76,.08)}
+.pbtn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.dnav{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.dnav input[type=date]{height:40px;width:170px}
+.dnav .btn.sec{padding:0 12px}
+.dnav .dow{font-family:var(--mono);font-size:12.5px;color:var(--mute);letter-spacing:.1em}
+.chart{background:#0d0d0d;border:1px solid var(--line2);border-radius:8px;padding:10px 8px 4px;overflow:hidden}
+.chart svg{display:block;width:100%;height:auto}
+.leg{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:var(--ink2);padding:4px 6px 6px}
+.leg i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.bar-h{display:flex;flex-direction:column;gap:6px}
+.bar-h .r{display:grid;grid-template-columns:70px 1fr 90px;gap:10px;align-items:center;font-size:13px}
+.bar-h .r .k{font-family:var(--code);font-size:15px;font-weight:700;color:#fff}
+.bar-h .r .b{height:14px;background:#111;border-radius:3px;overflow:hidden;display:flex}
+.bar-h .r .b i{display:block;height:100%}
+.bar-h .r .v{text-align:right;font-family:var(--mono);font-size:12.5px;color:var(--ink2)}
+.warn{font-size:13px;color:var(--amb);background:var(--ambbg);border:1px solid rgba(224,168,74,.35);border-radius:6px;padding:8px 12px;line-height:1.55}
+.warn.err{color:var(--red);background:var(--redbg);border-color:rgba(224,92,92,.35)}
+.warn.ok{color:var(--grn);background:var(--grnbg);border-color:rgba(76,175,125,.35)}
+.warn b{color:inherit}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}
+.g2>.card{min-width:0;margin-bottom:0}
+.g21{display:grid;grid-template-columns:minmax(300px,380px) 1fr;gap:14px;align-items:start}
+.g21>.card{min-width:0;margin-bottom:0}
+.flow{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.flow div{background:#0d0d0d;border:1px solid var(--line2);border-radius:8px;padding:10px 12px;min-width:0}
+.flow span{display:block;font-family:var(--mono);font-size:12px;letter-spacing:.1em;color:var(--ac);text-transform:uppercase}
+.flow b{display:block;font-size:13.5px;color:var(--ink);margin-top:4px;font-weight:600;line-height:1.45}
+.flow p{margin:4px 0 0;font-size:12.5px;color:var(--mute);line-height:1.5}
+.sub{font-family:var(--mono);font-size:12px;letter-spacing:.12em;color:var(--mute);text-transform:uppercase}
+.cat-grp{display:inline-block;padding:1px 8px;border-radius:999px;font-size:12px;font-weight:700}
+.cat-grp.prod{background:rgba(111,184,221,.12);color:#8fcbe8;border:1px solid rgba(111,184,221,.3)}
+.cat-grp.ext{background:rgba(169,138,240,.12);color:#bba4f4;border:1px solid rgba(169,138,240,.3)}
+.sum-ok{color:var(--grn);font-weight:700}.sum-bad{color:var(--red);font-weight:700}
+.thumbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
+.thumb{position:relative;border:1px solid var(--line2);border-radius:8px;overflow:hidden;background:#0d0d0d}
+.thumb img{display:block;width:100%;height:140px;object-fit:cover;cursor:zoom-in}
+.thumb .cap{display:flex;justify-content:space-between;align-items:center;padding:6px 8px;font-size:12px;color:var(--mute);font-family:var(--mono)}
+.thumb .cap button{background:none;border:0;color:var(--red);font-weight:700;font-size:12px;padding:0}
+.thumb .kd{position:absolute;top:6px;left:6px;padding:1px 7px;border-radius:4px;font-size:11.5px;font-weight:700;background:rgba(10,10,10,.75);color:var(--ac)}
+.drop{border:1px dashed var(--line2);border-radius:8px;padding:14px;text-align:center;color:var(--mute);font-size:13px;cursor:pointer;transition:border-color .15s}
+.drop:hover,.drop.over{border-color:var(--ac);color:var(--ac)}
+.drop input{display:none}
+.big{position:fixed;inset:0;background:rgba(0,0,0,.88);display:none;align-items:center;justify-content:center;z-index:400;cursor:zoom-out}
+.big.on{display:flex}.big img{max-width:95vw;max-height:92vh;border-radius:6px}
+.toast{font-size:14px}
+.rtab{display:inline-flex;gap:6px}
+.rtab button{height:34px;padding:0 13px;border-radius:999px;border:1px solid var(--line2);background:none;color:var(--mute);font-size:13px;font-weight:600}
+.rtab button.on{color:var(--ac);background:rgba(201,168,76,.12);border-color:rgba(201,168,76,.35)}
+.mini{font-size:12px;color:var(--mute)}
+.ok-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--grn);margin-right:6px;vertical-align:1px}
+.no-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--red);margin-right:6px;vertical-align:1px}
+.cnt{display:inline-block;min-width:22px;text-align:center;padding:0 7px;border-radius:999px;background:rgba(201,168,76,.14);color:var(--ac);font-weight:700;font-size:12.5px;margin-left:6px}
+@media(max-width:1100px){.k6{grid-template-columns:repeat(3,minmax(0,1fr))}.flow{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:900px){.g2,.g21{grid-template-columns:1fr}.k4{grid-template-columns:repeat(2,minmax(0,1fr))}.k3{grid-template-columns:1fr}}
+@media(max-width:640px){.k6{grid-template-columns:repeat(2,minmax(0,1fr))}.bar-h .r{grid-template-columns:56px 1fr 70px}}
+
+</style>
+
+<!-- ═══ 포털 공통 (yh-common-v2): 제목 서체 · 닫기 버튼 · 최소 글자 크기 ═══ -->
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@500;700&display=swap" rel="stylesheet">
+<style id="yh-common-v2">
+  /* ① 제목 서체 */
+  header h1{font-family:'IBM Plex Sans KR','Noto Sans KR','Malgun Gothic',sans-serif!important;font-weight:700!important;letter-spacing:-.01em!important;font-size:20px!important;line-height:1.2!important}
+  @media (max-width:820px){ header h1{font-size:16px!important} }
+  /* ② 닫기 버튼 */
+  .yh-close-wrap{display:inline-flex;flex-direction:column;align-items:center;gap:3px;flex-shrink:0;margin-left:8px}
+  header > .yh-close-wrap{margin-left:auto}
+  .yh-close-wrap.yh-fixed{position:fixed;top:12px;right:14px;z-index:99999;margin:0}
+  .yh-close{height:34px;padding:0 15px;border-radius:999px;background:rgba(10,10,10,.65);border:1px solid rgba(224,92,92,.55);color:#ef9a9a;font-weight:700;font-size:13px;cursor:pointer;font-family:'IBM Plex Sans KR','Noto Sans KR','Malgun Gothic',sans-serif;transition:.15s;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;line-height:1;letter-spacing:0}
+  .yh-close:hover{background:rgba(224,92,92,.14);border-color:#e05c5c;color:#fff}
+  .yh-close-cap{font-family:'Space Mono',ui-monospace,Consolas,monospace;font-size:12px;letter-spacing:.06em;color:#7a7a7a;white-space:nowrap;line-height:1}
+  .yh-close .es,.yh-close-cap .es{display:none}
+  html[lang="es"] .yh-close .ko,html[lang="es"] .yh-close-cap .ko{display:none}
+  html[lang="es"] .yh-close .es,html[lang="es"] .yh-close-cap .es{display:inline}
+  @media print{.yh-close-wrap{display:none!important}}
+  @media (max-width:820px){.yh-close-cap{display:none} .yh-close{height:30px;padding:0 12px;font-size:12px}}
+  /* ③ 최소 글자 크기 (화면에서만) */
+  @media screen{.yh-fs12{font-size:12px!important}}
+</style>
+<script>
+(function(){
+  /* ── 닫기 버튼 ── */
+  function mkClose(){
+    if(document.querySelector('.yh-close-wrap'))return;
+    var w=document.createElement('span');w.className='yh-close-wrap';
+    w.innerHTML='<button type="button" class="yh-close" title="창 닫기 / Cerrar ventana (ESC)"><span>✕</span><span class="ko">닫기</span><span class="es">Cerrar</span></button>'
+      +'<small class="yh-close-cap"><span class="ko">창 닫기 (ESC)</span><span class="es">Cerrar ventana (ESC)</span></small>';
+    var sel='.hdr-right',t=null;
+    try{
+      if(sel.indexOf('parent:')===0){var e=document.querySelector(sel.slice(7));t=e&&e.parentElement;}
+      else t=document.querySelector(sel);
+    }catch(e){}
+    if(t)t.appendChild(w);else{w.classList.add('yh-fixed');document.body.appendChild(w);}
+    w.querySelector('.yh-close').addEventListener('click',doClose);
+    window.addEventListener('keydown',function(ev){
+      if(ev.key!=='Escape')return;
+      var a=document.activeElement;
+      if(a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))return;
+      var openUI=[].slice.call(document.querySelectorAll('dialog,[role="dialog"],[class*="modal"],[class*="overlay"],[class*="drawer"],[class*="popup"],[class*="dialog"],[class*="lightbox"]')).some(function(e){if(e.classList.contains('yh-close-wrap'))return false;var cs=getComputedStyle(e);return cs.display!=='none'&&cs.visibility!=='hidden'&&cs.opacity!=='0'&&e.getBoundingClientRect().width>0;});
+      if(openUI)return;
+      doClose();
+    },true);
+  }
+  function doClose(){
+    var top=window.top||window;
+    try{top.close();}catch(e){}
+    try{window.close();}catch(e){}
+    setTimeout(function(){
+      try{if(top.closed||window.closed)return;}catch(e){}
+      try{top.location.href='./';}catch(e){location.href='./';}
+    },250);
+  }
+  /* ── 최소 글자 크기 12px ── */
+  var SKIP=/^(SCRIPT|STYLE|CANVAS|SVG|svg|path|g|text|tspan|circle|rect|line|polyline|polygon|BR|HR|IMG|VIDEO)$/;
+  function bump(root){
+    var list=root.querySelectorAll?root.querySelectorAll('*'):[];
+    var i=0,n=list.length;
+    (function chunk(){
+      var end=Math.min(n,i+1500);
+      for(;i<end;i++){
+        var el=list[i];
+        if(SKIP.test(el.tagName)||el.classList.contains('yh-fs12'))continue;
+        if(el.namespaceURI&&el.namespaceURI.indexOf('svg')>-1)continue;
+        if(el.closest&&el.closest('.pcell,.plabel,.print-only,.sheet-flow'))continue;
+        var st=el.style&&el.style.fontSize;
+        if(st&&/(pt|mm|cm|in)\s*$/.test(st))continue;
+        var fs=parseFloat(getComputedStyle(el).fontSize);
+        if(fs>=6&&fs<12)el.classList.add('yh-fs12');
+      }
+      if(i<n)setTimeout(chunk,0);
+    })();
+  }
+  var pend=null,queue=[];
+  function schedule(nodes){
+    for(var k=0;k<nodes.length;k++)if(nodes[k].nodeType===1)queue.push(nodes[k]);
+    if(pend)return;
+    pend=setTimeout(function(){pend=null;var q=queue;queue=[];q.forEach(bump);},120);
+  }
+  function init(){
+    mkClose();
+    if(!true)return;
+    bump(document.body);
+    new MutationObserver(function(ms){
+      var add=[];
+      ms.forEach(function(m){
+        if(m.type==='childList'){for(var j=0;j<m.addedNodes.length;j++)add.push(m.addedNodes[j]);}
+        else if(m.type==='attributes'&&m.target.nodeType===1&&!m.target.classList.contains('yh-fs12'))add.push(m.target);
+      });
+      if(add.length)schedule(add);
+    }).observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['style','class']});
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
+</script>
+</head>
+<body>
+<div class="top">
+<header>
+  <div class="bar">
+    <div class="brand"><div class="brand-text">
+      <h1 data-t="title">가공생산팀 부산물 관리</h1>
+      <div class="brand-sub">Yura Harness México · Byproduct &amp; Scrap</div>
+    </div></div>
+    <div class="hdr-right">
+      <div class="lang"><button id="lg-ko" data-l="ko" class="on">한국어</button><button id="lg-es" data-l="es">Español</button></div>
+    </div>
+  </div>
+  <div class="system-bar"><span data-t="sysbar">부산물 관리 / Gestión de subproductos · Producción maquinado</span><span class="plant" id="plantTag"></span></div>
+</header>
+<nav id="nav" class="tabs">
+  <button data-tab="in" class="on"><svg viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M6 6l1.5 12h9L18 6"/><path d="M9 10h6M9.5 14h5"/></svg><span data-t="tab_in">부산물 측정 입력</span></button>
+  <button data-tab="rs"><svg viewBox="0 0 24 24"><path d="M3 20h18"/><path d="M6 16V9M11 16V5M16 16v-6M21 16V12"/></svg><span data-t="tab_rs">산출 현황</span></button>
+  <button data-tab="us"><svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></svg><span data-t="tab_us">자재사용량 (32040)</span></button>
+  <button data-tab="mw"><svg viewBox="0 0 24 24"><path d="M12 3v18"/><path d="M5 8l7-3 7 3"/><path d="M3 14l2-6 2 6a2 2 0 0 1-4 0zM17 14l2-6 2 6a2 2 0 0 1-4 0z"/></svg><span data-t="tab_mw">단위중량 마스터</span></button>
+  <button data-tab="cf"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg><span data-t="tab_cf">호기 · 종류비율 설정</span></button>
+</nav>
+</div>
+<main>
+
+<!-- ══ ① 부산물 측정 입력 ══ -->
+<section class="tab on" id="t-in">
+  <div class="fs-head2"><h2 data-t="in_title">부산물 발생량 측정 입력</h2><span class="fs-pl" id="pl-in"></span><span class="s">Daily byproduct weighing · by machine</span></div>
+  <div class="fs-body">
+    <div class="card">
+      <div class="row hd">
+        <div class="dnav">
+          <button class="btn sec" onclick="inShift(-1)">‹</button>
+          <input type="date" id="in-date" onchange="inLoad()">
+          <button class="btn sec" onclick="inShift(1)">›</button>
+          <button class="btn sec" onclick="inToday()" data-t="today">오늘</button>
+          <span class="dow" id="in-dow"></span>
+        </div>
+        <div class="row" style="align-items:center">
+          <label class="f"><span data-t="worker">측정자</span><input id="in-worker" style="width:130px" placeholder="이름 / Nombre"></label>
+          <button class="btn sec" onclick="inPasteOpen()" data-t="paste_tot">총량 붙여넣기</button>
+          <button class="btn" onclick="inSave()" id="in-save" data-t="save">저장</button>
+        </div>
+      </div>
+      <div class="k4" id="in-kpi"></div>
+    </div>
+    <div class="card">
+      <div class="row hd"><h3 data-t="in_mc">호기별 측정 (kg)</h3>
+        <div class="row" style="align-items:center;gap:8px">
+          <label class="chkl"><input type="checkbox" id="in-onlyval" onchange="inRender()"><span data-t="only_val">입력된 호기만</span></label>
+          <span class="mini" id="in-cnt"></span>
+        </div>
+      </div>
+      <div class="hint" style="margin-bottom:10px" data-t="in_hint">전선(Wire)·단자(Terminal)·스크랩(Scrap)은 종류별로 따로 계량하여 kg으로 입력합니다. 사진은 호기별로 첨부(카메라 촬영 가능)되며, 입력 후 반드시 <b>저장</b>을 눌러 주세요. 호기 미구분 총량은 「총량 붙여넣기」 또는 맨 위 「합계 직접입력」 행을 사용합니다.</div>
+      <div class="tw" style="max-height:62vh" id="in-tw"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ ② 산출 현황 ══ -->
+<section class="tab" id="t-rs">
+  <div class="fs-head2"><h2 data-t="rs_title">부산물 산출 현황</h2><span class="fs-pl" id="pl-rs"></span><span class="s">Usage ratio × unit weight → M / EA</span><span class="sp"></span>
+    <button class="btn sec" onclick="rsExcel()" id="rs-xl">⬇ <span data-t="excel">엑셀 다운로드</span></button></div>
+  <div class="fs-body">
+    <div class="card">
+      <div class="row" style="align-items:flex-end">
+        <div class="rtab" id="rs-mode"><button class="on" data-m="m" onclick="rsMode('m')" data-t="by_month">월별</button><button data-m="r" onclick="rsMode('r')" data-t="by_range">기간 지정</button></div>
+        <label class="f" id="rs-mwrap"><span data-t="month">월</span><input type="month" id="rs-month" onchange="rsLoad()"></label>
+        <label class="f rs-r" style="display:none"><span data-t="from">시작</span><input type="date" id="rs-from" onchange="rsLoad()"></label>
+        <label class="f rs-r" style="display:none"><span data-t="to">종료</span><input type="date" id="rs-to" onchange="rsLoad()"></label>
+        <button class="btn sec" onclick="rsLoad()">↻ <span data-t="refresh">새로고침</span></button>
+        <span class="sp"></span>
+        <span class="mini" id="rs-info"></span>
+      </div>
+    </div>
+    <div id="rs-warn"></div>
+    <div class="k6" id="rs-kpi"></div>
+    <div class="flow" id="rs-flow"></div>
+    <div class="g2">
+      <div class="card"><h3 data-t="rs_daily">일별 발생 추이 (kg)</h3><div class="chart" id="rs-chart"></div></div>
+      <div class="card"><h3 data-t="rs_mc">호기별 발생량 TOP (kg)</h3><div class="bar-h" id="rs-mcbar"></div></div>
+    </div>
+    <div class="g2">
+      <div class="card"><h3 data-t="rs_wire">전선 · 선종/SQ별 산출</h3><div class="tw" style="max-height:52vh" id="rs-wire"></div></div>
+      <div class="card"><h3 data-t="rs_term">단자 · 품목별 산출</h3><div class="tw" style="max-height:52vh" id="rs-term"></div></div>
+    </div>
+    <div class="card"><h3 data-t="rs_cat">부산물 종류별 발생량 (비율 적용)</h3><div class="tw" id="rs-cat"></div></div>
+    <div class="card"><h3 data-t="rs_days">일별 · 호기별 측정 내역</h3><div class="tw" style="max-height:55vh" id="rs-days"></div></div>
+  </div>
+</section>
+
+<!-- ══ ③ 자재사용량 ══ -->
+<section class="tab" id="t-us">
+  <div class="fs-head2"><h2 data-t="us_title">일별 자재사용량 (MES 32040 동기화)</h2><span class="fs-pl" id="pl-us"></span><span class="s">Wire M · Terminal EA</span></div>
+  <div class="fs-body">
+    <div class="warn" style="background:rgba(201,168,76,.07);border-color:rgba(201,168,76,.3);color:var(--ink2)" data-t="us_note">사용량은 <b>가공생산팀 자재관리</b> 사이트의 「사용량 (32040)」에 등록된 데이터를 그대로 읽어옵니다 (별도 입력 없음). 전선 = 01W1 그룹(M), 단자 = 03T1 그룹(EA).</div>
+    <div class="card">
+      <div class="row" style="align-items:flex-end">
+        <label class="f"><span data-t="from">시작</span><input type="date" id="us-from" onchange="usLoad()"></label>
+        <label class="f"><span data-t="to">종료</span><input type="date" id="us-to" onchange="usLoad()"></label>
+        <button class="btn sec" onclick="usLoad()">↻ <span data-t="refresh">새로고침</span></button>
+        <span class="sp"></span><span class="mini" id="us-info"></span>
+      </div>
+    </div>
+    <div class="k4" id="us-kpi"></div>
+    <div class="g2">
+      <div class="card"><h3 data-t="us_wire">전선 SQ별 사용비율</h3><div class="tw" style="max-height:60vh" id="us-wire"></div></div>
+      <div class="card"><h3 data-t="us_term">단자 종류별 사용비율</h3><div class="tw" style="max-height:60vh" id="us-term"></div></div>
+    </div>
+    <div class="card"><h3 data-t="us_daily">일별 사용량</h3><div class="tw" style="max-height:50vh" id="us-daily"></div></div>
+  </div>
+</section>
+
+<!-- ══ ④ 단위중량 마스터 ══ -->
+<section class="tab" id="t-mw">
+  <div class="fs-head2"><h2 data-t="mw_title">자재 단위중량 마스터</h2><span class="fs-pl" id="pl-mw"></span><span class="s">Wire kg/m · Terminal kg/ea</span></div>
+  <div class="fs-body">
+    <div class="g2">
+      <div class="card">
+        <div class="row hd"><h3 data-t="mw_wire">전선 · 선종/SQ별 단위중량 (kg/m)</h3><button class="btn sec sm" onclick="mwPasteOpen('W')" data-t="paste">붙여넣기 입력</button></div>
+        <div class="hint" style="margin-bottom:8px" data-t="mw_wire_hint">최근 사용량에 나타난 선종·선경이 자동으로 나열됩니다. kg/m 값을 입력하고 저장하세요. 빨간 칸은 아직 단위중량이 없는 항목입니다.</div>
+        <div class="tw" style="max-height:60vh" id="mw-wire"></div>
+        <div class="row" style="margin-top:10px;justify-content:flex-end"><button class="btn" onclick="mwSaveWire()" data-t="save">저장</button></div>
+      </div>
+      <div class="card">
+        <div class="row hd"><h3 data-t="mw_term">단자 · 품목별 단위중량 (kg/ea)</h3>
+          <div class="row"><input id="mw-q" placeholder="검색 / Buscar" style="height:30px;width:150px;font-size:13px" oninput="mwRenderTerm()"><button class="btn sec sm" onclick="mwPasteOpen('T')" data-t="paste">붙여넣기 입력</button></div></div>
+        <div class="hint" style="margin-bottom:8px" data-t="mw_term_hint">최근 사용량에 나타난 단자 품목이 자동으로 나열됩니다. 엑셀 「단위중량마스터」 시트(유라코드·업체품명·단위중량)를 복사해 붙여넣기로 한 번에 등록할 수 있습니다.</div>
+        <div class="tw" style="max-height:60vh" id="mw-term"></div>
+        <div class="row" style="margin-top:10px;justify-content:flex-end"><button class="btn" onclick="mwSaveTerm()" data-t="save">저장</button></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ ⑤ 설정 ══ -->
+<section class="tab" id="t-cf">
+  <div class="fs-head2"><h2 data-t="cf_title">호기 · 부산물 종류 비율 설정</h2><span class="fs-pl" id="pl-cf"></span><span class="s">Machines · category ratio</span></div>
+  <div class="fs-body">
+    <div class="g21">
+      <div class="card">
+        <div class="row hd"><h3 data-t="cf_mc">측정 호기</h3><span class="mini" id="cf-mccnt"></span></div>
+        <div class="row" style="margin-bottom:10px"><input id="cf-newmc" placeholder="A47, SP04 …" style="flex:1;text-transform:uppercase"><button class="btn sec" onclick="cfAddMc()" data-t="add">추가</button></div>
+        <div class="tw" style="max-height:58vh" id="cf-mc"></div>
+      </div>
+      <div class="card">
+        <div class="row hd"><h3 data-t="cf_ratio">부산물 종류별 비율 (%)</h3><button class="btn" onclick="cfSaveRatio()" data-t="save">저장</button></div>
+        <div class="hint" style="margin-bottom:8px" data-t="cf_ratio_hint">전선·단자·스크랩 총 발생량에 종류별 비율을 적용해 종류별 발생량을 자동 계산합니다. 각 열의 합계는 <b>100%</b>가 되어야 합니다.</div>
+        <div class="tw" id="cf-ratio"></div>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+
+<!-- 모달: 붙여넣기 -->
+<div class="mdl" id="mdl-paste"><div class="mbox" style="width:min(760px,100%)">
+  <div class="mhd"><b id="paste-title"></b><button onclick="mdlClose('mdl-paste')">×</button></div>
+  <div class="mbd">
+    <div class="hint" id="paste-hint" style="margin-bottom:8px"></div>
+    <textarea id="paste-ta" placeholder="Excel → Ctrl+C → Ctrl+V"></textarea>
+    <div class="prev" id="paste-prev"></div>
+    <div class="row" style="justify-content:flex-end;margin-top:8px"><button class="btn sec" onclick="mdlClose('mdl-paste')" data-t="cancel">취소</button><button class="btn" id="paste-ok" data-t="apply">반영</button></div>
+  </div></div></div>
+
+<!-- 모달: 사진 -->
+<div class="mdl" id="mdl-photo"><div class="mbox" style="width:min(860px,100%)">
+  <div class="mhd"><b id="photo-title"></b><button onclick="mdlClose('mdl-photo')">×</button></div>
+  <div class="mbd">
+    <div class="row" style="margin-bottom:10px;align-items:center">
+      <span class="sub" data-t="photo_kind">구분</span>
+      <div class="fs-seg" id="photo-kind"><button class="on" data-k="wire">Wire</button><button data-k="term">Terminal</button><button data-k="scrap">Scrap</button><button data-k="etc" data-t="etc">기타</button></div>
+      <span class="sp"></span>
+      <label class="drop" style="padding:8px 14px"><input type="file" accept="image/*" capture="environment" multiple onchange="phAdd(this.files)">📷 <span data-t="photo_add">사진 촬영 / 추가</span></label>
+    </div>
+    <div class="thumbs" id="photo-list"></div>
+  </div></div></div>
+<div class="big" id="big" onclick="this.classList.remove('on')"><img id="big-img" alt=""></div>
+<div class="toast" id="toast"></div>
+<div class="load" id="load"><span class="fs-spin"></span>LOADING</div>
+<script>
+const SUPABASE_URL  = 'https://lrjurjhavlalhlwaplxd.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxyanVyamhhdmxhbGhsd2FwbHhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNzUxNDAsImV4cCI6MjA5NTY1MTE0MH0.DVFmZaT37R9CXSMHdnLx4YAVNTnlBGijkOIaoUo7Qsk';
+const Q=new URLSearchParams(location.search);
+const PLANT=Q.get('plant')==='2'?2:1;
+let curLang='ko';try{curLang=localStorage.getItem('byp_lang')||'ko'}catch(e){}
+const L=(ko,es)=>curLang==='es'?es:ko;
+const $=id=>document.getElementById(id);
+const esc=v=>String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const num=(v,d=2)=>{const n=Number(v)||0;return n.toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:d})};
+const pct=v=>(Number(v)||0).toLocaleString('en-US',{minimumFractionDigits:1,maximumFractionDigits:1})+'%';
+const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+const addDays=(s,n)=>{const d=new Date(s+'T00:00:00');d.setDate(d.getDate()+n);return d.toISOString().slice(0,10)};
+const DOW=['일','월','화','수','목','금','토'],DOWES=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+const ALL='ALL';
+
+/* ── i18n ── */
+const T={
+ title:['가공생산팀 부산물 관리','Gestión de subproductos · Prod. maquinado'],
+ sysbar:['부산물 관리 / Gestión de subproductos · Producción maquinado','Gestión de subproductos / 부산물 관리 · Producción maquinado'],
+ tab_in:['부산물 측정 입력','Registro de pesaje'],tab_rs:['산출 현황','Resultados'],tab_us:['자재사용량 (32040)','Consumo de material (32040)'],tab_mw:['단위중량 마스터','Peso unitario'],tab_cf:['호기 · 종류비율 설정','Máquinas · Ratios'],
+ in_title:['부산물 발생량 측정 입력','Registro de pesaje de subproductos'],today:['오늘','Hoy'],worker:['측정자','Medido por'],paste_tot:['총량 붙여넣기','Pegar totales'],save:['저장','Guardar'],
+ in_mc:['호기별 측정 (kg)','Pesaje por máquina (kg)'],only_val:['입력된 호기만','Solo con datos'],
+ in_hint:['전선(Wire)·단자(Terminal)·스크랩(Scrap)은 종류별로 따로 계량하여 kg으로 입력합니다. 사진은 호기별로 첨부(카메라 촬영 가능)되며, 입력 후 반드시 <b>저장</b>을 눌러 주세요. 호기 미구분 총량은 「총량 붙여넣기」 또는 맨 위 「합계 직접입력」 행을 사용합니다.',
+  'Pese por separado cable (Wire), terminal y scrap e ingrese en kg. Las fotos se adjuntan por máquina (puede usar la cámara). Pulse <b>Guardar</b> después de capturar. Para un total sin máquina use «Pegar totales» o la fila «Total directo».'],
+ rs_title:['부산물 산출 현황','Resultados de subproductos'],excel:['엑셀 다운로드','Descargar Excel'],by_month:['월별','Mensual'],by_range:['기간 지정','Rango'],month:['월','Mes'],from:['시작','Desde'],to:['종료','Hasta'],refresh:['새로고침','Actualizar'],
+ rs_daily:['일별 발생 추이 (kg)','Tendencia diaria (kg)'],rs_mc:['호기별 발생량 TOP (kg)','Top máquinas (kg)'],rs_wire:['전선 · 선종/SQ별 산출','Cable · por tipo/SQ'],rs_term:['단자 · 품목별 산출','Terminal · por ítem'],rs_cat:['부산물 종류별 발생량 (비율 적용)','Por tipo de subproducto (ratio)'],rs_days:['일별 · 호기별 측정 내역','Detalle diario por máquina'],
+ us_title:['일별 자재사용량 (MES 32040 동기화)','Consumo diario de material (MES 32040)'],
+ us_note:['사용량은 <b>가공생산팀 자재관리</b> 사이트의 「사용량 (32040)」에 등록된 데이터를 그대로 읽어옵니다 (별도 입력 없음). 전선 = 01W1 그룹(M), 단자 = 03T1 그룹(EA).','El consumo se lee directamente de «Uso (32040)» registrado en <b>Gestión de materiales · Prod. maquinado</b> (sin captura adicional). Cable = grupo 01W1 (M), terminal = 03T1 (EA).'],
+ us_wire:['전선 SQ별 사용비율','Ratio de uso por SQ (cable)'],us_term:['단자 종류별 사용비율','Ratio de uso por terminal'],us_daily:['일별 사용량','Consumo diario'],
+ mw_title:['자재 단위중량 마스터','Maestro de peso unitario'],mw_wire:['전선 · 선종/SQ별 단위중량 (kg/m)','Cable · peso unitario (kg/m)'],mw_term:['단자 · 품목별 단위중량 (kg/ea)','Terminal · peso unitario (kg/pza)'],paste:['붙여넣기 입력','Pegar'],
+ mw_wire_hint:['최근 사용량에 나타난 선종·선경이 자동으로 나열됩니다. kg/m 값을 입력하고 저장하세요. 빨간 칸은 아직 단위중량이 없는 항목입니다.','Se listan automáticamente los tipos/SQ presentes en el consumo reciente. Ingrese kg/m y guarde. Las celdas rojas aún no tienen peso.'],
+ mw_term_hint:['최근 사용량에 나타난 단자 품목이 자동으로 나열됩니다. 엑셀 「단위중량마스터」 시트(유라코드·업체품명·단위중량)를 복사해 붙여넣기로 한 번에 등록할 수 있습니다.','Se listan automáticamente las terminales del consumo reciente. Puede pegar la hoja «단위중량마스터» (código Yura · nombre · peso) para registrar en bloque.'],
+ cf_title:['호기 · 부산물 종류 비율 설정','Máquinas · ratios por tipo'],cf_mc:['측정 호기','Máquinas'],add:['추가','Agregar'],cf_ratio:['부산물 종류별 비율 (%)','Ratio por tipo de subproducto (%)'],
+ cf_ratio_hint:['전선·단자·스크랩 총 발생량에 종류별 비율을 적용해 종류별 발생량을 자동 계산합니다. 각 열의 합계는 <b>100%</b>가 되어야 합니다.','El total de cable/terminal/scrap se reparte por tipo según estos ratios. Cada columna debe sumar <b>100%</b>.'],
+ cancel:['취소','Cancelar'],apply:['반영','Aplicar'],photo_kind:['구분','Tipo'],etc:['기타','Otro'],photo_add:['사진 촬영 / 추가','Tomar / agregar foto'],
+};
+function applyLang(){
+  document.documentElement.lang=curLang;
+  document.querySelectorAll('[data-t]').forEach(el=>{const k=el.dataset.t;if(T[k])el.innerHTML=T[k][curLang==='es'?1:0]});
+  $('lg-ko').classList.toggle('on',curLang==='ko');$('lg-es').classList.toggle('on',curLang==='es');
+  document.title=L('가공생산팀 부산물 관리','Gestión de subproductos')+' · '+L(PLANT+'공장','Planta '+PLANT);
+  $('plantTag').textContent=PLANT===2?L('멕시코 2공장 · Torreón','México Planta 2 · Torreón'):L('멕시코 1공장 · Monclova','México Planta 1 · Monclova');
+  const pl='PLANT '+PLANT+' · '+(PLANT===2?L('토레온','Torreón'):L('몽클로바','Monclova'));
+  ['in','rs','us','mw','cf'].forEach(k=>{const e=$('pl-'+k);e.textContent=pl;e.className='fs-pl p'+PLANT});
+  renderAll();
+}
+document.querySelectorAll('.lang button').forEach(b=>b.onclick=()=>{curLang=b.dataset.l;try{localStorage.setItem('byp_lang',curLang)}catch(e){}applyLang()});
+
+/* ── UI helpers ── */
+function toast(m,err){const t=$('toast');t.textContent=m;t.className='toast'+(err?' err':'');t.style.display='block';clearTimeout(t._t);t._t=setTimeout(()=>t.style.display='none',err?4200:2400)}
+function load(on){$('load').style.display=on?'flex':'none'}
+function mdlOpen(id){$(id).classList.add('on')}function mdlClose(id){$(id).classList.remove('on')}
+document.querySelectorAll('.mdl').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('on')}));
+
+/* ── Supabase REST ── */
+const H=()=>({apikey:SUPABASE_ANON,Authorization:'Bearer '+SUPABASE_ANON,'Content-Type':'application/json'});
+async function sbGet(path){
+  const out=[],step=1000;
+  for(let from=0;;from+=step){
+    const r=await fetch(SUPABASE_URL+'/rest/v1/'+path,{headers:{...H(),Range:from+'-'+(from+step-1),'Range-Unit':'items'}});
+    if(!r.ok)throw new Error(await r.text());const j=await r.json();out.push(...j);if(j.length<step)break}
+  return out;
+}
+async function sbUpsert(table,rows,onConflict){
+  if(!rows.length)return;
+  for(let i=0;i<rows.length;i+=500){
+    const r=await fetch(SUPABASE_URL+'/rest/v1/'+table+(onConflict?'?on_conflict='+onConflict:''),{method:'POST',headers:{...H(),Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify(rows.slice(i,i+500))});
+    if(!r.ok)throw new Error(await r.text());
+  }
+}
+async function sbPatch(table,q,body){const r=await fetch(SUPABASE_URL+'/rest/v1/'+table+'?'+q,{method:'PATCH',headers:{...H(),Prefer:'return=minimal'},body:JSON.stringify(body)});if(!r.ok)throw new Error(await r.text())}
+async function sbDel(table,q){const r=await fetch(SUPABASE_URL+'/rest/v1/'+table+'?'+q,{method:'DELETE',headers:{...H(),Prefer:'return=minimal'}});if(!r.ok)throw new Error(await r.text())}
+
+/* ── 공통 상태 ── */
+const S={mc:[],ratio:[],wireW:{},termW:{},master:{},usCache:{}};
+const wireKey=name=>{ // "CIVUS 00.35 L" → {wtype:'CIVUS', sq:'00.35'}
+  const t=String(name||'').trim().split(/\s+/);
+  let wtype=t[0]||'-',sq='-';
+  for(let i=1;i<t.length;i++){if(/^\d+(\.\d+)?$/.test(t[i])){sq=t[i];break}}
+  if(sq==='-'&&t.length>1){const m=String(name).match(/(\d+\.\d+)/);if(m)sq=m[1]}
+  return {wtype,sq};
+};
+const wk=(w,s)=>w+'|'+s;
+async function loadBase(){
+  const [mc,ratio,ww,mm]=await Promise.all([
+    sbGet(`byp_machine?plant=eq.${PLANT}&order=ord,mc`),
+    sbGet(`byp_ratio?plant=eq.${PLANT}&order=ord,cat`),
+    sbGet(`byp_wire_w?plant=eq.${PLANT}`),
+    sbGet(`byp_master?plant=eq.${PLANT}`)]);
+  S.mc=mc;S.ratio=ratio;S.wireW={};ww.forEach(r=>S.wireW[wk(r.wtype,r.sq)]=Number(r.unit_w)||0);
+  S.master={};mm.forEach(r=>S.master[r.code]=r);
+}
+async function getUsage(from,to){
+  const key=from+'~'+to;if(S.usCache[key])return S.usCache[key];
+  const rows=await sbGet(`byp_usage_v?plant=eq.${PLANT}&udate=gte.${from}&udate=lte.${to}&select=udate,code,name,grp,qty&order=udate`);
+  S.usCache[key]=rows;return rows;
+}
+// 사용량 집계 → {wire:{key:{wtype,sq,qty}}, term:{code:{code,name,qty}}, wTot, tTot, daily:{d:{w,t,s}}}
+function aggUsage(rows){
+  const wire={},term={},daily={};let wTot=0,tTot=0;
+  rows.forEach(r=>{
+    const q=Number(r.qty)||0,g=String(r.grp||'').toUpperCase(),c=String(r.code||'').toUpperCase();
+    const isW=g==='01W1'||(!g&&c[0]==='W'),isT=g==='03T1'||(!g&&c[0]==='T');
+    const dd=daily[r.udate]||(daily[r.udate]={w:0,t:0,j:0});
+    if(isW){const k=wireKey(r.name);const o=wire[wk(k.wtype,k.sq)]||(wire[wk(k.wtype,k.sq)]={...k,qty:0,codes:new Set()});o.qty+=q;o.codes.add(c);wTot+=q;dd.w+=q}
+    else if(isT){const o=term[c]||(term[c]={code:c,name:r.name,qty:0});o.qty+=q;tTot+=q;dd.t+=q}
+    else dd.j+=q;
+  });
+  return {wire,term,wTot,tTot,daily};
+}
+
+/* ── 탭 ── */
+document.querySelectorAll('nav.tabs button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('nav.tabs button').forEach(x=>x.classList.toggle('on',x===b));
+  document.querySelectorAll('main .tab').forEach(s=>s.classList.toggle('on',s.id==='t-'+b.dataset.tab));
+  const t=b.dataset.tab;if(t==='rs')rsLoad();if(t==='us')usLoad();if(t==='mw')mwLoad();if(t==='cf')cfRender();
+});
+function renderAll(){inRender();cfRender();if(RS.data)rsRender();if(US.data)usRender();if(MW.ready)mwRender()}
+
+/* ═══════════ ① 입력 ═══════════ */
+const IN={date:today(),rows:{},photos:{},dirty:false};
+async function inLoad(){
+  IN.date=$('in-date').value||today();$('in-date').value=IN.date;
+  const d=new Date(IN.date+'T00:00:00');$('in-dow').textContent=(curLang==='es'?DOWES:DOW)[d.getDay()];
+  load(true);
+  try{
+    const [rows,ph]=await Promise.all([
+      sbGet(`byp_daily?plant=eq.${PLANT}&d=eq.${IN.date}&select=*`),
+      sbGet(`byp_photo?plant=eq.${PLANT}&d=eq.${IN.date}&select=id,mc,kind`)]);
+    IN.rows={};rows.forEach(r=>IN.rows[r.mc]=r);
+    IN.photos={};ph.forEach(p=>{(IN.photos[p.mc]=IN.photos[p.mc]||[]).push(p)});
+    const w=rows.find(r=>r.worker);$('in-worker').value=w?w.worker:($('in-worker').value||'');
+    IN.dirty=false;inRender();
+  }catch(e){toast(e.message,true)}finally{load(false)}
+}
+function inShift(n){$('in-date').value=addDays($('in-date').value||today(),n);inLoad()}
+function inToday(){$('in-date').value=today();inLoad()}
+function inVal(mc,k){const el=document.querySelector(`#in-tw input[data-mc="${mc}"][data-k="${k}"]`);return el?(parseFloat(el.value)||0):(Number((IN.rows[mc]||{})[k])||0)}
+function inRender(){
+  const only=$('in-onlyval').checked;
+  const list=[{mc:ALL,active:true},...S.mc.filter(m=>m.active)];
+  const extra=Object.keys(IN.rows).filter(m=>m!==ALL&&!S.mc.some(x=>x.mc===m)).map(m=>({mc:m,active:false}));
+  const all=[...list,...extra];
+  let tw=0,tt=0,ts=0,cnt=0;
+  const tr=all.map(m=>{
+    const r=IN.rows[m.mc]||{};const w=Number(r.wire_kg)||0,t=Number(r.term_kg)||0,s=Number(r.scrap_kg)||0;
+    const has=w||t||s||r.memo;if(has)cnt++;tw+=w;tt+=t;ts+=s;
+    if(only&&!has)return '';
+    const ph=(IN.photos[m.mc]||[]).length;
+    const isAll=m.mc===ALL;
+    return `<tr class="${has?'has':''}${m.active?'':' off'}">
+      <td><span class="mc-tag${isAll?' all':''}">${isAll?L('합계 직접입력','Total directo'):esc(m.mc)}</span>${isAll?`<div class="mini">${L('호기 미구분 총량','sin máquina')}</div>`:''}</td>
+      <td><input class="cell" type="number" step="0.01" min="0" data-mc="${esc(m.mc)}" data-k="wire_kg" value="${w||''}" oninput="inChg(this)"></td>
+      <td><input class="cell" type="number" step="0.01" min="0" data-mc="${esc(m.mc)}" data-k="term_kg" value="${t||''}" oninput="inChg(this)"></td>
+      <td><input class="cell" type="number" step="0.01" min="0" data-mc="${esc(m.mc)}" data-k="scrap_kg" value="${s||''}" oninput="inChg(this)"></td>
+      <td class="n" data-sum="${esc(m.mc)}">${(w+t+s)?num(w+t+s):'<span class="mu">–</span>'}</td>
+      <td class="c"><button class="pbtn${ph?' has':''}" onclick="phOpen('${esc(m.mc)}')"><svg viewBox="0 0 24 24"><path d="M4 7h3l2-2.5h6L17 7h3v12H4z"/><circle cx="12" cy="13" r="3.5"/></svg>${ph?ph:'+'}</button></td>
+      <td><input class="cell tx" data-mc="${esc(m.mc)}" data-k="memo" value="${esc(r.memo||'')}" oninput="inChg(this)" placeholder="…"></td></tr>`}).join('');
+  $('in-tw').innerHTML=`<table><colgroup><col style="width:120px"><col><col><col><col style="width:90px"><col style="width:70px"><col style="width:26%"></colgroup>
+    <thead><tr><th>${L('호기','Máquina')}</th><th class="n">Wire <small>kg</small></th><th class="n">Terminal <small>kg</small></th><th class="n">Scrap <small>kg</small></th><th class="n">${L('합계','Total')}</th><th class="c">${L('사진','Foto')}</th><th>${L('메모','Nota')}</th></tr></thead>
+    <tbody>${tr||`<tr><td colspan="7" class="empty">${L('입력된 호기가 없습니다','Sin datos')}</td></tr>`}</tbody>
+    <tfoot><tr><td>${L('합계','Total')}</td><td class="n" id="in-fw">${num(tw)}</td><td class="n" id="in-ft">${num(tt)}</td><td class="n" id="in-fs">${num(ts)}</td><td class="n" id="in-fa">${num(tw+tt+ts)}</td><td></td><td></td></tr></tfoot></table>`;
+  $('in-cnt').textContent=L(`입력 ${cnt}개 호기 · 전체 ${all.length-1}호기`,`${cnt} máquinas con datos · ${all.length-1} total`);
+  inKpi(tw,tt,ts);
+}
+function inKpi(w,t,s){
+  $('in-kpi').innerHTML=[['w','Wire',w],['t','Terminal',t],['s','Scrap',s],['g',L('합계','Total'),w+t+s]].map(([c,k,v])=>`<div class="kpi ${c}"><span>${k}</span><b>${num(v)}<small>kg</small></b><div class="d">${esc(IN.date)}</div></div>`).join('');
+}
+function inChg(el){
+  el.classList.add('ch');IN.dirty=true;
+  const mc=el.dataset.mc;if(el.dataset.k==='memo')return;
+  const w=inVal(mc,'wire_kg'),t=inVal(mc,'term_kg'),s=inVal(mc,'scrap_kg');
+  const c=document.querySelector(`#in-tw td[data-sum="${mc}"]`);if(c)c.innerHTML=(w+t+s)?num(w+t+s):'<span class="mu">–</span>';
+  let tw=0,tt=0,ts=0;document.querySelectorAll('#in-tw input[data-k="wire_kg"]').forEach(i=>tw+=parseFloat(i.value)||0);
+  document.querySelectorAll('#in-tw input[data-k="term_kg"]').forEach(i=>tt+=parseFloat(i.value)||0);
+  document.querySelectorAll('#in-tw input[data-k="scrap_kg"]').forEach(i=>ts+=parseFloat(i.value)||0);
+  // 숨겨진(필터) 행 보정
+  Object.keys(IN.rows).forEach(m=>{if(!document.querySelector(`#in-tw input[data-mc="${m}"]`)){tw+=Number(IN.rows[m].wire_kg)||0;tt+=Number(IN.rows[m].term_kg)||0;ts+=Number(IN.rows[m].scrap_kg)||0}});
+  $('in-fw').textContent=num(tw);$('in-ft').textContent=num(tt);$('in-fs').textContent=num(ts);$('in-fa').textContent=num(tw+tt+ts);inKpi(tw,tt,ts);
+}
+async function inSave(){
+  const worker=$('in-worker').value.trim();const ups=[],dels=[];
+  const mcs=new Set();document.querySelectorAll('#in-tw input[data-mc]').forEach(i=>mcs.add(i.dataset.mc));
+  mcs.forEach(mc=>{
+    const w=inVal(mc,'wire_kg'),t=inVal(mc,'term_kg'),s=inVal(mc,'scrap_kg');
+    const me=document.querySelector(`#in-tw input[data-mc="${mc}"][data-k="memo"]`);const memo=me?me.value.trim():'';
+    const old=IN.rows[mc];
+    if(w||t||s||memo){ups.push({plant:PLANT,d:IN.date,mc,wire_kg:w,term_kg:t,scrap_kg:s,memo:memo||null,worker:worker||null,updated_at:new Date().toISOString()})}
+    else if(old)dels.push(mc);
+  });
+  if(!ups.length&&!dels.length){toast(L('저장할 변경이 없습니다','Nada que guardar'));return}
+  load(true);
+  try{
+    await sbUpsert('byp_daily',ups,'plant,d,mc');
+    for(const mc of dels)await sbDel('byp_daily',`plant=eq.${PLANT}&d=eq.${IN.date}&mc=eq.${encodeURIComponent(mc)}`);
+    toast(L(`저장 완료 · ${ups.length}건`,`Guardado · ${ups.length}`));RS.data=null;await inLoad();
+  }catch(e){toast(e.message,true)}finally{load(false)}
+}
+/* 총량 붙여넣기: 날짜 / Wire / Terminal / Scrap */
+function inPasteOpen(){
+  $('paste-title').textContent=L('일별 부산물 총량 붙여넣기','Pegar totales diarios');
+  $('paste-hint').innerHTML=L('엑셀 「일별부산물중량」 시트: <b>Date · Wire · Terminal · Scrap</b> 열 순서로 복사해 붙여넣기 (머리글 포함 가능). 호기 미구분 「합계 직접입력(ALL)」 행으로 저장되며 같은 날짜는 덮어씁니다.','Hoja «일별부산물중량»: columnas <b>Date · Wire · Terminal · Scrap</b>. Se guarda como fila «Total directo (ALL)»; misma fecha se sobrescribe.');
+  $('paste-ta').value='';$('paste-prev').textContent='';
+  $('paste-ta').oninput=()=>{const rows=parseTot($('paste-ta').value);$('paste-prev').innerHTML=rows.length?L(`<b>${rows.length}</b>일 인식 · ${rows[0].d} ~ ${rows[rows.length-1].d}`,`<b>${rows.length}</b> días · ${rows[0].d} ~ ${rows[rows.length-1].d}`):L('인식된 행 없음','Sin filas')};
+  $('paste-ok').onclick=async()=>{
+    const rows=parseTot($('paste-ta').value);if(!rows.length){toast(L('인식된 행이 없습니다','Sin filas'),true);return}
+    load(true);
+    try{await sbUpsert('byp_daily',rows.map(r=>({plant:PLANT,d:r.d,mc:ALL,wire_kg:r.w,term_kg:r.t,scrap_kg:r.s,updated_at:new Date().toISOString()})),'plant,d,mc');
+      mdlClose('mdl-paste');toast(L(`${rows.length}일 반영 완료`,`${rows.length} días aplicados`));RS.data=null;inLoad()}
+    catch(e){toast(e.message,true)}finally{load(false)}
+  };
+  mdlOpen('mdl-paste');setTimeout(()=>$('paste-ta').focus(),50);
+}
+function parseDate(s){
+  s=String(s||'').trim();let m;
+  if((m=s.match(/^(\d{4})[-./](\d{1,2})[-./](\d{1,2})/)))return `${m[1]}-${m[2].padStart(2,'0')}-${m[3].padStart(2,'0')}`;
+  if((m=s.match(/^(\d{1,2})[-./](\d{1,2})[-./](\d{4})/)))return `${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`; // dd/mm/yyyy (MX)
+  if((m=s.match(/^(\d{1,2})[-./](\d{1,2})$/)))return `${new Date().getFullYear()}-${m[1].padStart(2,'0')}-${m[2].padStart(2,'0')}`;
+  if(/^\d{5}$/.test(s)){const d=new Date(Date.UTC(1899,11,30)+Number(s)*86400000);return d.toISOString().slice(0,10)}
+  return null;
+}
+const pnum=v=>{const n=parseFloat(String(v==null?'':v).replace(/,/g,''));return isNaN(n)?0:n};
+function parseTot(txt){
+  const out=[];String(txt||'').split(/\r?\n/).forEach(line=>{
+    const c=line.split('\t');if(c.length<2)return;const d=parseDate(c[0]);if(!d)return;
+    out.push({d,w:pnum(c[1]),t:pnum(c[2]),s:pnum(c[3])});
+  });return out;
+}
+/* 사진 */
+const PH={mc:null,kind:'wire'};
+document.querySelectorAll('#photo-kind button').forEach(b=>b.onclick=()=>{PH.kind=b.dataset.k;document.querySelectorAll('#photo-kind button').forEach(x=>x.classList.toggle('on',x===b))});
+async function phOpen(mc){
+  PH.mc=mc;$('photo-title').textContent=L(`사진 · ${IN.date} · ${mc===ALL?'합계':mc}`,`Fotos · ${IN.date} · ${mc===ALL?'Total':mc}`);
+  mdlOpen('mdl-photo');$('photo-list').innerHTML=`<div class="mini"><span class="fs-spin"></span>${L('불러오는 중','Cargando')}</div>`;
+  try{const ph=await sbGet(`byp_photo?plant=eq.${PLANT}&d=eq.${IN.date}&mc=eq.${encodeURIComponent(mc)}&select=id,kind,data,created_at&order=id`);
+    PH.list=ph;phRender()}catch(e){toast(e.message,true)}
+}
+function phRender(){
+  const KN={wire:'Wire',term:'Terminal',scrap:'Scrap',etc:L('기타','Otro')};
+  $('photo-list').innerHTML=(PH.list||[]).map(p=>`<div class="thumb"><span class="kd">${KN[p.kind]||p.kind||''}</span><img src="${p.data}" onclick="$('big-img').src=this.src;$('big').classList.add('on')"><div class="cap"><span>${String(p.created_at||'').slice(11,16)}</span><button onclick="phDel(${p.id})">${L('삭제','Borrar')}</button></div></div>`).join('')
+    ||`<div class="mini" style="padding:20px;text-align:center">${L('첨부된 사진이 없습니다','Sin fotos')}</div>`;
+}
+function shrink(file){return new Promise(res=>{const img=new Image();const u=URL.createObjectURL(file);img.onload=()=>{const MAX=1200;let w=img.width,h=img.height;const r=Math.min(1,MAX/Math.max(w,h));w=Math.round(w*r);h=Math.round(h*r);const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);URL.revokeObjectURL(u);res(c.toDataURL('image/jpeg',.72))};img.src=u})}
+async function phAdd(files){
+  if(!files||!files.length)return;load(true);
+  try{const rows=[];for(const f of files){rows.push({plant:PLANT,d:IN.date,mc:PH.mc,kind:PH.kind,data:await shrink(f)})}
+    await sbUpsert('byp_photo',rows);toast(L(`사진 ${rows.length}장 저장`,`${rows.length} fotos`));
+    (IN.photos[PH.mc]=IN.photos[PH.mc]||[]).push(...rows);const b=document.querySelector(`#in-tw button[onclick="phOpen('${PH.mc}')"]`);if(b){b.classList.add('has');b.innerHTML=b.querySelector('svg').outerHTML+IN.photos[PH.mc].length}
+    await phOpen(PH.mc)}
+  catch(e){toast(e.message,true)}finally{load(false)}
+}
+async function phDel(id){
+  if(!confirm(L('이 사진을 삭제할까요?','¿Borrar esta foto?')))return;
+  try{await sbDel('byp_photo',`id=eq.${id}`);PH.list=PH.list.filter(p=>p.id!==id);phRender();IN.photos[PH.mc]=(IN.photos[PH.mc]||[]).slice(1);inRender()}catch(e){toast(e.message,true)}
+}
+
+/* ═══════════ ② 산출 ═══════════ */
+const RS={mode:'m',data:null};
+function rsMode(m){RS.mode=m;document.querySelectorAll('#rs-mode button').forEach(b=>b.classList.toggle('on',b.dataset.m===m));$('rs-mwrap').style.display=m==='m'?'':'none';document.querySelectorAll('.rs-r').forEach(e=>e.style.display=m==='r'?'':'none');rsLoad()}
+function rsRange(){
+  if(RS.mode==='m'){const ym=$('rs-month').value||today().slice(0,7);const [y,m]=ym.split('-').map(Number);const last=new Date(y,m,0).getDate();return [ym+'-01',ym+'-'+String(last).padStart(2,'0')]}
+  return [$('rs-from').value||today().slice(0,8)+'01',$('rs-to').value||today()];
+}
+async function rsLoad(){
+  const [from,to]=rsRange();const tk=RS.tk=(RS.tk||0)+1;load(true);
+  try{
+    const [daily,usage]=await Promise.all([sbGet(`byp_daily?plant=eq.${PLANT}&d=gte.${from}&d=lte.${to}&select=d,mc,wire_kg,term_kg,scrap_kg,memo,worker&order=d,mc`),getUsage(from,to)]);
+    if(tk!==RS.tk)return;RS.data={from,to,daily,usage:aggUsage(usage)};rsRender();
+  }catch(e){toast(e.message,true)}finally{load(false)}
+}
+function rsCalc(){
+  const D=RS.data;if(!D)return null;
+  let W=0,Tm=0,Sc=0;const byDay={},byMc={};
+  D.daily.forEach(r=>{const w=+r.wire_kg||0,t=+r.term_kg||0,s=+r.scrap_kg||0;W+=w;Tm+=t;Sc+=s;
+    const dd=byDay[r.d]||(byDay[r.d]={w:0,t:0,s:0});dd.w+=w;dd.t+=t;dd.s+=s;
+    const mm=byMc[r.mc]||(byMc[r.mc]={w:0,t:0,s:0});mm.w+=w;mm.t+=t;mm.s+=s});
+  const U=D.usage;
+  // 전선
+  const wire=Object.values(U.wire).map(o=>{const ratio=U.wTot?o.qty/U.wTot:0;const uw=S.wireW[wk(o.wtype,o.sq)]||0;const kg=W*ratio;return {...o,ratio,uw,avg:ratio*uw,kg,m:uw?kg/uw:null}}).sort((a,b)=>b.qty-a.qty);
+  const wCov=wire.filter(x=>x.uw).reduce((s,x)=>s+x.ratio,0);const wAvg=wCov?wire.reduce((s,x)=>s+x.avg,0)/wCov:0;const wMissing=wire.filter(x=>!x.uw).length;
+  const wMissKg=wire.filter(x=>!x.uw).reduce((s,x)=>s+x.kg,0);const wM=wire.reduce((s,x)=>s+(x.m||0),0)+(wAvg?wMissKg/wAvg:0);
+  // 단자
+  const term=Object.values(U.term).map(o=>{const ratio=U.tTot?o.qty/U.tTot:0;const uw=S.master[o.code]?Number(S.master[o.code].unit_w)||0:0;const kg=Tm*ratio;return {...o,ratio,uw,avg:ratio*uw,kg,ea:uw?kg/uw:null}}).sort((a,b)=>b.qty-a.qty);
+  const tCov=term.filter(x=>x.uw).reduce((s,x)=>s+x.ratio,0);const tAvg=tCov?term.reduce((s,x)=>s+x.avg,0)/tCov:0;const tMissing=term.filter(x=>!x.uw).length;
+  const tEa=tAvg?Tm/tAvg:0; // 스펙: 단자 총 부산물 중량 ÷ 평균중량
+  const tEaSum=term.reduce((s,x)=>s+(x.ea||0),0);
+  // 종류별
+  const cat=S.ratio.map(c=>({...c,w:W*(+c.wire_pct||0)/100,t:Tm*(+c.term_pct||0)/100,s:Sc*(+c.scrap_pct||0)/100}));
+  const sums={w:S.ratio.reduce((s,c)=>s+(+c.wire_pct||0),0),t:S.ratio.reduce((s,c)=>s+(+c.term_pct||0),0),s:S.ratio.reduce((s,c)=>s+(+c.scrap_pct||0),0)};
+  return {W,Tm,Sc,byDay,byMc,wire,wAvg,wCov,wMissing,wM,term,tAvg,tCov,tMissing,tEa,tEaSum,cat,sums,U};
+}
+function rsRender(){
+  const C=rsCalc();if(!C)return;const D=RS.data;
+  const days=Object.keys(C.byDay).sort();
+  $('rs-info').textContent=L(`${D.from} ~ ${D.to} · 측정 ${days.length}일 · 사용량 ${Object.keys(C.U.daily).length}일`,`${D.from} ~ ${D.to} · ${days.length} días pesaje · ${Object.keys(C.U.daily).length} días consumo`);
+  const warns=[];
+  if(!D.daily.length)warns.push(['err',L('이 기간에 측정된 부산물 데이터가 없습니다. 「부산물 측정 입력」에서 등록하세요.','No hay pesajes en este periodo.')]);
+  if(!C.U.wTot&&!C.U.tTot)warns.push(['err',L('이 기간의 32040 사용량 데이터가 없습니다. 가공생산팀 자재관리 사이트에서 사용량을 먼저 등록해야 비율 산출이 가능합니다.','No hay consumo 32040 en este periodo. Registre el uso en Gestión de materiales primero.')]);
+  if(C.wMissing)warns.push(['',L(`전선 ${C.wMissing}개 선종/SQ의 단위중량(kg/m)이 없습니다 (사용비율 ${pct((1-C.wCov)*100)}). 평균 단위중량은 등록된 항목 기준으로 산출되며, 미등록분 발생 M는 평균값으로 추정됩니다 → 「단위중량 마스터」`,`${C.wMissing} tipos/SQ de cable sin kg/m → «Peso unitario»`)]);
+  if(C.tMissing)warns.push(['',L(`단자 ${C.tMissing}개 품목의 단위중량(kg/ea)이 없습니다 (사용비율 ${pct((1-C.tCov)*100)}). 평균 단위중량은 등록된 품목 기준으로 산출됩니다 → 「단위중량 마스터」`,`${C.tMissing} terminales sin kg/pza → «Peso unitario»`)]);
+  if(D.daily.length&&(Math.abs(C.sums.w-100)>.01||Math.abs(C.sums.t-100)>.01||Math.abs(C.sums.s-100)>.01))warns.push(['',L('부산물 종류별 비율의 합이 100%가 아닙니다 → 「호기 · 종류비율 설정」','La suma de ratios por tipo no es 100% → «Máquinas · Ratios»')]);
+  $('rs-warn').innerHTML=warns.map(([c,m])=>`<div class="warn ${c}" style="margin-bottom:8px">${m}</div>`).join('');
+  $('rs-kpi').innerHTML=`
+    <div class="kpi w"><span>Wire</span><b>${num(C.W)}<small>kg</small></b><div class="d">${L('전선 부산물 총중량','Total cable')}</div></div>
+    <div class="kpi w"><span>Wire → M</span><b>${C.wM?num(C.wM,0):'–'}<small>m</small></b><div class="d">${L('평균 단위중량','kg/m prom.')} ${C.wAvg?C.wAvg.toFixed(5):'–'} kg/m${C.wCov<.999?' · '+L('등록 커버리지','cobertura')+' '+pct(C.wCov*100):''}</div></div>
+    <div class="kpi t"><span>Terminal</span><b>${num(C.Tm)}<small>kg</small></b><div class="d">${L('단자 부산물 총중량','Total terminal')}</div></div>
+    <div class="kpi t"><span>Terminal → EA</span><b>${C.tEa?num(C.tEa,0):'–'}<small>ea</small></b><div class="d">${L('평균 단위중량','kg/pza prom.')} ${C.tAvg?C.tAvg.toFixed(6):'–'} kg/ea${C.tCov<.999?' · '+L('등록 커버리지','cobertura')+' '+pct(C.tCov*100):''}</div></div>
+    <div class="kpi s"><span>Scrap</span><b>${num(C.Sc)}<small>kg</small></b><div class="d">${L('스크랩 총중량','Total scrap')}</div></div>
+    <div class="kpi g"><span>${L('합계','Total')}</span><b>${num(C.W+C.Tm+C.Sc)}<small>kg</small></b><div class="d">${days.length?num((C.W+C.Tm+C.Sc)/days.length)+' kg/'+L('일','día'):'–'}</div></div>`;
+  $('rs-flow').innerHTML=`
+    <div><span>1 · ${L('사용량 비율','Ratio de uso')}</span><b>${L('전선 M','Cable M')} ${num(C.U.wTot,0)} · ${L('단자 EA','Term. EA')} ${num(C.U.tTot,0)}</b><p>${L('32040 사용량 ÷ 총사용량 = 선종/SQ·단자별 비율','uso 32040 ÷ total = ratio por tipo/SQ · terminal')}</p></div>
+    <div><span>2 · ${L('평균 단위중량','Peso unit. prom.')}</span><b>${C.wAvg?C.wAvg.toFixed(5):'–'} kg/m · ${C.tAvg?C.tAvg.toFixed(6):'–'} kg/ea</b><p>${L('Σ(비율 × 단위중량)','Σ(ratio × peso unitario)')}</p></div>
+    <div><span>3 · ${L('종류별 발생중량','Peso por tipo')}</span><b>${L('총중량 × 비율','Total × ratio')}</b><p>${L('전선 총 부산물 kg을 선종/SQ 비율로, 단자 kg을 품목 비율로 배분','kg cable repartido por tipo/SQ, kg terminal por ítem')}</p></div>
+    <div><span>4 · ${L('수량 환산','Conversión')}</span><b>${L('전선','Cable')} ${C.wM?num(C.wM,0):'–'} m · ${L('단자','Term.')} ${C.tEa?num(C.tEa,0):'–'} ea</b><p>${L('발생중량 ÷ 단위중량 = M / 총중량 ÷ 평균중량 = EA','kg ÷ kg/m = M · kg ÷ prom. = EA')}</p></div>`;
+  rsChart(C,days);rsMcBar(C);
+  // 전선 표
+  $('rs-wire').innerHTML=`<table><colgroup><col style="width:16%"><col style="width:10%"><col style="width:16%"><col style="width:11%"><col style="width:15%"><col style="width:16%"><col></colgroup><thead><tr><th>${L('선종','Tipo')}</th><th>SQ</th><th class="n">${L('사용량','Uso')} <small>m</small></th><th class="n">${L('비율','Ratio')}</th><th class="n">${L('단위중량','Peso unit.')} <small>kg/m</small></th><th class="n">${L('발생중량','kg gen.')} <small>kg</small></th><th class="n">${L('발생 M','M gen.')} <small>m</small></th></tr></thead><tbody>
+    ${C.wire.map(x=>`<tr><td class="b">${esc(x.wtype)}</td><td>${esc(x.sq)}</td><td class="n">${num(x.qty,0)}</td><td class="n">${pct(x.ratio*100)}</td><td class="n ${x.uw?'':'neg'}">${x.uw?x.uw.toFixed(5):L('없음','—')}</td><td class="n">${num(x.kg,3)}</td><td class="n b">${x.m!=null?num(x.m,0):'–'}</td></tr>`).join('')||`<tr><td colspan="7" class="empty">${L('사용량 데이터 없음','Sin consumo')}</td></tr>`}</tbody>
+    <tfoot><tr><td colspan="2">${L('합계','Total')}</td><td class="n">${num(C.U.wTot,0)}</td><td class="n">${C.U.wTot?'100%':'–'}</td><td class="n">${C.wAvg?C.wAvg.toFixed(5):'–'}</td><td class="n">${num(C.W,3)}</td><td class="n">${C.wM?num(C.wM,0):'–'}</td></tr></tfoot></table>`;
+  $('rs-term').innerHTML=`<table><colgroup><col style="width:21%"><col style="width:17%"><col style="width:14%"><col style="width:10%"><col style="width:14%"><col style="width:12%"><col></colgroup><thead><tr><th>${L('유라코드','Código')}</th><th>${L('업체품명','Nombre')}</th><th class="n">${L('사용량','Uso')} <small>ea</small></th><th class="n">${L('비율','Ratio')}</th><th class="n">${L('단위중량','Peso unit.')} <small>kg/ea</small></th><th class="n">${L('발생중량','kg gen.')} <small>kg</small></th><th class="n">${L('환산','EA gen.')} <small>ea</small></th></tr></thead><tbody>
+    ${C.term.map(x=>`<tr><td class="b">${esc(x.code)}</td><td title="${esc(x.name)}">${esc(x.name||'')}</td><td class="n">${num(x.qty,0)}</td><td class="n">${pct(x.ratio*100)}</td><td class="n ${x.uw?'':'neg'}">${x.uw?x.uw.toFixed(6):L('없음','—')}</td><td class="n">${num(x.kg,3)}</td><td class="n b">${x.ea!=null?num(x.ea,0):'–'}</td></tr>`).join('')||`<tr><td colspan="7" class="empty">${L('사용량 데이터 없음','Sin consumo')}</td></tr>`}</tbody>
+    <tfoot><tr><td colspan="2">${L('합계','Total')}</td><td class="n">${num(C.U.tTot,0)}</td><td class="n">${C.U.tTot?'100%':'–'}</td><td class="n">${C.tAvg?C.tAvg.toFixed(6):'–'}</td><td class="n">${num(C.Tm,3)}</td><td class="n">${C.tEaSum?num(C.tEaSum,0):'–'}</td></tr></tfoot></table>`;
+  // 종류별
+  const grpN={prod:L('가공생산팀','Prod. maquinado'),ext:L('생산외 수거','Recolección externa')};
+  $('rs-cat').innerHTML=`<table><colgroup><col style="width:16%"><col style="width:18%"><col><col><col><col><col><col><col></colgroup><thead><tr><th>${L('구분','Grupo')}</th><th>${L('부산물 종류','Tipo')}</th><th class="n">Wire %</th><th class="n">Wire <small>kg</small></th><th class="n">Term %</th><th class="n">Terminal <small>kg</small></th><th class="n">Scrap %</th><th class="n">Scrap <small>kg</small></th><th class="n">${L('합계','Total')} <small>kg</small></th></tr></thead><tbody>
+    ${C.cat.map(c=>`<tr><td><span class="cat-grp ${c.grp}">${grpN[c.grp]||c.grp}</span></td><td class="b">${esc(c.cat)}</td><td class="n">${pct(c.wire_pct)}</td><td class="n">${num(c.w,3)}</td><td class="n">${pct(c.term_pct)}</td><td class="n">${num(c.t,3)}</td><td class="n">${pct(c.scrap_pct)}</td><td class="n">${num(c.s,3)}</td><td class="n b">${num(c.w+c.t+c.s,3)}</td></tr>`).join('')}</tbody>
+    <tfoot><tr><td colspan="2">${L('합계','Total')}</td><td class="n ${Math.abs(C.sums.w-100)<.01?'sum-ok':'sum-bad'}">${pct(C.sums.w)}</td><td class="n">${num(C.W,3)}</td><td class="n ${Math.abs(C.sums.t-100)<.01?'sum-ok':'sum-bad'}">${pct(C.sums.t)}</td><td class="n">${num(C.Tm,3)}</td><td class="n ${Math.abs(C.sums.s-100)<.01?'sum-ok':'sum-bad'}">${pct(C.sums.s)}</td><td class="n">${num(C.Sc,3)}</td><td class="n">${num(C.W+C.Tm+C.Sc,3)}</td></tr></tfoot></table>`;
+  // 일별 호기별
+  $('rs-days').innerHTML=`<table><colgroup><col style="width:120px"><col style="width:110px"><col><col><col><col><col style="width:110px"><col style="width:22%"></colgroup><thead><tr><th>${L('날짜','Fecha')}</th><th>${L('호기','Máquina')}</th><th class="n">Wire</th><th class="n">Terminal</th><th class="n">Scrap</th><th class="n">${L('합계','Total')}</th><th>${L('측정자','Medido por')}</th><th>${L('메모','Nota')}</th></tr></thead><tbody>
+    ${D.daily.map(r=>`<tr><td>${r.d}</td><td><span class="mc-tag${r.mc===ALL?' all':''}" style="font-size:14px">${r.mc===ALL?L('합계','Total'):esc(r.mc)}</span></td><td class="n">${num(r.wire_kg)}</td><td class="n">${num(r.term_kg)}</td><td class="n">${num(r.scrap_kg)}</td><td class="n b">${num((+r.wire_kg||0)+(+r.term_kg||0)+(+r.scrap_kg||0))}</td><td>${esc(r.worker||'')}</td><td title="${esc(r.memo||'')}">${esc(r.memo||'')}</td></tr>`).join('')||`<tr><td colspan="8" class="empty">${L('측정 데이터 없음','Sin datos')}</td></tr>`}</tbody></table>`;
+}
+function rsChart(C,days){
+  const el=$('rs-chart');if(!days.length){el.innerHTML=`<div class="mini" style="padding:30px;text-align:center">${L('데이터 없음','Sin datos')}</div>`;return}
+  const W=760,Hh=240,pl=44,pr=10,pt=12,pb=34,iw=W-pl-pr,ih=Hh-pt-pb;
+  const max=Math.max(1,...days.map(d=>C.byDay[d].w+C.byDay[d].t+C.byDay[d].s));
+  const step=Math.pow(10,Math.floor(Math.log10(max)));const top=Math.ceil(max/step)*step;
+  const bw=iw/days.length,bar=Math.min(28,bw*.68);
+  const col={w:'#6fb8dd',t:'#e0a84a',s:'#a98af0'};
+  let g='';for(let i=0;i<=4;i++){const y=pt+ih-ih*i/4;g+=`<line x1="${pl}" x2="${W-pr}" y1="${y}" y2="${y}" stroke="#1e1e1e"/><text x="${pl-6}" y="${y+4}" text-anchor="end" font-size="11" fill="#777" font-family="Space Mono">${num(top*i/4,0)}</text>`}
+  let b='';days.forEach((d,i)=>{const o=C.byDay[d];const x=pl+bw*i+(bw-bar)/2;let y=pt+ih;
+    [['s',o.s],['t',o.t],['w',o.w]].forEach(([k,v])=>{const h=ih*v/top;y-=h;b+=`<rect x="${x}" y="${y}" width="${bar}" height="${h}" fill="${col[k]}" rx="1"><title>${d} ${k==='w'?'Wire':k==='t'?'Terminal':'Scrap'} ${num(v)} kg</title></rect>`});
+    const tot=o.w+o.t+o.s;b+=`<text x="${x+bar/2}" y="${y-4}" text-anchor="middle" font-size="10.5" fill="#ccc" font-family="Space Mono">${num(tot,0)}</text>`;
+    if(days.length<=20||i%Math.ceil(days.length/14)===0)b+=`<text x="${x+bar/2}" y="${Hh-pb+16}" text-anchor="middle" font-size="11" fill="#999" font-family="Space Mono">${d.slice(5)}</text>`});
+  el.innerHTML=`<svg viewBox="0 0 ${W} ${Hh}">${g}${b}</svg><div class="leg"><span><i style="background:${col.w}"></i>Wire</span><span><i style="background:${col.t}"></i>Terminal</span><span><i style="background:${col.s}"></i>Scrap</span><span class="mini">· kg</span></div>`;
+}
+function rsMcBar(C){
+  const arr=Object.entries(C.byMc).filter(([m])=>m!==ALL).map(([m,o])=>({m,...o,tot:o.w+o.t+o.s})).sort((a,b)=>b.tot-a.tot).slice(0,15);
+  const all=C.byMc[ALL];
+  if(!arr.length){$('rs-mcbar').innerHTML=`<div class="mini" style="padding:30px;text-align:center">${all?L('호기별 측정 데이터 없음 (합계 직접입력만 있음)','Sin datos por máquina (solo total directo)'):L('데이터 없음','Sin datos')}</div>`;return}
+  const max=arr[0].tot||1;
+  $('rs-mcbar').innerHTML=arr.map(x=>`<div class="r"><span class="k">${esc(x.m)}</span><div class="b"><i style="width:${x.w/max*100}%;background:#6fb8dd"></i><i style="width:${x.t/max*100}%;background:#e0a84a"></i><i style="width:${x.s/max*100}%;background:#a98af0"></i></div><span class="v">${num(x.tot)} kg</span></div>`).join('')
+    +(all?`<div class="mini" style="margin-top:6px">+ ${L('합계 직접입력','Total directo')} ${num(all.w+all.t+all.s)} kg</div>`:'');
+}
+function loadExcelJS(){if(window.ExcelJS)return Promise.resolve();return new Promise((ok,ng)=>{const s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js';s.onload=ok;s.onerror=()=>ng(new Error(L('엑셀 모듈을 불러오지 못했습니다','No se pudo cargar Excel')));document.head.appendChild(s)})}
+async function rsExcel(){
+  const C=rsCalc();if(!C){toast(L('먼저 조회하세요','Consulte primero'),true);return}
+  load(true);
+  try{
+    await loadExcelJS();const D=RS.data;const wb=new ExcelJS.Workbook();wb.creator='YURA HARNESS MÉXICO';
+    const HF={type:'pattern',pattern:'solid',fgColor:{argb:'FF1F2937'}},HFont={bold:true,color:{argb:'FFFFFFFF'},size:10};
+    const TF={type:'pattern',pattern:'solid',fgColor:{argb:'FFFFF2CC'}};
+    const thin={style:'thin',color:{argb:'FFBFBFBF'}},BD={top:thin,left:thin,bottom:thin,right:thin};
+    function sheet(name,title,heads,rows,widths,fmts,foot){
+      const ws=wb.addWorksheet(name,{views:[{state:'frozen',ySplit:4}]});
+      ws.mergeCells(1,1,1,heads.length);const t=ws.getCell(1,1);t.value=title;t.font={bold:true,size:14,color:{argb:'FF1F2937'}};
+      ws.mergeCells(2,1,2,heads.length);ws.getCell(2,1).value=`YURA HARNESS MÉXICO · ${L('멕시코','México')} ${PLANT}${L('공장','')} · ${D.from} ~ ${D.to}`;ws.getCell(2,1).font={size:9,color:{argb:'FF7B8494'}};
+      ws.getRow(4).values=heads;ws.getRow(4).eachCell(c=>{c.fill=HF;c.font=HFont;c.alignment={horizontal:'center',vertical:'middle',wrapText:true};c.border=BD});ws.getRow(4).height=22;
+      rows.forEach(r=>{const row=ws.addRow(r);row.eachCell((c,i)=>{c.border=BD;c.font={size:10};if(fmts[i-1])c.numFmt=fmts[i-1]})});
+      if(foot){const row=ws.addRow(foot);row.eachCell((c,i)=>{c.border=BD;c.fill=TF;c.font={bold:true,size:10};if(fmts[i-1])c.numFmt=fmts[i-1]})}
+      widths.forEach((w,i)=>ws.getColumn(i+1).width=w);
+      ws.pageSetup={orientation:'landscape',fitToPage:true,fitToWidth:1,fitToHeight:0,paperSize:9,printTitlesRow:'4:4'};
+      return ws;
+    }
+    const days=Object.keys(C.byDay).sort();
+    sheet('요약',L('부산물 산출 요약','Resumen de subproductos'),[L('항목','Ítem'),L('값','Valor'),L('단위','Unidad'),L('비고','Nota')],[
+      [L('측정 일수','Días de pesaje'),days.length,L('일','días'),''],
+      [L('전선 부산물 총중량','Total cable'),C.W,'kg',''],
+      [L('전선 평균 단위중량','Peso unit. prom. cable'),C.wAvg,'kg/m',L('Σ(사용비율×단위중량)','Σ(ratio×peso)')],
+      [L('전선 발생량 환산','Cable generado'),C.wM,'m',L('선종/SQ별 발생중량 ÷ 단위중량 합','Σ kg ÷ kg/m')],
+      [L('단자 부산물 총중량','Total terminal'),C.Tm,'kg',''],
+      [L('단자 평균 단위중량','Peso unit. prom. terminal'),C.tAvg,'kg/ea',''],
+      [L('단자 발생량 환산','Terminal generado'),C.tEa,'ea',L('총중량 ÷ 평균중량','Total ÷ prom.')],
+      [L('스크랩 총중량','Total scrap'),C.Sc,'kg',''],
+      [L('부산물 합계','Total subproductos'),C.W+C.Tm+C.Sc,'kg',''],
+      [L('전선 사용량 (32040)','Uso cable (32040)'),C.U.wTot,'m',''],[L('단자 사용량 (32040)','Uso terminal (32040)'),C.U.tTot,'ea','']],
+      [34,18,10,40],[null,'#,##0.0000',null,null]);
+    sheet('전선산출',L('전선 선종/SQ별 산출','Cable por tipo/SQ'),[L('선종','Tipo'),'SQ',L('사용량(m)','Uso (m)'),L('사용량비율','Ratio'),L('단위중량(kg/m)','kg/m'),L('평균단위중량','Prom.'),L('발생중량(kg)','kg gen.'),L('발생 M','M gen.')],
+      C.wire.map(x=>[x.wtype,x.sq,x.qty,x.ratio,x.uw||null,x.avg,x.kg,x.m]),[14,10,14,12,14,14,14,14],[null,null,'#,##0','0.00%','0.00000','0.00000','#,##0.000','#,##0'],
+      [L('합계','Total'),'',C.U.wTot,C.U.wTot?1:0,null,C.wAvg,C.W,C.wM]);
+    sheet('단자산출',L('단자 품목별 산출','Terminal por ítem'),[L('유라코드','Código'),L('업체품명','Nombre'),L('사용량(ea)','Uso (ea)'),L('사용량비율','Ratio'),L('단위중량(kg/ea)','kg/ea'),L('평균단위중량','Prom.'),L('단자별부산물량(kg)','kg gen.'),L('갯수환산(ea)','EA gen.')],
+      C.term.map(x=>[x.code,x.name,x.qty,x.ratio,x.uw||null,x.avg,x.kg,x.ea]),[18,18,14,12,14,14,16,14],[null,null,'#,##0','0.00%','0.000000','0.000000','#,##0.000','#,##0'],
+      [L('합계','Total'),'',C.U.tTot,C.U.tTot?1:0,null,C.tAvg,C.Tm,C.tEaSum]);
+    sheet('종류별',L('부산물 종류별 발생량','Por tipo de subproducto'),[L('구분','Grupo'),L('부산물 종류','Tipo'),'Wire %','Wire kg','Terminal %','Terminal kg','Scrap %','Scrap kg',L('합계 kg','Total kg')],
+      C.cat.map(c=>[c.grp==='prod'?L('가공생산팀','Prod. maquinado'):L('생산외 수거','Recolección externa'),c.cat,(+c.wire_pct||0)/100,c.w,(+c.term_pct||0)/100,c.t,(+c.scrap_pct||0)/100,c.s,c.w+c.t+c.s]),
+      [14,16,10,12,10,12,10,12,12],[null,null,'0.0%','#,##0.000','0.0%','#,##0.000','0.0%','#,##0.000','#,##0.000'],
+      [L('합계','Total'),'',C.sums.w/100,C.W,C.sums.t/100,C.Tm,C.sums.s/100,C.Sc,C.W+C.Tm+C.Sc]);
+    sheet('일별부산물중량',L('일별 부산물 중량','Peso diario'),['Date','Wire','Terminal','Scrap',L('합계','Total')],days.map(d=>[d,C.byDay[d].w,C.byDay[d].t,C.byDay[d].s,C.byDay[d].w+C.byDay[d].t+C.byDay[d].s]),[14,12,12,12,12],[null,'#,##0.00','#,##0.00','#,##0.00','#,##0.00'],[L('합계','Total'),C.W,C.Tm,C.Sc,C.W+C.Tm+C.Sc]);
+    sheet('호기별',L('일별 호기별 측정 내역','Detalle por máquina'),['Date',L('발생호기','Máquina'),'Wire','Terminal','Scrap',L('합계','Total'),L('측정자','Medido por'),L('메모','Nota')],
+      D.daily.map(r=>[r.d,r.mc,+r.wire_kg||0,+r.term_kg||0,+r.scrap_kg||0,(+r.wire_kg||0)+(+r.term_kg||0)+(+r.scrap_kg||0),r.worker||'',r.memo||'']),[12,12,10,10,10,10,12,30],[null,null,'#,##0.00','#,##0.00','#,##0.00','#,##0.00',null,null]);
+    const buf=await wb.xlsx.writeBuffer();const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([buf]));a.download=`부산물산출_P${PLANT}_${D.from}_${D.to}.xlsx`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),3000);
+  }catch(e){toast(e.message,true)}finally{load(false)}
+}
+
+/* ═══════════ ③ 사용량 ═══════════ */
+const US={data:null};
+async function usLoad(){
+  const from=$('us-from').value||today().slice(0,8)+'01',to=$('us-to').value||today();$('us-from').value=from;$('us-to').value=to;
+  const tk=US.tk=(US.tk||0)+1;load(true);try{const rows=await getUsage(from,to);if(tk!==US.tk)return;US.data={from,to,rows,agg:aggUsage(rows)};usRender()}catch(e){toast(e.message,true)}finally{load(false)}
+}
+function usRender(){
+  const D=US.data;if(!D)return;const A=D.agg;
+  const days=Object.keys(A.daily).sort();
+  $('us-info').textContent=L(`${D.rows.length.toLocaleString()}행 · ${days.length}일`,`${D.rows.length.toLocaleString()} filas · ${days.length} días`);
+  const wire=Object.values(A.wire).map(o=>({...o,ratio:A.wTot?o.qty/A.wTot:0,uw:S.wireW[wk(o.wtype,o.sq)]||0})).sort((a,b)=>b.qty-a.qty);
+  const term=Object.values(A.term).map(o=>({...o,ratio:A.tTot?o.qty/A.tTot:0,uw:S.master[o.code]?+S.master[o.code].unit_w||0:0})).sort((a,b)=>b.qty-a.qty);
+  const wAvg=wire.reduce((s,x)=>s+x.ratio*x.uw,0),tAvg=term.reduce((s,x)=>s+x.ratio*x.uw,0);
+  $('us-kpi').innerHTML=`<div class="kpi w"><span>${L('전선 사용량','Uso cable')}</span><b>${num(A.wTot,0)}<small>m</small></b><div class="d">${wire.length} ${L('선종/SQ','tipos/SQ')}</div></div>
+    <div class="kpi w"><span>${L('전선 평균 단위중량','kg/m prom.')}</span><b>${wAvg?wAvg.toFixed(5):'–'}<small>kg/m</small></b><div class="d">${L('미등록','sin peso')} ${wire.filter(x=>!x.uw).length}</div></div>
+    <div class="kpi t"><span>${L('단자 사용량','Uso terminal')}</span><b>${num(A.tTot,0)}<small>ea</small></b><div class="d">${term.length} ${L('품목','ítems')}</div></div>
+    <div class="kpi t"><span>${L('단자 평균 단위중량','kg/pza prom.')}</span><b>${tAvg?tAvg.toFixed(6):'–'}<small>kg/ea</small></b><div class="d">${L('미등록','sin peso')} ${term.filter(x=>!x.uw).length}</div></div>`;
+  $('us-wire').innerHTML=`<table><colgroup><col style="width:19%"><col style="width:11%"><col style="width:22%"><col style="width:12%"><col style="width:18%"><col></colgroup><thead><tr><th>${L('선종','Tipo')}</th><th>SQ</th><th class="n">${L('사용량','Uso')} <small>m</small></th><th class="n">${L('비율','Ratio')}</th><th class="n">${L('단위중량','kg/m')}</th><th class="n">${L('평균단위중량','Prom.')}</th></tr></thead><tbody>
+    ${wire.map(x=>`<tr><td class="b">${esc(x.wtype)}</td><td>${esc(x.sq)}</td><td class="n">${num(x.qty,0)}</td><td class="n">${pct(x.ratio*100)}</td><td class="n ${x.uw?'':'neg'}">${x.uw?x.uw.toFixed(5):L('없음','—')}</td><td class="n">${(x.ratio*x.uw).toFixed(5)}</td></tr>`).join('')||`<tr><td colspan="6" class="empty">${L('데이터 없음','Sin datos')}</td></tr>`}</tbody>
+    <tfoot><tr><td colspan="2">${L('합계','Total')}</td><td class="n">${num(A.wTot,0)}</td><td class="n">100%</td><td></td><td class="n">${wAvg.toFixed(5)}</td></tr></tfoot></table>`;
+  $('us-term').innerHTML=`<table><colgroup><col style="width:27%"><col style="width:23%"><col style="width:20%"><col style="width:12%"><col></colgroup><thead><tr><th>${L('유라코드','Código')}</th><th>${L('업체품명','Nombre')}</th><th class="n">${L('사용량','Uso')} <small>ea</small></th><th class="n">${L('비율','Ratio')}</th><th class="n">${L('단위중량','kg/ea')}</th></tr></thead><tbody>
+    ${term.map(x=>`<tr><td class="b">${esc(x.code)}</td><td title="${esc(x.name)}">${esc(x.name||'')}</td><td class="n">${num(x.qty,0)}</td><td class="n">${pct(x.ratio*100)}</td><td class="n ${x.uw?'':'neg'}">${x.uw?x.uw.toFixed(6):L('없음','—')}</td></tr>`).join('')||`<tr><td colspan="5" class="empty">${L('데이터 없음','Sin datos')}</td></tr>`}</tbody>
+    <tfoot><tr><td colspan="2">${L('합계','Total')}</td><td class="n">${num(A.tTot,0)}</td><td class="n">100%</td><td class="n">${tAvg.toFixed(6)}</td></tr></tfoot></table>`;
+  $('us-daily').innerHTML=`<table><colgroup><col style="width:140px"><col><col><col></colgroup><thead><tr><th>${L('날짜','Fecha')}</th><th class="n">${L('전선','Cable')} <small>m</small></th><th class="n">${L('단자','Terminal')} <small>ea</small></th><th class="n">${L('기타(씰 등)','Otros (sello)')} <small>ea</small></th></tr></thead><tbody>
+    ${days.map(d=>`<tr><td>${d}</td><td class="n">${num(A.daily[d].w,0)}</td><td class="n">${num(A.daily[d].t,0)}</td><td class="n mute">${num(A.daily[d].j,0)}</td></tr>`).join('')||`<tr><td colspan="4" class="empty">${L('데이터 없음','Sin datos')}</td></tr>`}</tbody>
+    <tfoot><tr><td>${L('합계','Total')}</td><td class="n">${num(A.wTot,0)}</td><td class="n">${num(A.tTot,0)}</td><td></td></tr></tfoot></table>`;
+}
+
+/* ═══════════ ④ 단위중량 마스터 ═══════════ */
+const MW={ready:false,wire:[],term:[]};
+async function mwLoad(){
+  load(true);
+  try{
+    const to=today(),from=addDays(to,-120);
+    const rows=await getUsage(from,to);const A=aggUsage(rows);
+    const wmap={};Object.values(A.wire).forEach(o=>wmap[wk(o.wtype,o.sq)]={wtype:o.wtype,sq:o.sq,qty:o.qty});
+    Object.keys(S.wireW).forEach(k=>{if(!wmap[k]){const [wtype,sq]=k.split('|');wmap[k]={wtype,sq,qty:0}}});
+    MW.wire=Object.values(wmap).sort((a,b)=>a.wtype.localeCompare(b.wtype)||a.sq.localeCompare(b.sq));
+    const tmap={};Object.values(A.term).forEach(o=>tmap[o.code]={code:o.code,name:o.name,qty:o.qty});
+    Object.values(S.master).forEach(m=>{if(m.kind==='T'&&!tmap[m.code])tmap[m.code]={code:m.code,name:m.name,qty:0}});
+    MW.term=Object.values(tmap).sort((a,b)=>b.qty-a.qty);
+    MW.ready=true;mwRender();
+  }catch(e){toast(e.message,true)}finally{load(false)}
+}
+function mwRender(){
+  $('mw-wire').innerHTML=`<table><colgroup><col style="width:30%"><col style="width:18%"><col><col style="width:30%"></colgroup><thead><tr><th>${L('선종','Tipo')}</th><th>SQ</th><th class="n">${L('최근 사용량','Uso reciente')} <small>m · 120d</small></th><th class="n">${L('단위중량','Peso unit.')} <small>kg/m</small></th></tr></thead><tbody>
+    ${MW.wire.map(x=>{const v=S.wireW[wk(x.wtype,x.sq)];return `<tr><td class="b">${esc(x.wtype)}</td><td>${esc(x.sq)}</td><td class="n ${x.qty?'':'mute'}">${num(x.qty,0)}</td><td><input class="cell ${v?'':'miss'}" type="number" step="0.00001" min="0" data-w="${esc(x.wtype)}" data-s="${esc(x.sq)}" value="${v||''}" oninput="this.classList.add('ch');this.classList.remove('miss')" placeholder="kg/m"></td></tr>`}).join('')||`<tr><td colspan="4" class="empty">${L('데이터 없음','Sin datos')}</td></tr>`}</tbody></table>`;
+  mwRenderTerm();
+}
+function mwRenderTerm(){
+  const q=($('mw-q').value||'').trim().toUpperCase();
+  const list=MW.term.filter(x=>!q||x.code.includes(q)||String(x.name||'').toUpperCase().includes(q));
+  $('mw-term').innerHTML=`<table><colgroup><col style="width:30%"><col style="width:26%"><col><col style="width:26%"></colgroup><thead><tr><th>${L('유라코드','Código')}</th><th>${L('업체품명','Nombre')}</th><th class="n">${L('최근 사용량','Uso reciente')} <small>ea · 120d</small></th><th class="n">${L('단위중량','Peso unit.')} <small>kg/ea</small></th></tr></thead><tbody>
+    ${list.map(x=>{const m=S.master[x.code];const v=m?+m.unit_w||0:0;return `<tr><td class="b">${esc(x.code)}</td><td title="${esc(x.name)}">${esc(x.name||'')}</td><td class="n ${x.qty?'':'mute'}">${num(x.qty,0)}</td><td><input class="cell ${v?'':'miss'}" type="number" step="0.000001" min="0" data-c="${esc(x.code)}" data-n="${esc(x.name||'')}" value="${v||''}" oninput="this.classList.add('ch');this.classList.remove('miss')" placeholder="kg/ea"></td></tr>`}).join('')||`<tr><td colspan="4" class="empty">${L('데이터 없음','Sin datos')}</td></tr>`}</tbody></table>`;
+}
+async function mwSaveWire(){
+  const rows=[];document.querySelectorAll('#mw-wire input.ch').forEach(i=>{rows.push({plant:PLANT,wtype:i.dataset.w,sq:i.dataset.s,unit_w:parseFloat(i.value)||0,updated_at:new Date().toISOString()})});
+  if(!rows.length){toast(L('변경된 항목이 없습니다','Sin cambios'));return}
+  load(true);try{await sbUpsert('byp_wire_w',rows,'plant,wtype,sq');rows.forEach(r=>S.wireW[wk(r.wtype,r.sq)]=r.unit_w);toast(L(`전선 단위중량 ${rows.length}건 저장`,`${rows.length} guardados`));RS.data=null;mwRender()}catch(e){toast(e.message,true)}finally{load(false)}
+}
+async function mwSaveTerm(){
+  const rows=[];document.querySelectorAll('#mw-term input.ch').forEach(i=>{rows.push({plant:PLANT,code:i.dataset.c,name:i.dataset.n||null,kind:'T',unit_w:parseFloat(i.value)||0,updated_at:new Date().toISOString()})});
+  if(!rows.length){toast(L('변경된 항목이 없습니다','Sin cambios'));return}
+  load(true);try{await sbUpsert('byp_master',rows,'plant,code');rows.forEach(r=>S.master[r.code]=r);toast(L(`단자 단위중량 ${rows.length}건 저장`,`${rows.length} guardados`));RS.data=null;mwRenderTerm()}catch(e){toast(e.message,true)}finally{load(false)}
+}
+function mwPasteOpen(kind){
+  const isW=kind==='W';
+  $('paste-title').textContent=isW?L('전선 단위중량 붙여넣기','Pegar peso unitario · cable'):L('단자 단위중량 붙여넣기','Pegar peso unitario · terminal');
+  $('paste-hint').innerHTML=isW?L('열 순서: <b>선종 · 선경(SQ) · 단위중량(kg/m)</b> (예: CIVUS\t00.35\t0.0052). 머리글이 있어도 됩니다.','Columnas: <b>Tipo · SQ · kg/m</b> (ej. CIVUS\t00.35\t0.0052).')
+    :L('엑셀 「단위중량마스터」 시트 열 순서: <b>유라코드 · 업체품명 · 단위중량(kg)</b>. 머리글이 있어도 됩니다.','Hoja «단위중량마스터»: <b>Código Yura · Nombre · Peso (kg)</b>.');
+  $('paste-ta').value='';$('paste-prev').textContent='';
+  const parse=()=>{const out=[];$('paste-ta').value.split(/\r?\n/).forEach(l=>{const c=l.split('\t').map(s=>s.trim());if(c.length<2)return;
+    if(isW){const uw=pnum(c[2]);if(!c[0]||!uw||!/^\d/.test(c[1]||''))return;out.push({plant:PLANT,wtype:c[0].toUpperCase(),sq:c[1],unit_w:uw,updated_at:new Date().toISOString()})}
+    else{const uw=pnum(c[2]);if(!c[0]||!uw)return;out.push({plant:PLANT,code:c[0].toUpperCase(),name:c[1]||null,kind:'T',unit_w:uw,updated_at:new Date().toISOString()})}});return out};
+  $('paste-ta').oninput=()=>{const r=parse();$('paste-prev').innerHTML=r.length?L(`<b>${r.length}</b>건 인식`,`<b>${r.length}</b> filas`):L('인식된 행 없음','Sin filas')};
+  $('paste-ok').onclick=async()=>{const r=parse();if(!r.length){toast(L('인식된 행이 없습니다','Sin filas'),true);return}load(true);
+    try{if(isW){await sbUpsert('byp_wire_w',r,'plant,wtype,sq');r.forEach(x=>S.wireW[wk(x.wtype,x.sq)]=x.unit_w)}else{await sbUpsert('byp_master',r,'plant,code');r.forEach(x=>S.master[x.code]=x)}
+      mdlClose('mdl-paste');toast(L(`${r.length}건 반영`,`${r.length} aplicados`));RS.data=null;await mwLoad()}catch(e){toast(e.message,true)}finally{load(false)}};
+  mdlOpen('mdl-paste');setTimeout(()=>$('paste-ta').focus(),50);
+}
+
+/* ═══════════ ⑤ 설정 ═══════════ */
+function cfRender(){
+  $('cf-mccnt').textContent=L(`${S.mc.filter(m=>m.active).length} 사용 / ${S.mc.length} 전체`,`${S.mc.filter(m=>m.active).length} activas / ${S.mc.length}`);
+  $('cf-mc').innerHTML=`<table><colgroup><col style="width:40%"><col style="width:20%"><col></colgroup><thead><tr><th>${L('호기','Máquina')}</th><th class="c">${L('사용','Activa')}</th><th class="c">${L('관리','Acción')}</th></tr></thead><tbody>
+    ${S.mc.map(m=>`<tr class="${m.active?'':'off'}"><td><span class="mc-tag">${esc(m.mc)}</span></td><td class="c"><input type="checkbox" ${m.active?'checked':''} onchange="cfToggle('${esc(m.mc)}',this.checked)"></td><td class="c"><button class="pbtn" onclick="cfDelMc('${esc(m.mc)}')">${L('삭제','Borrar')}</button></td></tr>`).join('')}</tbody></table>`;
+  const grpN={prod:L('가공생산팀','Prod. maquinado'),ext:L('생산외 수거','Recolección externa')};
+  const sw=S.ratio.reduce((s,c)=>s+(+c.wire_pct||0),0),st=S.ratio.reduce((s,c)=>s+(+c.term_pct||0),0),ss=S.ratio.reduce((s,c)=>s+(+c.scrap_pct||0),0);
+  $('cf-ratio').innerHTML=`<table><colgroup><col style="width:22%"><col style="width:24%"><col><col><col><col style="width:70px"></colgroup><thead><tr><th>${L('구분','Grupo')}</th><th>${L('부산물 종류','Tipo')}</th><th class="n">Wire %</th><th class="n">Terminal %</th><th class="n">Scrap %</th><th class="c"></th></tr></thead><tbody>
+    ${S.ratio.map(c=>`<tr><td><span class="cat-grp ${c.grp}">${grpN[c.grp]||c.grp}</span></td><td class="b">${esc(c.cat)}</td>
+      <td><input class="cell" type="number" step="0.1" min="0" max="100" data-cat="${esc(c.cat)}" data-k="wire_pct" value="${+c.wire_pct||''}" oninput="cfChg()"></td>
+      <td><input class="cell" type="number" step="0.1" min="0" max="100" data-cat="${esc(c.cat)}" data-k="term_pct" value="${+c.term_pct||''}" oninput="cfChg()"></td>
+      <td><input class="cell" type="number" step="0.1" min="0" max="100" data-cat="${esc(c.cat)}" data-k="scrap_pct" value="${+c.scrap_pct||''}" oninput="cfChg()"></td>
+      <td class="c"><button class="pbtn" onclick="cfDelCat('${esc(c.cat)}')">✕</button></td></tr>`).join('')}
+    <tr><td><select id="cf-newgrp" style="height:32px;font-size:13px;width:100%"><option value="prod">${grpN.prod}</option><option value="ext">${grpN.ext}</option></select></td><td><input class="cell tx" id="cf-newcat" placeholder="${L('새 종류 이름','Nuevo tipo')}"></td><td colspan="3" class="mini">${L('종류 추가 후 비율을 입력하고 저장','Agregue y luego guarde')}</td><td class="c"><button class="pbtn" onclick="cfAddCat()">+</button></td></tr></tbody>
+    <tfoot><tr><td colspan="2">${L('합계','Total')}</td><td class="n" id="cf-sw">${pct(sw)}</td><td class="n" id="cf-st">${pct(st)}</td><td class="n" id="cf-ss">${pct(ss)}</td><td></td></tr></tfoot></table>`;
+  cfChg();
+}
+function cfChg(){
+  const sum=k=>{let s=0;document.querySelectorAll(`#cf-ratio input[data-k="${k}"]`).forEach(i=>s+=parseFloat(i.value)||0);return s};
+  [['cf-sw','wire_pct'],['cf-st','term_pct'],['cf-ss','scrap_pct']].forEach(([id,k])=>{const s=sum(k);const e=$(id);if(e){e.textContent=pct(s);e.className='n '+(Math.abs(s-100)<.01?'sum-ok':'sum-bad')}});
+}
+async function cfToggle(mc,on){try{await sbPatch('byp_machine',`plant=eq.${PLANT}&mc=eq.${encodeURIComponent(mc)}`,{active:on});const m=S.mc.find(x=>x.mc===mc);if(m)m.active=on;cfRender();inRender()}catch(e){toast(e.message,true)}}
+async function cfAddMc(){
+  const mc=$('cf-newmc').value.trim().toUpperCase();if(!mc)return;if(S.mc.some(m=>m.mc===mc)){toast(L('이미 있는 호기입니다','Ya existe'),true);return}
+  try{const ord=(Math.max(0,...S.mc.map(m=>m.ord||0))+1);await sbUpsert('byp_machine',[{plant:PLANT,mc,ord,active:true}],'plant,mc');S.mc.push({plant:PLANT,mc,ord,active:true});$('cf-newmc').value='';cfRender();inRender();toast(L('호기 추가','Agregada'))}catch(e){toast(e.message,true)}
+}
+async function cfDelMc(mc){
+  if(!confirm(L(`${mc} 호기를 목록에서 삭제할까요? (기존 측정 데이터는 유지됩니다)`,`¿Borrar ${mc}? Los datos se conservan.`)))return;
+  try{await sbDel('byp_machine',`plant=eq.${PLANT}&mc=eq.${encodeURIComponent(mc)}`);S.mc=S.mc.filter(m=>m.mc!==mc);cfRender();inRender()}catch(e){toast(e.message,true)}
+}
+async function cfAddCat(){
+  const cat=$('cf-newcat').value.trim(),grp=$('cf-newgrp').value;if(!cat)return;if(S.ratio.some(c=>c.cat===cat)){toast(L('이미 있는 종류입니다','Ya existe'),true);return}
+  try{const ord=Math.max(0,...S.ratio.map(c=>c.ord||0))+1;const row={plant:PLANT,cat,grp,ord,wire_pct:0,term_pct:0,scrap_pct:0};await sbUpsert('byp_ratio',[row],'plant,cat');S.ratio.push(row);cfRender()}catch(e){toast(e.message,true)}
+}
+async function cfDelCat(cat){
+  if(!confirm(L(`「${cat}」 종류를 삭제할까요?`,`¿Borrar «${cat}»?`)))return;
+  try{await sbDel('byp_ratio',`plant=eq.${PLANT}&cat=eq.${encodeURIComponent(cat)}`);S.ratio=S.ratio.filter(c=>c.cat!==cat);cfRender();RS.data=null}catch(e){toast(e.message,true)}
+}
+async function cfSaveRatio(){
+  const rows=S.ratio.map(c=>{const g=k=>{const i=document.querySelector(`#cf-ratio input[data-cat="${CSS.escape(c.cat)}"][data-k="${k}"]`);return i?(parseFloat(i.value)||0):(+c[k]||0)};return {plant:PLANT,cat:c.cat,grp:c.grp,ord:c.ord,wire_pct:g('wire_pct'),term_pct:g('term_pct'),scrap_pct:g('scrap_pct')}});
+  load(true);try{await sbUpsert('byp_ratio',rows,'plant,cat');S.ratio=rows;RS.data=null;toast(L('비율 저장 완료','Ratios guardados'));cfRender()}catch(e){toast(e.message,true)}finally{load(false)}
+}
+
+/* ═══════════ init ═══════════ */
+(async function(){
+  $('in-date').value=today();$('rs-month').value=today().slice(0,7);
+  $('rs-from').value=today().slice(0,8)+'01';$('rs-to').value=today();
+  $('us-from').value=today().slice(0,8)+'01';$('us-to').value=today();
+  load(true);
+  try{await loadBase()}catch(e){toast(e.message,true)}finally{load(false)}
+  applyLang();await inLoad();
+})();
+</script>
+</body>
+</html>
