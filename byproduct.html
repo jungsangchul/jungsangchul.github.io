@@ -1122,15 +1122,16 @@ function rsMcBar(C){
 function loadExcelJS(){if(window.ExcelJS)return Promise.resolve();return new Promise((ok,ng)=>{const s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js';s.onload=ok;s.onerror=()=>ng(new Error(L('엑셀 모듈을 불러오지 못했습니다','No se pudo cargar Excel')));document.head.appendChild(s)})}
 /* 공통 엑셀 시트 빌더 */
 function xlSheet(wb,sub,name,title,heads,rows,widths,fmts,foot){
-  const HF={type:'pattern',pattern:'solid',fgColor:{argb:'FF1F2937'}},HFont={bold:true,color:{argb:'FFFFFFFF'},size:10};
-  const TF={type:'pattern',pattern:'solid',fgColor:{argb:'FFFFF2CC'}};
-  const thin={style:'thin',color:{argb:'FFBFBFBF'}},BD={top:thin,left:thin,bottom:thin,right:thin};
-  const ws=wb.addWorksheet(name,{views:[{state:'frozen',ySplit:4}]});
-  ws.mergeCells(1,1,1,heads.length);const t=ws.getCell(1,1);t.value=title;t.font={bold:true,size:14,color:{argb:'FF1F2937'}};
-  ws.mergeCells(2,1,2,heads.length);ws.getCell(2,1).value=`YURA HARNESS MÉXICO · ${L('멕시코 '+PLANT+'공장','México Planta '+PLANT)} · ${sub}`;ws.getCell(2,1).font={size:9,color:{argb:'FF7B8494'}};
-  ws.getRow(4).values=heads;ws.getRow(4).eachCell(c=>{c.fill=HF;c.font=HFont;c.alignment={horizontal:'center',vertical:'middle',wrapText:true};c.border=BD});ws.getRow(4).height=22;
-  rows.forEach(r=>{const row=ws.addRow(r);row.eachCell((c,i)=>{c.border=BD;c.font={size:10};if(fmts[i-1])c.numFmt=fmts[i-1]})});
-  if(foot){const row=ws.addRow(foot);row.eachCell((c,i)=>{c.border=BD;c.fill=TF;c.font={bold:true,size:10};if(fmts[i-1])c.numFmt=fmts[i-1]})}
+  const HF={type:'pattern',pattern:'solid',fgColor:{argb:'FF1E293B'}},HFont={bold:true,color:{argb:'FFFFFFFF'},size:10,name:'Calibri'};
+  const TF={type:'pattern',pattern:'solid',fgColor:{argb:'FFFEF3C7'}},ZF={type:'pattern',pattern:'solid',fgColor:{argb:'FFF8FAFC'}};
+  const thin={style:'thin',color:{argb:'FFD1D5DB'}},BD={top:thin,left:thin,bottom:thin,right:thin};
+  const ws=wb.addWorksheet(name,{views:[{state:'frozen',ySplit:4,showGridLines:false}]});
+  ws.mergeCells(1,1,1,heads.length);const t=ws.getCell(1,1);t.value=title;t.font={bold:true,size:15,color:{argb:'FF111827'},name:'Calibri'};ws.getRow(1).height=26;
+  ws.mergeCells(2,1,2,heads.length);ws.getCell(2,1).value=`YURA HARNESS MÉXICO · ${L('멕시코 '+PLANT+'공장','México Planta '+PLANT)} · ${sub}`;ws.getCell(2,1).font={size:9,color:{argb:'FF6B7280'},name:'Calibri'};
+  ws.getRow(3).height=6;
+  ws.getRow(4).values=heads;ws.getRow(4).eachCell(c=>{c.fill=HF;c.font=HFont;c.alignment={horizontal:'center',vertical:'middle',wrapText:true};c.border=BD});ws.getRow(4).height=24;
+  rows.forEach((r,ri)=>{const row=ws.addRow(r);row.eachCell({includeEmpty:true},(c,i)=>{c.border=BD;c.font={size:10,name:'Calibri'};if(ri%2)c.fill=ZF;if(fmts[i-1])c.numFmt=fmts[i-1];c.alignment={vertical:'middle'}});row.height=18});
+  if(foot){const row=ws.addRow(foot);row.eachCell({includeEmpty:true},(c,i)=>{c.border=BD;c.fill=TF;c.font={bold:true,size:10,name:'Calibri'};if(fmts[i-1])c.numFmt=fmts[i-1];c.alignment={vertical:'middle'}});row.height=20}
   widths.forEach((w,i)=>ws.getColumn(i+1).width=w);
   ws.pageSetup={orientation:'landscape',fitToPage:true,fitToWidth:1,fitToHeight:0,paperSize:9,printTitlesRow:'4:4'};
   return ws;
@@ -1495,24 +1496,68 @@ async function lrExcel(){
   try{
     await loadExcelJS();const D=LR.data;const wb=new ExcelJS.Workbook();wb.creator='YURA HARNESS MÉXICO';
     const mm=+D.ym.slice(5);const sub=`${D.d} · ${L(mm+'월 누적','acum. mes '+mm)} ${D.P.mtd[0]}~${D.d} · ${L('전월','mes ant.')} ${D.pym}`;
+    const {day,mtd,prev}=C;const ymL=`${D.ym.slice(0,4)}년 ${D.ym.slice(5)}월`;
+    /* ── 1시트: 보고서 (화면 양식 그대로 — 표① + 표② 같은 너비 A~I) ── */
+    const ws=wb.addWorksheet('일별보고',{views:[{showGridLines:false}],pageSetup:{orientation:'portrait',fitToPage:true,fitToWidth:1,fitToHeight:1,paperSize:9,horizontalCentered:true,margins:{left:.4,right:.4,top:.5,bottom:.5,header:.2,footer:.2}}});
+    const NAVY='FF1E293B',SLATE='FF334155',GOLD='FFB45309',LINE='FFD1D5DB',AMB='FFFEF3C7',AMB2='FFFDE68A',ZEB='FFF8FAFC',INK='FF111827',MUTE='FF6B7280';
+    const fill=c=>({type:'pattern',pattern:'solid',fgColor:{argb:c}});const thin={style:'thin',color:{argb:LINE}};const BD={top:thin,left:thin,bottom:thin,right:thin};
+    const med={style:'medium',color:{argb:SLATE}};
+    const F={font:(o={})=>({name:'Calibri',size:10,...o})};
+    [15,21,14,13,13,13,13,13,13].forEach((w,i)=>ws.getColumn(i+1).width=w);
+    let r=1;
+    const setRow=(cells,o={})=>{const row=ws.getRow(r);cells.forEach((v,i)=>{if(v===undefined)return;const c=row.getCell(i+1);c.value=v;});row.height=o.h||18;return row};
+    // 제목
+    ws.mergeCells(r,1,r,6);ws.getCell(r,1).value='Informe diario de residuos';ws.getCell(r,1).font=F.font({bold:true,size:20,color:{argb:INK}});ws.getCell(r,1).alignment={vertical:'middle'};
+    ws.mergeCells(r,7,r,9);ws.getCell(r,7).value=D.d;ws.getCell(r,7).font=F.font({bold:true,size:14,color:{argb:GOLD}});ws.getCell(r,7).alignment={horizontal:'right',vertical:'middle'};ws.getRow(r).height=30;r++;
+    ws.mergeCells(r,1,r,6);ws.getCell(r,1).value='일별 부산물 현황 보고';ws.getCell(r,1).font=F.font({size:11,color:{argb:GOLD},bold:true});
+    ws.mergeCells(r,7,r,9);ws.getCell(r,7).value=`YURA HARNESS MÉXICO · ${L('멕시코 '+PLANT+'공장','México Planta '+PLANT)}`;ws.getCell(r,7).font=F.font({size:9,color:{argb:MUTE}});ws.getCell(r,7).alignment={horizontal:'right'};r++;
+    ws.getRow(r).height=4;r++;
+    const secTitle=(es,ko)=>{ws.mergeCells(r,1,r,9);const c=ws.getCell(r,1);c.value={richText:[{text:'▪ '+es+'  ',font:F.font({bold:true,size:11,color:{argb:INK}})},{text:ko,font:F.font({size:10,color:{argb:GOLD},bold:true})}]};c.alignment={vertical:'middle'};c.border={bottom:med};ws.getRow(r).height=22;r++};
+    const hdr=(cells,merges,fillC)=>{const row=ws.getRow(r);row.height=34;for(let i=1;i<=9;i++){const c=row.getCell(i);c.fill=fill(fillC);c.border=BD;c.alignment={horizontal:'center',vertical:'middle',wrapText:true};c.font=F.font({bold:true,color:{argb:'FFFFFFFF'},size:9.5})}
+      cells.forEach((v,i)=>{if(v!=null)row.getCell(i+1).value=v});merges.forEach(([a,b])=>ws.mergeCells(r,a,r,b));r++};
+    const h2=(es,ko)=>({richText:[{text:es+'\n',font:F.font({bold:true,color:{argb:'FFFFFFFF'},size:9.5})},{text:ko,font:F.font({color:{argb:'FFFDE68A'},size:9})}]});
+    const dataRow=(cells,fmts,o={})=>{const row=ws.getRow(r);row.height=o.h||18;
+      for(let i=1;i<=9;i++){const c=row.getCell(i);c.border=BD;c.font=F.font({bold:!!o.bold,color:{argb:o.color||INK}});c.alignment={vertical:'middle',horizontal:i<=(o.labels||2)?'left':'right'};if(o.fill)c.fill=fill(o.fill);else if(o.zebra)c.fill=fill(ZEB);if(fmts[i-1])c.numFmt=fmts[i-1]}
+      cells.forEach((v,i)=>{if(v!==undefined)row.getCell(i+1).value=v});r++;return row};
+    // 표①
+    secTitle('Estado de generación de residuos','부산물 발생량 현황');
+    hdr([h2('Categoría','구분'),null,h2(D.d,'당일'),null,null,h2(ymL,'당월 누적 ('+D.P.mtd[0].slice(5)+'~'+D.d.slice(5)+')'),null,null,h2('Mes anterior','전월')],[[3,5],[6,8]],NAVY);
+    const top=r-1;
+    hdr([null,null,h2('Consumo','사용중량(kg)'),h2('Residuos generados','발생중량(kg)'),h2('Tasa de pérdida','로스율(%)'),h2('Consumo','사용중량(kg)'),h2('Residuos generados','발생중량(kg)'),h2('Tasa de pérdida','로스율(%)'),null],[],SLATE);
+    ws.mergeCells(top,1,top+1,1);ws.mergeCells(top,2,top+1,2);ws.mergeCells(top,9,top+1,9);ws.getCell(top,1).value=h2('Categoría','');ws.getCell(top,2).value=h2('구분','');ws.getCell(top,9).value=h2('Mes anterior','전월 로스율(%)');
+    const F1=[null,null,'#,##0.0','#,##0.0','0.00%','#,##0.0','#,##0.0','0.00%','0.00%'];
+    const g=(P,k)=>k==='sub'?P.sub:k==='all'?P.all:P.rows[k];
+    const line=(es,ko,k,o)=>dataRow([es,ko,g(day,k).use,g(day,k).gen,g(day,k).rate,g(mtd,k).use,g(mtd,k).gen,g(mtd,k).rate,g(prev,k).rate],F1,o);
+    line('WIRE','와이어','w');line("TER'",'터미널','t',{zebra:true});line('SEAL','방수씰','j');
+    line('Subtotal','소계','sub',{bold:true,fill:AMB});
+    dataRow(['Scrap','스크랩',null,day.scrap,null,null,mtd.scrap,null,null],F1,{zebra:true});
+    line('TOTAL','합계','all',{bold:true,fill:AMB2});
+    const avgD=mtd.days?mtd.all.gen/mtd.days:null;
+    ws.mergeCells(r,1,r,9);ws.getCell(r,1).value=`• Promedio diario del mes (당월 일평균) ${avgD!=null?num(avgD,1):'–'} kg · ${L('측정','pesaje')} ${mtd.days}${L('일','d')}   • Cortes (절단수량) ${L('당일','día')} ${day.cut?num(day.cut,0):'–'} / ${L('당월','mes')} ${mtd.cut?num(mtd.cut,0):'–'} ${L('본','pz')}   • Consumo 32040 ${L('당월','mes')} ${num(mtd.rows.w.qty,0)} m · ${num(mtd.rows.t.qty,0)} ea`;
+    ws.getCell(r,1).font=F.font({size:9,color:{argb:MUTE}});ws.getRow(r).height=16;r++;
+    ws.getRow(r).height=10;r++;
+    // 표②
+    secTitle('Generación por tipo de pérdida','로스유형별 발생현황');
+    hdr([h2('Tipo de Material',''),h2('Tipo de Pérdida',''),h2('로스종류',''),h2('Residuos generados','발생중량 (kg)'),null,h2('Participación','점유율'),null,h2('Mes anterior','전월 부산물 현황'),null],[[4,5],[6,7],[8,9]],NAVY);
+    const top2=r-1;
+    hdr([null,null,null,h2(D.d,'당일'),h2(ymL,'당월'),h2(D.d,'당일'),h2(ymL,'당월'),h2('Generado','발생량 (kg)'),h2('Participación','점유율')],[],SLATE);
+    [1,2,3].forEach(i=>{ws.mergeCells(top2,i,top2+1,i)});ws.getCell(top2,1).value=h2('Tipo de Material','');ws.getCell(top2,2).value=h2('Tipo de Pérdida','');ws.getCell(top2,3).value=h2('로스종류','');
+    const F2=[null,null,null,'#,##0.00','#,##0.00','0%','0%','#,##0.00','0%'];
+    const MAT={w:'WIRE',t:"TER'",j:'SEAL'};const esN=c=>{const k=String(c||'').replace(/\s+/g,'');return CAT_ES[k]||CAT_ES[k.replace(/\(.*\)$/,'')]||''};
+    ['w','t','j'].forEach((k,ki)=>{const rows=C.cats[k],dr=day.rows[k],mr=mtd.rows[k],pr=prev.rows[k];const r0=r;
+      rows.forEach((c,i)=>dataRow([i===0?MAT[k]:undefined,esN(c.cat)+(c.grp==='ext'?' (ext.)':''),c.cat,c.a,c.m,dr.gen>0?c.p:0,mr.gen>0?c.p:0,c.pv,pr.gen>0?c.p:0],F2,{labels:3,zebra:i%2===1}));
+      dataRow([rows.length?undefined:MAT[k],'Subtotal','소계',dr.gen,mr.gen,dr.gen>0?1:0,mr.gen>0?1:0,pr.gen,pr.gen>0?1:0],F2,{labels:3,bold:true,fill:AMB});
+      if(r-1>r0)ws.mergeCells(r0,1,r-1,1);const mc=ws.getCell(r0,1);mc.alignment={vertical:'top',horizontal:'left'};mc.font=F.font({bold:true,size:11,color:{argb:['FF0369A1','FFB45309','FF15803D'][ki]}});mc.fill=fill('FFF1F5F9');});
+    ws.mergeCells(r,1,r,9);ws.getCell(r,1).value=L('• 로스유형별 발생량 = 재질별 발생중량 × 「호기 · 종류비율 설정」 비율 (Wire/Terminal/Seal) · 스크랩은 점유율 대상 제외','• Generación por tipo = peso por material × ratios de «Máquinas · Ratios» · scrap excluido');ws.getCell(r,1).font=F.font({size:9,color:{argb:MUTE}});r++;
+    ws.pageSetup.printArea=`A1:I${r}`;
+    /* ── 2·3시트: 절단대비 · 일별 ── */
     const sheet=(...a)=>xlSheet(wb,sub,...a);
-    const {day,mtd,prev}=C;const P3=(k)=>[day,mtd,prev].flatMap(P=>{const r=k==='sub'?P.sub:k==='all'?P.all:P.rows[k];return [r.use,r.gen,r.rate]});
-    const H=[L('구분','Grupo')];[L('당일','Día')+' '+D.d,L(mm+'월 누적','Acum. '+mm),L('전월','Mes ant.')+' '+D.pym].forEach(p=>H.push(p+' '+L('사용중량','Uso kg'),p+' '+L('발생중량','Gen. kg'),p+' '+L('로스율','Tasa')));
-    const F=[null].concat([0,1,2].flatMap(()=>['#,##0.0','#,##0.0','0.00%']));
-    sheet('발생현황',L('부산물 발생현황 (로스율)','Generación de subproductos (tasa de pérdida)'),H,[
-      ['WIRE',...P3('w')],['TERMINAL',...P3('t')],['SEAL',...P3('j')],[L('소계','Subtotal'),...P3('sub')],
-      ['SCRAP',...[day,mtd,prev].flatMap(P=>[null,P.scrap,null])],[L('합계','Total'),...P3('all')]],[14,13,13,10,13,13,10,13,13,10],F);
-    const G3=get=>[day,mtd,prev].flatMap(P=>{const r=get(P);return [r.gen,r.gk]});const dG=(a,b)=>(a!=null&&b!=null)?a-b:null;
+    const G3=get=>[day,mtd,prev].flatMap(P=>{const x=get(P);return [x.gen,x.gk]});const dG=(a,b)=>(a!=null&&b!=null)?a-b:null;
     sheet('절단대비',L('절단수량 대비 발생현황 (g/1,000본)','Generación por cortes (g/1,000 pz)'),[L('구분','Grupo'),L('당일 발생 kg','Día kg'),L('당일 g/1,000본','Día g/1,000pz'),L('월누적 발생 kg','Acum. kg'),L('월누적 g/1,000본','Acum. g/1,000pz'),L('전월 발생 kg','Mes ant. kg'),L('전월 g/1,000본','Mes ant. g/1,000pz'),L('증감 g/1,000본','Dif.')],
       [[L('절단수량(본)','Cortes'),day.cut,null,mtd.cut,null,prev.cut,null,null],['WIRE',...G3(P=>P.rows.w),dG(mtd.rows.w.gk,prev.rows.w.gk)],['TERMINAL',...G3(P=>P.rows.t),dG(mtd.rows.t.gk,prev.rows.t.gk)],['SEAL',...G3(P=>P.rows.j),dG(mtd.rows.j.gk,prev.rows.j.gk)],[L('소계','Subtotal'),...G3(P=>P.sub),dG(mtd.sub.gk,prev.sub.gk)],['SCRAP',...G3(P=>({gen:P.scrap,gk:P.scrapGk})),dG(mtd.scrapGk,prev.scrapGk)],[L('합계','Total'),...G3(P=>P.all),dG(mtd.all.gk,prev.all.gk)]],
       [14,13,14,13,14,13,14,13],[null,'#,##0.0','#,##0','#,##0.0','#,##0','#,##0.0','#,##0','+#,##0;-#,##0']);
-    const KN={w:'WIRE',t:'TERMINAL',j:'SEAL'};const rows=[];
-    ['w','t','j'].forEach(k=>{C.cats[k].forEach(c=>rows.push([KN[k],c.grp==='prod'?L('가공생산팀','Prod. maquinado'):L('생산외 수거','Recolección externa'),catN(c.cat),c.a,c.m,day.rows[k].gen>0?c.p:0,mtd.rows[k].gen>0?c.p:0,c.pv,prev.rows[k].gen>0?c.p:0,c.diff,c.var]));
-      const dr=day.rows[k],mr=mtd.rows[k],pr=prev.rows[k];rows.push([KN[k],'',L('소계','Subtotal'),dr.gen,mr.gen,dr.gen>0?1:0,mr.gen>0?1:0,pr.gen,pr.gen>0?1:0,mr.gen-pr.gen,pr.gen>0?(mr.gen-pr.gen)/pr.gen:null])});
-    sheet('로스유형별',L('로스유형별 발생현황','Por tipo de pérdida'),[L('구분','Grupo'),L('팀','Equipo'),L('로스유형','Tipo'),L('당일 kg','Día kg'),L('월누적 kg','Acum. kg'),L('점유율 당일','Part. día'),L('점유율 월누적','Part. acum.'),L('전월 발생량','Mes ant. kg'),L('전월 점유율','Part. mes ant.'),L('증감 kg','Dif. kg'),L('증감율','Var.')],
-      rows,[11,13,16,11,11,11,11,12,12,11,10],[null,null,null,'#,##0.0','#,##0.0','0%','0%','#,##0.0','0%','+#,##0.0;-#,##0.0','+0%;-0%']);
     sheet('일별',L('일별 로스율','Tasa diaria'),['Date',L('절단수량','Cortes'),'Wire '+L('사용','uso'),'Wire '+L('발생','gen.'),'Wire %','Term '+L('사용','uso'),'Term '+L('발생','gen.'),'Term %','Seal '+L('사용','uso'),'Seal '+L('발생','gen.'),'Seal %','Scrap','Scrap g/1,000',L('합계 발생','Total gen.'),L('합계 로스율','Tasa total'),L('합계 g/1,000본','Total g/1,000')],
-      C.dailyRows.map(r=>[r.d,r.cut||null,r.rows.w.use,r.rows.w.gen,r.rows.w.rate,r.rows.t.use,r.rows.t.gen,r.rows.t.rate,r.rows.j.use,r.rows.j.gen,r.rows.j.rate,r.scrap,r.scrapGk,r.all.gen,r.all.rate,r.all.gk]),
+      C.dailyRows.map(x=>[x.d,x.cut||null,x.rows.w.use,x.rows.w.gen,x.rows.w.rate,x.rows.t.use,x.rows.t.gen,x.rows.t.rate,x.rows.j.use,x.rows.j.gen,x.rows.j.rate,x.scrap,x.scrapGk,x.all.gen,x.all.rate,x.all.gk]),
       [12,11,11,11,9,11,11,9,11,11,9,10,11,11,10,12],[null,'#,##0','#,##0.0','#,##0.0','0.00%','#,##0.0','#,##0.0','0.00%','#,##0.0','#,##0.0','0.00%','#,##0.0','#,##0','#,##0.0','0.00%','#,##0'],
       [L('월누적','Acum.'),mtd.cut||null,mtd.rows.w.use,mtd.rows.w.gen,mtd.rows.w.rate,mtd.rows.t.use,mtd.rows.t.gen,mtd.rows.t.rate,mtd.rows.j.use,mtd.rows.j.gen,mtd.rows.j.rate,mtd.scrap,mtd.scrapGk,mtd.all.gen,mtd.all.rate,mtd.all.gk]);
     const buf=await wb.xlsx.writeBuffer();const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([buf]));a.download=`부산물현황보고_P${PLANT}_${D.d}.xlsx`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),3000);
