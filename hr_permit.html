@@ -918,6 +918,16 @@ function renderFormFields(){
   renderThumbs('f_');
 }
 function val(id){const e=document.getElementById(id);return e?e.value.trim():'';}
+
+/* ================= 경고장 발급자 표기 규칙 =================
+   루이스(Luis Alberto)가 경고장을 발행해도 발급자(작성자)는 관리자 Mario 로 표기·저장 */
+const AMON_REQ_ALIAS=[{match:/^\s*luis\s*alberto/i, show:'Mario'}];
+function aliasRequester(formType,name){
+  if(formType!=='amonestacion')return name;
+  for(const a of AMON_REQ_ALIAS){if(a.match.test(name||''))return a.show;}
+  return name;
+}
+function dispRequester(r){return aliasRequester(r.form_type,r.requester)||'-';}
 function checked(name){return [...document.querySelectorAll(`[name=${name}]:checked`)].map(c=>c.value);}
 
 /* ================= ① 신청: 제출 ================= */
@@ -931,7 +941,7 @@ async function submitForm(){
   try{
     await sb(PERMIT_TABLE,{method:'POST',body:{
       form_type:selType,employee_id:selEmp.employee_id,employee_name:selEmp.name,
-      team:selEmp.team||'',factory:FACTORY,form_data:d,requester:req,status:'pending'
+      team:selEmp.team||'',factory:FACTORY,form_data:d,requester:aliasRequester(selType,req),status:'pending'
     }});
     toast('✅ 신청 완료! 팀 승인 대기 / Enviado. Pendiente de equipo');
     selType=null;clearEmp();renderTypeGrid();
@@ -975,7 +985,7 @@ async function loadTeamPending(){
           <span class="nm">${FORM_TYPES[r.form_type]?.icon||''} ${fname(r.form_type)}</span>
           <span class="badge b-pending">${STATUS_LABEL.pending}</span>
         </div>
-        <div class="meta"><b>${r.employee_id}</b> ${r.employee_name} · ${(r.created_at||'').slice(0,10)} · 작성: ${r.requester||'-'}</div>
+        <div class="meta"><b>${r.employee_id}</b> ${r.employee_name} · ${(r.created_at||'').slice(0,10)} · 작성: ${dispRequester(r)}</div>
       </div>`).join('');
     window._teamPendRows=rows;
   }catch(err){toast('목록 오류 / Error: '+err.message);}
@@ -1054,7 +1064,7 @@ function openDetailFrom(src,i){
     <dt>사번 / No.</dt><dd>${r.employee_id}</dd>
     <dt>이름 / Nombre</dt><dd>${r.employee_name}</dd>
     <dt>팀 / Depto</dt><dd>${r.team||'-'}</dd>
-    <dt>작성자 / Solicitante</dt><dd>${r.requester||'-'}</dd>`;
+    <dt>작성자 / Solicitante</dt><dd>${dispRequester(r)}</dd>`;
   Object.entries(r.form_data||{}).forEach(([k,v])=>{
     if(k==='photos')return; // 사진은 아래에서 썸네일로
     if(v===''||v==null||(Array.isArray(v)&&!v.length))return;
@@ -1170,7 +1180,7 @@ function downloadExcel(){
       const base={
         '신청일 Fecha':(r.created_at||'').replace('T',' ').slice(0,16),
         '사번 No.Emp':r.employee_id,'이름 Nombre':r.employee_name,
-        '팀 Depto':r.team||'','작성자 Solicitante':r.requester||'',
+        '팀 Depto':r.team||'','작성자 Solicitante':dispRequester(r),
       };
       Object.entries(r.form_data||{}).forEach(([k,v])=>{
         const lb=FD_LABELS[k]||[k,k];
