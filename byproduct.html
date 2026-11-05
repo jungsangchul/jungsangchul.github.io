@@ -473,6 +473,7 @@ table.cfg input{width:17px;height:17px}
           <button class="btn sec" onclick="inShift(1)">›</button>
           <button class="btn sec" onclick="inToday()" data-t="today">오늘</button>
           <span class="dow" id="in-dow"></span>
+          <button class="btn sec" onclick="inRefresh()" title="서버에서 다시 불러오기">↻ <span data-t="refresh">새로고침</span></button>
           <label class="f" style="margin-left:10px"><span data-t="cut_qty">절단수량 (본)</span><input type="number" id="in-cut" min="0" step="1" inputmode="numeric" style="width:160px;text-align:right;font-family:var(--mono);font-weight:700;color:var(--ac2)" placeholder="0" oninput="IN.dirty=true;inKpi(inTotals(true))"></label>
         </div>
         <div class="row" style="align-items:center">
@@ -866,6 +867,9 @@ function renderAll(){inRender();cfRender();if(RS.data)rsRender();if(LR.data)lrRe
 
 /* ═══════════ ① 입력 ═══════════ */
 const IN={date:today(),rows:{},photos:{},dirty:false,cut:null};
+async function inRefresh(){if(IN.dirty&&!confirm(L('저장하지 않은 입력이 있습니다. 서버 데이터로 다시 불러올까요? (입력값은 사라집니다)','Hay cambios sin guardar. ¿Recargar desde el servidor?')))return;await inLoad();toast(L('서버 데이터로 갱신','Actualizado desde el servidor'))}
+/* 다른 장치에서 저장한 내용 반영: 탭이 다시 보일 때(앱 전환·화면 켜짐) 미저장 변경이 없으면 자동 재조회 */
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState!=='visible')return;const t=document.querySelector('nav.tabs button.on')?.dataset.tab;if(t==='in'&&!IN.dirty&&IN.fetchedAt&&Date.now()-IN.fetchedAt>30000)inLoad()});
 async function inLoad(){
   IN.date=$('in-date').value||today();$('in-date').value=IN.date;
   const d=new Date(IN.date+'T00:00:00');$('in-dow').textContent=(curLang==='es'?DOWES:DOW)[d.getDay()];
@@ -876,7 +880,7 @@ async function inLoad(){
       sbGet(`byp_photo?plant=eq.${PLANT}&d=eq.${IN.date}&select=id,mc,kind`),
       sbGet(`byp_cut?plant=eq.${PLANT}&d=eq.${IN.date}&select=qty`)]);
     IN.cut=cut.length?(Number(cut[0].qty)||0):null;$('in-cut').value=IN.cut!=null&&IN.cut>0?IN.cut:'';
-    IN.rows={};rows.forEach(r=>IN.rows[r.mc]=r);
+    IN.rows={};rows.forEach(r=>IN.rows[r.mc]=r);IN.fetchedAt=new Date();IN.dirty=false;
     IN.photos={};ph.forEach(p=>{(IN.photos[p.mc]=IN.photos[p.mc]||[]).push(p)});
     const w=rows.find(r=>r.worker);$('in-worker').value=w?w.worker:($('in-worker').value||'');
     IN.dirty=false;inRender();
@@ -920,7 +924,8 @@ function inRender(){
       <tr class="ft-a"><td class="fl">${L('일괄 측정','Pesaje total')}</td>${KINDS.map(([k,n])=>`<td class="n" data-l="${n}" id="in-fa-${k}"></td>`).join('')}<td class="n" data-l="${L('합계','Total')}" id="in-fa-a"></td><td class="e"></td><td class="e"></td><td class="e"></td></tr>
       <tr class="ft-d"><td class="fl">${L('차이','Dif.')} <span class="mini">${L('일괄−호기별','total−Σ')}</span></td>${KINDS.map(([k,n])=>`<td class="n" data-l="${n}" id="in-fd-${k}"></td>`).join('')}<td class="n" data-l="${L('합계','Total')}" id="in-fd-a"></td><td colspan="3" class="mini msg" id="in-fd-msg"></td></tr>
     </tfoot></table>`;
-  $('in-cnt').textContent=L(`입력 ${cnt}개 호기 · 전체 ${all.length-1}호기`,`${cnt} máquinas con datos · ${all.length-1} total`);
+  const ft=IN.fetchedAt?IN.fetchedAt.toTimeString().slice(0,5):'';
+  $('in-cnt').textContent=L(`입력 ${cnt}개 호기 · 전체 ${all.length-1}호기 · 서버 조회 ${ft}`,`${cnt} máquinas con datos · ${all.length-1} total · servidor ${ft}`);
   inFoot(inTotals(false));
 }
 function inFoot(T){
