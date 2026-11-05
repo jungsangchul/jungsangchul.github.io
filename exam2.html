@@ -23,6 +23,7 @@ select,input{width:100%;background:var(--s2);border:1px solid var(--br);border-r
 #directInputWrap{display:none;}
 .btn-start{display:block;width:100%;background:linear-gradient(135deg,#4a90d9,#3a7bc8);color:#fff;border:none;border-radius:12px;padding:1rem;font-size:1.05rem;font-weight:700;cursor:pointer;margin-top:0.5rem;-webkit-appearance:none;}
 .btn-start:active{opacity:0.85;}
+.btn-start:disabled{opacity:0.6;}
 .hdr{background:var(--s);border-bottom:1px solid var(--br);padding:0.8rem 1rem;width:100%;display:-webkit-flex;display:flex;-webkit-justify-content:space-between;justify-content:space-between;-webkit-align-items:center;align-items:center;position:-webkit-sticky;position:sticky;top:0;z-index:100;}
 .hdr-u{font-size:0.78rem;color:var(--t2);}
 .hdr-u strong{color:var(--sky);}
@@ -51,20 +52,26 @@ select,input{width:100%;background:var(--s2);border:1px solid var(--br);border-r
 .btn-prev{background:var(--s2);color:var(--t2);}
 .btn-next{background:linear-gradient(135deg,#4a90d9,#3a7bc8);color:#fff;}
 .btn-submit{background:linear-gradient(135deg,#2ecc71,#27ae60);color:#fff;}
+.btn-submit:disabled{opacity:0.5;}
 .done-card{background:var(--s);border:1px solid var(--br);border-radius:16px;padding:2rem 1.5rem;width:100%;max-width:420px;text-align:center;}
 .done-title{font-size:1.3rem;font-weight:800;color:var(--green);margin-bottom:0.5rem;}
+.done-title.err{color:var(--red);}
 .done-msg{font-size:0.85rem;color:var(--t2);line-height:1.7;white-space:pre-line;}
+.btn-retry{display:none;width:100%;margin-top:1.2rem;background:linear-gradient(135deg,#e8b84b,#d4a033);color:#1a1d27;border:none;border-radius:12px;padding:0.9rem;font-size:1rem;font-weight:800;cursor:pointer;-webkit-appearance:none;}
+.btn-retry:active{opacity:0.85;}
+#pendingBar{display:none;background:rgba(232,184,75,0.12);border:1px solid rgba(232,184,75,0.4);border-radius:8px;padding:0.55rem 0.8rem;margin-bottom:0.9rem;font-size:0.78rem;color:var(--gold);line-height:1.5;}
 </style></head><body>
-  <div class="card"><div class="ttl">와이어링 하네스 기초 평가</div>
-  <div class="sub">2026-06-07 | 60분 | 4문항</div>
-  <div class="tags"><span class="tag">❓ 4문항</span><span class="tag">🎯 60점 합격</span><span class="tag">⏱ 60분</span></div>
-  <label>사번</label>
+<div id="startScreen" class="screen active">
+  <div class="card"><div class="ttl" id="examTitle">와이어링 하네스 기초 평가</div>
+  <div class="sub" id="examSub">60분 | 문항 수 로딩 중...</div>
+  <div class="tags"><span class="tag" id="tagQ">❓ -문항</span><span class="tag" id="tagPass">🎯 60점 합격</span><span class="tag" id="tagDur">⏱ 60분</span></div>
+  <div id="pendingBar"></div>
+  <label>사번 / N° Empleado</label>
   <select id="empIdSelect"><option value="">-- 선택 / Select --</option>
-<option value="0">0400223519 - 정상철 (수동압착공정)</option><option value="1">223232323 - 홍길동 (압착공정)</option><option value="2">사번/N°Emp - 이름/Nombre (공정명(KR))</option><option value="3">MX-00001 - 홍길동 (압착공정)</option><option value="4">MX-00002 - María García (후공정)</option><option value="5">2541 - 텀블러 (자동절단)</option>
   <option value="__direct__">직접 입력</option></select>
   <div id="directInputWrap">
-    <label>사번</label><input type="text" id="directEmpId" placeholder="사번 직접 입력" autocomplete="off">
-    <label>이름</label><input type="text" id="directName" placeholder="이름 직접 입력" autocomplete="off">
+    <label>사번 / N° Empleado</label><input type="text" id="directEmpId" placeholder="사번 직접 입력" autocomplete="off">
+    <label>이름 / Nombre</label><input type="text" id="directName" placeholder="이름 직접 입력" autocomplete="off">
   </div>
   <div id="selectedInfo"><span id="infoText"></span></div>
   <button type="button" id="startBtn" class="btn-start">시험 시작</button>
@@ -87,7 +94,8 @@ select,input{width:100%;background:var(--s2);border:1px solid var(--br);border-r
   <div id="doneIcon" style="font-size:3rem;transition:all 0.3s">⏳</div>
   <div class="done-title" id="doneTitle">전송 중...</div>
   <div class="done-msg" id="doneMsg">서버에 저장 중...</div>
-  <div style="margin-top:1rem;font-size:0.8rem;color:var(--t2)" id="doneDetail"></div>
+  <div style="margin-top:1rem;font-size:0.8rem;color:var(--t2);line-height:1.6" id="doneDetail"></div>
+  <button type="button" id="retryBtn" class="btn-retry">🔄 다시 전송 / Reintentar</button>
   </div>
 </div>
 <div id="imgZoomOverlay" onclick="closeImgZoom()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.93);z-index:9999;align-items:center;justify-content:center;-webkit-align-items:center;-webkit-justify-content:center">  <img id="imgZoomImg" style="max-width:95vw;max-height:92vh;-webkit-max-width:95vw;-webkit-max-height:92vh;object-fit:contain;border-radius:8px">  <div onclick="closeImgZoom()" style="position:fixed;top:14px;right:18px;color:#fff;font-size:2.2rem;cursor:pointer;line-height:1;text-shadow:0 2px 8px #000">✕</div></div><script>var ORIG=[];
@@ -95,17 +103,29 @@ var Q=[];
 var S=[];
 var SB_URL="https://lrjurjhavlalhlwaplxd.supabase.co";
 var SB_ANON="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxyanVyamhhdmxhbGhsd2FwbHhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNzUxNDAsImV4cCI6MjA5NTY1MTE0MH0.DVFmZaT37R9CXSMHdnLx4YAVNTnlBGijkOIaoUo7Qsk";
+/* ===== 공장별 설정 (1공장: SFX="" / 2공장: SFX="_2") ===== */
+var SFX="_2";
+var PLANT="2";
+var PROXY_URL="https://script.google.com/macros/s/AKfycbxfIynEAynWKzLK4ampLkUen3YPSan4itiR_-V12eDObsPw5bUMxP5R_csJWZLuAO-8pQ/exec";
+/* ======================================================== */
+var TBL_Q="exam_questions"+SFX, TBL_S="exam_students"+SFX, TBL_R="exam_results"+SFX, TBL_C="exam_config"+SFX;
+var PENDING_KEY="exam_pending_p"+PLANT;
+var MAX_RETRY=5;
 var DUR=60*60;
 var PASS=60;
+var THEORY_PCT=30;
 var TITLE="와이어링 하네스 기초 평가";
-var T={"title":"와이어링 하네스 기초 평가","empId":"사번","name":"이름","start":"시험 시작","prev":"◀ 이전","next":"다음 ▶","submit":"📥 제출 및 저장","saved":"저장 완료!","savedMsg":"답안 파일이 저장되었습니다.\n담당자에게 전송해주세요.","chooseFirst":"사번을 선택해주세요.","unanswered":"미답변 문항이 있습니다. 제출하시겠습니까?","question":"문항","of":"/","timeUp":"시간 종료! 자동 제출됩니다.","timerWarn":"5분 남았습니다!","notSelected":"직접 입력","direct_empId":"사번 직접 입력","direct_name":"이름 직접 입력","isEs":false,"isBoth":true,"minLabel":"분","qLabel":"문항","passLabel":"점 합격","selectPlaceholder":"-- 선택 / Select --"};
-var PROXY_URL="https://script.google.com/macros/s/AKfycbxfIynEAynWKzLK4ampLkUen3YPSan4itiR_-V12eDObsPw5bUMxP5R_csJWZLuAO-8pQ/exec";
+var T={"title":"와이어링 하네스 기초 평가","empId":"사번","name":"이름","start":"시험 시작","prev":"◀ 이전","next":"다음 ▶","submit":"📥 제출 및 저장","chooseFirst":"사번을 선택해주세요.\nSeleccione su número de empleado.","unanswered":"미답변 문항이 있습니다. 제출하시겠습니까?\nHay preguntas sin responder. ¿Desea enviar?","question":"문항","of":"/","timeUp":"시간 종료! 자동 제출됩니다.\n¡Tiempo terminado! Se enviará automáticamente.","timerWarn":"5분 남았습니다!\n¡Quedan 5 minutos!","notSelected":"직접 입력","isEs":false,"isBoth":true,"selectPlaceholder":"-- 선택 / Select --"};
 var user={empId:"",name:"",process:""};
 var ans=[];
 var cur=0;
 var tsec=0;
 var tiv=null;
+var submitting=false;
+var lastPending=null;
 function id(x){return document.getElementById(x);}
+function esc(v){return String(v==null?"":v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
+function delay(ms){return new Promise(function(r){setTimeout(r,ms);});}
 function shuffleQuestions(arr){
   var a=arr.slice();
   for(var i=a.length-1;i>0;i--){
@@ -117,22 +137,61 @@ function shuffleQuestions(arr){
 document.addEventListener("DOMContentLoaded",function(){
   id("empIdSelect").addEventListener("change",onSel);
   id("startBtn").addEventListener("click",doStart);
+  id("retryBtn").addEventListener("click",function(){if(lastPending)sendResult(lastPending);});
   loadFromSupabase();
+  resendPending();
 });
+/* ---------- Supabase REST ---------- */
+function sbHeaders(extra){
+  var h={"apikey":SB_ANON,"Authorization":"Bearer "+SB_ANON,"Content-Type":"application/json"};
+  if(extra)for(var k in extra)h[k]=extra[k];
+  return h;
+}
 function sbGet(path){
-  return fetch(SB_URL+"/rest/v1/"+path,{
-    headers:{"apikey":SB_ANON,"Authorization":"Bearer "+SB_ANON}
-  }).then(function(r){return r.json();});
+  return fetch(SB_URL+"/rest/v1/"+path,{headers:sbHeaders(),cache:"no-store"}).then(function(r){
+    if(!r.ok)return r.text().then(function(t){throw new Error("HTTP "+r.status+" "+t.slice(0,120));});
+    return r.json();
+  });
+}
+function sbInsert(table,row){
+  return fetch(SB_URL+"/rest/v1/"+table,{
+    method:"POST",headers:sbHeaders({"Prefer":"return=minimal"}),body:JSON.stringify(row)
+  }).then(function(r){
+    if(r.ok||r.status===201||r.status===204)return true;
+    return r.text().then(function(t){throw new Error("HTTP "+r.status+" "+t.slice(0,160));});
+  });
+}
+function sbExists(table,empId,ts){
+  return sbGet(table+"?select=id&emp_id=eq."+encodeURIComponent(empId)+"&timestamp=eq."+ts+"&limit=1")
+    .then(function(rows){return Array.isArray(rows)&&rows.length>0;});
+}
+/* ---------- 초기 로딩 ---------- */
+function applyConfig(cfg){
+  if(!Array.isArray(cfg))return;
+  var m={};cfg.forEach(function(c){if(c&&c.key)m[c.key]=c.value;});
+  var n;
+  if(m.passingScore!=null&&!isNaN(n=parseFloat(m.passingScore))&&n>0)PASS=n;
+  if(m.examDuration!=null&&!isNaN(n=parseFloat(m.examDuration))&&n>0)DUR=Math.round(n*60);
+  if(m.theoryPct!=null&&!isNaN(n=parseFloat(m.theoryPct))&&n>0)THEORY_PCT=n;
+  if(m.examTitle&&String(m.examTitle).trim()){TITLE=String(m.examTitle).trim();id("examTitle").textContent=TITLE;document.title=TITLE;}
+  id("tagPass").textContent="🎯 "+PASS+"점 합격";
+  id("tagDur").textContent="⏱ "+Math.round(DUR/60)+"분";
+}
+function refreshHeader(){
+  id("tagQ").textContent="❓ "+ORIG.length+"문항";
+  id("examSub").textContent=Math.round(DUR/60)+"분 | "+ORIG.length+"문항 | "+PASS+"점 합격";
 }
 function loadFromSupabase(){
   id("startBtn").disabled=true;
-  id("startBtn").textContent="데이터 로딩 중...";
+  id("startBtn").textContent="데이터 로딩 중... / Cargando...";
   Promise.all([
-    sbGet("exam_questions_2?select=id,text,text_es,opts,opts_es,ans,sort_order,img&order=sort_order.asc,id.asc"),
-    sbGet("exam_students_2?select=id,emp_id,name,process,process_es,hire_date&order=name.asc")
+    sbGet(TBL_Q+"?select=id,text,text_es,opts,opts_es,ans,sort_order,img&order=sort_order.asc,id.asc"),
+    sbGet(TBL_S+"?select=id,emp_id,name,process,process_es,hire_date&order=name.asc"),
+    sbGet(TBL_C+"?select=key,value&key=in.(passingScore,examDuration,theoryPct,examTitle)").catch(function(){return [];})
   ]).then(function(results){
     var qs=results[0];
     var ss=results[1];
+    applyConfig(results[2]);
     if(Array.isArray(qs)&&qs.length>0){
       ORIG=qs.map(function(q,i){
         return {text:q.text||"",textEs:q.text_es||"",opts:q.opts||[],optsEs:q.opts_es||[],ans:q.ans||1,idx:i,img:q.img||""};
@@ -141,7 +200,7 @@ function loadFromSupabase(){
     }
     if(Array.isArray(ss)&&ss.length>0){
       S=ss.map(function(s){
-        return {name:s.name||"",empId:s.emp_id||"",process:s.process||"",processEs:s.process_es||"",hireDate:s.hire_date||"",_sbId:s.id};
+        return {name:s.name||"",empId:String(s.emp_id||""),process:s.process||"",processEs:s.process_es||"",hireDate:s.hire_date||"",_sbId:s.id};
       });
       var sel=id("empIdSelect");
       sel.innerHTML='<option value="">'+T.selectPlaceholder+'</option>';
@@ -156,6 +215,7 @@ function loadFromSupabase(){
       opt.textContent=T.notSelected||"직접 입력";
       sel.appendChild(opt);
     }
+    refreshHeader();
     if(ORIG.length>0){
       id("startBtn").disabled=false;
       id("startBtn").textContent=T.start||"시험 시작";
@@ -165,7 +225,7 @@ function loadFromSupabase(){
     }
   }).catch(function(e){
     console.warn("Supabase 오류:",e);
-    id("startBtn").textContent="연결 오류 — 재시도 중...";
+    id("startBtn").textContent="연결 오류 — 재시도 중... / Reintentando...";
     setTimeout(function(){loadFromSupabase();},3000);
   });
 }
@@ -185,18 +245,18 @@ function doStart(){
     var e=(id("directEmpId").value||"").trim();
     var n=(id("directName").value||"").trim();
     if(!e||!n){alert(T.chooseFirst);return;}
-    user={empId:e,name:n,process:""};
+    user={empId:e,name:n,process:"",hireDate:""};
   }else if(!v||v===""){
     alert(T.chooseFirst);return;
   }else{
     var s=S.find(function(x){return x.empId===v;});
     if(!s){alert(T.chooseFirst);return;}
-    user={empId:s.empId||"",name:s.name||"",process:s.process||""};
+    user={empId:s.empId||"",name:s.name||"",process:s.process||"",hireDate:s.hireDate||""};
   }
   if(!ORIG||ORIG.length===0){loadFromSupabase();return;}
   Q=shuffleQuestions(ORIG);
   ans=[];for(var i=0;i<Q.length;i++)ans.push(0);
-  cur=0;tsec=DUR;
+  cur=0;tsec=DUR;submitting=false;
   id("hdrName").textContent=user.name;id("hdrEmpId").textContent=user.empId;
   showScr("examScreen");
   renderQ();startTimer();
@@ -208,7 +268,7 @@ function startTimer(){
     var m=Math.floor(tsec/60),s=tsec%60;
     id("timerDisp").textContent=(m<10?"0":"")+m+":"+(s<10?"0":"")+s;
     if(tsec===299)alert(T.timerWarn);
-    if(tsec<=60)id("timerDisp").className="exam-timer warn";
+    if(tsec<=60)id("timerDisp").className="tmr warn";
     if(tsec<=0){clearInterval(tiv);alert(T.timeUp);submit(true);}
   },1000);
 }
@@ -232,7 +292,6 @@ function renderQ(){
   }
   var ol=id("optionsList");var h="";
   var lbl=["①","②","③","④"];
-  function esc(v){return String(v==null?"":v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
   for(var i=0;i<q.opts.length;i++){
     var optTxt=q.opts[i];
     if(T.isEs&&q.optsEs&&q.optsEs[i])optTxt=q.optsEs[i];
@@ -265,79 +324,132 @@ function renderNav(){
   if(id("bs"))id("bs").addEventListener("click",function(){submit(false);});
 }
 function goQ(n){if(n<0||n>=Q.length)return;cur=n;renderQ();window.scrollTo(0,0);}
+/* ---------- 제출 ---------- */
 function submit(auto){
+  if(submitting)return;
   var u=0;for(var i=0;i<ans.length;i++)if(!ans[i])u++;
   if(!auto&&u>0&&!confirm(T.unanswered))return;
+  submitting=true;
+  if(id("bs"))id("bs").disabled=true;
   clearInterval(tiv);
-  var el=DUR-tsec;
-  var det=[];var originalAnswers=[];
-  for(var i=0;i<ORIG.length;i++)originalAnswers.push(0);
+  var det=[];
   for(var i=0;i<Q.length;i++){
     var oi=(typeof Q[i].idx==="number")?Q[i].idx:i;
-    originalAnswers[oi]=ans[i];
     det.push({qNum:oi+1,displayNum:i+1,userAns:ans[i],isCorrect:ans[i]===Q[i].ans});
   }
   det.sort(function(a,b){return a.qNum-b.qNum;});
   var ok=0;for(var i=0;i<det.length;i++)if(det[i].isCorrect)ok++;
-  var theoryScore=ORIG.length>0?Math.round(ok/ORIG.length*100):0;
-  var pl={
-    emp_id:user.empId,name:user.name,process:user.process,
-    date:new Date().toISOString().slice(0,10),
-    correct:ok,total:ORIG.length,
-    theory_raw:ok,theory_raw_max:ORIG.length,
-    theory_weighted:theoryScore,theory_pct:50,
-    practical_raw:0,practical_max:100,
-    practical_weighted:0,practical_pct:50,
-    total_score:Math.round(theoryScore*0.5),
+  var max=ORIG.length;
+  var ratio=max>0?ok/max:0;
+  var theoryScore=Math.round(ratio*100);
+  var tw=Math.round(ratio*THEORY_PCT*10)/10;
+  var row={
+    emp_id:user.empId,name:user.name,process:user.process||"",hire_date:user.hireDate||"",
+    date:localDate(),
+    correct:ok,
+    theory_raw:ok,theory_raw_max:max,
+    theory_weighted:tw,theory_pct:THEORY_PCT,
+    practical_raw:0,practical_max:100,practical_weighted:0,practical_pct:50,
+    total_score:tw,
     passed:theoryScore>=PASS,
     details:det,
     practical_item_scores:[],
-    timestamp:Date.now(),
-    source:"mobile_web",
-    plant:"2",
-    exam_title:TITLE
+    timestamp:Date.now()
   };
+  var pend={row:row,ok:ok,total:max,pct:theoryScore,plant:PLANT,title:TITLE};
+  savePending(pend);
   showScr("doneScreen");
-  id("doneMsg").textContent=T.isEs?"Enviando al servidor...":"서버에 저장 중...";
-  id("doneDetail").innerHTML="";
-  fetch(PROXY_URL+"?plant=2",{
-    method:"POST",
-    mode:"no-cors",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify(pl)
-  }).then(function(r){
-    // no-cors 모드에서는 응답을 읽을 수 없으므로 성공으로 처리
-    id("doneIcon").textContent="✅";
-    id("doneTitle").textContent="저장 완료!";
-    id("doneMsg").textContent="✅ 서버 저장 완료!";
-    id("doneDetail").innerHTML="결과가 서버에 저장되었습니다.<br>"
-      +"<span style='color:#2ecc71'>정답</span>: <strong>"+ok+"/"+ORIG.length+"</strong>"
-      +(ORIG.length>0?" ("+theoryScore+"%)":"");
+  sendResult(pend);
+}
+function localDate(){
+  var d=new Date();
+  return d.getFullYear()+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+("0"+d.getDate()).slice(-2);
+}
+function setDone(icon,title,msg,detail,isErr,showRetry){
+  id("doneIcon").textContent=icon;
+  id("doneTitle").textContent=title;
+  id("doneTitle").className="done-title"+(isErr?" err":"");
+  id("doneMsg").textContent=msg;
+  id("doneDetail").innerHTML=detail||"";
+  id("retryBtn").style.display=showRetry?"block":"none";
+}
+function resultLine(p){
+  return "<span style='color:#2ecc71'>정답 / Correctas</span>: <strong>"+p.ok+"/"+p.total+"</strong>"+(p.total>0?" ("+p.pct+"%)":"");
+}
+function saveWithRetry(row,attempt,onStatus){
+  attempt=attempt||1;
+  return sbExists(TBL_R,row.emp_id,row.timestamp).catch(function(){return false;}).then(function(exists){
+    if(exists)return true;
+    return sbInsert(TBL_R,row);
   }).catch(function(e){
-    console.warn("저장 실패:",e);
-    id("doneIcon").textContent="⚠️";
-    id("doneTitle").textContent="연결 오류";
-    id("doneMsg").textContent="오류: "+e.message;
-    id("doneDetail").innerHTML="URL: "+PROXY_URL.slice(0,60)+"...";
-    var json=JSON.stringify({empId:user.empId,name:user.name,process:user.process,
-      examTitle:TITLE,examDate:new Date().toISOString().slice(0,10),
-      answers:originalAnswers,details:det,correct:ok,total:ORIG.length,
-      elapsedSec:el,submittedAt:new Date().toISOString()},null,2);
-    var safe=(user.empId||user.name||"exam").replace(/[^a-zA-Z0-9]/g,"_");
-    var fname=safe+".json";
-    try{
-      var blob=new Blob([json],{type:"application/json"});
-      var a=document.createElement("a");
-      a.href=URL.createObjectURL(blob);a.download=fname;
-      document.body.appendChild(a);a.click();
-      setTimeout(function(){document.body.removeChild(a);URL.revokeObjectURL(a.href);},1500);
-      id("doneDetail").innerHTML=(T.isEs?"Archivo guardado: ":"파일명: ")+"<strong>"+fname+"</strong><br>"+
-        (T.isEs?"Correctas":"정답")+": "+ok+"/"+ORIG.length+"문항";
-    }catch(e2){
-      var w=window.open();if(w)w.document.write("<pre>"+json+"</pre>");
-    }
+    console.warn("저장 실패("+attempt+"):",e);
+    if(attempt>=MAX_RETRY)throw e;
+    var wait=Math.min(1500*Math.pow(2,attempt-1),12000);
+    if(onStatus)onStatus("재시도 "+attempt+"/"+(MAX_RETRY-1)+" / Reintentando... ("+Math.round(wait/1000)+"초)");
+    return delay(wait).then(function(){return saveWithRetry(row,attempt+1,onStatus);});
   });
 }
+function proxyFallback(row){
+  if(!PROXY_URL)return Promise.resolve(false);
+  var pl={};for(var k in row)pl[k]=row[k];
+  pl.total=row.theory_raw_max;pl.source="mobile_web";pl.plant=PLANT;pl.exam_title=TITLE;
+  var url=PROXY_URL+(PLANT!=="1"?"?plant="+PLANT:"");
+  return fetch(url,{method:"POST",mode:"no-cors",headers:{"Content-Type":"application/json"},body:JSON.stringify(pl)})
+    .then(function(){return delay(3500);})
+    .then(function(){return sbExists(TBL_R,row.emp_id,row.timestamp);})
+    .catch(function(){return false;});
+}
+function sendResult(pend){
+  lastPending=pend;
+  var row=pend.row;
+  id("retryBtn").style.display="none";
+  setDone("⏳","전송 중... / Enviando...","서버에 저장 중...\nGuardando en el servidor...","",false,false);
+  var onStatus=function(s){id("doneDetail").innerHTML=esc(s);};
+  saveWithRetry(row,1,onStatus).then(function(){
+    clearPending();
+    setDone("✅","저장 완료! / ¡Guardado!","결과가 서버에 저장되었습니다.\nEl resultado se guardó en el servidor.",resultLine(pend),false,false);
+  }).catch(function(e){
+    onStatus("보조 경로로 전송 중... / Enviando por ruta alterna...");
+    return proxyFallback(row).then(function(okFb){
+      if(okFb){
+        clearPending();
+        setDone("✅","저장 완료! / ¡Guardado!","결과가 서버에 저장되었습니다.\nEl resultado se guardó en el servidor.",resultLine(pend),false,false);
+        return;
+      }
+      var detail=resultLine(pend)+"<br><br>"
+        +"결과는 이 휴대폰에 임시 보관되었습니다. 인터넷 연결 후 <strong>다시 전송</strong>을 누르거나 이 페이지를 다시 열면 자동으로 전송됩니다.<br>"
+        +"<span style='color:#7fd'>El resultado quedó guardado en este teléfono. Con internet, pulse <strong>Reintentar</strong> o vuelva a abrir esta página.</span><br>"
+        +"<span style='color:#8892b0;font-size:0.75rem'>"+esc(String(e&&e.message||e).slice(0,140))+"</span>";
+      setDone("⚠️","전송 실패 / Error de envío","서버에 연결할 수 없습니다. 담당자에게 알려주세요.\nNo se pudo conectar al servidor. Avise al responsable.",detail,true,true);
+    });
+  });
+}
+/* ---------- 미전송 결과 보관/재전송 ---------- */
+function savePending(p){try{localStorage.setItem(PENDING_KEY,JSON.stringify(p));}catch(e){}}
+function clearPending(){try{localStorage.removeItem(PENDING_KEY);}catch(e){}}
+function loadPending(){try{var s=localStorage.getItem(PENDING_KEY);return s?JSON.parse(s):null;}catch(e){return null;}}
+function resendPending(){
+  var p=loadPending();
+  if(!p||!p.row||!p.row.emp_id)return;
+  var bar=id("pendingBar");
+  bar.style.display="block";
+  bar.innerHTML="📤 미전송 결과 재전송 중: <strong>"+esc(p.row.name)+"</strong> ("+esc(p.row.emp_id)+")<br><span style='color:#8892b0'>Reenviando resultado pendiente...</span>";
+  saveWithRetry(p.row,1,null).then(function(){
+    clearPending();
+    bar.style.borderColor="rgba(46,204,113,0.5)";bar.style.color="#2ecc71";
+    bar.innerHTML="✅ 미전송 결과 전송 완료: <strong>"+esc(p.row.name)+"</strong> ("+esc(p.row.emp_id)+")";
+    setTimeout(function(){bar.style.display="none";},8000);
+  }).catch(function(){
+    return proxyFallback(p.row).then(function(okFb){
+      if(okFb){clearPending();bar.style.borderColor="rgba(46,204,113,0.5)";bar.style.color="#2ecc71";
+        bar.innerHTML="✅ 미전송 결과 전송 완료: <strong>"+esc(p.row.name)+"</strong>";setTimeout(function(){bar.style.display="none";},8000);return;}
+      bar.style.borderColor="rgba(231,76,60,0.5)";bar.style.color="#e74c3c";
+      bar.innerHTML="⚠️ 미전송 결과가 남아 있습니다: <strong>"+esc(p.row.name)+"</strong> ("+esc(p.row.emp_id)+") — 인터넷 연결 후 페이지를 새로고침하세요.<br><span style='color:#8892b0'>Resultado pendiente. Conecte a internet y recargue la página.</span>";
+    });
+  });
+}
+window.addEventListener("online",function(){if(loadPending())resendPending();});
+/* ---------- 화면 ---------- */
 function showScr(s){
   var all=document.querySelectorAll(".screen");
   for(var i=0;i<all.length;i++){var c=all[i].className;
