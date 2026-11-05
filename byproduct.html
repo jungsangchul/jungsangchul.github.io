@@ -1040,7 +1040,9 @@ function phRender(){
   const b=document.querySelector(`#in-tw button[data-ph="${CSS.escape(PH.mc)}"]`);if(b){const n=(PH.list||[]).length;b.classList.toggle('has',n>0);b.innerHTML=b.querySelector('svg').outerHTML+(n||'+')}
   IN.photos[PH.mc]=(PH.list||[]).slice();
 }
-function shrink(file){return new Promise(res=>{const img=new Image();const u=URL.createObjectURL(file);img.onload=()=>{const MAX=1200;let w=img.width,h=img.height;const r=Math.min(1,MAX/Math.max(w,h));w=Math.round(w*r);h=Math.round(h*r);const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);URL.revokeObjectURL(u);res(c.toDataURL('image/jpeg',.72))};img.src=u})}
+function shrink(file){return new Promise(res=>{const img=new Image();const u=URL.createObjectURL(file);img.onload=()=>{const MAX=900;let w=img.width,h=img.height;const r=Math.min(1,MAX/Math.max(w,h));w=Math.round(w*r);h=Math.round(h*r);const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);URL.revokeObjectURL(u);res(c.toDataURL('image/jpeg',.65))};img.src=u})}
+/* 엑셀 삽입용 썸네일: data URL → 긴 변 max px JPEG */
+function thumbOf(dataUrl,max){return new Promise(res=>{const img=new Image();img.onload=()=>{let w=img.width,h=img.height;const r=Math.min(1,max/Math.max(w,h));w=Math.round(w*r)||1;h=Math.round(h*r)||1;const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);res({b64:c.toDataURL('image/jpeg',.7).split(',')[1],w,h})};img.onerror=()=>res(null);img.src=dataUrl})}
 async function phAdd(files){
   if(!files||!files.length)return;load(true);
   try{const rows=[];for(const f of files){rows.push({plant:PLANT,d:IN.date,mc:PH.mc,kind:PH.kind,data:await shrink(f)})}
@@ -1645,7 +1647,7 @@ async function inExcel(){
   try{
     await loadExcelJS();
     const rows=await sbGet(`byp_daily?plant=eq.${PLANT}&d=gte.${f}&d=lte.${t}&select=d,mc,wire_kg,term_kg,seal_kg,scrap_kg,memo,worker&order=d,mc`);
-    const ph=await sbGet(`byp_photo?plant=eq.${PLANT}&d=gte.${f}&d=lte.${t}&select=d,mc`);const phc={};ph.forEach(p=>{const k=p.d+'|'+p.mc;phc[k]=(phc[k]||0)+1});
+    const ph=await sbGet(`byp_photo?plant=eq.${PLANT}&d=gte.${f}&d=lte.${t}&select=d,mc,kind,data&order=d,mc,id`);const phc={},phs={};ph.forEach(p=>{const k=p.d+'|'+p.mc;phc[k]=(phc[k]||0)+1;(phs[k]=phs[k]||[]).push(p)});
     const cuts={};(await sbGet(`byp_cut?plant=eq.${PLANT}&d=gte.${f}&d=lte.${t}&select=d,qty`)).forEach(c=>cuts[c.d]=Number(c.qty)||0);
     const wb=new ExcelJS.Workbook();wb.creator='YURA HARNESS MÉXICO';const sheet=(...a)=>xlSheet(wb,`${f} ~ ${t}`,...a);
     const G=sumDaily(rows);const days=Object.keys(G.byDay).sort();const dm={},da={};
@@ -1654,9 +1656,16 @@ async function inExcel(){
     sheet('일별총량',L('일별 부산물 총량 (kg) · 절단수량','Peso diario total (kg) · cortes'),['Date',L('요일','Día'),'Wire','Terminal','Seal','Scrap',L('합계','Total'),L('절단수량(본)','Cortes'),L('합계 g/1,000본','Total g/1,000pz'),L('Scrap g/1,000본','Scrap g/1,000pz'),L('기준','Base'),L('측정 호기수','Máquinas')],
       allDays.map(x=>{const o=G.byDay[x]||{w:0,t:0,j:0,s:0};const n=rows.filter(r=>r.d===x&&r.mc!==ALL&&rowSum(r)>0).length;const c=cuts[x]||0;const tot=o.w+o.t+o.j+o.s;return [x,DOW[new Date(x+'T00:00:00').getDay()],o.w,o.t,o.j,o.s,tot,c||null,gk(tot,c),gk(o.s,c),!G.byDay[x]?'':da[x]&&(rows.find(r=>r.d===x&&r.mc===ALL)&&rowSum(rows.find(r=>r.d===x&&r.mc===ALL))>0)?L('일괄 측정','Pesaje total'):L('호기별 Σ','Σ máquinas'),n]}),
       [12,7,11,11,11,11,11,13,14,14,13,11],[null,null,F2,F2,F2,F2,F2,F0,F0,F0,null,F0],[L('합계','Total'),'',G.tot.w,G.tot.t,G.tot.j,G.tot.s,G.tot.w+G.tot.t+G.tot.j+G.tot.s,cutTot||null,gk(G.tot.w+G.tot.t+G.tot.j+G.tot.s,cutTot),gk(G.tot.s,cutTot),'',days.length]);
-    sheet('호기별',L('일별 · 호기별 측정 내역','Detalle diario por máquina'),['Date',L('호기','Máquina'),'Wire','Terminal','Seal','Scrap',L('합계','Total'),L('사진','Fotos'),L('측정자','Medido por'),L('메모','Nota')],
-      rows.map(r=>[r.d,r.mc===ALL?L('일괄(ALL)','Total(ALL)'):r.mc,+r.wire_kg||0,+r.term_kg||0,+r.seal_kg||0,+r.scrap_kg||0,rowSum(r),phc[r.d+'|'+r.mc]||0,r.worker||'',r.memo||'']),
-      [12,12,10,10,10,10,10,7,12,30],[null,null,F2,F2,F2,F2,F2,F0,null,null]);
+    const KN2={wire:'Wire',term:'Terminal',seal:'Seal',scrap:'Scrap',etc:L('기타','Otro')};const NP=3; /* 행당 사진 최대 3장 */
+    const ws2=sheet('호기별',L('일별 · 호기별 측정 내역 (사진 포함)','Detalle diario por máquina (con fotos)'),['Date',L('호기','Máquina'),'Wire','Terminal','Seal','Scrap',L('합계','Total'),L('측정자','Medido por'),L('메모','Nota'),L('사진 구분','Tipo foto'),...Array.from({length:NP},(_,i)=>L('사진','Foto')+' '+(i+1))],
+      rows.map(r=>{const ps=phs[r.d+'|'+r.mc]||[];return [r.d,r.mc===ALL?L('일괄(ALL)','Total(ALL)'):r.mc,+r.wire_kg||0,+r.term_kg||0,+r.seal_kg||0,+r.scrap_kg||0,rowSum(r),r.worker||'',r.memo||'',ps.map(p=>KN2[p.kind]||p.kind).join(', ')+(ps.length>NP?` (+${ps.length-NP})`:''),...Array(NP).fill('')]}),
+      [12,12,10,10,10,10,10,12,26,14,...Array(NP).fill(19)],[null,null,F2,F2,F2,F2,F2,null,null,null,...Array(NP).fill(null)]);
+    /* 사진 삽입: 저해상도 썸네일(긴 변 320px)로 셀 안에 배치, 사진 있는 행은 높이 확대 */
+    const PH_H=96,PH_W=128; /* pt / px */
+    for(let i=0;i<rows.length;i++){const r=rows[i];const ps=(phs[r.d+'|'+r.mc]||[]).slice(0,NP);if(!ps.length)continue;
+      const xr=5+i;ws2.getRow(xr).height=PH_H;
+      for(let j=0;j<ps.length;j++){const th=await thumbOf(ps[j].data,320);if(!th)continue;const id=wb.addImage({base64:th.b64,extension:'jpeg'});
+        const sc=Math.min(PH_W/th.w,(PH_H*1.33-6)/th.h);ws2.addImage(id,{tl:{col:10+j+0.05,row:xr-1+0.04},ext:{width:Math.round(th.w*sc),height:Math.round(th.h*sc)},editAs:'oneCell'})}}
     const T=inTotals(true);const list=[{mc:ALL},...S.mc.filter(m=>m.active)];
     sheet('당일',L(`${d} 호기별 입력 (화면 값)`,`${d} por máquina (valores en pantalla)`),[L('호기','Máquina'),'Wire','Terminal','Seal','Scrap',L('합계','Total'),L('메모','Nota')],
       list.map(m=>{const v=KINDS.map(([k])=>inVal(m.mc,k));const me=document.querySelector(`#in-tw input[data-mc="${m.mc}"][data-k="memo"]`);return [m.mc===ALL?L('일괄(ALL)','Total(ALL)'):m.mc,...v,v.reduce((a,b)=>a+b,0),me?me.value:((IN.rows[m.mc]||{}).memo||'')]}),
