@@ -436,7 +436,8 @@ table.cfg input{width:17px;height:17px}
 
 <!-- ══ ① 부산물 측정 입력 ══ -->
 <section class="tab on" id="t-in">
-  <div class="fs-head2"><h2 data-t="in_title">부산물 발생량 측정 입력</h2><span class="fs-pl" id="pl-in"></span><span class="s">Daily byproduct weighing · by machine</span></div>
+  <div class="fs-head2"><h2 data-t="in_title">부산물 발생량 측정 입력</h2><span class="fs-pl" id="pl-in"></span><span class="s">Daily byproduct weighing · by machine</span><span class="sp"></span>
+    <button class="btn sec" onclick="inExcel()">⬇ <span data-t="excel">엑셀 다운로드</span></button></div>
   <div class="fs-body">
     <div class="card">
       <div class="row hd">
@@ -531,7 +532,8 @@ table.cfg input{width:17px;height:17px}
 
 <!-- ══ ③ 자재사용량 ══ -->
 <section class="tab" id="t-us">
-  <div class="fs-head2"><h2 data-t="us_title">일별 자재사용량 (MES 32040 동기화)</h2><span class="fs-pl" id="pl-us"></span><span class="s">Wire M · Terminal EA</span></div>
+  <div class="fs-head2"><h2 data-t="us_title">일별 자재사용량 (MES 32040 동기화)</h2><span class="fs-pl" id="pl-us"></span><span class="s">Wire M · Terminal EA</span><span class="sp"></span>
+    <button class="btn sec" onclick="usExcel()">⬇ <span data-t="excel">엑셀 다운로드</span></button></div>
   <div class="fs-body">
     <div class="warn" style="background:rgba(201,168,76,.07);border-color:rgba(201,168,76,.3);color:var(--ink2)" data-t="us_note">사용량은 <b>가공생산팀 자재관리</b> 사이트의 「사용량 (32040)」에 등록된 데이터를 그대로 읽어옵니다 (별도 입력 없음). 전선 = 01W1 그룹(M), 단자 = 03T1 그룹(EA).</div>
     <div class="card">
@@ -554,7 +556,8 @@ table.cfg input{width:17px;height:17px}
 
 <!-- ══ ④ 단위중량 마스터 ══ -->
 <section class="tab" id="t-mw">
-  <div class="fs-head2"><h2 data-t="mw_title">자재 단위중량 마스터</h2><span class="fs-pl" id="pl-mw"></span><span class="s">Wire kg/m · Terminal kg/ea · Seal kg/ea</span></div>
+  <div class="fs-head2"><h2 data-t="mw_title">자재 단위중량 마스터</h2><span class="fs-pl" id="pl-mw"></span><span class="s">Wire kg/m · Terminal kg/ea · Seal kg/ea</span><span class="sp"></span>
+    <button class="btn sec" onclick="mwExcel()">⬇ <span data-t="excel">엑셀 다운로드</span></button></div>
   <div class="fs-body">
     <div class="card">
       <div class="row hd">
@@ -579,7 +582,8 @@ table.cfg input{width:17px;height:17px}
 
 <!-- ══ ⑤ 설정 ══ -->
 <section class="tab" id="t-cf">
-  <div class="fs-head2"><h2 data-t="cf_title">호기 · 부산물 종류 비율 설정</h2><span class="fs-pl" id="pl-cf"></span><span class="s">Machines · category ratio</span></div>
+  <div class="fs-head2"><h2 data-t="cf_title">호기 · 부산물 종류 비율 설정</h2><span class="fs-pl" id="pl-cf"></span><span class="s">Machines · category ratio</span><span class="sp"></span>
+    <button class="btn sec" onclick="cfExcel()">⬇ <span data-t="excel">엑셀 다운로드</span></button></div>
   <div class="fs-body">
     <div class="g21">
       <div class="card">
@@ -1401,6 +1405,85 @@ async function lrExcel(){
       [12,11,11,9,11,11,9,11,11,9,10,11,10],[null,'#,##0.0','#,##0.0','0.00%','#,##0.0','#,##0.0','0.00%','#,##0.0','#,##0.0','0.00%','#,##0.0','#,##0.0','0.00%'],
       [L('월누적','Acum.'),mtd.rows.w.use,mtd.rows.w.gen,mtd.rows.w.rate,mtd.rows.t.use,mtd.rows.t.gen,mtd.rows.t.rate,mtd.rows.j.use,mtd.rows.j.gen,mtd.rows.j.rate,mtd.scrap,mtd.all.gen,mtd.all.rate]);
     const buf=await wb.xlsx.writeBuffer();const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([buf]));a.download=`부산물현황보고_P${PLANT}_${D.d}.xlsx`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),3000);
+  }catch(e){toast(e.message,true)}finally{load(false)}
+}
+
+/* ═══════════ 탭별 엑셀 다운로드 (측정 입력 · 사용량 · 단위중량 · 설정) ═══════════ */
+function xlSave(wb,name){return wb.xlsx.writeBuffer().then(buf=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([buf]));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),3000)})}
+const F2='#,##0.00',F0='#,##0';
+/* ① 측정 입력: 선택일이 속한 달 전체 — 일별 총량 + 호기별 상세 + 당일 호기별 */
+async function inExcel(){
+  const d=$('in-date').value||today(),ym=d.slice(0,7),[f,t]=monthRange(ym);
+  load(true);
+  try{
+    await loadExcelJS();
+    const rows=await sbGet(`byp_daily?plant=eq.${PLANT}&d=gte.${f}&d=lte.${t}&select=d,mc,wire_kg,term_kg,seal_kg,scrap_kg,memo,worker&order=d,mc`);
+    const ph=await sbGet(`byp_photo?plant=eq.${PLANT}&d=gte.${f}&d=lte.${t}&select=d,mc`);const phc={};ph.forEach(p=>{const k=p.d+'|'+p.mc;phc[k]=(phc[k]||0)+1});
+    const wb=new ExcelJS.Workbook();wb.creator='YURA HARNESS MÉXICO';const sheet=(...a)=>xlSheet(wb,`${f} ~ ${t}`,...a);
+    const G=sumDaily(rows);const days=Object.keys(G.byDay).sort();const dm={},da={};
+    rows.forEach(r=>{(r.mc===ALL?da:dm)[r.d]=true});
+    sheet('일별총량',L('일별 부산물 총량 (kg)','Peso diario total (kg)'),['Date',L('요일','Día'),'Wire','Terminal','Seal','Scrap',L('합계','Total'),L('기준','Base'),L('측정 호기수','Máquinas')],
+      days.map(x=>{const o=G.byDay[x];const n=rows.filter(r=>r.d===x&&r.mc!==ALL&&rowSum(r)>0).length;return [x,DOW[new Date(x+'T00:00:00').getDay()],o.w,o.t,o.j,o.s,o.w+o.t+o.j+o.s,da[x]&&(rows.find(r=>r.d===x&&r.mc===ALL)&&rowSum(rows.find(r=>r.d===x&&r.mc===ALL))>0)?L('일괄 측정','Pesaje total'):L('호기별 Σ','Σ máquinas'),n]}),
+      [12,7,11,11,11,11,11,13,11],[null,null,F2,F2,F2,F2,F2,null,F0],[L('합계','Total'),'',G.tot.w,G.tot.t,G.tot.j,G.tot.s,G.tot.w+G.tot.t+G.tot.j+G.tot.s,'',days.length]);
+    sheet('호기별',L('일별 · 호기별 측정 내역','Detalle diario por máquina'),['Date',L('호기','Máquina'),'Wire','Terminal','Seal','Scrap',L('합계','Total'),L('사진','Fotos'),L('측정자','Medido por'),L('메모','Nota')],
+      rows.map(r=>[r.d,r.mc===ALL?L('일괄(ALL)','Total(ALL)'):r.mc,+r.wire_kg||0,+r.term_kg||0,+r.seal_kg||0,+r.scrap_kg||0,rowSum(r),phc[r.d+'|'+r.mc]||0,r.worker||'',r.memo||'']),
+      [12,12,10,10,10,10,10,7,12,30],[null,null,F2,F2,F2,F2,F2,F0,null,null]);
+    const T=inTotals(true);const list=[{mc:ALL},...S.mc.filter(m=>m.active)];
+    sheet('당일',L(`${d} 호기별 입력 (화면 값)`,`${d} por máquina (valores en pantalla)`),[L('호기','Máquina'),'Wire','Terminal','Seal','Scrap',L('합계','Total'),L('메모','Nota')],
+      list.map(m=>{const v=KINDS.map(([k])=>inVal(m.mc,k));const me=document.querySelector(`#in-tw input[data-mc="${m.mc}"][data-k="memo"]`);return [m.mc===ALL?L('일괄(ALL)','Total(ALL)'):m.mc,...v,v.reduce((a,b)=>a+b,0),me?me.value:((IN.rows[m.mc]||{}).memo||'')]}),
+      [14,10,10,10,10,10,30],[null,F2,F2,F2,F2,F2,null],[L('호기별 합계','Σ máquinas'),T.m.wire_kg,T.m.term_kg,T.m.seal_kg,T.m.scrap_kg,rowSum(T.m),L('일괄 측정','Pesaje total')+' '+num(rowSum(T.a))]);
+    await xlSave(wb,`부산물측정_P${PLANT}_${ym}.xlsx`);
+  }catch(e){toast(e.message,true)}finally{load(false)}
+}
+/* ③ 자재사용량(32040): 전선 SQ별 · 단자 · 방수씰 · 일별 · 원본 */
+async function usExcel(){
+  const D=US.data;if(!D){toast(L('먼저 조회하세요','Consulte primero'),true);return}
+  load(true);
+  try{
+    await loadExcelJS();const A=D.agg;const wb=new ExcelJS.Workbook();wb.creator='YURA HARNESS MÉXICO';const sheet=(...a)=>xlSheet(wb,`${D.from} ~ ${D.to}`,...a);
+    const wire=Object.values(A.wire).map(o=>({...o,ratio:A.wTot?o.qty/A.wTot:0,uw:wireUw(o).uw})).sort((a,b)=>b.qty-a.qty);
+    const wCov=wire.filter(x=>x.uw).reduce((s,x)=>s+x.ratio,0);const wAvg=wCov?wire.reduce((s,x)=>s+x.ratio*x.uw,0)/wCov:0;
+    sheet('전선SQ별',L('전선 선종/SQ별 사용비율','Ratio de uso por tipo/SQ'),[L('선종','Tipo'),'SQ',L('사용량(m)','Uso (m)'),L('비율','Ratio'),L('단위중량(kg/m)','kg/m'),L('비율×단위중량','Ratio×kg/m'),L('품번 수','Códigos')],
+      wire.map(x=>[x.wtype,x.sq,x.qty,x.ratio,x.uw||null,x.ratio*(x.uw||0),Object.keys(x.codes||{}).length]),[14,10,14,10,14,14,9],[null,null,F0,'0.00%','0.00000','0.00000',F0],[L('합계','Total'),'',A.wTot,A.wTot?1:0,null,wAvg,null]);
+    const item=(name,title,map,tot)=>{const R=usItemTable(map,tot);sheet(name,title,[L('유라코드','Código'),L('업체품명','Nombre'),L('사용량(ea)','Uso (ea)'),L('비율','Ratio'),L('단위중량(kg/ea)','kg/ea'),L('비율×단위중량','Ratio×kg/ea')],
+      R.items.map(x=>[x.code,x.name||'',x.qty,x.ratio,x.uw||null,x.ratio*(x.uw||0)]),[18,20,14,10,14,14],[null,null,F0,'0.00%','0.000000','0.000000'],[L('합계','Total'),'',tot,tot?1:0,null,R.avg])};
+    item('단자품목별',L('단자 품목별 사용비율','Ratio de uso por terminal'),A.term,A.tTot);
+    item('방수씰품목별',L('방수씰 품목별 사용비율','Ratio de uso por sello'),A.seal,A.jTot);
+    const days=Object.keys(A.daily).sort();
+    sheet('일별사용량',L('일별 사용량','Consumo diario'),['Date',L('전선(m)','Cable (m)'),L('단자(ea)','Terminal (ea)'),L('방수씰(ea)','Sello (ea)'),L('기타','Otros')],days.map(x=>[x,A.daily[x].w,A.daily[x].t,A.daily[x].j,A.daily[x].o]),[12,14,14,14,12],[null,F0,F0,F0,F0],[L('합계','Total'),A.wTot,A.tTot,A.jTot,null]);
+    sheet('원본',L('32040 사용량 원본 (품번별 일자)','Datos 32040 (por código y fecha)'),['Date',L('유라코드','Código'),L('업체품명','Nombre'),L('그룹','Grupo'),L('사용량','Uso')],D.rows.map(r=>[r.udate,r.code,r.name||'',r.grp||'',+r.qty||0]),[12,18,28,8,12],[null,null,null,null,'#,##0.###']);
+    await xlSave(wb,`자재사용량32040_P${PLANT}_${D.from}_${D.to}.xlsx`);
+  }catch(e){toast(e.message,true)}finally{load(false)}
+}
+/* ④ 단위중량 마스터: 선종/SQ · 단자 · 방수씰 · 품번 마스터(붙여넣기 양식) */
+async function mwExcel(){
+  if(!MW.ready){toast(L('먼저 조회하세요','Consulte primero'),true);return}
+  load(true);
+  try{
+    await loadExcelJS();const wb=new ExcelJS.Workbook();wb.creator='YURA HARNESS MÉXICO';const sheet=(...a)=>xlSheet(wb,L('단위중량 마스터','Maestro de peso unitario')+' · '+today(),...a);
+    const wl=MW.wire.map(x=>{const w=wireUw(x);return {...x,uw:w.uw,gw:S.wireW[wk(x.wtype,x.sq)]||0,nC:w.nC,nAll:w.nAll,src:w.src}});
+    sheet('전선',L('전선 선종/SQ별 단위중량 (kg/m)','Cable por tipo/SQ (kg/m)'),[L('선종','Tipo'),'SQ',L('최근 사용량(m,120d)','Uso 120d (m)'),L('적용 단위중량','kg/m aplicado'),L('기준','Base'),L('품번 등록','Códigos con peso'),L('선종/SQ 기본값','Valor tipo/SQ')],
+      wl.map(x=>[x.wtype,x.sq,x.qty,x.uw||null,x.src==='code'?L('품번','código'):x.src==='group'?L('기본값','base'):L('미등록','sin peso'),x.nAll?`${x.nC}/${x.nAll}`:'',x.gw||null]),[14,10,16,14,10,12,14],[null,null,F0,'0.000000',null,null,'0.000000']);
+    const it=(name,title,arr)=>sheet(name,title,[L('유라코드','Código'),L('업체품명','Nombre'),L('최근 사용량(ea,120d)','Uso 120d (ea)'),L('단위중량(kg/ea)','kg/ea')],arr.map(x=>[x.code,x.name||'',x.qty,mUw(x.code)||null]),[18,24,16,14],[null,null,F0,'0.000000']);
+    it('단자',L('단자 품목별 단위중량','Terminal por ítem'),MW.T);it('방수씰',L('방수씰 품목별 단위중량','Sello por ítem'),MW.J);
+    const KN={W:L('전선','Cable'),T:L('단자','Terminal'),J:L('방수씰','Sello')};
+    sheet('품번마스터',L('품번별 단위중량 마스터 (붙여넣기 양식: 품번·이름·단위중량)','Maestro por código (formato para pegar)'),[L('품번','Código'),L('이름','Nombre'),L('단위중량','Peso unit.'),L('구분','Tipo'),L('수정일','Actualizado')],
+      Object.values(S.master).sort((a,b)=>a.code.localeCompare(b.code)).map(m=>[m.code,m.name||'',+m.unit_w||0,KN[m.kind]||m.kind||'',(m.updated_at||'').slice(0,10)]),[18,28,14,8,12],[null,null,'0.000000',null,null]);
+    await xlSave(wb,`단위중량마스터_P${PLANT}_${today()}.xlsx`);
+  }catch(e){toast(e.message,true)}finally{load(false)}
+}
+/* ⑤ 설정: 호기 목록 · 종류별 비율 */
+async function cfExcel(){
+  load(true);
+  try{
+    await loadExcelJS();const wb=new ExcelJS.Workbook();wb.creator='YURA HARNESS MÉXICO';const sheet=(...a)=>xlSheet(wb,L('호기 · 종류비율 설정','Máquinas · ratios')+' · '+today(),...a);
+    sheet('호기',L('측정 호기 목록','Máquinas'),[L('순번','Orden'),L('호기','Máquina'),L('사용','Activa')],S.mc.map(m=>[m.ord||0,m.mc,m.active?'Y':'N']),[8,14,8],[F0,null,null]);
+    const grpN={prod:L('가공생산팀','Prod. maquinado'),ext:L('생산외 수거','Recolección externa')};
+    const val=(c,k)=>{const i=document.querySelector(`#cf-ratio input[data-cat="${CSS.escape(c.cat)}"][data-k="${k}"]`);return i?(parseFloat(i.value)||0):(+c[k]||0)};
+    sheet('종류비율',L('부산물 종류별 비율 (%) — 화면 입력값 기준','Ratios por tipo (%) — valores en pantalla'),[L('구분','Grupo'),L('부산물 종류','Tipo'),'Wire %','Terminal %','Seal %'],
+      S.ratio.map(c=>[grpN[c.grp]||c.grp,c.cat,val(c,'wire_pct')/100,val(c,'term_pct')/100,val(c,'seal_pct')/100]),[16,18,12,12,12],[null,null,'0.0%','0.0%','0.0%'],
+      [L('합계','Total'),'',S.ratio.reduce((s,c)=>s+val(c,'wire_pct'),0)/100,S.ratio.reduce((s,c)=>s+val(c,'term_pct'),0)/100,S.ratio.reduce((s,c)=>s+val(c,'seal_pct'),0)/100]);
+    await xlSave(wb,`부산물설정_P${PLANT}_${today()}.xlsx`);
   }catch(e){toast(e.message,true)}finally{load(false)}
 }
 
