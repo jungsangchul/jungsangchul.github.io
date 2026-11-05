@@ -6169,7 +6169,7 @@ document.addEventListener('DOMContentLoaded', renderExamQr);
 .badge-list .nm{font-weight:700;line-height:1.15;}
 .badge-list .sub{font-size:.66rem;color:var(--text2);line-height:1.2;}
 .badge-side{display:flex;flex-direction:column;gap:.7rem;}
-.badge-prev{background:#3a3a3a;border:1px solid var(--border);border-radius:10px;padding:12px;display:flex;justify-content:center;}
+.badge-prev{background:#2a2a2a;border:1px solid var(--border);border-radius:10px;padding:12px;display:flex;justify-content:center;}
 .badge-prev iframe{border:0;background:transparent;display:block;}
 .badge-opts{display:grid;grid-template-columns:1fr 1fr;gap:.45rem .6rem;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:.7rem;}
 .badge-opts label{font-size:.7rem;margin-bottom:.15rem;}
@@ -6220,15 +6220,16 @@ document.addEventListener('DOMContentLoaded', renderExamQr);
           <div><label data-kr="색상" data-es="Color">색상</label>
             <select id="bColor" onchange="BADGE.render()">
               <option value="auto" data-kr="직책별 자동 (조장 골드 · 리더 블루 · 교육조장 그린 · 리워크 오렌지 · 관리자 퍼플)" data-es="Por puesto">직책별 자동 (조장 골드 · 리더 블루 · 교육조장 그린 · 리워크 오렌지 · 관리자 퍼플)</option>
-              <option value="gold">골드 / Dorado</option><option value="blue">블루 / Azul</option><option value="green">그린 / Verde</option><option value="orange">오렌지 / Naranja</option><option value="purple">퍼플 / Morado</option><option value="red">레드 / Rojo</option><option value="teal">틸 / Turquesa</option><option value="black">블랙 (기존) / Negro</option>
+              <option value="gold">골드 / Dorado</option><option value="blue">블루 / Azul</option><option value="green">그린 / Verde</option><option value="orange">오렌지 / Naranja</option><option value="purple">퍼플 / Morado</option><option value="red">레드 / Rojo</option><option value="teal">틸 / Turquesa</option><option value="black">블랙 / Negro</option>
             </select></div>
           <div><label data-kr="스타일" data-es="Estilo">스타일</label>
             <select id="bStyle" onchange="BADGE.render()">
-              <option value="vivid" data-kr="컬러풀 — 색 모서리 + 색 띠 + 밑줄" data-es="Colorido">컬러풀 — 색 모서리 + 색 띠 + 밑줄</option>
-              <option value="classic" data-kr="클래식 — 검정 모서리 + 색 띠만" data-es="Clásico">클래식 — 검정 모서리 + 색 띠만</option>
+              <option value="modern" data-kr="모던 — 상단 라인 · 코너 아크 · 직책 블록 · 네이비 푸터" data-es="Moderno — línea superior · arco · pie azul marino">모던 — 상단 라인 · 코너 아크 · 직책 블록 · 네이비 푸터</option>
+              <option value="stripe" data-kr="스트라이프 — 좌측 세로 컬러 밴드(직책 한글) · 미니멀" data-es="Franja — banda vertical de color · minimalista">스트라이프 — 좌측 세로 컬러 밴드(직책 한글) · 미니멀</option>
+              <option value="legacy" data-kr="기존 — 색 모서리 + 직책 띠 (이전 디자인)" data-es="Anterior — esquinas de color">기존 — 색 모서리 + 직책 띠 (이전 디자인)</option>
             </select></div>
           <div class="span2" style="font-size:.68rem;color:var(--text2);line-height:1.45">
-            <span data-kr="기존 명찰 디자인(로고 · 이름 · 한글이름 · 부서 · 사번) 유지 + 상단에 직책 띠 추가. 한글 이름·부서는 출결근태(TRESS) 직원마스터에서 자동 연결, 비어 있으면 직접 입력. 직책은 공정명으로 자동 판정(조장·리더·교육조장·리워크·관리자) 후 수정 가능." data-es="Diseño actual + franja de puesto. Nombre KR y depto. vienen del maestro de empleados (TRESS); el puesto se detecta por el proceso y se puede editar.">기존 명찰 디자인(로고 · 이름 · 한글이름 · 부서 · 사번) 유지 + 상단에 직책 띠 추가. 한글 이름·부서는 출결근태(TRESS) 직원마스터에서 자동 연결, 비어 있으면 직접 입력. 직책은 공정명으로 자동 판정(조장·리더·교육조장·리워크·관리자) 후 수정 가능.</span>
+            <span data-kr="명찰 구성: 로고 · 직책(ES + 한글) · 담당공정 · 이름(ES) · 한글 이름 · 하단 부서 · 사번 — 85.6×54mm. 직책별 색상 자동, 긴 직책명은 자동 축소. 한글 이름·부서는 출결근태(TRESS) 직원마스터에서 자동 연결, 비어 있으면 직접 입력. 직책은 공정명으로 자동 판정(조장·리더·교육조장·리워크·관리자) 후 수정 가능." data-es="Gafete: logo · puesto (ES + KR) · proceso · nombre · nombre KR · depto. · N° emp. (85.6×54mm). Color por puesto; nombre KR y depto. vienen del maestro de empleados (TRESS); el puesto se detecta por el proceso y se puede editar.">명찰 구성: 로고 · 직책(ES + 한글) · 담당공정 · 이름(ES) · 한글 이름 · 하단 부서 · 사번 — 85.6×54mm. 직책별 색상 자동, 긴 직책명은 자동 축소. 한글 이름·부서는 출결근태(TRESS) 직원마스터에서 자동 연결, 비어 있으면 직접 입력. 직책은 공정명으로 자동 판정(조장·리더·교육조장·리워크·관리자) 후 수정 가능.</span>
           </div>
         </div>
       </div>
@@ -11143,80 +11144,149 @@ var CERT=(function(){
 function showCert(idx){CERT.open(idx);}
 </script>
 <script>
-// ════ 명찰(Gafete) 출력 — 조장·리더·교육조장·리워크 관리자·관리직 (2026-11-04) ════
+// ════ 명찰(Gafete) 출력 — 조장·리더·교육조장·리워크 관리자·관리직 (2026-11-04, 디자인 개편 2026-11-05) ════
 // · 결과 이력 헤더 「🪪 명찰 인쇄」 → 역할 인원 자동 추출(선택 인원이 있으면 그 인원) → 직책·한글이름·부서 확인 → 인쇄
 // · 인증서 모달 「🪪 명찰 (직책)」 → 해당 인원 1명
-// · 디자인: 기존 명찰(로고 · 이름 · 한글이름 · 부서 · 사번) 유지 + 상단 직책 띠(ES · 한글)
+// · 디자인 3종: modern(기본 — 상단 라인 · 코너 아크 · 직책 블록 · 네이비 푸터) / stripe(좌측 세로 컬러 밴드) / legacy(기존 코너 웨지)
 // · 한글 이름·부서: att_employees(TRESS 직원마스터) name_ko / team 자동 연결 — 85.6×54mm(CR80)
 window.BADGE_DOC=(function(){
   const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-  const FONT='<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@500;700&family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">';
+  const FONT='<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@500;700&family=Noto+Sans+KR:wght@400;500;700;900&family=Montserrat:wght@600;700;800&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet">';
   const LOGO=()=>{try{const m=String(CERT_DOC&&CERT_DOC._logo||'');if(m)return m;}catch(e){}return '';};
   const CSS=`
   *{box-sizing:border-box}
-  html,body{margin:0;padding:0;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact;font-family:'Noto Sans KR','IBM Plex Sans KR',Arial,Helvetica,sans-serif;color:#111}
-  .card{position:relative;width:85.6mm;height:54mm;background:#fff;overflow:hidden;color:#111;break-inside:avoid;page-break-inside:avoid;--c:#c9a84c;--c2:#8a6d1f;--c3:#f3e6c2;--c4:#5c4812}
-  .w{position:absolute;background:linear-gradient(135deg,var(--c) 0%,var(--c2) 100%)}
-  .card.classic .w{background:#141414}
-  .card.classic .g{background:var(--c)}
-  .card.vivid .nb::after{content:"";position:absolute;left:22mm;right:22mm;bottom:1.2mm;height:.5mm;border-radius:.3mm;background:linear-gradient(90deg,rgba(255,255,255,0),var(--c) 25%,var(--c) 75%,rgba(255,255,255,0))}
-  .card.vivid .dp{color:var(--c4)}
-  .w.tl{left:0;top:0;width:34mm;height:9mm;clip-path:polygon(0 0,30mm 0,0 7mm)}
-  .w.tr{right:0;top:0;width:34mm;height:9mm;clip-path:polygon(100% 0,calc(100% - 30mm) 0,100% 7mm)}
-  .w.bl{left:0;bottom:0;width:28mm;height:7mm;clip-path:polygon(0 100%,24mm 100%,0 calc(100% - 5.2mm))}
-  .w.br{right:0;bottom:0;width:28mm;height:7mm;clip-path:polygon(100% 100%,calc(100% - 24mm) 100%,100% calc(100% - 5.2mm))}
-  .g{position:absolute;background:var(--c3);opacity:.95}
-  .g.tl{left:0;top:0;width:36mm;height:9.5mm;clip-path:polygon(31.3mm 0,33.8mm 0,0 7.9mm,0 7.3mm)}
-  .g.tr{right:0;top:0;width:36mm;height:9.5mm;clip-path:polygon(calc(100% - 31.3mm) 0,calc(100% - 33.8mm) 0,100% 7.9mm,100% 7.3mm)}
-  .g.bl{left:0;bottom:0;width:30mm;height:7.5mm;clip-path:polygon(25mm 100%,27.3mm 100%,0 calc(100% - 5.9mm),0 calc(100% - 5.4mm))}
-  .g.br{right:0;bottom:0;width:30mm;height:7.5mm;clip-path:polygon(calc(100% - 25mm) 100%,calc(100% - 27.3mm) 100%,100% calc(100% - 5.9mm),100% calc(100% - 5.4mm))}
-  .logo{position:absolute;left:0;right:0;top:2mm;text-align:center}
-  .logo img{height:8.6mm;width:auto;display:inline-block}
-  .logo .tx{display:inline-block;font-weight:900;font-size:13pt;letter-spacing:1px;line-height:1}
-  .ttl{position:absolute;left:0;right:0;top:11.6mm;text-align:center}
-  .ttl .pill{display:inline-block;background:linear-gradient(135deg,var(--c) 0%,var(--c2) 100%);color:#fff;font-weight:700;font-size:7.6pt;letter-spacing:.6px;line-height:1;padding:1.25mm 3.4mm;border-radius:1.2mm;white-space:nowrap;max-width:70mm;overflow:hidden;text-overflow:ellipsis}
-  .ttl .pill{box-shadow:0 .5mm 1.2mm rgba(0,0,0,.18)}
-  .ttl .pill .kt{font-weight:700;margin-left:1.6mm;padding-left:1.6mm;border-left:.25mm solid rgba(255,255,255,.55)}
-  .ttl .pr{font-size:5.9pt;color:var(--c4);font-weight:500;margin-top:.6mm;line-height:1.15;letter-spacing:.2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 12mm}
-  .ttl.np .pr{display:none}
-  .nb{position:absolute;left:4mm;right:4mm;top:19.2mm;bottom:11.5mm;padding:0 2mm;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.1mm}
-  .nb.np{top:17.4mm}
-  .nm{text-align:center;font-weight:700;font-size:11.2pt;line-height:1.12;letter-spacing:.1px;text-transform:uppercase;color:#14213d;word-break:break-word}
-  .nm.s2{font-size:9.6pt}.nm.s3{font-size:8.4pt}
-  .ko{text-align:center;font-weight:700;font-size:10.5pt;letter-spacing:.6px;line-height:1.1;color:var(--c4)}
-  .dp{position:absolute;left:3mm;bottom:6.4mm;max-width:36mm;font-weight:700;font-size:6.4pt;line-height:1.18;letter-spacing:.2px;text-transform:uppercase;color:#111}
-  .en{position:absolute;right:3.2mm;bottom:6.6mm;font-family:'Courier New',Courier,monospace;font-weight:700;font-size:8.2pt;letter-spacing:.3px;color:#14213d}
+  html,body{margin:0;padding:0;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact;font-family:'Montserrat','Noto Sans KR','IBM Plex Sans KR',Arial,Helvetica,sans-serif;color:#111;-webkit-font-smoothing:antialiased}
+  .card{position:relative;width:85.6mm;height:54mm;background:#fff;overflow:hidden;color:#111;break-inside:avoid;page-break-inside:avoid;--c:#c9a84c;--c2:#8a6d1f;--c3:#f3e6c2;--c4:#5c4812;--navy:#111c33;--ink:#15213a}
+  .card img.lg{display:block;height:7mm;width:auto;mix-blend-mode:multiply}
+  .card .lgtx{display:inline-block;font-weight:800;font-size:12pt;letter-spacing:1px;line-height:1;color:var(--ink)}
+  .mono{font-family:'JetBrains Mono','Courier New',Courier,monospace}
+  .ko-f{font-family:'Noto Sans KR','IBM Plex Sans KR',sans-serif}
+
+  /* ── modern (기본) ── */
+  .card.modern .top{position:absolute;left:0;right:0;top:0;height:1.7mm;background:linear-gradient(90deg,var(--c2) 0%,var(--c) 55%,var(--c3) 100%)}
+  .card.modern .arc{position:absolute;right:-12mm;top:-12mm;width:30mm;height:30mm;border-radius:50%;background:var(--c3);opacity:.85}
+  .card.modern .arc2{position:absolute;right:-8mm;top:-8mm;width:22mm;height:22mm;border-radius:50%;border:.55mm solid var(--c);opacity:.32}
+  .card.modern .arc3{position:absolute;right:2.8mm;top:2.8mm;width:2mm;height:2mm;border-radius:50%;background:linear-gradient(135deg,var(--c),var(--c2))}
+  .card.modern .logo{position:absolute;left:5mm;top:4.1mm}
+  .card.modern .tt{position:absolute;left:5mm;right:5mm;top:14.6mm}
+  .card.modern .tt .row{display:flex;align-items:center;gap:1.7mm;min-width:0}
+  .card.modern .tt .bar{flex:none;width:1.1mm;height:5.4mm;border-radius:.35mm;background:linear-gradient(180deg,var(--c),var(--c2))}
+  .card.modern .tt .es{font-weight:800;font-size:8.6pt;}
+  .card.modern .tt .es.t2{font-size:7.9pt;letter-spacing:.6px}.card.modern .tt .es.t3{font-size:7.1pt;letter-spacing:.4px}.card.modern .tt .es.t4{font-size:6.3pt;letter-spacing:.2px}
+  .card.modern .tt .es{letter-spacing:.9px;line-height:1;color:var(--c2);text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+  .card.modern .tt .kt{flex:none;font-weight:700;font-size:6.3pt;line-height:1;color:#fff;padding:.75mm 1.7mm .7mm;border-radius:.9mm;background:linear-gradient(135deg,var(--c) 0%,var(--c2) 100%);letter-spacing:.3px;white-space:nowrap}
+  .card.modern .tt .pr{margin:.9mm 0 0 2.8mm;font-weight:600;font-size:5.9pt;line-height:1.15;color:#6b7280;letter-spacing:.25px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .card.modern .tt.np .pr{display:none}
+  .card.modern .nb{position:absolute;left:5mm;right:5mm;top:23.6mm;bottom:9.4mm;display:flex;flex-direction:column;justify-content:center;gap:.9mm}
+  .card.modern .nb.np{top:21.8mm}
+  .card.modern .nm{font-weight:800;font-size:12.4pt;line-height:1.1;letter-spacing:.15px;text-transform:uppercase;color:var(--ink);word-break:break-word}
+  .card.modern .nm.s2{font-size:11pt}.card.modern .nm.s3{font-size:9.6pt}
+  .card.modern .ko{font-weight:700;font-size:9.4pt;letter-spacing:1.6px;line-height:1.1;color:var(--c2)}
+  .card.modern .ft{position:absolute;left:0;right:0;bottom:0;height:7.8mm;background:var(--navy);display:flex;align-items:center;justify-content:space-between;padding:0 5mm;color:#fff}
+  .card.modern .ft::before{content:"";position:absolute;left:0;right:0;top:-.7mm;height:.7mm;background:linear-gradient(90deg,var(--c3) 0%,var(--c) 45%,var(--c2) 100%)}
+  .card.modern .ft .dp{font-weight:700;font-size:6.3pt;letter-spacing:.9px;text-transform:uppercase;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:46mm;opacity:.95}
+  .card.modern .ft .en{font-weight:700;font-size:8pt;letter-spacing:1.2px;color:var(--c3)}
+
+  /* ── stripe (좌측 세로 밴드) ── */
+  .card.stripe .band{position:absolute;left:0;top:0;bottom:0;width:10.5mm;background:linear-gradient(180deg,var(--c2) 0%,var(--c) 100%);display:flex;align-items:center;justify-content:center}
+  .card.stripe .band .kt{writing-mode:vertical-rl;text-orientation:upright;color:#fff;font-weight:700;font-size:8.2pt;letter-spacing:1.4px;white-space:nowrap;line-height:1}
+  .card.stripe .band::after{content:"";position:absolute;left:3.4mm;right:3.4mm;bottom:4mm;height:.5mm;background:rgba(255,255,255,.55);border-radius:.3mm}
+  .card.stripe .band::before{content:"";position:absolute;left:3.4mm;right:3.4mm;top:4mm;height:.5mm;background:rgba(255,255,255,.55);border-radius:.3mm}
+  .card.stripe .edge{position:absolute;left:10.5mm;top:0;bottom:0;width:.45mm;background:var(--c3)}
+  .card.stripe .logo{position:absolute;left:14.2mm;top:4mm}
+  .card.stripe .tt{position:absolute;left:14.2mm;right:4.5mm;top:14.3mm}
+  .card.stripe .tt .es{font-weight:800;font-size:8.6pt;}
+  .card.stripe .tt .es.t2{font-size:7.9pt;letter-spacing:.6px}.card.stripe .tt .es.t3{font-size:7.3pt;letter-spacing:.4px}.card.stripe .tt .es.t4{font-size:6.6pt;letter-spacing:.2px}
+  .card.stripe .tt .es{letter-spacing:.9px;line-height:1;color:var(--c2);text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .card.stripe .tt .pr{margin-top:.9mm;font-weight:600;font-size:5.9pt;line-height:1.15;color:#6b7280;letter-spacing:.25px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .card.stripe .tt.np .pr{display:none}
+  .card.stripe .nb{position:absolute;left:14.2mm;right:4.5mm;top:22.6mm;bottom:9.6mm;display:flex;flex-direction:column;justify-content:center;gap:.9mm}
+  .card.stripe .nb.np{top:20.6mm}
+  .card.stripe .nm{font-weight:800;font-size:12pt;line-height:1.1;letter-spacing:.15px;text-transform:uppercase;color:var(--ink);word-break:break-word}
+  .card.stripe .nm.s2{font-size:10.6pt}.card.stripe .nm.s3{font-size:9.2pt}
+  .card.stripe .ko{font-weight:700;font-size:9.2pt;letter-spacing:1.6px;line-height:1.1;color:var(--c2)}
+  .card.stripe .ft{position:absolute;left:14.2mm;right:4.5mm;bottom:3.6mm;height:5.2mm;border-top:.35mm solid var(--c3);display:flex;align-items:flex-end;justify-content:space-between;padding-top:1.2mm}
+  .card.stripe .ft .dp{font-weight:700;font-size:6.2pt;letter-spacing:.8px;text-transform:uppercase;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:42mm}
+  .card.stripe .ft .en{font-weight:700;font-size:8pt;letter-spacing:1.2px;color:var(--c2)}
+
+  /* ── legacy (기존 코너 웨지) ── */
+  .card.legacy{font-family:'Noto Sans KR','IBM Plex Sans KR',Arial,sans-serif}
+  .card.legacy .w{position:absolute;background:linear-gradient(135deg,var(--c) 0%,var(--c2) 100%)}
+  .card.legacy .w.tl{left:0;top:0;width:34mm;height:9mm;clip-path:polygon(0 0,30mm 0,0 7mm)}
+  .card.legacy .w.tr{right:0;top:0;width:34mm;height:9mm;clip-path:polygon(100% 0,calc(100% - 30mm) 0,100% 7mm)}
+  .card.legacy .w.bl{left:0;bottom:0;width:28mm;height:7mm;clip-path:polygon(0 100%,24mm 100%,0 calc(100% - 5.2mm))}
+  .card.legacy .w.br{right:0;bottom:0;width:28mm;height:7mm;clip-path:polygon(100% 100%,calc(100% - 24mm) 100%,100% calc(100% - 5.2mm))}
+  .card.legacy .g{position:absolute;background:var(--c3);opacity:.95}
+  .card.legacy .g.tl{left:0;top:0;width:36mm;height:9.5mm;clip-path:polygon(31.3mm 0,33.8mm 0,0 7.9mm,0 7.3mm)}
+  .card.legacy .g.tr{right:0;top:0;width:36mm;height:9.5mm;clip-path:polygon(calc(100% - 31.3mm) 0,calc(100% - 33.8mm) 0,100% 7.9mm,100% 7.3mm)}
+  .card.legacy .g.bl{left:0;bottom:0;width:30mm;height:7.5mm;clip-path:polygon(25mm 100%,27.3mm 100%,0 calc(100% - 5.9mm),0 calc(100% - 5.4mm))}
+  .card.legacy .g.br{right:0;bottom:0;width:30mm;height:7.5mm;clip-path:polygon(calc(100% - 25mm) 100%,calc(100% - 27.3mm) 100%,100% calc(100% - 5.9mm),100% calc(100% - 5.4mm))}
+  .card.legacy .logo{position:absolute;left:0;right:0;top:2mm;text-align:center}
+  .card.legacy .logo img{height:8.6mm;display:inline-block}
+  .card.legacy .ttl{position:absolute;left:0;right:0;top:11.6mm;text-align:center}
+  .card.legacy .ttl .pill{display:inline-block;background:linear-gradient(135deg,var(--c) 0%,var(--c2) 100%);color:#fff;font-weight:700;font-size:7.6pt;letter-spacing:.6px;line-height:1;padding:1.25mm 3.4mm;border-radius:1.2mm;white-space:nowrap;max-width:70mm;overflow:hidden;text-overflow:ellipsis;box-shadow:0 .5mm 1.2mm rgba(0,0,0,.18)}
+  .card.legacy .ttl .pill .kt{font-weight:700;margin-left:1.6mm;padding-left:1.6mm;border-left:.25mm solid rgba(255,255,255,.55)}
+  .card.legacy .ttl .pr{font-size:5.9pt;color:var(--c4);font-weight:500;margin-top:.6mm;line-height:1.15;letter-spacing:.2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 12mm}
+  .card.legacy .ttl.np .pr{display:none}
+  .card.legacy .nb{position:absolute;left:4mm;right:4mm;top:19.2mm;bottom:11.5mm;padding:0 2mm;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.1mm}
+  .card.legacy .nb.np{top:17.4mm}
+  .card.legacy .nb::after{content:"";position:absolute;left:22mm;right:22mm;bottom:1.2mm;height:.5mm;border-radius:.3mm;background:linear-gradient(90deg,rgba(255,255,255,0),var(--c) 25%,var(--c) 75%,rgba(255,255,255,0))}
+  .card.legacy .nm{text-align:center;font-weight:700;font-size:11.2pt;line-height:1.12;letter-spacing:.1px;text-transform:uppercase;color:#14213d;word-break:break-word}
+  .card.legacy .nm.s2{font-size:9.6pt}.card.legacy .nm.s3{font-size:8.4pt}
+  .card.legacy .ko{text-align:center;font-weight:700;font-size:10.5pt;letter-spacing:.6px;line-height:1.1;color:var(--c4)}
+  .card.legacy .dp{position:absolute;left:3mm;bottom:6.4mm;max-width:36mm;font-weight:700;font-size:6.4pt;line-height:1.18;letter-spacing:.2px;text-transform:uppercase;color:var(--c4)}
+  .card.legacy .en{position:absolute;right:3.2mm;bottom:6.6mm;font-family:'Courier New',Courier,monospace;font-weight:700;font-size:8.2pt;letter-spacing:.3px;color:#14213d}
+
   /* 용지 */
   body.p-card .card{page-break-after:always}
   body.p-card .card:last-child{page-break-after:auto}
   body.p-letter .sheet{width:215.9mm;min-height:279.4mm;padding:14mm 0 0;display:grid;grid-template-columns:repeat(2,85.6mm);grid-auto-rows:54mm;column-gap:12mm;row-gap:7mm;justify-content:center;align-content:start;page-break-after:always;margin:0 auto}
   body.p-letter .sheet:last-child{page-break-after:auto}
   body.p-letter .card{outline:.2mm dashed #9a9a9a;outline-offset:0}
-  body.p-letter .sheet .card::before,body.p-letter .sheet .card::after{content:none}
-  body.p-letter .ct{position:absolute;width:3mm;height:3mm;border-color:#777;border-style:solid;border-width:0;pointer-events:none}
   @media screen{body.p-letter .sheet{box-shadow:0 2px 12px rgba(0,0,0,.25);margin-bottom:6mm}}
   `;
-  function nameClass(n){const L=String(n||'').length;return L>34?'s3':(L>24?'s2':'');}
-  const PAL={gold:['#c9a84c','#8a6d1f','#f6ecd0','#5c4812'],blue:['#2f6fde','#1b3f8f','#dde8fb','#15336f'],green:['#1aa37a','#0e6b4f','#d7f2e8','#0b5340'],orange:['#ff7a1a','#c24f00','#ffe3cc','#8f3a00'],purple:['#7b3fe4','#4d1fa3','#e9dcfb','#3c177f'],red:['#d62828','#8f1313','#f9d9d9','#6e0f0f'],teal:['#0ea5b5','#0b6f7a','#d6f3f6','#08525a'],black:['#141414','#141414','#bdbdbd','#111']};
+  function esClass(t){const L=String(t||'').length;return L>24?'t4':(L>18?'t3':(L>12?'t2':''));}
+  function nameClass(n){const L=String(n||'').length;return L>40?'s3':(L>30?'s2':'');}
+  const PAL={gold:['#c9a84c','#8a6d1f','#f6ecd0','#5c4812'],blue:['#2f6fde','#1b3f8f','#dde8fb','#15336f'],green:['#1aa37a','#0e6b4f','#d7f2e8','#0b5340'],orange:['#ff7a1a','#c24f00','#ffe3cc','#8f3a00'],purple:['#7b3fe4','#4d1fa3','#e9dcfb','#3c177f'],red:['#d62828','#8f1313','#f9d9d9','#6e0f0f'],teal:['#0ea5b5','#0b6f7a','#d6f3f6','#08525a'],black:['#3a3a3a','#141414','#d9d9d9','#111']};
   const ROLE_COLOR={jojang:'gold',leader:'blue',train:'green',rework:'orange',admin:'purple',custom:'red'};
   function palOf(d,opts){const k=(opts&&opts.color&&opts.color!=='auto')?opts.color:(ROLE_COLOR[d.title]||'gold');return PAL[k]||PAL.gold;}
   function card(d,opts){
     opts=opts||{};
     const logo=LOGO();
-    const P=palOf(d,opts);const style=opts.style||'vivid';
-    const nm=String(d.name||'');
-    const title=[d.es?`<span class="es">${esc(d.es)}</span>`:'',d.ko?`<span class="kt">${esc(d.ko)}</span>`:''].filter(Boolean).join('');
-    return `<div class="card ${style}" style="--c:${P[0]};--c2:${P[1]};--c3:${P[2]};--c4:${P[3]}">
+    const P=palOf(d,opts);const style=['modern','stripe','legacy'].includes(opts.style)?opts.style:'modern';
+    const nm=String(d.name||'');const np=opts.showProc===false||!d.proc;
+    const vars=`--c:${P[0]};--c2:${P[1]};--c3:${P[2]};--c4:${P[3]}`;
+    const logoEl=logo?`<img class="lg" src="${logo}" alt="YURA HARNESS">`:'<span class="lgtx">YURA HARNESS</span>';
+    if(style==='legacy'){
+      const title=[d.es?`<span class="es">${esc(d.es)}</span>`:'',d.ko?`<span class="kt ko-f">${esc(d.ko)}</span>`:''].filter(Boolean).join('');
+      return `<div class="card legacy" style="${vars}">
   <div class="w tl"></div><div class="w tr"></div><div class="w bl"></div><div class="w br"></div>
   <div class="g tl"></div><div class="g tr"></div><div class="g bl"></div><div class="g br"></div>
-  <div class="logo">${logo?`<img src="${logo}" alt="YURA HARNESS">`:'<span class="tx">YURA HARNESS</span>'}</div>
+  <div class="logo">${logoEl}</div>
   <div class="ttl${opts.showProc===false?' np':''}">${title?`<div class="pill">${title}</div>`:''}<div class="pr">${esc(d.proc||'')}</div></div>
-  <div class="nb${opts.showProc===false||!d.proc?' np':''}"><div class="nm ${nameClass(nm)}">${esc(nm)}</div><div class="ko">${esc(d.nameKo||'')}</div></div>
+  <div class="nb${np?' np':''}"><div class="nm ${nameClass(nm)}">${esc(nm)}</div><div class="ko ko-f">${esc(d.nameKo||'')}</div></div>
   <div class="dp">${esc(d.dept||'')}</div>
   <div class="en">${esc(d.empNo||'')}</div>
 </div>`;
+    }
+    if(style==='stripe'){
+      return `<div class="card stripe" style="${vars}">
+  <div class="band"><span class="kt ko-f">${esc(d.ko||d.es||'')}</span></div><div class="edge"></div>
+  <div class="logo">${logoEl}</div>
+  <div class="tt${opts.showProc===false?' np':''}"><div class="es ${esClass(d.es)}">${esc(d.es||'')}</div><div class="pr">${esc(d.proc||'')}</div></div>
+  <div class="nb${np?' np':''}"><div class="nm ${nameClass(nm)}">${esc(nm)}</div><div class="ko ko-f">${esc(d.nameKo||'')}</div></div>
+  <div class="ft"><span class="dp">${esc(d.dept||'')}</span><span class="en mono">${esc(d.empNo||'')}</span></div>
+</div>`;
+    }
+    return `<div class="card modern" style="${vars}">
+  <div class="top"></div><div class="arc"></div><div class="arc2"></div><div class="arc3"></div>
+  <div class="logo">${logoEl}</div>
+  <div class="tt${opts.showProc===false?' np':''}"><div class="row"><span class="bar"></span><span class="es ${esClass(d.es)}">${esc(d.es||'')}</span>${d.ko?`<span class="kt ko-f">${esc(d.ko)}</span>`:''}</div><div class="pr">${esc(d.proc||'')}</div></div>
+  <div class="nb${np?' np':''}"><div class="nm ${nameClass(nm)}">${esc(nm)}</div><div class="ko ko-f">${esc(d.nameKo||'')}</div></div>
+  <div class="ft"><span class="dp">${esc(d.dept||'')}</span><span class="en mono">${esc(d.empNo||'')}</span></div>
+</div>`;
   }
-  // list=[{name,nameKo,empNo,es,ko,proc,dept}] · opts={paper:'letter'|'card',copies,showProc,gold,zoom}
+  // list=[{name,nameKo,empNo,es,ko,proc,dept}] · opts={paper:'letter'|'card',copies,showProc,color,style,zoom}
   function build(list,opts){
     opts=opts||{};const paper=opts.paper==='card'?'card':'letter';const copies=Math.max(1,parseInt(opts.copies)||1);
     const cards=[];list.forEach(d=>{for(let i=0;i<copies;i++)cards.push(card(d,opts));});

@@ -452,6 +452,7 @@ table.cfg input{width:17px;height:17px}
   <button data-tab="in" class="on"><svg viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M6 6l1.5 12h9L18 6"/><path d="M9 10h6M9.5 14h5"/></svg><span data-t="tab_in">부산물 측정 입력</span></button>
   <button data-tab="rs"><svg viewBox="0 0 24 24"><path d="M3 20h18"/><path d="M6 16V9M11 16V5M16 16v-6M21 16V12"/></svg><span data-t="tab_rs">산출 현황</span></button>
   <button data-tab="lr"><svg viewBox="0 0 24 24"><path d="M19 5L5 19"/><circle cx="7" cy="7" r="2.5"/><circle cx="17" cy="17" r="2.5"/></svg><span data-t="tab_lr">로스율 현황</span></button>
+  <button data-tab="sp"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 4v16"/></svg><span data-t="tab_sp">SAP 등록</span></button>
   <button data-tab="us"><svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></svg><span data-t="tab_us">자재사용량 (32040)</span></button>
   <button data-tab="mw"><svg viewBox="0 0 24 24"><path d="M12 3v18"/><path d="M5 8l7-3 7 3"/><path d="M3 14l2-6 2 6a2 2 0 0 1-4 0zM17 14l2-6 2 6a2 2 0 0 1-4 0z"/></svg><span data-t="tab_mw">단위중량 마스터</span></button>
   <button data-tab="cf"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg><span data-t="tab_cf">호기 · 종류비율 설정</span></button>
@@ -572,6 +573,34 @@ table.cfg input{width:17px;height:17px}
   </div>
 </section>
 
+<!-- ══ ②-3 SAP 등록 ══ -->
+<section class="tab" id="t-sp">
+  <div class="fs-head2"><h2 data-t="sp_title">Registro en SAP · SAP 등록 내용정리</h2><span class="fs-pl" id="pl-sp"></span><span class="s">Loss type kg → M / EA for SAP</span><span class="sp"></span>
+    <button class="btn sec" onclick="lrExcel('sap')">⬇ <span data-t="excel">엑셀 다운로드</span></button></div>
+  <div class="fs-body">
+    <div class="card">
+      <div class="row hd" style="margin-bottom:0">
+        <div class="dnav">
+          <button class="btn sec" onclick="spShift(-1)">‹</button>
+          <input type="date" id="sp-date" onchange="spLoad()">
+          <button class="btn sec" onclick="spShift(1)">›</button>
+          <button class="btn sec" onclick="$('sp-date').value=today();spLoad()" data-t="today">오늘</button>
+          <span class="dow" id="sp-dow"></span>
+          <button class="btn sec" onclick="spLoad()">↻ <span data-t="refresh">새로고침</span></button>
+        </div>
+        <span class="mini" id="sp-info"></span>
+      </div>
+      <div class="hint" style="margin-top:8px" data-t="sp_hint">로스유형별 발생중량(kg)을 재질 평균 단위중량으로 나눠 SAP 등록 수량(전선 M · 단자/방수씰 EA)으로 환산합니다. SAP 등록명은 「호기 · 종류비율 설정」에서 지정하며, 같은 이름은 묶어서 표시됩니다.</div>
+    </div>
+    <div class="card rep-card">
+      <div class="rep-title"><div><b>Registro en SAP</b><span>SAP에 등록하는 내용정리</span></div><span class="rep-date" id="sp-rep-date"></span></div>
+      <div class="rep-sec">▪ Generación por tipo de pérdida <span>로스유형별 발생현황</span></div>
+      <div class="tw lr rep" id="lr-sap"></div>
+      <div class="rep-foot" id="lr-sap-note"></div>
+    </div>
+  </div>
+</section>
+
 <!-- ══ ③ 자재사용량 ══ -->
 <section class="tab" id="t-us">
   <div class="fs-head2"><h2 data-t="us_title">일별 자재사용량 (MES 32040 동기화)</h2><span class="fs-pl" id="pl-us"></span><span class="s">Wire M · Terminal EA</span><span class="sp"></span>
@@ -637,6 +666,9 @@ table.cfg input{width:17px;height:17px}
         <div class="row hd"><h3 data-t="cf_ratio">부산물 종류별 비율 (%)</h3><button class="btn" onclick="cfSaveRatio()" data-t="save">저장</button></div>
         <div class="hint" style="margin-bottom:8px" data-t="cf_ratio_hint">전선·단자·방수씰 총 발생량에 종류별 비율을 적용해 종류별 발생량을 자동 계산합니다. 각 열의 합계는 <b>100%</b>가 되어야 합니다.</div>
         <div class="tw" id="cf-ratio"></div>
+        <div class="row hd" style="margin-top:16px"><h3 data-t="cf_sap">Registro en SAP · 종류별 SAP 등록명</h3><button class="btn" onclick="cfSaveRatio()" data-t="save">저장</button></div>
+        <div class="hint" style="margin-bottom:8px" data-t="cf_sap_hint">로스유형별 발생량을 SAP에 등록할 때 쓰는 항목명을 재질별(Wire·Terminal·Seal)로 지정합니다. 같은 이름을 쓰는 종류는 로스율 현황의 「Registro en SAP」 표에서 묶어서 보여줍니다.</div>
+        <div class="tw" id="cf-sap"></div>
       </div>
     </div>
   </div>
@@ -692,7 +724,7 @@ const KNAME={w:'Wire',t:'Terminal',j:'Seal',s:'Scrap'};
 const T={
  title:['가공생산팀 부산물 관리','Gestión de subproductos · Prod. maquinado'],
  sysbar:['부산물 관리 / Gestión de subproductos · Producción maquinado','Gestión de subproductos / 부산물 관리 · Producción maquinado'],
- tab_in:['부산물 측정 입력','Registro de pesaje'],tab_rs:['산출 현황','Resultados'],tab_lr:['로스율 현황','Tasa de pérdida'],tab_us:['자재사용량 (32040)','Consumo de material (32040)'],tab_mw:['단위중량 마스터','Peso unitario'],tab_cf:['호기 · 종류비율 설정','Máquinas · Ratios'],
+ tab_in:['부산물 측정 입력','Registro de pesaje'],tab_rs:['산출 현황','Resultados'],tab_lr:['로스율 현황','Tasa de pérdida'],tab_sp:['SAP 등록','Registro en SAP'],sp_title:['Registro en SAP · SAP 등록 내용정리','Registro en SAP · resumen para registrar'],sp_hint:['로스유형별 발생중량(kg)을 재질 평균 단위중량으로 나눠 SAP 등록 수량(전선 M · 단자/방수씰 EA)으로 환산합니다. SAP 등록명은 「호기 · 종류비율 설정」에서 지정하며, 같은 이름은 묶어서 표시됩니다.','El peso por tipo de pérdida (kg) se convierte a cantidad para SAP (cable M · terminal/sello EA) con el peso unitario promedio. Los nombres SAP se definen en «Máquinas · Ratios»; los iguales se agrupan.'],tab_us:['자재사용량 (32040)','Consumo de material (32040)'],tab_mw:['단위중량 마스터','Peso unitario'],tab_cf:['호기 · 종류비율 설정','Máquinas · Ratios'],
  in_title:['부산물 발생량 측정 입력','Registro de pesaje de subproductos'],cut_qty:['절단수량 (본)','Cortes (pzas)'],del_day:['당일 전체 삭제','Borrar todo el día'],today:['오늘','Hoy'],worker:['측정자','Medido por'],paste_tot:['총량 붙여넣기','Pegar totales'],save:['저장','Guardar'],
  in_mc:['호기별 측정 (kg)','Pesaje por máquina (kg)'],only_val:['입력된 호기만','Solo con datos'],
  in_hint:['전선(Wire)·단자(Terminal)·방수씰(Seal)·스크랩(Scrap)은 종류별로 따로 계량하여 kg으로 입력합니다. 사진은 호기별로 첨부(카메라 촬영 가능)되며, 입력 후 반드시 <b>저장</b>을 눌러 주세요. 전체를 한 번에 계량한 값은 맨 위 「일괄 측정」 행(또는 「총량 붙여넣기」)에 넣으면, 하단에 호기별 합계와의 차이가 표시됩니다.',
@@ -707,6 +739,7 @@ const T={
  mw_title:['자재 단위중량 마스터','Maestro de peso unitario'],mw_w:['전선','Cable'],mw_t:['단자','Terminal'],mw_j:['방수씰','Sello'],mw_only_miss:['미등록만','Solo sin peso'],paste:['붙여넣기 입력','Pegar'],
  cf_title:['호기 · 부산물 종류 비율 설정','Máquinas · ratios por tipo'],cf_mc:['측정 호기','Máquinas'],add:['추가','Agregar'],cf_ratio:['부산물 종류별 비율 (%)','Ratio por tipo de subproducto (%)'],
  cf_ratio_hint:['전선·단자·방수씰 총 발생량에 종류별 비율을 적용해 종류별 발생량을 자동 계산합니다. 각 열의 합계는 <b>100%</b>가 되어야 합니다. <b>스크랩은 점유율 대상에서 제외</b>됩니다.','El total de cable/terminal/sello se reparte por tipo según estos ratios. Cada columna debe sumar <b>100%</b>. <b>El scrap no participa.</b>'],
+ cf_sap:['Registro en SAP · 종류별 SAP 등록명','Registro en SAP · nombre por tipo'],cf_sap_hint:['로스유형별 발생량을 SAP에 등록할 때 쓰는 항목명을 재질별(Wire·Terminal·Seal)로 지정합니다. 같은 이름을 쓰는 종류는 로스율 현황의 「Registro en SAP」 표에서 묶어서 보여줍니다.','Nombre con el que cada tipo de pérdida se registra en SAP, por material (Wire·Terminal·Seal). Los tipos con el mismo nombre se agrupan en la tabla «Registro en SAP».'],
  cancel:['취소','Cancelar'],apply:['반영','Aplicar'],photo_kind:['구분','Tipo'],etc:['기타','Otro'],photo_add:['사진 촬영 / 추가','Tomar / agregar foto'],
 };
 function applyLang(){
@@ -716,7 +749,7 @@ function applyLang(){
   document.title=L('가공생산팀 부산물 관리','Gestión de subproductos')+' · '+L(PLANT+'공장','Planta '+PLANT);
   $('plantTag').textContent=PLANT===2?L('멕시코 2공장 · Torreón','México Planta 2 · Torreón'):L('멕시코 1공장 · Monclova','México Planta 1 · Monclova');
   const pl='PLANT '+PLANT+' · '+(PLANT===2?L('토레온','Torreón'):L('몽클로바','Monclova'));
-  ['in','rs','lr','us','mw','cf'].forEach(k=>{const e=$('pl-'+k);e.textContent=pl;e.className='fs-pl p'+PLANT});
+  ['in','rs','lr','sp','us','mw','cf'].forEach(k=>{const e=$('pl-'+k);e.textContent=pl;e.className='fs-pl p'+PLANT});
   renderAll();
 }
 document.querySelectorAll('.lang button').forEach(b=>b.onclick=()=>{curLang=b.dataset.l;try{localStorage.setItem('byp_lang',curLang)}catch(e){}applyLang()});
@@ -827,7 +860,7 @@ function calcItems(map,tot,kg){
 document.querySelectorAll('nav.tabs button').forEach(b=>b.onclick=()=>{
   document.querySelectorAll('nav.tabs button').forEach(x=>x.classList.toggle('on',x===b));
   document.querySelectorAll('main .tab').forEach(s=>s.classList.toggle('on',s.id==='t-'+b.dataset.tab));
-  const t=b.dataset.tab;if(t==='rs')rsLoad();if(t==='lr')lrLoad();if(t==='us')usLoad();if(t==='mw')mwLoad();if(t==='cf')cfRender();
+  const t=b.dataset.tab;if(t==='rs')rsLoad();if(t==='lr')lrLoad();if(t==='sp')spLoad();if(t==='us')usLoad();if(t==='mw')mwLoad();if(t==='cf')cfRender();
 });
 function renderAll(){inRender();cfRender();if(RS.data)rsRender();if(LR.data)lrRender();if(US.data)usRender();if(MW.ready)mwRender()}
 
@@ -1315,6 +1348,9 @@ function cfRender(){
       <td class="c"><button class="pbtn" onclick="cfDelCat('${esc(c.cat)}')">✕</button></td></tr>`).join('')}
     <tr><td><select id="cf-newgrp" style="height:32px;font-size:13px;width:100%"><option value="prod">${grpN.prod}</option><option value="ext">${grpN.ext}</option></select></td><td><input class="cell tx" id="cf-newcat" placeholder="${L('새 종류 이름','Nuevo tipo')}"></td><td colspan="3" class="mini">${L('종류 추가 후 비율을 입력하고 저장','Agregue y luego guarde')}</td><td class="c"><button class="pbtn" onclick="cfAddCat()">+</button></td></tr></tbody>
     <tfoot><tr><td colspan="2">${L('합계','Total')}</td>${RK.map(([k])=>`<td class="n" id="cf-s-${k}"></td>`).join('')}<td></td></tr></tfoot></table>`;
+  const SK=[['sap_w','Wire'],['sap_t','Terminal'],['sap_j','Seal']];
+  $('cf-sap').innerHTML=`<table><colgroup><col style="width:20%"><col style="width:26%"><col><col><col></colgroup><thead><tr><th>${L('구분','Grupo')}</th><th>${L('부산물 종류','Tipo')}</th>${SK.map(([k,n])=>`<th>SAP · ${n}</th>`).join('')}</tr></thead><tbody>
+    ${S.ratio.map(c=>`<tr><td><span class="cat-grp ${c.grp}">${grpN[c.grp]||c.grp}</span></td><td class="b">${esc(catN(c.cat))}</td>${SK.map(([k])=>`<td><input class="cell tx" data-cat="${esc(c.cat)}" data-k="${k}" value="${esc(c[k]||'')}" placeholder="${L('SAP 등록명','Nombre SAP')}"></td>`).join('')}</tr>`).join('')||`<tr><td colspan="5" class="empty">${L('종류 없음','Sin tipos')}</td></tr>`}</tbody></table>`;
   cfChg();
 }
 function cfChg(){
@@ -1338,8 +1374,8 @@ async function cfDelCat(cat){
   try{await sbDel('byp_ratio',`plant=eq.${PLANT}&cat=eq.${encodeURIComponent(cat)}`);S.ratio=S.ratio.filter(c=>c.cat!==cat);cfRender();RS.data=null}catch(e){toast(e.message,true)}
 }
 async function cfSaveRatio(){
-  const rows=S.ratio.map(c=>{const g=k=>{const i=document.querySelector(`#cf-ratio input[data-cat="${CSS.escape(c.cat)}"][data-k="${k}"]`);return i?(parseFloat(i.value)||0):(+c[k]||0)};const o={plant:PLANT,cat:c.cat,grp:c.grp,ord:c.ord};RK.forEach(([k])=>o[k]=g(k));return o});
-  load(true);try{await sbUpsert('byp_ratio',rows,'plant,cat');S.ratio=rows;RS.data=null;toast(L('비율 저장 완료','Ratios guardados'));cfRender()}catch(e){toast(e.message,true)}finally{load(false)}
+  const rows=S.ratio.map(c=>{const g=k=>{const i=document.querySelector(`#cf-ratio input[data-cat="${CSS.escape(c.cat)}"][data-k="${k}"]`);return i?(parseFloat(i.value)||0):(+c[k]||0)};const o={plant:PLANT,cat:c.cat,grp:c.grp,ord:c.ord};RK.forEach(([k])=>o[k]=g(k));['sap_w','sap_t','sap_j'].forEach(k=>{const i=document.querySelector(`#cf-sap input[data-cat="${CSS.escape(c.cat)}"][data-k="${k}"]`);o[k]=i?(i.value.trim()||null):(c[k]||null)});return o});
+  load(true);try{await sbUpsert('byp_ratio',rows,'plant,cat');S.ratio=rows;RS.data=null;LR.data=null;toast(L('비율·SAP 등록명 저장 완료','Ratios y SAP guardados'));cfRender()}catch(e){toast(e.message,true)}finally{load(false)}
 }
 
 /* ═══════════ ⑥ 로스율 현황 (일별 부산물현황 보고) ═══════════ */
@@ -1348,11 +1384,13 @@ const monthRange=ym=>{const [y,m]=ym.split('-').map(Number);return [ym+'-01',ym+
 const prevYm=ym=>{const [y,m]=ym.split('-').map(Number);const d=new Date(y,m-2,1);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')};
 const rateF=v=>v==null?'–':(v*100).toFixed(2)+'%';
 const signF=(v,d=1)=>v==null?'–':(v>0?'+':'')+num(v,d);
+function spShift(n){$('sp-date').value=addDays($('sp-date').value||today(),n);spLoad()}
+async function spLoad(){const d=$('sp-date').value||today();$('lr-date').value=d;await lrLoad()}
 function lrShift(n){$('lr-date').value=addDays($('lr-date').value||today(),n);lrLoad()}
 function lrToday(){$('lr-date').value=today();lrLoad()}
 async function lrLoad(){
   const d=$('lr-date').value||today();$('lr-date').value=d;
-  const dt=new Date(d+'T00:00:00');$('lr-dow').textContent=(curLang==='es'?DOWES:DOW)[dt.getDay()];
+  const dt=new Date(d+'T00:00:00');$('lr-dow').textContent=(curLang==='es'?DOWES:DOW)[dt.getDay()];$('sp-date').value=d;$('sp-dow').textContent=$('lr-dow').textContent;
   const ym=d.slice(0,7),pym=prevYm(ym),[pf,pt]=monthRange(pym),[mf]=monthRange(ym);
   const tk=LR.tk=(LR.tk||0)+1;load(true);
   try{
@@ -1383,7 +1421,7 @@ function usedKg(rows){
 function lrPeriod(D,[f,t]){
   const G=sumDaily(D.daily.filter(r=>r.d>=f&&r.d<=t)),use=usedKg(D.usage.filter(r=>r.udate>=f&&r.udate<=t));
   const g=G.tot,nd=Object.keys(G.byDay).length,rate=(a,b)=>(b>0&&nd)?a/b:null; /* 측정 없는 기간은 로스율 '–' */
-  const rows={};['w','t','j'].forEach(k=>rows[k]={use:use[k].kg,gen:g[k],rate:rate(g[k],use[k].kg),cov:use[k].cov,qty:use[k].qty});
+  const rows={};['w','t','j'].forEach(k=>rows[k]={use:use[k].kg,gen:g[k],rate:rate(g[k],use[k].kg),cov:use[k].cov,qty:use[k].qty,avg:use[k].avg||0});
   const su=rows.w.use+rows.t.use+rows.j.use,sg=g.w+g.t+g.j;
   /* 절단수량(본) 합계 → g/1,000본 = kg × 1e6 ÷ 본 (측정이 있는 기간만) */
   const cut=Object.entries(D.cut||{}).filter(([x])=>x>=f&&x<=t).reduce((a,[,q])=>a+q,0);const gk=v=>(cut>0&&nd)?v*1e6/cut:null;
@@ -1396,7 +1434,7 @@ function lrCalc(){
   const dates=[...new Set([...Object.keys(mtd.byDay),...Object.keys(mtd.uDaily),...Object.keys(D.cut||{})])].filter(x=>x>=D.P.mtd[0]&&x<=D.P.mtd[1]).sort();
   const dailyRows=dates.map(x=>({d:x,...lrPeriod(D,[x,x])}));
   const PK={w:'wire_pct',t:'term_pct',j:'seal_pct'};
-  const cats={};['w','t','j'].forEach(k=>{cats[k]=S.ratio.map(c=>{const p=(+c[PK[k]]||0)/100;const a=day.rows[k].gen*p,m=mtd.rows[k].gen*p,pv=prev.rows[k].gen*p;return {cat:c.cat,grp:c.grp,p,a,m,pv,diff:m-pv,var:pv>0?(m-pv)/pv:null}})});
+  const cats={};['w','t','j'].forEach(k=>{cats[k]=S.ratio.map(c=>{const p=(+c[PK[k]]||0)/100;const a=day.rows[k].gen*p,m=mtd.rows[k].gen*p,pv=prev.rows[k].gen*p;const q=(kg,P)=>P.rows[k].avg>0?kg/P.rows[k].avg:null;return {cat:c.cat,grp:c.grp,p,a,m,pv,diff:m-pv,var:pv>0?(m-pv)/pv:null,sap:c['sap_'+k]||'',qa:q(a,day),qm:q(m,mtd)}})});
   return {day,mtd,prev,dailyRows,cats};
 }
 function lrRender(){
@@ -1404,7 +1442,9 @@ function lrRender(){
   const {day,mtd,prev}=C;const KN={w:'WIRE',t:'TERMINAL',j:'SEAL'};
   const mm=+D.ym.slice(5),pm=+D.pym.slice(5);
   const lbl={day:L('당일','Día')+' '+D.d,mtd:L(`${mm}월 누적`,`Acum. mes ${mm}`)+` (${D.P.mtd[0].slice(5)}~${D.d.slice(5)})`,prev:L('전월','Mes ant.')+` (${D.pym})`};
+  $('sp-rep-date').textContent=D.d;$('sp-info').textContent=$('lr-info').textContent;
   $('lr-info').textContent=L(`측정 ${mtd.days}일 · 사용량 ${mtd.udays}일 (${mm}월) · 전월 측정 ${prev.days}일`,`${mtd.days} días pesaje · ${mtd.udays} días consumo (mes ${mm}) · mes ant. ${prev.days} días`);
+  $('sp-info').textContent=$('lr-info').textContent;
   const warns=[];
   if(!day.days)warns.push(['',L(`${D.d} 측정 데이터가 없습니다 → 「부산물 측정 입력」`,`Sin pesaje el ${D.d} → «Registro de pesaje»`)]);
   if(!day.udays)warns.push(['',L(`${D.d} 32040 사용량이 없습니다 (가공생산팀 자재관리 사이트에서 등록) → 사용중량·로스율 산출 불가`,`Sin consumo 32040 el ${D.d} → no se calcula tasa de pérdida`)]);
@@ -1463,6 +1503,20 @@ function lrRender(){
     <tr>${cut2()}${cut2()}${cut2()}<th class="n">${L('증감','Dif.')}</th><th class="n">${L('증감율','Var.')}</th></tr></thead><tbody>
     ${gkRow('WIRE',P=>P.rows.w)}${gkRow('TERMINAL',P=>P.rows.t)}${gkRow('SEAL',P=>P.rows.j)}${gkRow(L('소계','Subtotal'),P=>P.sub,'sum')}${gkRow('SCRAP',P=>({gen:P.scrap,gk:P.scrapGk}),'scrap')}${gkRow(L('합계','Total'),P=>P.all,'sum')}</tbody></table>`;
   $('lr-cut-note').innerHTML=(!day.cut&&!mtd.cut)?`<span class="neg">${L('절단수량이 등록되지 않았습니다 → 「부산물 측정 입력」에서 날짜별 절단수량(본)을 입력·저장하세요.','No hay cortes registrados → ingrese cortes por fecha en «Registro de pesaje».')}</span>`:L('g/1,000본 = 발생중량(kg) × 1,000,000 ÷ 절단수량(본) · 절단수량은 「부산물 측정 입력」에서 날짜별로 저장 (측정이 있는 날만 집계)','g/1,000pz = kg × 1,000,000 ÷ cortes · cortes se registran por fecha en «Registro de pesaje»');
+  /* ②-2 Registro en SAP: 로스유형 kg → 재질 평균 단위중량으로 M/EA 환산, SAP 등록명 같은 행은 병합 */
+  const UNIT={w:'m',t:'ea',j:'ea'};const qF=v=>v==null?'–':num(v,2);
+  let sb='';['w','t','j'].forEach(k=>{const rows=C.cats[k],dr=day.rows[k],mr=mtd.rows[k];const av=P=>P.rows[k].avg;
+    // SAP명 병합 구간 계산 (연속 동일)
+    const spans=[];rows.forEach((c,i)=>{if(i>0&&rows[i-1].sap===c.sap&&c.sap)spans[spans.length-1].n++;else spans.push({i,n:1})});const spanAt=i=>spans.find(x=>x.i===i);
+    const ta=av(day)>0?dr.gen/av(day):null,tm=av(mtd)>0?mr.gen/av(mtd):null;
+    rows.forEach((c,i)=>{const sp=spanAt(i);
+      sb+=`<tr>${i===0?`<td rowspan="${rows.length+1}" class="mat" style="color:${kcol[k]}">${MAT[k]}<div class="mini" style="margin-top:3px">${UNIT[k]}</div></td>`:''}<td class="lab2">${esc(esN(c.cat)||'')}</td><td class="lab2">${esc(c.cat)}</td>${sp?`<td rowspan="${sp.n}" class="lab" style="vertical-align:middle;border-left:1px solid var(--line2)">${esc(c.sap)||'<span class="mini">–</span>'}</td>`:''}<td class="n">${qF(c.qa)}</td><td class="n">${qF(c.qm)}</td></tr>`});
+    sb+=`<tr class="sum">${rows.length?'':`<td class="mat" style="color:${kcol[k]}">${MAT[k]}</td>`}<td></td><td></td><td></td><td class="n">${qF(ta)}</td><td class="n">${qF(tm)}</td></tr>`});
+  sb+=`<tr class="scrap"><td class="mat" style="color:#bba4f4">SCRAP<div class="mini" style="margin-top:3px">kg</div></td><td class="lab2">Fragmento de Terminal</td><td class="lab2">${L('단자칩 (측정단위)','단자칩')}</td><td class="lab">${L('단자칩(측정단위)','Fragmento de terminal')}</td><td class="n">${num(day.scrap,2)}</td><td class="n">${num(mtd.scrap,2)}</td></tr>`;
+  $('lr-sap').innerHTML=`<table><colgroup><col style="width:9%"><col style="width:17%"><col style="width:13%"><col style="width:17%"><col><col></colgroup><thead>
+    <tr><th>${H2('Categoría','구분')}</th><th>${H2('Tipo de Pérdida','')}</th><th>${H2('로스종류','')}</th><th>${H2('Registro en SAP','SAP 등록명')}</th><th>${H2(D.d,'당일')}</th><th>${H2(ymL,'당월')}</th></tr></thead><tbody>${sb}</tbody></table>`;
+  const avgTxt=k=>day.rows[k].avg>0?day.rows[k].avg.toFixed(k==='w'?5:6):'–';
+  $('lr-sap-note').innerHTML=L(`• 수량 환산 = 로스유형별 발생중량(kg) ÷ 재질 평균 단위중량 (당일 Wire ${avgTxt('w')} kg/m · Terminal ${avgTxt('t')} kg/ea · Seal ${avgTxt('j')} kg/ea, 당월은 당월 평균) · SAP 등록명은 「호기 · 종류비율 설정」에서 지정 · Scrap은 kg 그대로`,`• Cantidad = kg por tipo ÷ peso unitario promedio del material (día: Wire ${avgTxt('w')} kg/m · Terminal ${avgTxt('t')} · Seal ${avgTxt('j')} kg/pz) · nombres SAP en «Máquinas · Ratios» · scrap en kg`);
   /* ③ 일별 로스율 */
   const R=C.dailyRows;const dowA=curLang==='es'?DOWES:DOW;
   $('lr-days').innerHTML=`<table><colgroup><col style="width:88px"><col><col><col><col><col><col><col><col><col><col><col><col><col><col></colgroup><thead>
@@ -1490,7 +1544,7 @@ function lrLine(el,rows,series,refs,fmt,dec){
   let ax='';R.forEach((r,i)=>{if(R.length<=20||i%Math.ceil(R.length/14)===0)ax+=`<text x="${X(i)}" y="${Hh-pb+16}" text-anchor="middle" font-size="11" fill="#999" font-family="Space Mono">${r.d.slice(5)}</text>`});
   el.innerHTML=`<svg viewBox="0 0 ${W} ${Hh}">${g}${ref}${body}${ax}</svg><div class="leg">${series.map(sr=>`<span><i style="background:${sr.col}"></i>${sr.lab}</span>`).join('')}${refs.map(x=>`<span><i style="background:${x.col}"></i>${x.lab}</span>`).join('')}<span><i style="background:#e05c5c"></i>${L('전월 초과','> mes ant.')}</span></div>`;
 }
-async function lrExcel(){
+async function lrExcel(mode){
   const C=lrCalc();if(!C){toast(L('먼저 조회하세요','Consulte primero'),true);return}
   load(true);
   try{
@@ -1498,7 +1552,9 @@ async function lrExcel(){
     const mm=+D.ym.slice(5);const sub=`${D.d} · ${L(mm+'월 누적','acum. mes '+mm)} ${D.P.mtd[0]}~${D.d} · ${L('전월','mes ant.')} ${D.pym}`;
     const {day,mtd,prev}=C;const ymL=`${D.ym.slice(0,4)}년 ${D.ym.slice(5)}월`;
     /* ── 1시트: 보고서 (화면 양식 그대로 — 표① + 표② 같은 너비 A~I) ── */
-    const ws=wb.addWorksheet('일별보고',{views:[{showGridLines:false}],pageSetup:{orientation:'portrait',fitToPage:true,fitToWidth:1,fitToHeight:1,paperSize:9,horizontalCentered:true,margins:{left:.4,right:.4,top:.5,bottom:.5,header:.2,footer:.2}}});
+    const SAP=mode==='sap';
+    const MAT={w:'WIRE',t:"TER'",j:'SEAL'};const esN=c=>{const k=String(c||'').replace(/\s+/g,'');return CAT_ES[k]||CAT_ES[k.replace(/\(.*\)$/,'')]||''};
+    const ws=wb.addWorksheet(SAP?'SAP등록':'일별보고',{views:[{showGridLines:false}],pageSetup:{orientation:'portrait',fitToPage:true,fitToWidth:1,fitToHeight:0,paperSize:9,horizontalCentered:true,margins:{left:.4,right:.4,top:.5,bottom:.5,header:.2,footer:.2}}});
     const NAVY='FF1E293B',SLATE='FF334155',GOLD='FFB45309',LINE='FFD1D5DB',AMB='FFFEF3C7',AMB2='FFFDE68A',ZEB='FFF8FAFC',INK='FF111827',MUTE='FF6B7280';
     const fill=c=>({type:'pattern',pattern:'solid',fgColor:{argb:c}});const thin={style:'thin',color:{argb:LINE}};const BD={top:thin,left:thin,bottom:thin,right:thin};
     const med={style:'medium',color:{argb:SLATE}};
@@ -1520,6 +1576,8 @@ async function lrExcel(){
       for(let i=1;i<=9;i++){const c=row.getCell(i);c.border=BD;c.font=F.font({bold:!!o.bold,color:{argb:o.color||INK}});c.alignment={vertical:'middle',horizontal:i<=(o.labels||2)?'left':'right'};if(o.fill)c.fill=fill(o.fill);else if(o.zebra)c.fill=fill(ZEB);if(fmts[i-1])c.numFmt=fmts[i-1]}
       cells.forEach((v,i)=>{if(v!==undefined)row.getCell(i+1).value=v});r++;return row};
     // 표①
+    if(SAP){ws.getCell(1,1).value='Registro en SAP';ws.getCell(2,1).value='SAP에 등록하는 내용정리'}
+    if(!SAP){
     secTitle('Estado de generación de residuos','부산물 발생량 현황');
     hdr([h2('Categoría','구분'),null,h2(D.d,'당일'),null,null,h2(ymL,'당월 누적 ('+D.P.mtd[0].slice(5)+'~'+D.d.slice(5)+')'),null,null,h2('Mes anterior','전월')],[[3,5],[6,8]],NAVY);
     const top=r-1;
@@ -1543,13 +1601,26 @@ async function lrExcel(){
     hdr([null,null,null,h2(D.d,'당일'),h2(ymL,'당월'),h2(D.d,'당일'),h2(ymL,'당월'),h2('Generado','발생량 (kg)'),h2('Participación','점유율')],[],SLATE);
     [1,2,3].forEach(i=>{ws.mergeCells(top2,i,top2+1,i)});ws.getCell(top2,1).value=h2('Tipo de Material','');ws.getCell(top2,2).value=h2('Tipo de Pérdida','');ws.getCell(top2,3).value=h2('로스종류','');
     const F2=[null,null,null,'#,##0.00','#,##0.00','0%','0%','#,##0.00','0%'];
-    const MAT={w:'WIRE',t:"TER'",j:'SEAL'};const esN=c=>{const k=String(c||'').replace(/\s+/g,'');return CAT_ES[k]||CAT_ES[k.replace(/\(.*\)$/,'')]||''};
     ['w','t','j'].forEach((k,ki)=>{const rows=C.cats[k],dr=day.rows[k],mr=mtd.rows[k],pr=prev.rows[k];const r0=r;
       rows.forEach((c,i)=>dataRow([i===0?MAT[k]:undefined,esN(c.cat)+(c.grp==='ext'?' (ext.)':''),c.cat,c.a,c.m,dr.gen>0?c.p:0,mr.gen>0?c.p:0,c.pv,pr.gen>0?c.p:0],F2,{labels:3,zebra:i%2===1}));
       dataRow([rows.length?undefined:MAT[k],'Subtotal','소계',dr.gen,mr.gen,dr.gen>0?1:0,mr.gen>0?1:0,pr.gen,pr.gen>0?1:0],F2,{labels:3,bold:true,fill:AMB});
       if(r-1>r0)ws.mergeCells(r0,1,r-1,1);const mc=ws.getCell(r0,1);mc.alignment={vertical:'top',horizontal:'left'};mc.font=F.font({bold:true,size:11,color:{argb:['FF0369A1','FFB45309','FF15803D'][ki]}});mc.fill=fill('FFF1F5F9');});
     ws.mergeCells(r,1,r,9);ws.getCell(r,1).value=L('• 로스유형별 발생량 = 재질별 발생중량 × 「호기 · 종류비율 설정」 비율 (Wire/Terminal/Seal) · 스크랩은 점유율 대상 제외','• Generación por tipo = peso por material × ratios de «Máquinas · Ratios» · scrap excluido');ws.getCell(r,1).font=F.font({size:9,color:{argb:MUTE}});r++;
+    }else{
+    secTitle('Registro en SAP','SAP에 등록하는 내용정리');
+    hdr([h2('Categoría','구분'),h2('Tipo de Pérdida',''),h2('로스종류',''),h2('Registro en SAP','SAP 등록명'),null,null,h2(D.d,'당일'),h2(ymL,'당월'),h2('Unidad','단위')],[[4,6]],NAVY);
+    const F3=[null,null,null,null,null,null,'#,##0.00','#,##0.00',null];const UNIT={w:'M',t:'EA',j:'EA'};
+    ['w','t','j'].forEach((k,ki)=>{const rows=C.cats[k],dr=day.rows[k],mr=mtd.rows[k];const r0=r;const av=P=>P.rows[k].avg;
+      const starts=[];rows.forEach((c,i)=>{dataRow([i===0?MAT[k]:undefined,esN(c.cat),c.cat,c.sap||'',undefined,undefined,c.qa,c.qm,UNIT[k]],F3,{labels:4,zebra:i%2===1});
+        if(i===0||rows[i-1].sap!==c.sap||!c.sap)starts.push({row:r-1,end:r-1,sap:c.sap});else starts[starts.length-1].end=r-1});
+      starts.forEach(x=>{ws.mergeCells(x.row,4,x.end,6);ws.getCell(x.row,4).alignment={vertical:'middle',horizontal:'center'}});
+      dataRow([rows.length?undefined:MAT[k],'Subtotal','소계',undefined,undefined,undefined,av(day)>0?dr.gen/av(day):null,av(mtd)>0?mr.gen/av(mtd):null,UNIT[k]],F3,{labels:4,bold:true,fill:AMB});ws.mergeCells(r-1,4,r-1,6);
+      if(r-1>r0)ws.mergeCells(r0,1,r-1,1);const mc=ws.getCell(r0,1);mc.alignment={vertical:'top',horizontal:'left'};mc.font=F.font({bold:true,size:11,color:{argb:['FF0369A1','FFB45309','FF15803D'][ki]}});mc.fill=fill('FFF1F5F9');});
+    dataRow(['SCRAP','Fragmento de Terminal','단자칩','단자칩(측정단위)',undefined,undefined,day.scrap,mtd.scrap,'kg'],F3,{labels:4,fill:'FFEDE9FE'});ws.mergeCells(r-1,4,r-1,6);
+    ws.mergeCells(r,1,r,9);ws.getCell(r,1).value=L('• 수량 환산 = 로스유형별 발생중량(kg) ÷ 재질 평균 단위중량(해당 기간) · Scrap은 kg','• Cantidad = kg por tipo ÷ peso unitario promedio del material · scrap en kg');ws.getCell(r,1).font=F.font({size:9,color:{argb:MUTE}});r++;
+    }
     ws.pageSetup.printArea=`A1:I${r}`;
+    if(SAP){const buf=await wb.xlsx.writeBuffer();const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([buf]));a.download=`SAP등록_P${PLANT}_${D.d}.xlsx`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),3000);return}
     /* ── 2·3시트: 절단대비 · 일별 ── */
     const sheet=(...a)=>xlSheet(wb,sub,...a);
     const G3=get=>[day,mtd,prev].flatMap(P=>{const x=get(P);return [x.gen,x.gk]});const dG=(a,b)=>(a!=null&&b!=null)?a-b:null;
@@ -1647,7 +1718,7 @@ async function cfExcel(){
 
 /* ═══════════ init ═══════════ */
 (async function(){
-  $('in-date').value=today();$('lr-date').value=today();$('rs-month').value=today().slice(0,7);
+  $('in-date').value=today();$('lr-date').value=today();$('sp-date').value=today();$('rs-month').value=today().slice(0,7);
   $('rs-from').value=today().slice(0,8)+'01';$('rs-to').value=today();
   $('us-from').value=today().slice(0,8)+'01';$('us-to').value=today();
   load(true);
