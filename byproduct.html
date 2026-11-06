@@ -232,6 +232,9 @@ table.cfg input{width:17px;height:17px}
 .warn.ok{color:var(--grn);background:var(--grnbg);border-color:rgba(76,175,125,.35)}
 .warn b{color:inherit}
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}
+.g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;align-items:start}
+@media(max-width:1200px){.g3{grid-template-columns:1fr 1fr}}
+@media(max-width:900px){.g3{grid-template-columns:1fr}}
 .g2>.card{min-width:0;margin-bottom:0}
 .g21{display:grid;grid-template-columns:minmax(300px,380px) 1fr;gap:14px;align-items:start}
 .g21>.card{min-width:0;margin-bottom:0}
@@ -253,6 +256,39 @@ table.cfg input{width:17px;height:17px}
 .tw.lr tr.has td{background:rgba(201,168,76,.05)}
 .tw.lr td.mute{color:var(--dim)}
 .tw.lr tr.scrap td{color:#bba4f4}
+/* 시인성 강화: 글자 크게·밝게, 그룹 경계선, 줄무늬, 수치 강조 */
+.tw.lr td{font-size:14.5px;color:#e6e6e6;padding:9px 10px}
+.tw.lr td.n{font-size:14.5px}
+.tw.lr th{font-size:13px;color:#f2f2f2;background:#161616;padding:8px 8px}
+.tw.lr th small{font-size:11.5px;color:#b9b9b9}
+.tw.lr tbody tr:nth-child(even) td{background:rgba(255,255,255,.025)}
+.tw.lr tbody tr:hover td{background:rgba(201,168,76,.08)}
+.tw.lr td.b,.tw.lr th.b{color:#fff}
+.tw.lr tr.sum td{background:rgba(201,168,76,.14)}
+.tw.lr tr.tot td{background:rgba(201,168,76,.22);font-size:15px}
+.tw.rep th{background:#1a1a1a;border-bottom:1px solid rgba(201,168,76,.35)}
+.tw.rep th .es{font-size:13.5px}
+.tw.rep th .ko{font-size:12.5px;color:#e4c76a}
+.tw.rep td{font-size:15px;color:#ededed;padding:9px 10px}
+.tw.rep td.lab{font-size:15px}
+.tw.rep td.lab2{color:#cfcfcf}
+.tw.rep td.mat{font-size:15px}
+/* 당일/당월 그룹 경계 세로선 */
+.tw.rep#lr-main td:nth-child(3),.tw.rep#lr-main th:nth-child(3),.tw.rep#lr-main td:nth-child(6),.tw.rep#lr-main th:nth-child(6){border-left:1px solid rgba(201,168,76,.28)}
+.tw.rep#lr-main thead tr:first-child th:nth-child(3),.tw.rep#lr-main thead tr:first-child th:nth-child(4){border-left:1px solid rgba(201,168,76,.28)}
+.tw.rep#lr-main td:nth-child(5),.tw.rep#lr-main td:nth-child(8){font-weight:700;color:#fff}
+.tw.rep#lr-cat td:nth-child(4),.tw.rep#lr-cat th:nth-child(4),.tw.rep#lr-cat td:nth-child(6),.tw.rep#lr-cat th:nth-child(6),.tw.rep#lr-cat td:nth-child(8),.tw.rep#lr-cat th:nth-child(8){border-left:1px solid rgba(201,168,76,.22)}
+.tw.rep#lr-cat tr.sum td:nth-child(n+4),.tw.rep#lr-sap tr.sum td:nth-child(n+4){color:#fff}
+.tw.lr tfoot td{font-size:14.5px}
+.rep-foot{font-size:13.5px;color:#cfcfcf}
+.rep-foot b{color:#fff}
+.rep-sec{font-size:15.5px}
+.rep-sec span{font-size:14px}
+/* 차트 시인성 */
+.chart{padding:12px 10px 6px}
+.chart svg text{font-size:12.5px}
+.leg{font-size:13.5px;color:#e2e2e2;gap:16px;padding:8px 6px 6px}
+.leg i{width:12px;height:12px}
 .tw.lr tr.dim td{color:var(--dim)}
 .tw.lr tfoot td{background:rgba(201,168,76,.10);color:#fff;font-weight:700}
 /* 보고서 블록(엑셀 양식): 머리글 고정 없음, 2단 머리글 정렬 */
@@ -570,10 +606,11 @@ table.cfg input{width:17px;height:17px}
     <!-- 기타 분석 -->
     <div class="rep-sec2" data-t="lr_more">▶ 추가 분석 · 절단량 대비 · 추이</div>
     <div class="kpis" id="lr-kpi"></div>
-    <div class="card"><h3 data-t="lr_cut">▶ 절단수량 대비 발생현황 (g / 1,000본)</h3><div class="tw lr" id="lr-cut"></div><div class="mini" style="margin-top:8px" id="lr-cut-note"></div></div>
+    <div class="card"><h3 data-t="lr_cut">▶ 절단수량 대비 발생현황 (kg / 1,000본)</h3><div class="tw lr" id="lr-cut"></div><div class="mini" style="margin-top:8px" id="lr-cut-note"></div></div>
     <div class="g2">
       <div class="card"><h3 data-t="lr_chart">일별 로스율 추이 (%)</h3><div class="chart" id="lr-chart"></div></div>
-      <div class="card"><h3 data-t="lr_chart2">절단량 대비 발생 추이 (g / 1,000본)</h3><div class="chart" id="lr-chart2"></div></div>
+      <div class="card"><h3 data-t="lr_chart2">절단량 대비 발생 추이 (kg / 1,000본)</h3><div class="chart" id="lr-chart2"></div></div>
+      <div class="card" style="grid-column:1/-1"><h3 data-t="lr_chart3">절단량 대비 Scrap 추이 (kg / 1,000본)</h3><div class="chart" id="lr-chart3"></div></div>
     </div>
     <div class="card"><h3 data-t="lr_days">일별 로스율 상세 (당월)</h3><div class="tw lr" id="lr-days"></div></div>
     <div class="hint" style="margin-top:4px" data-t="lr_hint">선택일 기준 <b>당일 · 당월 누적 · 전월</b>의 사용중량(32040 사용량 × 단위중량)과 측정 발생중량으로 로스율을 산출하고, 「측정 입력」에 저장한 절단수량으로 <b>1,000본당 발생 kg</b>(스크랩 포함)을 비교합니다. 로스유형별 발생량은 「호기 · 종류비율 설정」의 비율(Wire/Terminal/Seal)을 적용하며, 스크랩은 점유율 대상에서 제외됩니다.</div>
@@ -763,7 +800,7 @@ const T={
   'Pese por separado cable (Wire), terminal, sello (Seal) y scrap e ingrese en kg. Las fotos se adjuntan por máquina (puede usar la cámara). Pulse <b>Guardar</b> después de capturar. El pesaje de todas las máquinas juntas va en la fila «Pesaje total» (o «Pegar totales»); abajo se muestra la diferencia con Σ por máquina.'],
  rs_title:['부산물 산출 현황','Resultados de subproductos'],excel:['엑셀 다운로드','Descargar Excel'],by_month:['월별','Mensual'],by_range:['기간 지정','Rango'],month:['월','Mes'],from:['시작','Desde'],to:['종료','Hasta'],refresh:['새로고침','Actualizar'],
  rs_daily:['일별 발생 추이 (kg)','Tendencia diaria (kg)'],rs_mc:['호기별 발생량 TOP (kg)','Top máquinas (kg)'],rs_wire:['전선 · 선종/SQ별 산출','Cable · por tipo/SQ'],rs_term:['단자 · 품목별 산출','Terminal · por ítem'],rs_seal:['방수씰 · 품목별 산출','Sello · por ítem'],rs_cat:['부산물 종류별 발생량 (비율 적용)','Por tipo de subproducto (ratio)'],rs_days:['일별 · 호기별 측정 내역','Detalle diario por máquina'],
- lr_title:['일별 부산물현황 보고 · 로스율','Informe diario de subproductos · Tasa de pérdida'],lr_main:['▶ 부산물 발생현황','▶ Generación de subproductos'],lr_cat:['▶ 로스유형별 발생현황','▶ Por tipo de pérdida'],lr_days:['일별 로스율 상세 (당월)','Detalle diario (mes actual)'],lr_chart:['일별 로스율 추이 (%)','Tendencia diaria de tasa (%)'],lr_cut:['▶ 절단수량 대비 발생현황 (g / 1,000본)','▶ Generación por cortes (g / 1,000 pz)'],lr_more:['▶ 추가 분석 · 절단량 대비 · 추이','▶ Análisis adicional · por cortes · tendencias'],lr_chart2:['절단량 대비 발생 추이 (g / 1,000본)','Tendencia por cortes (g / 1,000 pz)'],
+ lr_title:['일별 부산물현황 보고 · 로스율','Informe diario de subproductos · Tasa de pérdida'],lr_main:['▶ 부산물 발생현황','▶ Generación de subproductos'],lr_cat:['▶ 로스유형별 발생현황','▶ Por tipo de pérdida'],lr_days:['일별 로스율 상세 (당월)','Detalle diario (mes actual)'],lr_chart:['일별 로스율 추이 (%)','Tendencia diaria de tasa (%)'],lr_cut:['▶ 절단수량 대비 발생현황 (kg / 1,000본)','▶ Generación por cortes (kg / 1,000 pz)'],lr_more:['▶ 추가 분석 · 절단량 대비 · 추이','▶ Análisis adicional · por cortes · tendencias'],lr_chart2:['절단량 대비 발생 추이 (kg / 1,000본)','Tendencia por cortes (kg / 1,000 pz)'],lr_chart3:['절단량 대비 Scrap 추이 (kg / 1,000본)','Scrap por cortes (kg / 1,000 pz)'],
  lr_hint:['선택일 기준 <b>당일 · 당월 누적 · 전월</b>의 사용중량(32040 사용량 × 단위중량)과 측정 발생중량으로 로스율을 산출하고, 「측정 입력」에 저장한 절단수량으로 <b>1,000본당 발생 kg</b>(스크랩 포함)을 비교합니다. 로스유형별 발생량은 「호기 · 종류비율 설정」의 비율(Wire/Terminal/Seal)을 적용하며, 스크랩은 점유율 대상에서 제외됩니다.','Según la fecha elegida se calcula la tasa de pérdida del <b>día · acumulado del mes · mes anterior</b>: peso usado (uso 32040 × peso unitario) vs. peso generado medido, y <b>kg por 1,000 cortes</b> con los cortes guardados en «Registro de pesaje». Por tipo de pérdida se aplican los ratios de «Máquinas · Ratios» (Wire/Terminal/Seal); el scrap no participa.'],
  us_title:['일별 자재사용량 (MES 32040 동기화)','Consumo diario de material (MES 32040)'],
  us_note:['사용량은 <b>가공생산팀 자재관리</b> 사이트의 「사용량 (32040)」에 등록된 데이터를 그대로 읽어옵니다 (별도 입력 없음). 전선 = 01W1 그룹(M), 단자 = 03T1 그룹(EA), 방수씰 = 08J1 그룹(EA).','El consumo se lee directamente de «Uso (32040)» registrado en <b>Gestión de materiales · Prod. maquinado</b> (sin captura adicional). Cable = grupo 01W1 (M), terminal = 03T1 (EA), sello = 08J1 (EA).'],
@@ -1461,7 +1498,7 @@ function lrPeriod(D,[f,t]){
   const g=G.tot,nd=Object.keys(G.byDay).length,rate=(a,b)=>(b>0&&nd)?a/b:null; /* 측정 없는 기간은 로스율 '–' */
   const rows={};['w','t','j'].forEach(k=>rows[k]={use:use[k].kg,gen:g[k],rate:rate(g[k],use[k].kg),cov:use[k].cov,qty:use[k].qty,avg:use[k].avg||0});
   const su=rows.w.use+rows.t.use+rows.j.use,sg=g.w+g.t+g.j;
-  /* 절단수량(본) 합계 → kkg/1,000본 = kg × 1,000 ÷ 본 (측정이 있는 기간만) */
+  /* 절단수량(본) 합계 → kg/1,000본 = kg × 1,000 ÷ 본 (측정이 있는 기간만) */
   const cut=Object.entries(D.cut||{}).filter(([x])=>x>=f&&x<=t).reduce((a,[,q])=>a+q,0);const gk=v=>(cut>0&&nd)?v*1e3/cut:null;
   ['w','t','j'].forEach(k=>rows[k].gk=gk(g[k]));
   return {f,t,rows,sub:{use:su,gen:sg,rate:rate(sg,su),gk:gk(sg)},scrap:g.s,scrapGk:gk(g.s),all:{use:su,gen:sg+g.s,rate:rate(sg+g.s,su),gk:gk(sg+g.s)},cut,byDay:G.byDay,days:nd,udays:use.udays,uDaily:use.uDaily};
@@ -1535,12 +1572,12 @@ function lrRender(){
   /* ①-2 절단수량 대비 발생현황 (kg/1,000본) */
   const gkRow=(name,get,cls)=>{const a=get(day),m=get(mtd),pv=get(prev);const diff=(m.gk!=null&&pv.gk!=null)?m.gk-pv.gk:null;const vr=(diff!=null&&pv.gk>0)?diff/pv.gk:null;
     return `<tr class="${cls||''}"><td class="b">${name}</td><td class="n">${num(a.gen,1)}</td><td class="n b">${gkF(a.gk)}</td><td class="n">${num(m.gen,1)}</td><td class="n b">${gkF(m.gk)}</td><td class="n">${num(pv.gen,1)}</td><td class="n b">${gkF(pv.gk)}</td><td class="n ${diff>0?'neg':''}">${diff==null?'–':signF(diff,3)}</td><td class="n ${diff>0?'neg':''}">${vr==null?'–':signF(vr*100,1)+'%'}</td></tr>`};
-  const cutH=P=>`<th colspan="2" class="c">${P}</th>`;const cut2=()=>`<th class="n">${L('발생','Gen.')} <small>kg</small></th><th class="n">g/1,000${L('본','pz')}</th>`;
+  const cutH=P=>`<th colspan="2" class="c">${P}</th>`;const cut2=()=>`<th class="n">${L('발생','Gen.')} <small>kg</small></th><th class="n">kg/1,000${L('본','pz')}</th>`;
   $('lr-cut').innerHTML=`<table><colgroup><col style="width:12%"><col><col><col><col><col><col><col><col></colgroup><thead>
     <tr><th rowspan="2">${L('구분','Grupo')}</th>${cutH(lbl.day+`<small>${L('절단','cortes')} <b>${num(day.cut,0)}</b>${L('본','pz')}</small>`)}${cutH(lbl.mtd+`<small>${L('절단','cortes')} <b>${num(mtd.cut,0)}</b>${L('본','pz')}</small>`)}${cutH(lbl.prev+`<small>${L('절단','cortes')} <b>${num(prev.cut,0)}</b>${L('본','pz')}</small>`)}<th colspan="2" class="c">${L('전월대비 (kg/1,000본)','vs. mes ant. (kg/1,000pz)')}<small>${L('월누적 − 전월','acum. − mes ant.')}</small></th></tr>
     <tr>${cut2()}${cut2()}${cut2()}<th class="n">${L('증감','Dif.')}</th><th class="n">${L('증감율','Var.')}</th></tr></thead><tbody>
     ${gkRow('WIRE',P=>P.rows.w)}${gkRow('TERMINAL',P=>P.rows.t)}${gkRow('SEAL',P=>P.rows.j)}${gkRow(L('소계','Subtotal'),P=>P.sub,'sum')}${gkRow('SCRAP',P=>({gen:P.scrap,gk:P.scrapGk}),'scrap')}${gkRow(L('합계','Total'),P=>P.all,'sum')}</tbody></table>`;
-  $('lr-cut-note').innerHTML=(!day.cut&&!mtd.cut)?`<span class="neg">${L('절단수량이 등록되지 않았습니다 → 「부산물 측정 입력」에서 날짜별 절단수량(본)을 입력·저장하세요.','No hay cortes registrados → ingrese cortes por fecha en «Registro de pesaje».')}</span>`:L('kkg/1,000본 = 발생중량(kg) × 1,000 ÷ 절단수량(본) · 절단수량은 「부산물 측정 입력」에서 날짜별로 저장 (측정이 있는 날만 집계)','kkg/1,000pz = kg × 1,000 ÷ cortes · cortes se registran por fecha en «Registro de pesaje»');
+  $('lr-cut-note').innerHTML=(!day.cut&&!mtd.cut)?`<span class="neg">${L('절단수량이 등록되지 않았습니다 → 「부산물 측정 입력」에서 날짜별 절단수량(본)을 입력·저장하세요.','No hay cortes registrados → ingrese cortes por fecha en «Registro de pesaje».')}</span>`:L('kg/1,000본 = 발생중량(kg) × 1,000 ÷ 절단수량(본) · 절단수량은 「부산물 측정 입력」에서 날짜별로 저장 (측정이 있는 날만 집계)','kg/1,000pz = kg × 1,000 ÷ cortes · cortes se registran por fecha en «Registro de pesaje»');
   /* ②-2 Registro en SAP: 로스유형 kg → 재질 평균 단위중량으로 M/EA 환산, SAP 등록명 같은 행은 병합 */
   const UNIT={w:'m',t:'ea',j:'ea'};const qF=v=>v==null?'–':num(v,2);
   let sb='';['w','t','j'].forEach(k=>{const rows=C.cats[k],dr=day.rows[k],mr=mtd.rows[k];const av=P=>P.rows[k].avg;
@@ -1563,23 +1600,25 @@ function lrRender(){
     ${R.map(r=>{const w=r.rows.w,t=r.rows.t,j=r.rows.j;const hi=r.d===D.d;return `<tr class="${hi?'has':''}"><td class="${hi?'b':''}">${r.d.slice(5)} <span class="mini">${dowA[new Date(r.d+'T00:00:00').getDay()]}</span></td><td class="n ${r.cut?'':'mute'}">${r.cut?num(r.cut,0):'–'}</td><td class="n">${num(w.use,1)}</td><td class="n">${num(w.gen,1)}</td><td class="n">${rateF(w.rate)}</td><td class="n">${num(t.use,1)}</td><td class="n">${num(t.gen,1)}</td><td class="n">${rateF(t.rate)}</td><td class="n">${num(j.gen,1)}</td><td class="n">${rateF(j.rate)}</td><td class="n">${num(r.scrap,1)}</td><td class="n">${gkF(r.scrapGk)}</td><td class="n">${num(r.all.gen,1)}</td><td class="n b">${rateF(r.all.rate)}</td><td class="n b">${gkF(r.all.gk)}</td></tr>`}).join('')||`<tr><td colspan="15" class="empty">${L('데이터 없음','Sin datos')}</td></tr>`}</tbody>
     <tfoot><tr><td>${L('월누적','Acum.')}</td><td class="n">${mtd.cut?num(mtd.cut,0):'–'}</td><td class="n">${num(mtd.rows.w.use,1)}</td><td class="n">${num(mtd.rows.w.gen,1)}</td><td class="n">${rateF(mtd.rows.w.rate)}</td><td class="n">${num(mtd.rows.t.use,1)}</td><td class="n">${num(mtd.rows.t.gen,1)}</td><td class="n">${rateF(mtd.rows.t.rate)}</td><td class="n">${num(mtd.rows.j.gen,1)}</td><td class="n">${rateF(mtd.rows.j.rate)}</td><td class="n">${num(mtd.scrap,1)}</td><td class="n">${gkF(mtd.scrapGk)}</td><td class="n">${num(mtd.all.gen,1)}</td><td class="n">${rateF(mtd.all.rate)}</td><td class="n">${gkF(mtd.all.gk)}</td></tr></tfoot></table>`;
   lrLine($('lr-chart'),C.dailyRows,[{k:r=>r.all.rate!=null?r.all.rate*100:null,col:'#c9a84c',lab:L('일별 합계 로스율','Tasa total diaria')}],[{v:C.prev.all.rate!=null?C.prev.all.rate*100:null,col:'#9a8ad0',lab:L('전월','mes ant.')},{v:C.mtd.all.rate!=null?C.mtd.all.rate*100:null,col:'#4caf7d',lab:L('월누적','acum.')}],v=>v.toFixed(2)+'%',2);
-  lrLine($('lr-chart2'),C.dailyRows,[{k:r=>r.all.gk,col:'#c9a84c',lab:L('합계 kg/1,000본','Total kg/1,000pz')},{k:r=>r.scrapGk,col:'#a98af0',lab:L('Scrap kg/1,000본','Scrap kg/1,000pz')}],[{v:C.prev.all.gk,col:'#9a8ad0',lab:L('전월 합계','mes ant. total')},{v:C.mtd.all.gk,col:'#4caf7d',lab:L('월누적 합계','acum. total')}],v=>num(v,0),0);
+  lrLine($('lr-chart2'),C.dailyRows,[{k:r=>r.all.gk,col:'#c9a84c',lab:L('합계 kg/1,000본','Total kg/1,000pz')},{k:r=>r.sub.gk,col:'#8fcbe8',lab:L('소계(Wire+Term+Seal)','Subtotal')}],[{v:C.prev.all.gk,col:'#9a8ad0',lab:L('전월 합계','mes ant. total')},{v:C.mtd.all.gk,col:'#4caf7d',lab:L('월누적 합계','acum. total')}],v=>num(v,3),3);
+  lrLine($('lr-chart3'),C.dailyRows,[{k:r=>r.scrapGk,col:'#a98af0',lab:L('Scrap kg/1,000본','Scrap kg/1,000pz')}],[{v:C.prev.scrapGk,col:'#9a8ad0',lab:L('전월','mes ant.')},{v:C.mtd.scrapGk,col:'#4caf7d',lab:L('월누적','acum.')}],v=>num(v,3),3,1660);
 }
 /* 일별 라인차트 (로스율 % / kg/1,000본 공통): series=[{k:r=>값,col,lab}], refs=[{v,col,lab}] */
-function lrLine(el,rows,series,refs,fmt,dec){
+function lrLine(el,rows,series,refs,fmt,dec,W){
   const R=rows.filter(r=>series.some(sr=>sr.k(r)!=null));
   if(!R.length){el.innerHTML=`<div class="mini" style="padding:30px;text-align:center">${L('데이터 없음','Sin datos')}</div>`;return}
-  const W=760,Hh=220,pl=52,pr=12,pt=14,pb=32,iw=W-pl-pr,ih=Hh-pt-pb;
+  W=W||820;const Hh=300,pl=66,pr=16,pt=22,pb=38,iw=W-pl-pr,ih=Hh-pt-pb;
+  const FT='font-family="Space Mono"';const halo='paint-order="stroke" stroke="#0d0d0d" stroke-width="4" stroke-linejoin="round"';
   const vals=R.flatMap(r=>series.map(sr=>sr.k(r)).filter(v=>v!=null));
-  const max=Math.max(.5,...vals,...refs.map(x=>x.v||0))*1.15;
+  const max=(Math.max(0,...vals,...refs.map(x=>x.v||0))||1)*1.18; /* 값 범위에 맞춰 축 자동 */
   const X=i=>pl+(R.length===1?iw/2:iw*i/(R.length-1)),Y=v=>pt+ih-ih*v/max;
-  let g='';for(let i=0;i<=4;i++){const v=max*i/4,y=Y(v);g+=`<line x1="${pl}" x2="${W-pr}" y1="${y}" y2="${y}" stroke="#1e1e1e"/><text x="${pl-6}" y="${y+4}" text-anchor="end" font-size="11" fill="#777" font-family="Space Mono">${fmt(v)}</text>`}
-  const ref=refs.map(x=>x.v==null?'':`<line x1="${pl}" x2="${W-pr}" y1="${Y(x.v)}" y2="${Y(x.v)}" stroke="${x.col}" stroke-dasharray="4 4" stroke-width="1"/><text x="${pl+4}" y="${Y(x.v)-4}" text-anchor="start" font-size="10.5" fill="${x.col}" font-family="Space Mono">${x.lab} ${fmt(x.v)}</text>`).join('');
+  let g='';for(let i=0;i<=4;i++){const v=max*i/4,y=Y(v);g+=`<line x1="${pl}" x2="${W-pr}" y1="${y}" y2="${y}" stroke="${i?'#262626':'#3a3a3a'}"/><text x="${pl-8}" y="${y+4}" text-anchor="end" font-size="12" fill="#b5b5b5" ${FT}>${fmt(v)}</text>`}
+  const ref=refs.map((x,i)=>x.v==null?'':`<line x1="${pl}" x2="${W-pr}" y1="${Y(x.v)}" y2="${Y(x.v)}" stroke="${x.col}" stroke-dasharray="6 5" stroke-width="1.6"/><text x="${i%2?W-pr-4:pl+6}" y="${Y(x.v)-6}" text-anchor="${i%2?'end':'start'}" font-size="12" font-weight="700" fill="${x.col}" ${FT} ${halo}>${x.lab} ${fmt(x.v)}</text>`).join('');
   const ref0=refs[0]&&refs[0].v!=null?refs[0].v:null;
   let body='';series.forEach((sr,si)=>{const pts=R.map((r,i)=>[i,sr.k(r)]).filter(([,v])=>v!=null);
-    body+=`<path d="${pts.map(([i,v],n)=>(n?'L':'M')+X(i).toFixed(1)+' '+Y(v).toFixed(1)).join(' ')}" fill="none" stroke="${sr.col}" stroke-width="2"/>`;
-    pts.forEach(([i,v])=>{body+=`<circle cx="${X(i)}" cy="${Y(v)}" r="3.5" fill="${si===0&&ref0!=null&&v>ref0?'#e05c5c':sr.col}"><title>${R[i].d} ${sr.lab} ${fmt(v)}</title></circle>`;if(si===0)body+=`<text x="${X(i)}" y="${Y(v)-8}" text-anchor="middle" font-size="10" fill="#ccc" font-family="Space Mono">${Number(v).toFixed(dec)}</text>`})});
-  let ax='';R.forEach((r,i)=>{if(R.length<=20||i%Math.ceil(R.length/14)===0)ax+=`<text x="${X(i)}" y="${Hh-pb+16}" text-anchor="middle" font-size="11" fill="#999" font-family="Space Mono">${r.d.slice(5)}</text>`});
+    body+=`<path d="${pts.map(([i,v],n)=>(n?'L':'M')+X(i).toFixed(1)+' '+Y(v).toFixed(1)).join(' ')}" fill="none" stroke="${sr.col}" stroke-width="${si===0?3:2.2}" stroke-linejoin="round" stroke-linecap="round" ${si?'stroke-dasharray="2 0"':''}/>`;
+    pts.forEach(([i,v])=>{const over=si===0&&ref0!=null&&v>ref0;body+=`<circle cx="${X(i)}" cy="${Y(v)}" r="${si===0?5.5:4}" fill="${over?'#e05c5c':sr.col}" stroke="#0d0d0d" stroke-width="2"><title>${R[i].d} ${sr.lab} ${fmt(v)}</title></circle>`;if(si===0)body+=`<text x="${X(i)}" y="${Y(v)-12}" text-anchor="middle" font-size="13" font-weight="700" fill="${over?'#ff8a8a':'#ffffff'}" ${FT} ${halo}>${Number(v).toFixed(dec)}</text>`})});
+  let ax='';const step=R.length<=16?1:Math.ceil(R.length/12);R.forEach((r,i)=>{if(i%step===0||i===R.length-1)ax+=`<text x="${X(i)}" y="${Hh-pb+20}" text-anchor="middle" font-size="12.5" fill="#cfcfcf" ${FT}>${r.d.slice(5)}</text>`});
   el.innerHTML=`<svg viewBox="0 0 ${W} ${Hh}">${g}${ref}${body}${ax}</svg><div class="leg">${series.map(sr=>`<span><i style="background:${sr.col}"></i>${sr.lab}</span>`).join('')}${refs.map(x=>`<span><i style="background:${x.col}"></i>${x.lab}</span>`).join('')}<span><i style="background:#e05c5c"></i>${L('전월 초과','> mes ant.')}</span></div>`;
 }
 async function lrExcel(mode){
@@ -1822,13 +1861,13 @@ function trRender(){
   /* 표① 사용량 대비 */
   const tdN=(v,d=1)=>`<td class="n">${v==null?'–':num(v,d)}</td>`;
   const row1=(m,name,cls)=>`<tr class="${cls||''}"><td class="b">${name}</td><td class="n">${m.days||'–'}</td>${tdN(m.u.uw)}${tdN(m.u.ut)}${tdN(m.u.uj)}${tdN(m.use)}${tdN(m.gen.w)}${tdN(m.gen.t)}${tdN(m.gen.j)}${tdN(m.gen.s)}${tdN(m.all)}<td class="n">${rF(m.rate.w)}</td><td class="n">${rF(m.rate.t)}</td><td class="n">${rF(m.rate.j)}</td><td class="n b">${rF(m.rate.all)}</td></tr>`;
-  $('tr-t1').innerHTML=`<table><colgroup><col style="width:64px"><col style="width:56px"><col><col><col><col><col><col><col><col><col><col><col><col><col></colgroup><thead>
+  $('tr-t1').innerHTML=`<table><colgroup><col style="width:76px"><col style="width:56px"><col><col><col><col><col><col><col><col><col><col><col><col><col></colgroup><thead>
     <tr><th rowspan="2">${L('월','Mes')}</th><th rowspan="2" class="n">${L('측정일','Días')}</th><th colspan="4" class="c">${L('사용중량 (kg)','Peso usado (kg)')}</th><th colspan="5" class="c">${L('발생중량 (kg)','Peso generado (kg)')}</th><th colspan="4" class="c">${L('로스율 (발생 ÷ 사용)','Tasa (gen. ÷ uso)')}</th></tr>
     <tr><th class="n">Wire</th><th class="n">Term</th><th class="n">Seal</th><th class="n">${L('계','Total')}</th><th class="n">Wire</th><th class="n">Term</th><th class="n">Seal</th><th class="n">Scrap</th><th class="n">${L('합계','Total')}</th><th class="n">Wire</th><th class="n">Term</th><th class="n">Seal</th><th class="n">${L('합계','Total')}</th></tr></thead>
     <tbody>${months.map((m,i)=>row1(m,lab[i],(m.days||m.use)?'':'dim')).join('')}</tbody><tfoot>${row1(year,C.y+L('년',''),'')}</tfoot></table>`;
   /* 표② 절단본수 대비 */
   const row2=(m,name)=>`<tr class="${(m.days||m.cut)?'':'dim'}"><td class="b">${name}</td><td class="n">${m.cut?num(m.cut,0):'–'}</td>${tdN(m.all)}${tdN(m.gen.s)}<td class="n">${kkF(m.kk.w)}</td><td class="n">${kkF(m.kk.t)}</td><td class="n">${kkF(m.kk.j)}</td><td class="n b">${kkF(m.kk.all)}</td><td class="n" style="color:#bba4f4">${kkF(m.kk.s)}</td><td class="n">${m.avgDay!=null?num(m.avgDay,1):'–'}</td></tr>`;
-  $('tr-t2').innerHTML=`<table><colgroup><col style="width:64px"><col><col><col><col><col><col><col><col><col></colgroup><thead>
+  $('tr-t2').innerHTML=`<table><colgroup><col style="width:76px"><col><col><col><col><col><col><col><col><col></colgroup><thead>
     <tr><th rowspan="2">${L('월','Mes')}</th><th rowspan="2" class="n">${L('절단수량','Cortes')}<small>${L('본','pz')}</small></th><th colspan="2" class="c">${L('발생 (kg)','Generado (kg)')}</th><th colspan="5" class="c">${L('절단 1,000본당 발생 (kg)','kg por 1,000 cortes')}</th><th rowspan="2" class="n">${L('일평균','Prom./día')}<small>kg</small></th></tr>
     <tr><th class="n">${L('합계','Total')}</th><th class="n">Scrap</th><th class="n">Wire</th><th class="n">Term</th><th class="n">Seal</th><th class="n">${L('합계','Total')}</th><th class="n">Scrap</th></tr></thead>
     <tbody>${months.map((m,i)=>row2(m,lab[i])).join('')}</tbody><tfoot>${row2(year,C.y+L('년',''))}</tfoot></table>`;
@@ -1839,17 +1878,18 @@ function trRender(){
 }
 /* 월별 차트: 누적 막대(좌축) + 선(우축, line2 선택) */
 function trChart(el,labels,bars,line,fmtL){
-  const W=760,Hh=240,pl=56,pr=58,pt=14,pb=30,iw=W-pl-pr,ih=Hh-pt-pb,n=labels.length;
-  const tot=labels.map((_,i)=>bars.reduce((s,b)=>s+(b.vals[i]||0),0));const maxB=Math.max(1,...tot)*1.12;
-  const lv=[...line.vals,...(line.line2?line.line2.vals:[])].filter(v=>v!=null);const maxL=Math.max(.01,...lv)*1.2;
+  const W=820,Hh=300,pl=66,pr=70,pt=22,pb=36,iw=W-pl-pr,ih=Hh-pt-pb,n=labels.length;
+  const FT='font-family="Space Mono"';const halo='paint-order="stroke" stroke="#0d0d0d" stroke-width="4" stroke-linejoin="round"';
+  const tot=labels.map((_,i)=>bars.reduce((s,b)=>s+(b.vals[i]||0),0));const maxB=Math.max(1,...tot)*1.15;
+  const lv=[...line.vals,...(line.line2?line.line2.vals:[])].filter(v=>v!=null);const maxL=Math.max(.01,...lv)*1.25;
   if(!tot.some(v=>v>0)&&!lv.length){el.innerHTML=`<div class="mini" style="padding:30px;text-align:center">${L('데이터 없음','Sin datos')}</div>`;return}
   const bw=iw/n,X=i=>pl+bw*i+bw/2,YB=v=>pt+ih-ih*v/maxB,YL=v=>pt+ih-ih*v/maxL;
-  let g='';for(let i=0;i<=4;i++){const v=maxB*i/4,y=YB(v);g+=`<line x1="${pl}" x2="${W-pr}" y1="${y}" y2="${y}" stroke="#1e1e1e"/><text x="${pl-6}" y="${y+4}" text-anchor="end" font-size="10.5" fill="#777" font-family="Space Mono">${fmtL(v)}</text><text x="${W-pr+6}" y="${y+4}" text-anchor="start" font-size="10.5" fill="${line.col}" font-family="Space Mono">${line.fmt(maxL*i/4)}</text>`}
-  let b='';labels.forEach((l,i)=>{let y0=YB(0);bars.forEach(bd=>{const v=bd.vals[i]||0;if(v<=0)return;const h=ih*v/maxB;b+=`<rect x="${X(i)-bw*.3}" y="${y0-h}" width="${bw*.6}" height="${h}" fill="${bd.col}" opacity=".9"><title>${l} ${bd.lab} ${num(v,1)}</title></rect>`;y0-=h});
-    if(tot[i]>0)b+=`<text x="${X(i)}" y="${y0-5}" text-anchor="middle" font-size="9.5" fill="#bbb" font-family="Space Mono">${fmtL(tot[i])}</text>`;
-    b+=`<text x="${X(i)}" y="${Hh-pb+16}" text-anchor="middle" font-size="11" fill="#999" font-family="Space Mono">${l}</text>`});
-  const ln=(ser)=>{const pts=ser.vals.map((v,i)=>v==null?null:[X(i),YL(v)]).filter(Boolean);if(!pts.length)return '';return `<path d="${pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ')}" fill="none" stroke="${ser.col}" stroke-width="2.2"/>`+ser.vals.map((v,i)=>v==null?'':`<circle cx="${X(i)}" cy="${YL(v)}" r="3.5" fill="${ser.col}"><title>${labels[i]} ${ser.lab} ${line.fmt(v)}</title></circle><text x="${X(i)}" y="${YL(v)-8}" text-anchor="middle" font-size="9.5" fill="${ser.col}" font-family="Space Mono">${line.fmt(v)}</text>`).join('')};
-  el.innerHTML=`<svg viewBox="0 0 ${W} ${Hh}">${g}${b}${ln(line)}${line.line2?ln(line.line2):''}</svg><div class="leg">${bars.map(bd=>`<span><i style="background:${bd.col}"></i>${bd.lab}</span>`).join('')}<span><i style="background:${line.col}"></i>${line.lab} (${L('우축','eje der.')})</span>${line.line2?`<span><i style="background:${line.line2.col}"></i>${line.line2.lab}</span>`:''}</div>`;
+  let g='';for(let i=0;i<=4;i++){const v=maxB*i/4,y=YB(v);g+=`<line x1="${pl}" x2="${W-pr}" y1="${y}" y2="${y}" stroke="${i?'#262626':'#3a3a3a'}"/><text x="${pl-8}" y="${y+4}" text-anchor="end" font-size="12" fill="#b5b5b5" ${FT}>${fmtL(v)}</text><text x="${W-pr+8}" y="${y+4}" text-anchor="start" font-size="12" font-weight="700" fill="${line.col}" ${FT}>${line.fmt(maxL*i/4)}</text>`}
+  let b='';labels.forEach((l,i)=>{let y0=YB(0);bars.forEach(bd=>{const v=bd.vals[i]||0;if(v<=0)return;const h=ih*v/maxB;b+=`<rect x="${X(i)-bw*.32}" y="${y0-h}" width="${bw*.64}" height="${h}" fill="${bd.col}" rx="1.5"><title>${l} ${bd.lab} ${num(v,1)}</title></rect>`;y0-=h});
+    if(tot[i]>0)b+=`<text x="${X(i)}" y="${y0-6}" text-anchor="middle" font-size="12" font-weight="700" fill="#fff" ${FT} ${halo}>${fmtL(tot[i])}</text>`;
+    b+=`<text x="${X(i)}" y="${Hh-pb+20}" text-anchor="middle" font-size="12.5" fill="#cfcfcf" ${FT}>${l}</text>`});
+  const ln=(ser,main)=>{const pts=ser.vals.map((v,i)=>v==null?null:[X(i),YL(v)]).filter(Boolean);if(!pts.length)return '';return `<path d="${pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ')}" fill="none" stroke="${ser.col}" stroke-width="${main?3:2.2}" stroke-linejoin="round"/>`+ser.vals.map((v,i)=>v==null?'':`<circle cx="${X(i)}" cy="${YL(v)}" r="${main?5.5:4}" fill="${ser.col}" stroke="#0d0d0d" stroke-width="2"><title>${labels[i]} ${ser.lab} ${line.fmt(v)}</title></circle><text x="${X(i)}" y="${YL(v)-12}" text-anchor="middle" font-size="12.5" font-weight="700" fill="${ser.col}" ${FT} ${halo}>${line.fmt(v)}</text>`).join('')};
+  el.innerHTML=`<svg viewBox="0 0 ${W} ${Hh}">${g}${b}${ln(line,true)}${line.line2?ln(line.line2,false):''}</svg><div class="leg">${bars.map(bd=>`<span><i style="background:${bd.col}"></i>${bd.lab}</span>`).join('')}<span><i style="background:${line.col}"></i>${line.lab} (${L('우축','eje der.')})</span>${line.line2?`<span><i style="background:${line.line2.col}"></i>${line.line2.lab}</span>`:''}</div>`;
 }
 async function trExcel(){
   if(!TR.data){toast(L('먼저 조회하세요','Consulte primero'),true);return}
