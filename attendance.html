@@ -295,6 +295,12 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(70%) sepia(50%
 .emp-proc-sel:hover,.emp-proc-sel:focus{border-color:#c9a84c;outline:none;background:#141414;}
 .emp-proc-sel.saved{border-color:#3f9a6a;box-shadow:0 0 0 2px #3f9a6a66;}
 .emp-proc-sel option,.emp-proc-sel optgroup{background:#111111;color:#f0f0f0;}
+.emp-shift-sel{min-width:96px;border-radius:9px;padding:4px 8px;font-size:12px;font-weight:700;font-family:inherit;cursor:pointer;outline:none;}
+.emp-shift-sel.shift-day{background:rgba(76,175,125,.15);color:#4caf7d;border:1px solid rgba(76,175,125,.5);}
+.emp-shift-sel.shift-night{background:rgba(130,80,210,.15);color:#a870f0;border:1px solid rgba(130,80,210,.5);}
+.emp-shift-sel:hover,.emp-shift-sel:focus{border-color:#c9a84c;}
+.emp-shift-sel.saved{box-shadow:0 0 0 2px #3f9a6a66;}
+.emp-shift-sel option{background:#111111;color:#f0f0f0;}
 /* [특근조사] */
 .ots-wrap{display:grid;grid-template-columns:300px 1fr;gap:14px;align-items:start;}
 .ots-wrap>div{min-width:0;}
@@ -4806,6 +4812,37 @@ function empInlineSetProc(id,sel){
   try{ var s2=document.querySelector('#emp-tbody select[onchange*="\''+String(id).replace(/'/g,"")+'\'"]'); if(s2){ s2.classList.add('saved'); setTimeout(function(){s2.classList.remove('saved');},1500);} }catch(_e){}
   toast(isEs?('Proceso actualizado: '+emp.name+' → '+(p.es||p.ko)):(emp.name+' 공정 변경: '+oldName+' → '+p.ko),'#3f9a6a');
 }
+// ═══ [교대 인라인 편집] 직원목록에서 주간/야간 바로 변경 (오늘부터 적용, 교대 이력 기록) ═══
+function empInlineSetShift(id,sel){
+  var isEs=currentLang==='es';
+  var emp=DB.employees.find(function(x){return empIdEq(x.id,id);});
+  var ns=sel.value==='야간'?'야간':'주간';
+  if(!emp||emp.resigned){ renderEmpList(); return; }
+  var today=todayStr();
+  var cur=getShiftOnDate(emp,today);
+  if(cur===ns){ renderEmpList(); return; }
+  var hist=Array.isArray(emp.shiftHistory)?emp.shiftHistory.slice():[];
+  var open=null; for(var i=hist.length-1;i>=0;i--){ if(!hist[i].to){ open=hist[i]; break; } }
+  if(open && open.from===today){ open.shift=ns; }
+  else{
+    if(open) open.to=today;
+    if(!hist.length) hist.push({shift:cur, from:emp.hireDate||today, to:today});
+    hist.push({shift:ns, from:today, to:null});
+  }
+  emp.shiftHistory=hist; emp.shift=ns;
+  emp._mt=new Date().toISOString();
+  if(!DB.settings) DB.settings={};
+  var now=new Date().toISOString();
+  DB.settings.__localSavedAt=now; DB.settings.lastModifiedAt=now;
+  try{ lsSave(JSON.stringify(DB)); }catch(_e){}
+  try{ autoSave(); }catch(_e){}
+  try{ updateFileStats(); }catch(_e){}
+  renderEmpList();
+  try{ renderDash(); }catch(_e){}
+  try{ var s2=document.querySelector('#emp-tbody select.emp-shift-sel[onchange*="\''+String(id).replace(/'/g,"")+'\'"]'); if(s2){ s2.classList.add('saved'); setTimeout(function(){s2.classList.remove('saved');},1500);} }catch(_e){}
+  var lbl=function(v){ return v==='주간'?(isEs?'🌞 Diurno':'🌞 주간'):(isEs?'🌙 Nocturno':'🌙 야간'); };
+  toast(isEs?('Turno actualizado: '+emp.name+' → '+lbl(ns)):(emp.name+' 교대 변경: '+lbl(cur)+' → '+lbl(ns)+' (오늘부터)'), ns==='야간'?'#4a2080':'#3f9a6a');
+}
 /* 야간 희망자: 마음톡톡 설문 「주간/야간 근무 조사」(surveys.id=2) 응답에서 '야간'(옵션 1) 선택자 */
 var NIGHT_SURVEY={id:2,q:'qmvl2czuzfz3',opt:1};
 var NIGHT_WISH=null, _nightWishLoading=false;
@@ -4885,7 +4922,9 @@ function renderEmpList(){
       <td style="color:#666666;font-size:11px">${e.empno||'-'}</td>
       <td><span class="badge" style="background:${TYPE_COLORS[e.processType]+'30'};color:${TYPE_COLORS[e.processType]}">${typeLabel(e.processType)}</span></td>
       <td class="emp-proc-td" onclick="event.stopPropagation()">${empProcSelectHTML(e,isEs)}</td>
-      <td><span class="shift-ind ${curShift==='주간'?'shift-day':'shift-night'}">${curShift==='주간'?dayLbl:nightLbl}</span></td>
+      <td onclick="event.stopPropagation()">${e.resigned
+        ? `<span class="shift-ind ${curShift==='주간'?'shift-day':'shift-night'}">${curShift==='주간'?dayLbl:nightLbl}</span>`
+        : `<select class="emp-shift-sel ${curShift==='주간'?'shift-day':'shift-night'}" title="${isEs?'Cambiar turno (desde hoy)':'교대 변경 (오늘부터 적용)'}" onclick="event.stopPropagation()" onchange="empInlineSetShift('${e.id}',this)"><option value="주간"${curShift==='주간'?' selected':''}>${dayLbl}</option><option value="야간"${curShift==='야간'?' selected':''}>${nightLbl}</option></select>`}</td>
       <td style="font-size:11px">${(isEs?(e.jobGrade||e.jobGradeKo):(e.jobGradeKo||e.jobGrade))||'-'}</td>
       <td style="font-size:11px;color:#8a8a8a">${e.phone||'-'}</td>
       <td style="font-size:11px">${fmtDate(e.hireDate)}<br><span style="color:#666666;font-size:9px">${tenure}</span></td>
