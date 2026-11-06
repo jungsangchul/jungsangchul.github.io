@@ -420,10 +420,12 @@ table.cfg input{width:17px;height:17px}
   <div class="grid2 dates">
     <div class="card">
       <h3 data-t="in_h">일별 입고 붙여넣기 (24110)</h3>
-      <div class="hint" data-t="in_hint">자재코드·자재명·업체품명·단위·수량 순서가 기본이지만, 열 순서·개수가 달라도 됩니다(머릿글 없어도 됨): 수량은 숫자 칸, 단위는 EA·MM·M 같은 칸을 자동으로 찾고 첫 칸을 자재코드로 읽습니다. 단위가 마스터와 다르면 경고로 표시합니다. 자재코드로 먼저 찾고, 코드가 없거나 맞지 않으면 자재명 → 업체품명 순서로 찾습니다. 찾지 못했거나 후보가 여러 개인 행은 자재코드를 직접 고를 수 있습니다. 입고는 <b>아이템(반)별 재고</b>로 들어갑니다. 기본은 <b>자동 배분</b>: 생산계획에서 「신청완료」한 반별 신청(미입고) 잔량을 오래된 신청부터 채우고, 남는 수량은 공용(콜게이트)으로 들어갑니다. 특정 반으로 전부 넣으려면 아이템을 고르세요(행마다 미리보기에서 바꿀 수 있음). 미리보기의 「배분 예정」은 현재 신청 잔량 기준이며, 저장 시점의 잔량으로 다시 계산됩니다.</div>
+      <div class="hint" data-t="in_hint">자재코드·자재명·업체품명·단위·수량 순서가 기본이지만, 열 순서·개수가 달라도 됩니다(머릿글 없어도 됨): 수량은 숫자 칸, 단위는 EA·MM·M 같은 칸을 자동으로 찾고 첫 칸을 자재코드로 읽습니다. 단위가 마스터와 다르면 경고로 표시합니다. 자재코드로 먼저 찾고, 코드가 없거나 맞지 않으면 자재명 → 업체품명 순서로 찾습니다. 찾지 못했거나 후보가 여러 개인 행은 자재코드를 직접 고를 수 있습니다. 입고는 <b>아이템(반)별 재고</b>로 들어갑니다. 기본은 <b>자동 배분</b>: 생산계획에서 「신청완료」한 반별 신청(미입고) 잔량을 오래된 신청부터 채우고, 남는 수량은 공용(콜게이트)으로 들어갑니다. 특정 반으로 전부 넣으려면 아이템을 고르세요(행마다 미리보기에서 바꿀 수 있음). 미리보기의 「배분 예정」은 현재 신청 잔량 기준이며, 저장 시점의 잔량으로 다시 계산됩니다. 「남는 수량」을 <b>BOM 소요 비율</b>로 두면 신청을 채우고 남는 수량을 BOM상 한 아이템만 쓰는 전용자재는 그 아이템에, 공용자재는 아이템별 평균 대당 소요량 비율로 나누고, BOM에 없는 자재만 콜게이트로 보냅니다. 붙여넣기에 <b>신청처</b> 열(SUB 공정 (E1) 등)이 있으면 설정된 신청처의 행만 반영하고(C&C 공정 등은 제외), A/BAG SUB 공정 행은 A/BAG 아이템에만 배분합니다. 출고일자 열이 있으면 날짜별로 나눠 저장합니다.</div>
       <div class="row" style="margin:10px 0">
         <label class="f"><span data-t="in_date">입고일자</span><input type="date" id="nDate"></label>
-        <label class="f"><span data-t="in_item">입고 아이템 (전체 행 기본값)</span><select id="nItem" class="itemSel" data-ph="autoin" style="width:300px"></select></label>
+        <label class="f"><span data-t="in_item">입고 아이템 (전체 행 기본값)</span><select id="nItem" class="itemSel" data-ph="autoin" style="width:230px"></select></label>
+        <label class="f"><span data-t="in_alloc">남는 수량 (신청 잔량 채운 뒤)</span><select id="nAlloc" style="width:250px">
+          <option value="req" data-t="al_req">공용(콜게이트)으로</option><option value="bom" data-t="al_bom">BOM 소요 비율로 반별 배분 (전용자재는 그 반)</option></select></label>
         <label class="f" style="flex:1;min-width:140px"><span data-t="memo">메모</span><input id="nMemo"></label>
         <label class="chkl"><input type="checkbox" id="nCreate"><span data-t="create_new2">찾지 못한 행은 신규 품목으로 추가 (붙여넣은 자재코드 사용)</span></label>
         <label class="chkl"><input type="checkbox" id="nLen" checked><span data-t="in_len">ROLL 자재 수량이 길이(mm·m)로 적혀 있음 → 롤로 환산해 등록 (단위 칸이 EA·ROLL인 행은 롤 개수로 봄)</span></label>
@@ -516,6 +518,7 @@ table.cfg input{width:17px;height:17px}
       <div class="row">
         <label class="f"><span data-t="cfg_skip">차감 제외 자재유형</span><input id="cfgSkip" style="width:150px"></label>
         <label class="f"><span data-t="cfg_shared">공용 아이템 (부족분 차감·입고 잔량)</span><input id="cfgShared" placeholder="콜게이트" style="width:120px"></label>
+        <label class="f" style="flex:1;min-width:220px"><span data-t="cfg_procs">입고 반영 신청처 (24110 · 쉼표 구분)</span><input id="cfgProcs" placeholder="SUB 공정 (E1),A/BAG SUB 공정 (EA)"></label>
         <label class="f" style="flex:1;min-width:160px"><span data-t="cfg_extra">추가 아이템 (실사 구역 · 쉼표 구분)</span><input id="cfgExtra" data-tp="cfg_extra" placeholder="콜게이트"></label>
         <button class="btn" id="cfgSave" data-t="save">저장</button>
       </div>
@@ -625,7 +628,7 @@ sel_all:'Seleccionar todo',del_sel:'Eliminar seleccionados',log_hint:'Historial 
 p_search:'Código/nombre/proveedor',p_search2:'Código/nombre/nota',p_search3:'LOT / No. parte',p_search_p:'Buscar parte/producto',p_search_c:'Buscar componente',p_adj_memo:'Ej.: medición en piso'};
 let LANG='ko';try{LANG=localStorage.getItem('binv_lang')||'ko'}catch(e){}
 const KO={};
-Object.assign(ES,{cfg_shared:'Ítem común (faltantes · resto de entradas)',item:'Ítem',in_item:'Ítem de entrada (por defecto)',init_zero:'Materiales no listados del ítem pegado → 0 (inventario mensual completo)',cfg_extra:'Ítems extra (áreas de conteo, coma)',p_cfg_extra:'콜게이트',
+Object.assign(ES,{in_alloc:'Resto (tras solicitudes)',al_req:'A común (콜게이트)',al_bom:'Por proporción BOM a cada ítem (exclusivos a su ítem)',cfg_procs:'Procesos solicitantes a registrar (24110, coma)',cfg_shared:'Ítem común (faltantes · resto de entradas)',item:'Ítem',in_item:'Ítem de entrada (por defecto)',init_zero:'Materiales no listados del ítem pegado → 0 (inventario mensual completo)',cfg_extra:'Ítems extra (áreas de conteo, coma)',p_cfg_extra:'콜게이트',
   ph_auto:'Leer de encabezado / columna',ph_all:'Todos (total)',ph_pick:'— Elija ítem —',ph_allit:'Todos los ítems',
   init_h:'Pegar stock inicial (conteo) — por ítem',init_hint:'Pegue con encabezado como la hoja «종합» del conteo mensual (componente · … · MAIN · FLOOR · M_ABAG · F_ABAG · DR_DRI · DR_ASS · DR_LH · DR_RH · 콜게이트 …): las columnas de ítem se reconocen solas y se registra por material × ítem. Sin encabezado pegue «código · cantidad» y elija el ítem (o «código · ítem · cantidad»). La cantidad pasa a ser el stock de ese material·ítem (sobrescribe). ROLL en rollos; las celdas vacías se omiten (0 registra 0).',
   tpl:'Plantilla (Excel · columnas por ítem)',adjb_hint:'Mismo formato que el stock inicial: con columnas de ítem en el encabezado se lee material × ítem; si no, «código · cantidad» (elija ítem) o «código · ítem · cantidad».',
@@ -1120,15 +1123,15 @@ async function openItem(code){
 function closeModal(){$('mdl').classList.remove('on')}
 
 /* ================= 공용: 재고 반영 RPC ================= */
-async function postStock(kind,date,lines,memo,create,zeroItems){
+async function postStock(kind,date,lines,memo,create,zeroItems,alloc){
   if(!date){toast(tr('일자를 선택하세요','Seleccione la fecha'),1);return null}
   if(kind!=='IN'&&lines.some(l=>!l.item)){toast(tr('아이템이 없는 행이 있습니다','Hay filas sin ítem'),1);return null}
   busy(true,tr('저장 중…','Guardando…'));
-  lines=lines.map(l=>rl(l.code)?{...l,qty:fromR(l.code,l.qty)}:l);
-  try{const r=await rpc('binv_stock_post',{p_kind:kind,p_date:date,p_lines:lines,p_memo:memo||null,p_worker:worker(),p_create:!!create,p_zero_items:zeroItems&&zeroItems.length?zeroItems:null});
+  lines=lines.map(l=>{const o={...l};delete o.d;delete o.only;if(rl(l.code))o.qty=fromR(l.code,l.qty);return o});
+  try{const r=await rpc('binv_stock_post',{p_kind:kind,p_date:date,p_lines:lines,p_memo:memo||null,p_worker:worker(),p_create:!!create,p_zero_items:zeroItems&&zeroItems.length?zeroItems:null,p_alloc:alloc||'req'});
     const sk=(r.skipped||[]).length;
-    const al=r.alloc||[],alq=al.filter(a=>a.req_id).length;
-    toast(tr(`${kindL(kind)} ${r.applied}건 저장 (배치 #${r.batch_id})`,`${kindL(kind)}: ${r.applied} filas guardadas (lote #${r.batch_id})`)+(al.length?tr(` · 배분 ${al.length}건 (신청 ${alq} · 공용 ${al.length-alq})`,` · asignación ${al.length} (solicitud ${alq} · común ${al.length-alq})`):'')+(r.zeroed?tr(` · 실사 외 0처리 ${r.zeroed}건`,` · a cero ${r.zeroed}`):'')+(sk?tr(` · 제외 ${sk}건`,` · omitidas ${sk}`):''));
+    const al=r.alloc||[],alq=al.filter(a=>a.how==='req').length,alb=al.filter(a=>a.how==='bom').length;
+    toast(tr(`${kindL(kind)} ${date} ${r.applied}건 저장 (배치 #${r.batch_id})`,`${kindL(kind)} ${date}: ${r.applied} filas guardadas (lote #${r.batch_id})`)+(al.length?tr(` · 배분 ${al.length}건 (신청 ${alq} · BOM비율 ${alb} · 공용 ${al.length-alq-alb})`,` · asignación ${al.length} (solicitud ${alq} · BOM ${alb} · común ${al.length-alq-alb})`):'')+(r.zeroed?tr(` · 실사 외 0처리 ${r.zeroed}건`,` · a cero ${r.zeroed}`):'')+(sk?tr(` · 제외 ${sk}건`,` · omitidas ${sk}`):''));
     await refreshAll();loadDates(kind);if(kind==='IN'){await reqOpenLoad();if(REQ){await planCalc();reqRender()}}return r;
   }catch(e){toast(errMsg(e),1);return null}finally{busy(false)}
 }
@@ -1210,8 +1213,11 @@ function initTemplate(){
 
 /* ================= 입고 ================= */
 let NP=null;
+const inProcs=()=>String(SET.in_procs||'').split(',').map(x=>nz(x)).filter(Boolean);
+const procOkIn=p=>{const L=inProcs();if(!L.length||!p)return true;const n=nz(p);return L.some(x=>n===x||n.includes(x)||x.includes(n))};
+const abagItems=()=>AITEMS.filter(x=>/A\/?BAG/i.test(x));
 function inParse(t){
-  const rows=parseTSV(t);const out=[];let skip=0;
+  const rows=parseTSV(t);const out=[];let skip=0,skipProc=0;const PROC_RE=/공정|PROCESO/i;
   const UNIT_RE=/^(EA|PC|PCS|SET|MM|CM|M|KG|G|L|ML|ROLL|RL|롤|개|EA\.)$/i;
   rows.forEach(r=>{let c='',a='',b='',u='',q=NaN;
     const cells=r.map(x=>String(x??'').trim());
@@ -1224,6 +1230,9 @@ function inParse(t){
     // 자재코드 칸: 마스터에 있는 코드가 들어 있는 칸을 어디서든 찾음 (ERP 24110: 입고일자·구분·공정·창고·자재코드·… 순이어도 됨)
     const DATE_RE=/^\d{4}[-./]\d{1,2}[-./]\d{1,2}/,SKIP_RE=/^(생산|구매|자재창고|입고|출고|SUB 공정.*|조립 공정.*|공정.*|창고.*)$/i;
     const ci=cells.findIndex((x,i)=>i!==qi&&i!==ui&&x&&IDX.code.has(nz(x)));
+    const pi=cells.findIndex((x,i)=>i!==qi&&i!==ui&&i!==ci&&PROC_RE.test(x)),proc=pi>=0?cells[pi]:'';
+    if(proc&&!procOkIn(proc)){skipProc++;return}
+    const dcell=cells.find(x=>DATE_RE.test(x)),d=dcell?normDate(dcell):'';
     const txt=cells.map((x,i)=>({x,i})).filter(o=>o.x&&o.i!==qi&&o.i!==ui&&o.i!==ci&&!DATE_RE.test(o.x)&&!SKIP_RE.test(o.x)).map(o=>o.x);
     if(ci>=0){c=cells[ci];const t2=txt.filter(x=>!/^\d{5}-[A-Z0-9]{5}-\d$/i.test(x));a=t2[0]||'';b=t2[1]||''}
     else if(cells.length>=5&&qi===4){c=cells[0];a=cells[1];b=cells[2]}
@@ -1232,8 +1241,8 @@ function inParse(t){
     else if(txt.length===1){const t=txt[0];if(IDX.code.has(nz(t)))c=t;else if(IDX.vendor.has(nz(t)))b=t;else a=t}
     if(isNaN(q)||q===0||!(c||a||b)){skip++;return}
     let m=c&&IDX.code.has(nz(c))?{code:IDX.code.get(nz(c)),how:'code'}:((a||b)?matchItem(a,b):null);
-    out.push({n:out.length,c,a,b,u,q,code:m&&m.code?m.code:'',how:m?m.how:'none',cands:m&&m.cands?m.cands:null,item:$('nItem').value})});
-  NP={rows:out,skip};inRender();
+    out.push({n:out.length,c,a,b,u,q,d,proc,code:m&&m.code?m.code:'',how:m?m.how:'none',cands:m&&m.cands?m.cands:null,item:$('nItem').value,only:/A\/?BAG/i.test(proc)?abagItems():null})});
+  NP={rows:out,skip,skipProc};inRender();
 }
 const nLenOn=()=>!!($('nLen')&&$('nLen').checked);
 const COUNT_RE=/^(EA|PC|PCS|ROLL|RL|롤|개)$/i;
@@ -1244,17 +1253,18 @@ function inRender(){
   const cr=$('nCreate').checked;
   const ok=P.rows.filter(r=>r.code&&IMAP[r.code]).length,amb=P.rows.filter(r=>!r.code&&r.cands).length,none=P.rows.filter(r=>!r.code&&!r.cands).length,noit=0;
   const tot=P.rows.filter(r=>r.code&&IMAP[r.code]).reduce((s,r)=>s+nQ(r),0);
-  $('nInfo').innerHTML=tr(`인식 <b>${P.rows.length}</b> · 매칭 <b>${ok}</b> (수량 ${fmt(tot)}) · 후보선택 ${amb} · 미등록 ${none}`,`Leídas <b>${P.rows.length}</b> · encontradas <b>${ok}</b> (cant. ${fmt(tot)}) · por elegir ${amb} · sin material ${none}`)+(P.skip?tr(` · 제외 ${P.skip}`,` · omitidas ${P.skip}`):'')+
+  const dates=[...new Set(P.rows.map(r=>r.d).filter(Boolean))].sort();
+  $('nInfo').innerHTML=tr(`인식 <b>${P.rows.length}</b> · 매칭 <b>${ok}</b> (수량 ${fmt(tot)}) · 후보선택 ${amb} · 미등록 ${none}`,`Leídas <b>${P.rows.length}</b> · encontradas <b>${ok}</b> (cant. ${fmt(tot)}) · por elegir ${amb} · sin material ${none}`)+(P.skip?tr(` · 제외 ${P.skip}`,` · omitidas ${P.skip}`):'')+(P.skipProc?` · <span class="tag xt">${tr(`신청처 제외 ${P.skipProc}행`,`otro proceso ${P.skipProc}`)}</span>`:'')+(dates.length>1?` · <span class="tag care">${tr(`날짜 ${dates.length}개 (${dates[0]}~${dates[dates.length-1]}) — 날짜별로 나눠 저장`,`${dates.length} fechas — se guarda por fecha`)}</span>`:'')+
     ` · ${tr('자동 배분','auto')} ${P.rows.filter(r=>!r.item).length}`;
   $('nSave').disabled=!(ok+(cr?none:0));
-  tbl('nPrev',[{h:['#','#'],v:r=>r.n+1,t:'n'},{h:['자재코드 (원본)','Código (original)'],k:'c'},{h:['자재명 (원본)','Material (original)'],k:'a'},{h:['업체품명 (원본)','Proveedor (original)'],k:'b',cls:'mute'},{h:['단위 (원본)','Unidad (original)'],k:'u'},{h:['수량 (원본)','Cantidad (original)'],k:'q',t:'n'},
+  tbl('nPrev',[{h:['#','#'],v:r=>r.n+1,t:'n'},{h:['일자','Fecha'],v:r=>r.d||'',cls:'mute'},{h:['신청처','Proceso'],v:r=>r.proc||'',cls:'mute'},{h:['자재코드 (원본)','Código (original)'],k:'c'},{h:['자재명 (원본)','Material (original)'],k:'a'},{h:['업체품명 (원본)','Proveedor (original)'],k:'b',cls:'mute'},{h:['단위 (원본)','Unidad (original)'],k:'u'},{h:['수량 (원본)','Cantidad (original)'],k:'q',t:'n'},
     {h:['등록수량','A registrar'],v:r=>r.code&&IMAP[r.code]?nQ(r):r.q,t:'n',cls:'b',html:r=>{const c=r.code;if(!(c&&IMAP[c]))return fmt(r.q);const q=nQ(r);return fmt(q)+(rl(c)?` <span class="hint">${RU}${nLenOn()?' ← '+fmt(r.q)+' '+esc(IMAP[c].unit_raw||''):''}</span>`:'')}},
     {h:['매칭 자재코드','Código asignado'],html:r=>{const i=r.n;
       if(r.cands&&!r.code)return `<select class="mc" data-i="${i}"><option value="">${tr('— 선택 —','— elegir —')}</option>${r.cands.map(c=>`<option value="${esc(c)}">${esc(c)} · ${esc(IMAP[c].vendor_part||IMAP[c].name||'')}</option>`).join('')}</select>`;
       if(!r.code||r.how==='manual')return `<input class="mc" data-i="${i}" list="itemList" value="${esc(r.code)}" placeholder="${tr('코드 입력','código')}">`;
       return `<b>${esc(r.code)}</b>`}},
     {h:['아이템','Ítem'],html:r=>`<select class="mi" data-i="${r.n}"><option value="">${tr('자동 배분','Auto')}</option>${AITEMS.map(a=>`<option value="${esc(a)}"${r.item===a?' selected':''}>${esc(a)}</option>`).join('')}</select>`},
-    {h:['배분 예정 (신청 잔량 기준)','Asignación prevista'],v:r=>r.code&&IMAP[r.code]?allocText(r.code,nQ(r),r.item):'',cls:'gp',html:r=>r.code&&IMAP[r.code]?allocHtml(r.code,nQ(r),r.item):''},
+    {h:['배분 예정 (신청 잔량 기준)','Asignación prevista'],v:r=>r.code&&IMAP[r.code]?allocText(r.code,nQ(r),r.item,r.only):'',cls:'gp',html:r=>r.code&&IMAP[r.code]?allocHtml(r.code,nQ(r),r.item,r.only):''},
     {h:['자재명 (마스터)','Nombre (maestro)'],v:r=>r.code&&IMAP[r.code]?IMAP[r.code].name:''},{h:['단위 (마스터)','Unidad (maestro)'],v:r=>r.code&&IMAP[r.code]?IMAP[r.code].unit:''},
     {h:['현재고 (아이템)','Stock (ítem)'],v:r=>r.code&&IMAP[r.code]&&r.item?istock(r.code,r.item):'',t:'n',neg:1},
     {h:['check','check'],html:r=>r.code&&IMAP[r.code]?howTag(r.how)+(unitBad(r)?` <span class="tag care">${tr('단위 다름','Unidad distinta')}</span>`:''):(r.cands?howTag('ambig'):(cr?howTag('create'):howTag('none')))}],P.rows,
@@ -1262,11 +1272,11 @@ function inRender(){
   const ub=P.rows.filter(unitBad).length;if(ub)$('nInfo').innerHTML+=` · <span class="neg">${tr('단위 다름','unidad distinta')} ${ub}</span>`;
 }
 /* 입고 자동 배분 미리보기: 신청(미입고) 잔량을 오래된 순서로 채우고 남는 수량은 공용 */
-function allocParts(code,qty,item){const parts=[];let left=Number(qty)||0;if(left<=0)return parts;
-  QROWS.filter(r=>r.code===code&&r.status==='open'&&Number(r.remaining)>0&&(!item||!r.item||r.item===item)).sort((a,b)=>a.id-b.id).forEach(r=>{if(left<=0)return;const rem=toR(code,r.remaining),t=Math.min(left,rem);parts.push({item:item||r.item||SHARED(),qty:t,req:r.id});left-=t});
-  if(left>0)parts.push({item:item||SHARED(),qty:left,req:null});return parts}
-const allocText=(code,qty,item)=>allocParts(code,qty,item).map(p=>`${p.item} ${fmt(p.qty)}${p.req?' (#'+p.req+')':''}`).join(' · ');
-const allocHtml=(code,qty,item)=>allocParts(code,qty,item).map(p=>`<span class="ichip" title="${p.req?tr('신청 #','solicitud #')+p.req:tr('신청 없음 → 공용','sin solicitud → común')}"><i>${esc(p.item)}</i>${fmt(p.qty)}${p.req?'':'<span class="hint">*</span>'}</span>`).join('');
+function allocParts(code,qty,item,only){const parts=[];let left=Number(qty)||0;if(left<=0)return parts;const bom=$('nAlloc')&&$('nAlloc').value==='bom';
+  QROWS.filter(r=>r.code===code&&r.status==='open'&&Number(r.remaining)>0&&(!item||!r.item||r.item===item)&&(!only||!r.item||only.includes(r.item))).sort((a,b)=>a.id-b.id).forEach(r=>{if(left<=0)return;const rem=toR(code,r.remaining),t=Math.min(left,rem);parts.push({item:item||r.item||SHARED(),qty:t,req:r.id});left-=t});
+  if(left>0)parts.push(item?{item,qty:left,req:null}:bom?{item:tr('BOM 비율','BOM'),qty:left,req:null,bom:1}:{item:SHARED(),qty:left,req:null});return parts}
+const allocText=(code,qty,item,only)=>allocParts(code,qty,item,only).map(p=>`${p.item} ${fmt(p.qty)}${p.req?' (#'+p.req+')':''}`).join(' · ');
+const allocHtml=(code,qty,item,only)=>allocParts(code,qty,item,only).map(p=>`<span class="ichip" title="${p.req?tr('신청 #','solicitud #')+p.req:p.bom?tr('BOM 소요 비율로 반별 배분 (저장 시 계산)','por proporción BOM'):tr('신청 없음 → 공용','sin solicitud → común')}"><i>${esc(p.item)}</i>${fmt(p.qty)}${p.req?'':'<span class="hint">*</span>'}</span>`).join('')+(only?` <span class="hint">(${only.join('·')})</span>`:'');
 const unitBad=r=>{if(!(r.u&&r.code&&IMAP[r.code]))return false;const it=IMAP[r.code],mu=it.unit_raw||it.unit;return !!mu&&nz(r.u)!==nz(mu)&&nz(r.u)!==nz(RU)&&nz(r.u)!=='롤'};
 function inPick(e){const mi=e.target.closest('.mi');if(mi&&NP){const r=NP.rows[+mi.dataset.i];if(r){r.item=mi.value;inRender()}return}
   const el=e.target.closest('.mc');if(!el||!NP)return;const r=NP.rows[+el.dataset.i];if(!r)return;
@@ -1276,12 +1286,15 @@ function inPick(e){const mi=e.target.closest('.mi');if(mi&&NP){const r=NP.rows[+
 async function inSave(){
   const P=NP;if(!P)return;const cr=$('nCreate').checked;
   const lines=[];let skipped=0;
-  P.rows.forEach(r=>{if(r.code&&IMAP[r.code])lines.push({code:r.code,item:r.item||'',qty:nQ(r),mode:'delta',src_name:r.a,src_vendor:r.b});
-    else if(!r.cands&&cr&&(r.c||r.a))lines.push({code:(r.c||r.a).trim(),item:r.item||'',qty:r.q,mode:'delta',create:true,name:r.a||r.c,vendor:r.b,unit:r.u,src_name:r.a,src_vendor:r.b});else skipped++});
-  if(!lines.length)return;const na=lines.filter(l=>!l.item).length,its=[...new Set(lines.map(l=>l.item||tr('자동','auto')))];
-  if(!confirm(tr(`${$('nDate').value} 입고 ${lines.length}건 (수량 합계 ${fmt(lines.reduce((s,l)=>s+l.qty,0))} · ${na?`자동 배분 ${na}건 — 반별 신청 잔량을 채우고 남는 수량은 ${SHARED()}`:''}${na&&na<lines.length?' · ':''}${its.filter(x=>x!==tr('자동','auto')).length?'아이템 '+its.filter(x=>x!==tr('자동','auto')).join(', '):''})을 저장합니다.`+(skipped?` 매칭되지 않은 ${skipped}건은 제외됩니다.`:'')+' 진행할까요?',
-    `¿Guardar ${lines.length} entradas del ${$('nDate').value}?`+(skipped?` Se omiten ${skipped} filas sin material.`:''))))return;
-  const r=await postStock('IN',$('nDate').value,lines,$('nMemo').value.trim(),cr);
+  P.rows.forEach(r=>{const ex={d:r.d||'',only:r.only||undefined,src_proc:r.proc||undefined};if(r.code&&IMAP[r.code])lines.push({code:r.code,item:r.item||'',qty:nQ(r),mode:'delta',src_name:r.a,src_vendor:r.b,only_items:r.only||undefined,...ex});
+    else if(!r.cands&&cr&&(r.c||r.a))lines.push({code:(r.c||r.a).trim(),item:r.item||'',qty:r.q,mode:'delta',create:true,name:r.a||r.c,vendor:r.b,unit:r.u,src_name:r.a,src_vendor:r.b,only_items:r.only||undefined,...ex});else skipped++});
+  if(!lines.length)return;const na=lines.filter(l=>!l.item).length,its=[...new Set(lines.map(l=>l.item||tr('자동','auto')))],alloc=$('nAlloc').value;
+  const dates=[...new Set(lines.map(l=>l.d).filter(Boolean))].sort(),multi=dates.length>1;
+  if(!confirm(tr(`${multi?`${dates[0]} ~ ${dates[dates.length-1]} (${dates.length}일, 날짜별 배치)`:$('nDate').value} 입고 ${lines.length}건 (수량 합계 ${fmt(lines.reduce((s,l)=>s+l.qty,0))} · ${na?`자동 배분 ${na}건 — 반별 신청 잔량을 채우고 남는 수량은 ${alloc==='bom'?'BOM 소요 비율로 반별 배분(BOM 외 '+SHARED()+')':SHARED()}`:''}${na&&na<lines.length?' · ':''}${its.filter(x=>x!==tr('자동','auto')).length?'아이템 '+its.filter(x=>x!==tr('자동','auto')).join(', '):''})을 저장합니다.`+(skipped?` 매칭되지 않은 ${skipped}건은 제외됩니다.`:'')+' 진행할까요?',
+    `¿Guardar ${lines.length} entradas${multi?` (${dates.length} fechas)`:' del '+$('nDate').value}?`+(skipped?` Se omiten ${skipped} filas sin material.`:''))))return;
+  let r=null;
+  if(multi){for(const d of dates){const sub=lines.filter(l=>l.d===d);r=await postStock('IN',d,sub,$('nMemo').value.trim(),cr,null,alloc);if(!r)break}}
+  else r=await postStock('IN',$('nDate').value,lines,$('nMemo').value.trim(),cr,null,alloc);
   if(r){clearPaste('nPaste');NP=null;inRender();histLoad('IN')}
 }
 
@@ -1587,13 +1600,13 @@ async function bomAllXlsx(){busy(true,tr('전체 BOM 불러오는 중…','Carga
   await xlsxDownload(`BOM_전체_${stamp()}.xlsx`,[xsheet(tr('BOM 원수데이터','Datos BOM'),xTitle(tr('BOM 원수데이터 (전체)','Datos BOM (completo)')),xSub(tr('완제품 ','Productos ')+PRODS.length,rows.length),cols,rows),
     xsheet(tr('완제품 목록','Productos'),xTitle(tr('완제품 목록','Lista de productos')),xSub('',PRODS.length),PROD_COLS,PRODS)])}
 function renderCfg(){document.querySelectorAll('[data-cfg]').forEach(cb=>{cb.checked=String(SET['map_'+cb.dataset.cfg]||'').split(',').includes(cb.value)});
-  $('cfgSkip').value=SET.skip_types||'';if($('cfgExtra'))$('cfgExtra').value=SET.items_extra||'';if($('cfgShared'))$('cfgShared').value=SET.item_shared||'';['SUB','ASSY'].forEach(k=>{const e=$(k+'-procs');if(e)e.textContent=String(SET['map_'+k]||'').split(',').filter(Boolean).join(' · ')||tr('없음','Ninguno')})}
+  $('cfgSkip').value=SET.skip_types||'';if($('cfgExtra'))$('cfgExtra').value=SET.items_extra||'';if($('cfgShared'))$('cfgShared').value=SET.item_shared||'';if($('cfgProcs'))$('cfgProcs').value=SET.in_procs||'';['SUB','ASSY'].forEach(k=>{const e=$(k+'-procs');if(e)e.textContent=String(SET['map_'+k]||'').split(',').filter(Boolean).join(' · ')||tr('없음','Ninguno')})}
 async function cfgSave(){const v=k=>[...document.querySelectorAll(`[data-cfg="${k}"]:checked`)].map(x=>x.value).join(',');
   const sub=v('SUB'),assy=v('ASSY');const both=sub.split(',').filter(x=>x&&assy.split(',').includes(x));
   if(both.length&&!confirm(tr(`공정 ${both.join(',')}이(가) SUB와 조립 양쪽에서 차감되어 이중 차감될 수 있습니다. 저장할까요?`,`El proceso ${both.join(',')} se descontaría en SUB y en ensamble (doble descuento). ¿Guardar?`)))return;
   const skip=$('cfgSkip').value.split(',').map(x=>x.trim().toUpperCase()).filter(Boolean).join(',');
   const extra=$('cfgExtra').value.split(',').map(x=>x.trim()).filter(Boolean).join(','),shared=$('cfgShared').value.trim()||'콜게이트';
-  busy(true);try{await ins('binv_setting',[{key:'map_SUB',value:sub},{key:'map_ASSY',value:assy},{key:'skip_types',value:skip},{key:'items_extra',value:extra},{key:'item_shared',value:shared}],'key');await loadSettings();buildItems();renderStock();
+  busy(true);try{await ins('binv_setting',[{key:'map_SUB',value:sub},{key:'map_ASSY',value:assy},{key:'skip_types',value:skip},{key:'items_extra',value:extra},{key:'item_shared',value:shared},{key:'in_procs',value:$('cfgProcs').value.trim()}],'key');await loadSettings();buildItems();renderStock();
     Object.keys(PRODBOM).forEach(k=>delete PRODBOM[k]);toast(tr('설정을 저장했습니다','Configuración guardada'));['SUB','ASSY'].forEach(k=>{if(RES[k].p)resPreview(k)})}catch(e){toast(errMsg(e),1)}finally{busy(false)}}
 function rlRows(){const only=$('rlOnly').checked;return ITEMS.filter(it=>['MM','M'].includes(String(it.unit_raw||'').trim().toUpperCase())).filter(it=>!only||rl(it.code)).sort((a,b)=>(rl(b.code)?1:0)-(rl(a.code)?1:0)||a.code.localeCompare(b.code))}
 function renderRl(){if(!$('rlTbl'))return;const rows=rlRows();
@@ -1843,7 +1856,7 @@ async function boot(){
   // 기초재고
   bindPaste('iPaste',initParse);$('iCreate').onchange=initRender;$('iItem').onchange=()=>initParse(PASTE.iPaste||'');$('iZero').onchange=initRender;$('iClear').onclick=()=>{clearPaste('iPaste');IP=null;initRender()};$('iSave').onclick=initSave;$('iTpl').onclick=initTemplate;
   // 입고
-  bindPaste('nPaste',inParse);$('nItem').onchange=()=>{if(NP){NP.rows.forEach(r=>r.item=$('nItem').value);inRender()}};$('nItem').dataset.ph='autoin';$('nCreate').onchange=inRender;$('nLen').onchange=inRender;$('nClear').onclick=()=>{clearPaste('nPaste');NP=null;inRender()};$('nSave').onclick=inSave;$('nPrev').addEventListener('change',inPick);
+  bindPaste('nPaste',inParse);$('nItem').onchange=()=>{if(NP){NP.rows.forEach(r=>r.item=$('nItem').value);inRender()}};$('nItem').dataset.ph='autoin';$('nAlloc').onchange=inRender;$('nCreate').onchange=inRender;$('nLen').onchange=inRender;$('nClear').onclick=()=>{clearPaste('nPaste');NP=null;inRender()};$('nSave').onclick=inSave;$('nPrev').addEventListener('change',inPick);
   // 이력 카드
   ['INIT','IN','ADJ'].forEach(k=>{$(`h${k}Go`).onclick=()=>{SELD[k]=null;renderDates(k);histLoad(k)};$(`h${k}Q`).addEventListener('input',()=>histRender(k));$(`h${k}C`).onchange=()=>histLoad(k);$(`h${k}X`).onclick=()=>histXlsx(k)});
   // 실적
