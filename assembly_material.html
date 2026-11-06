@@ -1221,8 +1221,12 @@ function inParse(t){
     if(qi<0){skip++;return}
     q=num(cells[qi]);
     const ui=cells.findIndex((x,i)=>i!==qi&&UNIT_RE.test(x));if(ui>=0)u=cells[ui];
-    const txt=cells.map((x,i)=>({x,i})).filter(o=>o.x&&o.i!==qi&&o.i!==ui).map(o=>o.x);
-    if(cells.length>=5&&qi===4){c=cells[0];a=cells[1];b=cells[2]}
+    // 자재코드 칸: 마스터에 있는 코드가 들어 있는 칸을 어디서든 찾음 (ERP 24110: 입고일자·구분·공정·창고·자재코드·… 순이어도 됨)
+    const DATE_RE=/^\d{4}[-./]\d{1,2}[-./]\d{1,2}/,SKIP_RE=/^(생산|구매|자재창고|입고|출고|SUB 공정.*|조립 공정.*|공정.*|창고.*)$/i;
+    const ci=cells.findIndex((x,i)=>i!==qi&&i!==ui&&x&&IDX.code.has(nz(x)));
+    const txt=cells.map((x,i)=>({x,i})).filter(o=>o.x&&o.i!==qi&&o.i!==ui&&o.i!==ci&&!DATE_RE.test(o.x)&&!SKIP_RE.test(o.x)).map(o=>o.x);
+    if(ci>=0){c=cells[ci];const t2=txt.filter(x=>!/^\d{5}-[A-Z0-9]{5}-\d$/i.test(x));a=t2[0]||'';b=t2[1]||''}
+    else if(cells.length>=5&&qi===4){c=cells[0];a=cells[1];b=cells[2]}
     else if(txt.length>=3){c=txt[0];a=txt[1];b=txt[2]}
     else if(txt.length===2){c=txt[0];const t=txt[1];if(IDX.vendor.has(nz(t))&&!IDX.name.has(nz(t)))b=t;else a=t}
     else if(txt.length===1){const t=txt[0];if(IDX.code.has(nz(t)))c=t;else if(IDX.vendor.has(nz(t)))b=t;else a=t}
