@@ -324,7 +324,10 @@ table.cfg input{width:17px;height:17px}
   #in-tw tbody td.c{grid-column:4/5;grid-row:1;align-self:center;text-align:right}
   #in-tw tbody td.ic{grid-row:2;min-width:0}
   #in-tw tbody td.ic::before{content:attr(data-l);display:block;font-family:var(--mono);font-size:11px;color:var(--ac);letter-spacing:.06em;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  #in-tw tbody td.mc{grid-column:1/-1;grid-row:3}
+  #in-tw tbody td.mc{grid-column:1/4;grid-row:3}
+  #in-tw tbody td.c.dl{grid-column:4/5;grid-row:3;align-self:end;text-align:right} /* 모바일: 삭제 ✕는 메모 줄 오른쪽 (사진 버튼과 겹치지 않게) */
+  #in-tw tbody td.c.dl:empty{display:none}
+  #in-tw tbody td.c.dl .pbtn{height:34px;width:34px;padding:0;justify-content:center}
   #in-tw tbody td.mc input{width:100%!important}
   #in-tw input.cell{height:38px;padding:0 6px;font-size:15px}
   #in-tw input.cell.tx{height:34px;font-size:13px}
@@ -943,7 +946,7 @@ function inRender(){
       <td class="n sc" data-l="${L('합계','Total')}" data-sum="${esc(m.mc)}">${sum?num(sum):'<span class="mu">–</span>'}</td>
       <td class="c"><button class="pbtn${ph?' has':''}" data-ph="${esc(m.mc)}" onclick="phOpen('${esc(m.mc)}',this)"><svg viewBox="0 0 24 24"><path d="M4 7h3l2-2.5h6L17 7h3v12H4z"/><circle cx="12" cy="13" r="3.5"/></svg>${ph?ph:'+'}</button></td>
       <td class="mc"><input class="cell tx" data-mc="${esc(m.mc)}" data-k="memo" value="${esc(r.memo||'')}" oninput="inChg(this)" placeholder="${L('메모','Nota')}…"></td>
-      <td class="c">${(IN.rows[m.mc]||ph)?`<button class="pbtn del" title="${L('이 행 삭제','Borrar fila')}" onclick="inDelRow('${esc(m.mc)}')">✕</button>`:''}</td></tr>`}).join('');
+      <td class="c dl">${(IN.rows[m.mc]||ph)?`<button class="pbtn del" title="${L('이 행 삭제','Borrar fila')}" onclick="inDelRow('${esc(m.mc)}')">✕</button>`:''}</td></tr>`}).join('');
   $('in-tw').innerHTML=`<table><colgroup><col style="width:118px"><col><col><col><col><col style="width:84px"><col style="width:64px"><col style="width:19%"><col style="width:46px"></colgroup>
     <thead><tr><th>${L('호기','Máquina')}</th>${KINDS.map(([k,n])=>`<th class="n">${n} <small>kg</small></th>`).join('')}<th class="n">${L('합계','Total')}</th><th class="c">${L('사진','Foto')}</th><th>${L('메모','Nota')}</th><th class="c">${L('삭제','Borrar')}</th></tr></thead>
     <tbody>${tr||`<tr><td colspan="9" class="empty">${L('입력된 호기가 없습니다','Sin datos')}</td></tr>`}</tbody>
