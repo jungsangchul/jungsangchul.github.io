@@ -486,7 +486,35 @@ table.cfg input{width:17px;height:17px}
       <div class="tw m" id="abPrevW" hidden style="margin-top:10px"><table id="abPrev"></table></div>
     </div>
   </div>
+  <div class="grid2">
+    <div class="card">
+      <h3 data-t="mv_h">아이템 간 재고이동</h3>
+      <div class="hint" data-t="mv_hint">같은 자재를 한 아이템(반)에서 다른 아이템으로 옮깁니다 (예: 콜게이트 → MAIN, FLOOR → FRDR_DRI). 보내는 아이템 재고가 줄고 받는 아이템 재고가 같은 양만큼 늘며, 자재 합계는 변하지 않습니다. 재고현황의 품목 상세에서도 「이동」할 수 있습니다.</div>
+      <div class="row" style="margin-top:10px">
+        <label class="f"><span data-t="adj_code">자재코드</span><input id="mCode" list="itemList" style="width:200px" autocomplete="off"></label>
+        <label class="f"><span data-t="mv_from">보내는 아이템</span><select id="mFrom" class="itemSel" data-ph="pick" style="width:150px"></select></label>
+        <label class="f"><span data-t="mv_to">받는 아이템</span><select id="mTo" class="itemSel" data-ph="pick" style="width:150px"></select></label>
+        <label class="f"><span data-t="date">일자</span><input type="date" id="mDate"></label>
+      </div>
+      <div class="adjbox" id="mBox"></div>
+      <div class="row">
+        <label class="f"><span data-t="mv_qty">이동수량</span><input type="number" id="mQty" step="any" min="0" style="width:140px"></label>
+        <label class="f" style="flex:1;min-width:140px"><span data-t="memo">메모</span><input id="mMemo" data-tp="mv_memo" placeholder="예: 라인 이관, 콜게이트 불출"></label>
+        <button class="btn sec" id="mAll" data-t="mv_all">전량</button>
+        <button class="btn" id="mSave" data-t="mv_save" disabled>이동</button>
+      </div>
+      <div class="hint" id="mAfter" style="margin-top:6px"></div>
+    </div>
+    <div class="card">
+      <h3 data-t="mvb_h">일괄 이동 (붙여넣기)</h3>
+      <div class="hint" data-t="mvb_hint">「자재코드 · 보내는 아이템 · 받는 아이템 · 수량」 4열로 붙여넣으세요(머릿글 없어도 됨). 아이템 이름은 M_ABAG·DR_DRI 같은 엑셀 표기도 인식합니다.</div>
+      <textarea id="mbPaste" style="min-height:110px;margin-top:10px" data-tp="mvb" placeholder="A0119-201B0	콜게이트	MAIN	5"></textarea><div class="prev" id="mbInfo"></div>
+      <div class="row"><button class="btn" id="mbSave" data-t="mv_save" disabled>이동</button><button class="btn sec" id="mbClear" data-t="clear">지우기</button></div>
+      <div class="tw m" id="mbPrevW" hidden style="margin-top:10px"><table id="mbPrev"></table></div>
+    </div>
+  </div>
   <div class="card" id="h-ADJ"></div>
+  <div class="card" id="h-MOVE"></div>
 </section>
 
 <!-- ===== BOM 마스터 ===== -->
@@ -569,7 +597,7 @@ table.cfg input{width:17px;height:17px}
       <label class="f"><span data-t="to">종료</span><input type="date" id="lT"></label>
       <label class="f"><span data-t="log_kind">구분</span><select id="lK">
         <option value="" data-t="o_all">전체</option><option value="INIT" data-t="kind_INIT">기초재고</option><option value="IN" data-t="kind_IN">입고</option>
-        <option value="SUB" data-t="kind_SUB">SUB 실적</option><option value="ASSY" data-t="kind_ASSY">조립 실적</option><option value="ADJ" data-t="kind_ADJ">재고조정</option></select></label>
+        <option value="SUB" data-t="kind_SUB">SUB 실적</option><option value="ASSY" data-t="kind_ASSY">조립 실적</option><option value="ADJ" data-t="kind_ADJ">재고조정</option><option value="MOVE" data-t="kind_MOVE">재고이동</option></select></label>
       <label class="f"><span data-t="log_status">상태</span><select id="lS">
         <option value="" data-t="o_all">전체</option><option value="OK" data-t="st_ok">정상</option><option value="CANCEL" data-t="st_cancel">취소</option></select></label>
       <button class="btn" id="lGo" data-t="run">조회</button>
@@ -628,7 +656,7 @@ sel_all:'Seleccionar todo',del_sel:'Eliminar seleccionados',log_hint:'Historial 
 p_search:'Código/nombre/proveedor',p_search2:'Código/nombre/nota',p_search3:'LOT / No. parte',p_search_p:'Buscar parte/producto',p_search_c:'Buscar componente',p_adj_memo:'Ej.: medición en piso'};
 let LANG='ko';try{LANG=localStorage.getItem('binv_lang')||'ko'}catch(e){}
 const KO={};
-Object.assign(ES,{in_alloc:'Resto (tras solicitudes)',al_req:'A común (콜게이트)',al_bom:'Por proporción BOM a cada ítem (exclusivos a su ítem)',cfg_procs:'Procesos solicitantes a registrar (24110, coma)',cfg_shared:'Ítem común (faltantes · resto de entradas)',item:'Ítem',in_item:'Ítem de entrada (por defecto)',init_zero:'Materiales no listados del ítem pegado → 0 (inventario mensual completo)',cfg_extra:'Ítems extra (áreas de conteo, coma)',p_cfg_extra:'콜게이트',
+Object.assign(ES,{mv_h:'Traspaso entre ítems',mv_hint:'Mueve el mismo material de un ítem a otro (ej. 콜게이트 → MAIN). Baja el stock del ítem origen y sube el del destino; el total del material no cambia.',mv_from:'Ítem origen',mv_to:'Ítem destino',mv_qty:'Cantidad',mv_all:'Todo',mv_save:'Traspasar',mvb_h:'Traspaso masivo (pegar)',mvb_hint:'Pegue 4 columnas: código · ítem origen · ítem destino · cantidad (sin encabezado OK).',p_mv_memo:'Ej.: traslado de línea',p_mvb:'A0119-201B0\t콜게이트\tMAIN\t5',kind_MOVE:'Traspaso',in_alloc:'Resto (tras solicitudes)',al_req:'A común (콜게이트)',al_bom:'Por proporción BOM a cada ítem (exclusivos a su ítem)',cfg_procs:'Procesos solicitantes a registrar (24110, coma)',cfg_shared:'Ítem común (faltantes · resto de entradas)',item:'Ítem',in_item:'Ítem de entrada (por defecto)',init_zero:'Materiales no listados del ítem pegado → 0 (inventario mensual completo)',cfg_extra:'Ítems extra (áreas de conteo, coma)',p_cfg_extra:'콜게이트',
   ph_auto:'Leer de encabezado / columna',ph_all:'Todos (total)',ph_pick:'— Elija ítem —',ph_allit:'Todos los ítems',
   init_h:'Pegar stock inicial (conteo) — por ítem',init_hint:'Pegue con encabezado como la hoja «종합» del conteo mensual (componente · … · MAIN · FLOOR · M_ABAG · F_ABAG · DR_DRI · DR_ASS · DR_LH · DR_RH · 콜게이트 …): las columnas de ítem se reconocen solas y se registra por material × ítem. Sin encabezado pegue «código · cantidad» y elija el ítem (o «código · ítem · cantidad»). La cantidad pasa a ser el stock de ese material·ítem (sobrescribe). ROLL en rollos; las celdas vacías se omiten (0 registra 0).',
   tpl:'Plantilla (Excel · columnas por ítem)',adjb_hint:'Mismo formato que el stock inicial: con columnas de ítem en el encabezado se lee material × ítem; si no, «código · cantidad» (elija ítem) o «código · ítem · cantidad».',
@@ -645,9 +673,9 @@ function applyLang(){
 }
 const tr=(ko,es)=>LANG==='es'?es:ko;
 const L=h=>Array.isArray(h)?(LANG==='es'?h[1]:h[0]):(h??'');
-const KIND={INIT:['기초재고','Stock inicial'],IN:['입고','Entrada'],SUB:['SUB 실적','Prod. SUB'],ASSY:['조립 실적','Prod. ensamble'],ADJ:['재고조정','Ajuste']};
+const KIND={INIT:['기초재고','Stock inicial'],IN:['입고','Entrada'],SUB:['SUB 실적','Prod. SUB'],ASSY:['조립 실적','Prod. ensamble'],ADJ:['재고조정','Ajuste'],MOVE:['재고이동','Traspaso']};
 const kindL=k=>KIND[k]?L(KIND[k]):k;
-const kindTag=k=>`<span class="tag ${k==='ADJ'?'care':k==='IN'||k==='INIT'?'ok':'xt'}">${esc(kindL(k))}</span>`;
+const kindTag=k=>`<span class="tag ${k==='ADJ'||k==='MOVE'?'care':k==='IN'||k==='INIT'?'ok':'xt'}">${esc(kindL(k))}</span>`;
 
 /* ================= utils ================= */
 const $=id=>document.getElementById(id);
@@ -898,11 +926,11 @@ function renderDates(k){const el=$(DATE_EL[k]);if(!el)return;const list=DATES[k]
 
 /* ================= 로딩 ================= */
 async function loadSettings(){const r=await sel('binv_setting?select=key,value');SET={};r.forEach(x=>SET[x.key]=x.value);$('sThr').value=SET.threshold||'';renderCfg()}
-async function loadItems(){const [its,ist]=await Promise.all([sel('binv_stock_v?select=*&order=code'),sel('binv_stock_item_v?select=code,item,stock,q_init,q_in,q_sub,q_assy,q_adj,last_at&order=code,item')]);
+async function loadItems(){const [its,ist]=await Promise.all([sel('binv_stock_v?select=*&order=code'),sel('binv_stock_item_v?select=code,item,stock,q_init,q_in,q_sub,q_assy,q_adj,q_move,last_at&order=code,item')]);
   ITEMS=its;RL={};ITEMS.forEach(it=>{if(Number(it.roll_len)>0)RL[it.code]=Number(it.roll_len)});
-  ISTK={};(ist||[]).forEach(r=>{['stock','q_init','q_in','q_sub','q_assy','q_adj'].forEach(k=>r[k]=toR(r.code,Number(r[k])||0));(ISTK[r.code]=ISTK[r.code]||{})[r.item]=r});
+  ISTK={};(ist||[]).forEach(r=>{['stock','q_init','q_in','q_sub','q_assy','q_adj','q_move'].forEach(k=>r[k]=toR(r.code,Number(r[k])||0));(ISTK[r.code]=ISTK[r.code]||{})[r.item]=r});
   ITEMS.forEach(it=>{['stock','q_init','q_in','q_sub','q_assy','q_adj'].forEach(k=>it[k]=toR(it.code,Number(it[k])||0));it.unit_raw=it.unit;if(rl(it.code))it.unit=RU;applyGrp(it)});Object.keys(PRODBOM).forEach(k=>delete PRODBOM[k]);
-  buildIndex();buildItems();renderStock();renderAdjBox();renderBomKpi();renderRl()}
+  buildIndex();buildItems();renderStock();renderAdjBox();renderMoveBox();renderBomKpi();renderRl()}
 async function loadProducts(){PRODS=await rpc('binv_bom_products',{});buildProdIdx();renderProdSel();renderPlanProdSel();renderBomKpi();renderProds();await loadGroups()}
 async function loadLast(){try{const r=await sel('binv_batch?select=id,kind,work_date,created_at,status&order=id.desc&limit=1');LAST=r[0]||null}catch(e){LAST=null}renderLast()}
 function renderLast(){$('kLast').innerHTML=LAST?`${kindTag(LAST.kind)} ${esc(dt(LAST.created_at))}`:'-'}
@@ -957,8 +985,9 @@ function stkCols(){const si=SITEM();const a=[
     {h:['입고','Entradas'],k:'q_in',t:'n',sum:1,w:11,html:r=>z0(r.q_in)},
     {h:['SUB 차감','Consumo SUB'],v:r=>-r.q_sub,t:'n',sum:1,w:12,html:r=>z0(-r.q_sub)},
     {h:['조립 차감','Consumo ens.'],v:r=>-r.q_assy,t:'n',sum:1,w:12,html:r=>z0(-r.q_assy)},
-    {h:['조정','Ajuste'],k:'q_adj',t:'n',sum:1,w:10,html:r=>!r.q_adj?'<span class="hint">0</span>':`<span class="${r.q_adj<0?'neg':''}">${fmt(r.q_adj)}</span>`},
-    {h:[si?`현재고 (${si})`:'현재고 (합계)',si?`Stock (${si})`:'Stock (total)'],k:'stock',t:'n',neg:1,sum:1,w:12,cls:'adjc',tdAttr:r=>`data-adj="${esc(r.code)}" title="${tr('눌러서 재고조정','Toque para ajustar')}"`});
+    {h:['조정','Ajuste'],k:'q_adj',t:'n',sum:1,w:10,html:r=>!r.q_adj?'<span class="hint">0</span>':`<span class="${r.q_adj<0?'neg':''}">${fmt(r.q_adj)}</span>`});
+  if(si)a.push({h:['이동 (±)','Traspaso'],k:'q_move',t:'n',sum:1,w:10,html:r=>!r.q_move?'<span class="hint">0</span>':`<span class="${r.q_move<0?'neg':''}">${fmt(r.q_move)}</span>`});
+  a.push({h:[si?`현재고 (${si})`:'현재고 (합계)',si?`Stock (${si})`:'Stock (total)'],k:'stock',t:'n',neg:1,sum:1,w:12,cls:'adjc',tdAttr:r=>`data-adj="${esc(r.code)}" title="${tr('눌러서 재고조정','Toque para ajustar')}"`});
   if(!si)a.push({h:['아이템별 재고','Stock por ítem'],v:r=>itemText(r.code),w:34,cls:'gp',html:r=>itemChips(r.code)||'<span class="hint">-</span>'});
   else a.push({h:['전체 재고 (합계)','Stock total'],v:r=>r.stock_all,t:'n',neg:1,w:12,cls:'mute'});
   a.push({h:['최근 처리','Último mov.'],v:r=>dt(r.last_at),w:17,cls:'mute'},
@@ -982,7 +1011,7 @@ const thr=()=>Number(SET.threshold)||0;
 const isCare=v=>thr()>0&&v>=0&&v<thr();
 function showOk(it,show){return show==='pos'?it.stock>0:show==='zero'?it.stock===0:show==='neg'?it.stock<0:show==='care'?isCare(it.stock):show==='chk'?(it.stock<0||isCare(it.stock)):show==='moved'?!!it.last_at:true}
 /* 아이템 선택 시: 수량 열을 그 아이템의 값으로 바꾼 사본 */
-function stkView(it,si){if(!si)return it;const r=istk(it.code,si)||{};return{...it,stock_all:it.stock,stock:Number(r.stock)||0,q_init:Number(r.q_init)||0,q_in:Number(r.q_in)||0,q_sub:Number(r.q_sub)||0,q_assy:Number(r.q_assy)||0,q_adj:Number(r.q_adj)||0,last_at:r.last_at||null}}
+function stkView(it,si){if(!si)return it;const r=istk(it.code,si)||{};return{...it,stock_all:it.stock,stock:Number(r.stock)||0,q_init:Number(r.q_init)||0,q_in:Number(r.q_in)||0,q_sub:Number(r.q_sub)||0,q_assy:Number(r.q_assy)||0,q_adj:Number(r.q_adj)||0,q_move:Number(r.q_move)||0,last_at:r.last_at||null}}
 function stkBase(){const q=nz($('sQ').value),set=SPROD&&PRODBOM[SPROD]?PRODBOM[SPROD]:null,si=SITEM();
   return ITEMS.filter(it=>(!set||set.has(it.code))&&cfOk(it.pairs)&&(!q||nz(it.code+' '+(it.name||'')+' '+(it.vendor_part||'')+' '+(it.car||'')+' '+(it.pname||'')).includes(q))).map(it=>stkView(it,si))}
 function stkFiltered(){const procs=selProcs(),show=$('sShow').value;return stkBase().filter(it=>procOk(it,procs)&&showOk(it,show))}
@@ -1106,11 +1135,13 @@ async function openItem(code){
     <div class="row hd"><h4 style="margin:4px 0">${tr('입출 이력','Movimientos')} <span class="hint">(${tr('최근 500건','últimos 500')})</span></h4><button class="btn sec sm" id="mAdj">${tr('재고조정','Ajustar')}</button></div>
     <div class="tw m"><table id="mHist"><tr><td class="empty">…</td></tr></table></div>`;
   $('mClose2').textContent=tr('닫기','Cerrar');$('mdl').classList.add('on');
-  const irows=Object.values(ISTK[code]||{}).filter(r=>r.stock||r.q_init||r.q_in||r.q_sub||r.q_assy||r.q_adj).sort((a,b)=>itemCmp(a.item,b.item));
+  const irows=Object.values(ISTK[code]||{}).filter(r=>r.stock||r.q_init||r.q_in||r.q_sub||r.q_assy||r.q_adj||r.q_move).sort((a,b)=>itemCmp(a.item,b.item));
   tbl('mItems',[{h:['아이템','Ítem'],k:'item',cls:'b'},{h:['기초재고','Inicial'],k:'q_init',t:'n',html:r=>z0(r.q_init)},{h:['입고','Entradas'],k:'q_in',t:'n',html:r=>z0(r.q_in)},{h:['SUB 차감','Consumo SUB'],v:r=>-r.q_sub,t:'n',html:r=>z0(-r.q_sub)},
-    {h:['조립 차감','Consumo ens.'],v:r=>-r.q_assy,t:'n',html:r=>z0(-r.q_assy)},{h:['조정','Ajuste'],k:'q_adj',t:'n',html:r=>z0(r.q_adj)},{h:['현재고','Stock'],k:'stock',t:'n',neg:1,cls:'b adjc',tdAttr:r=>`data-adj="${esc(r.item)}" title="${tr('눌러서 재고조정','Toque para ajustar')}"`},
+    {h:['조립 차감','Consumo ens.'],v:r=>-r.q_assy,t:'n',html:r=>z0(-r.q_assy)},{h:['조정','Ajuste'],k:'q_adj',t:'n',html:r=>z0(r.q_adj)},{h:['이동','Traspaso'],k:'q_move',t:'n',html:r=>z0(r.q_move)},{h:['현재고','Stock'],k:'stock',t:'n',neg:1,cls:'b adjc',tdAttr:r=>`data-adj="${esc(r.item)}" title="${tr('눌러서 재고조정','Toque para ajustar')}"`},
+    {h:['',''],html:r=>`<button class="btn sec sm" data-mv="${esc(r.item)}">${tr('이동','Traspasar')}</button>`},
     {h:['최근 처리','Último mov.'],v:r=>dt(r.last_at),cls:'mute'}],irows,{rowCls:r=>r.stock<0?'short':'',onAdj:itm=>{closeModal();goAdj(code,itm)}});
   $('mAdj').onclick=()=>{closeModal();goAdj(code,'')};
+  $('mItems').querySelectorAll('button[data-mv]').forEach(b=>b.onclick=e=>{e.stopPropagation();closeModal();goMove(code,b.dataset.mv)});
   try{
     const rows=ledR(await sel(`binv_ledger?select=id,batch_id,kind,work_date,item,qty,input_qty,mode,stock_after,memo,cancelled,created_at,src_name,src_vendor,binv_batch(worker)&code=eq.${enc(code)}&order=id.desc&limit=500`),code);
     tbl('mHist',[{h:['일자','Fecha'],k:'work_date'},{h:['구분','Tipo'],v:r=>kindL(r.kind),html:r=>kindTag(r.kind)},{h:['아이템','Ítem'],k:'item',cls:'b'},
@@ -1131,7 +1162,7 @@ async function postStock(kind,date,lines,memo,create,zeroItems,alloc){
   try{const r=await rpc('binv_stock_post',{p_kind:kind,p_date:date,p_lines:lines,p_memo:memo||null,p_worker:worker(),p_create:!!create,p_zero_items:zeroItems&&zeroItems.length?zeroItems:null,p_alloc:alloc||'req'});
     const sk=(r.skipped||[]).length;
     const al=r.alloc||[],alq=al.filter(a=>a.how==='req').length,alb=al.filter(a=>a.how==='bom').length;
-    toast(tr(`${kindL(kind)} ${date} ${r.applied}건 저장 (배치 #${r.batch_id})`,`${kindL(kind)} ${date}: ${r.applied} filas guardadas (lote #${r.batch_id})`)+(al.length?tr(` · 배분 ${al.length}건 (신청 ${alq} · BOM비율 ${alb} · 공용 ${al.length-alq-alb})`,` · asignación ${al.length} (solicitud ${alq} · BOM ${alb} · común ${al.length-alq-alb})`):'')+(r.zeroed?tr(` · 실사 외 0처리 ${r.zeroed}건`,` · a cero ${r.zeroed}`):'')+(sk?tr(` · 제외 ${sk}건`,` · omitidas ${sk}`):''));
+    toast(tr(`${kindL(kind)} ${date} ${kind==='MOVE'?r.applied/2+'건 이동':r.applied+'건 저장'} (배치 #${r.batch_id})`,`${kindL(kind)} ${date}: ${r.applied} filas guardadas (lote #${r.batch_id})`)+(al.length?tr(` · 배분 ${al.length}건 (신청 ${alq} · BOM비율 ${alb} · 공용 ${al.length-alq-alb})`,` · asignación ${al.length} (solicitud ${alq} · BOM ${alb} · común ${al.length-alq-alb})`):'')+(r.zeroed?tr(` · 실사 외 0처리 ${r.zeroed}건`,` · a cero ${r.zeroed}`):'')+(sk?tr(` · 제외 ${sk}건`,` · omitidas ${sk}`):''));
     await refreshAll();loadDates(kind);if(kind==='IN'){await reqOpenLoad();if(REQ){await planCalc();reqRender()}}return r;
   }catch(e){toast(errMsg(e),1);return null}finally{busy(false)}
 }
@@ -1311,12 +1342,13 @@ function histHTML(k){return `<div class="row hd">
   <button class="btn sec" id="h${k}X" data-t="xlsx">엑셀</button>
  </div></div><div class="tw"><table id="h${k}Tb"></table></div>`}
 function histCols(k){
-  const base=[{h:[k==='IN'?'입고일자':k==='ADJ'?'조정일자':'기준일자',k==='IN'?'Fecha entrada':k==='ADJ'?'Fecha ajuste':'Fecha base'],k:'work_date',w:11},
+  const base=[{h:[k==='IN'?'입고일자':k==='ADJ'?'조정일자':k==='MOVE'?'이동일자':'기준일자',k==='IN'?'Fecha entrada':k==='ADJ'?'Fecha ajuste':k==='MOVE'?'Fecha traspaso':'Fecha base'],k:'work_date',w:11},
     {h:['자재코드','Código'],k:'code',w:15},{h:['아이템','Ítem'],k:'item',w:10,cls:'b'},{h:['자재명','Nombre'],v:r=>(IMAP[r.code]||{}).name||'',w:28},{h:['업체품명','Nombre proveedor'],v:r=>(IMAP[r.code]||{}).vendor_part||'',cls:'mute',w:22},
     {h:['단위','Unidad'],v:r=>(IMAP[r.code]||{}).unit||'',w:7}];
   let mid;
   if(k==='IN')mid=[{h:['입고수량','Cantidad'],k:'qty',t:'n',sum:1,cls:'b'},{h:['반영 후 재고','Stock después'],k:'stock_after',t:'n',neg:1},
     {h:['원본 자재명','Material original'],k:'src_name',cls:'mute'},{h:['원본 업체품명','Proveedor original'],k:'src_vendor',cls:'mute'}];
+  else if(k==='MOVE')mid=[{h:['이동 (− 보냄 / + 받음)','Traspaso (− sale / + entra)'],k:'qty',t:'n',sum:1,neg:1,cls:'b'},{h:['이동 후 재고','Stock después'],k:'stock_after',t:'n',neg:1}];
   else if(k==='INIT')mid=[{h:['등록수량','Cantidad registrada'],k:'input_qty',t:'n',cls:'b',html:r=>r.mode==='zero'?`0 <span class="tag xt">${tr('실사 외 0','no listado')}</span>`:r.mode==='carry'?`${fmt(r.input_qty)} <span class="tag xt">${tr('이월','arrastre')}</span>`:fmt(r.input_qty)},{h:['변동','Movimiento'],k:'qty',t:'n',sum:1,neg:1},{h:['등록 후 재고','Stock después'],k:'stock_after',t:'n',neg:1}];
   else mid=[{h:['방식','Tipo'],v:r=>r.mode==='set'?tr('실사수량','Conteo físico'):tr('증감','Sumar/restar')},{h:['입력값','Valor ingresado'],k:'input_qty',t:'n'},
     {h:['조정량','Ajuste'],k:'qty',t:'n',sum:1,neg:1,cls:'b'},{h:['조정 후 재고','Stock después'],k:'stock_after',t:'n',neg:1}];
@@ -1520,6 +1552,48 @@ async function abSave(){const P=ABP;if(!P)return;const mode=document.querySelect
   if(!confirm(tr(`${lines.length}건(자재×아이템: ${P.items.join(', ')})을 ${mode==='set'?'실사수량으로 맞춥니다':'증감 조정합니다'}. 진행할까요?`,`¿Ajustar ${lines.length} filas (${P.items.join(', ')})?`)))return;
   const r=await postStock('ADJ',$('aDate').value,lines,$('abReason').value);if(r){await saveAlias();clearPaste('abPaste');ABP=null;abRender();histLoad('ADJ')}}
 
+/* ================= 아이템 간 재고이동 ================= */
+function mvItem(){const v=$('mCode').value.trim();if(!v)return null;if(IMAP[v])return IMAP[v];const c=IDX.code.get(nz(v));if(c)return IMAP[c];const m=matchItem(v,'');return m&&m.code?IMAP[m.code]:null}
+function goMove(code,from){showTab('adj');$('mCode').value=code;$('mFrom').value=from||'';$('mTo').value='';$('mQty').value='';renderMoveBox();setTimeout(()=>$(from?'mTo':'mFrom').focus(),50);$('mCode').scrollIntoView({behavior:'smooth',block:'center'})}
+function renderMoveBox(){
+  const it=mvItem(),f=$('mFrom').value,t=$('mTo').value,q=num($('mQty').value);
+  const fs=it&&f?istock(it.code,f):0,ts=it&&t?istock(it.code,t):0;
+  $('mBox').innerHTML=`<div>${tr('자재명','Nombre')}<b style="font-size:13px" title="${esc(it?it.name||'':'')}">${it?esc(it.name||'-'):'-'}</b></div>
+    <div>${tr('단위','Unidad')}<b style="font-size:13px">${it?esc(it.unit||''):'-'}</b></div>
+    <div>${tr('보내는 아이템 재고','Stock origen')} ${f?`(${esc(f)})`:''}<b class="${fs<0?'neg':''}">${it&&f?fmt(fs):'-'}</b></div>
+    <div>${tr('받는 아이템 재고','Stock destino')} ${t?`(${esc(t)})`:''}<b class="${ts<0?'neg':''}">${it&&t?fmt(ts):'-'}</b></div>
+    <div>${tr('아이템별','Por ítem')}<b style="font-size:12px;font-weight:500;white-space:normal;line-height:1.5">${it?(esc(itemText(it.code))||'-'):'-'}</b></div>`;
+  const ok=it&&f&&t&&f!==t&&!isNaN(q)&&q>0;
+  $('mAfter').innerHTML=ok?tr(`이동 후: ${esc(f)} <b class="${fs-q<0?'neg':''}">${fmt(fs-q)}</b> → ${esc(t)} <b>${fmt(ts+q)}</b>`+(fs-q<0?` <span class="neg">(보내는 아이템 재고가 마이너스가 됩니다)</span>`:''),`Después: ${esc(f)} <b class="${fs-q<0?'neg':''}">${fmt(fs-q)}</b> → ${esc(t)} <b>${fmt(ts+q)}</b>`):(f&&t&&f===t?`<span class="neg">${tr('보내는 아이템과 받는 아이템이 같습니다','Origen y destino iguales')}</span>`:'');
+  $('mSave').disabled=!ok;
+}
+async function moveSave(){
+  const it=mvItem(),f=$('mFrom').value,t=$('mTo').value,q=num($('mQty').value);if(!it||!f||!t||f===t||isNaN(q)||q<=0)return;
+  const memo=tr(`이동 ${f} → ${t}`,`Traspaso ${f} → ${t}`)+($('mMemo').value.trim()?' · '+$('mMemo').value.trim():'');
+  if(!confirm(tr(`${it.code} ${fmt(q)} ${it.unit||''}을(를) ${f} → ${t}로 이동합니다. 진행할까요?`,`¿Traspasar ${fmt(q)} ${it.unit||''} de ${it.code}: ${f} → ${t}?`)))return;
+  const r=await postStock('MOVE',$('mDate').value,[{code:it.code,item:f,qty:-q,mode:'delta',memo},{code:it.code,item:t,qty:q,mode:'delta',memo}]);
+  if(r){$('mQty').value='';$('mMemo').value='';renderMoveBox();histLoad('MOVE')}
+}
+let MBP=null;
+function mbParse(t){const rows=parseTSV(t);const out=[];let skip=0;
+  rows.forEach(r=>{const c=r.filter(x=>String(x||'').trim()!=='');if(c.length<4){skip++;return}const q=num(c[c.length-1]);if(isNaN(q)||q<=0){skip++;return}
+    const code=IDX.code.get(nz(c[0]))||String(c[0]).trim(),f=matchItemName(c[1]),to=matchItemName(c[2]);
+    if(!IMAP[code]||!f||!to){skip++;out.push({code,from:f||c[1],to:to||c[2],qty:q,bad:1});return}
+    out.push({code,from:f,to:to,qty:q,bad:f===to?1:0})});
+  MBP={rows:out,skip};mbRender()}
+function mbRender(){const P=MBP;$('mbPrevW').hidden=!(P&&P.rows.length);if(!P){$('mbInfo').innerHTML='';$('mbSave').disabled=true;return}
+  const ok=P.rows.filter(r=>!r.bad).length;
+  $('mbInfo').innerHTML=tr(`인식 <b>${P.rows.length}</b> · 이동 대상 <b>${ok}</b> · 오류 ${P.rows.length-ok}`,`Leídas <b>${P.rows.length}</b> · a traspasar <b>${ok}</b> · con error ${P.rows.length-ok}`);
+  $('mbSave').disabled=!ok;
+  tbl('mbPrev',[{h:['자재코드','Código'],k:'code'},{h:['자재명','Nombre'],v:r=>(IMAP[r.code]||{}).name||'',cls:'nm'},{h:['보내는','Origen'],k:'from',cls:'b'},{h:['재고','Stock'],v:r=>IMAP[r.code]?istock(r.code,r.from):'',t:'n',neg:1},
+    {h:['받는','Destino'],k:'to',cls:'b'},{h:['재고','Stock'],v:r=>IMAP[r.code]?istock(r.code,r.to):'',t:'n',neg:1},{h:['이동수량','Cantidad'],k:'qty',t:'n',cls:'b'},
+    {h:['이동 후 (보내는)','Después (origen)'],v:r=>IMAP[r.code]?istock(r.code,r.from)-r.qty:'',t:'n',neg:1},
+    {h:['check','check'],html:r=>r.bad?howTag('none'):'<span class="tag ok">OK</span>'}],P.rows,{limit:3000,rowCls:r=>r.bad?'short':''})}
+async function mbSave(){const P=MBP;if(!P)return;const rows=P.rows.filter(r=>!r.bad);if(!rows.length)return;
+  if(!confirm(tr(`${rows.length}건을 아이템 간 이동합니다. 진행할까요?`,`¿Traspasar ${rows.length} filas?`)))return;
+  const lines=[];rows.forEach(r=>{const memo=tr(`이동 ${r.from} → ${r.to}`,`Traspaso ${r.from} → ${r.to}`);lines.push({code:r.code,item:r.from,qty:-r.qty,mode:'delta',memo},{code:r.code,item:r.to,qty:r.qty,mode:'delta',memo})});
+  const r=await postStock('MOVE',$('mDate').value,lines,tr('일괄 이동','Traspaso masivo'));if(r){clearPaste('mbPaste');MBP=null;mbRender();histLoad('MOVE')}}
+
 /* ================= BOM 마스터 ================= */
 const BOM_HDR={top_code:['최상위제품'],lvl:['BOM레벨','레벨'],parent_code:['자재코드'],parent_name:['제품내역'],rev:['개정'],item_no:['품목번호'],comp_code:['구성부품'],comp_name:['구성부품명'],
   proc:['공정구분'],unit:['기준단위'],base_qty:['기준량'],req_qty:['소요량'],mat_type:['자재유형'],car:['차종'],in_sl:['입고S/L'],out_sl:['출고S/L'],vendor_code:['공급업체'],
@@ -1679,7 +1753,7 @@ function purgeOpen(ids){
       if(keep&&!r.carry_lines)await del('binv_batch','line_count=eq.0&memo=eq.'+enc('이력 삭제 이월'));
       closeModal();toast(tr(`이력 ${ids.length}건 삭제 완료`,`${ids.length} lotes eliminados`)+(r.carry_lines?tr(` · 이월 ${r.carry_lines}품목`,` · arrastre ${r.carry_lines}`):''));
       await Promise.all([logLoad(),refreshAll()]);Object.keys(DATE_EL).forEach(k=>{if(DATES[k])loadDates(k)});
-      ['INIT','IN','ADJ'].forEach(k=>{if(HIST[k])histLoad(k)});['SUB','ASSY'].forEach(k=>{if(RES[k].hist)resHistLoad(k)});
+      ['INIT','IN','ADJ','MOVE'].forEach(k=>{if(HIST[k])histLoad(k)});['SUB','ASSY'].forEach(k=>{if(RES[k].hist)resHistLoad(k)});
     }catch(e){toast(errMsg(e),1)}finally{busy(false)}};
 }
 function logXlsx(){const rows=sortRows('lTbl',LOG_COLS,LOG);xlsxDownload(`조립자재_처리이력_1공장_${stamp()}.xlsx`,[xsheet(tr('처리이력','Historial'),xTitle(tr('처리이력','Historial')),
@@ -1822,20 +1896,20 @@ function reqCopy(){if(!REQ)return;const C=reqCols(),cols=xcols(C),rows=sortRows(
 function renderPlanProdSel(){const s=$('pProd'),v=s.value;s.innerHTML=`<option value="">${tr('품번 선택','Seleccione parte')}</option>`+PRODS.map(p=>`<option value="${esc(p.top_code+'|'+p.rev)}">${esc(p.top_code+'-'+p.rev)} · ${esc(p.name||'')}</option>`).join('');s.value=v}
 
 /* ================= 탭 / 초기화 ================= */
-const TABLOAD={plan:()=>{if(!REQ)Promise.all([planDates(),planLoad()])},init:()=>{loadDates('INIT');if(!HIST.INIT)histLoad('INIT')},in:()=>{loadDates('IN');if(!HIST.IN)histLoad('IN');reqOpenLoad().then(()=>{if(NP)inRender()})},adj:()=>{if(!HIST.ADJ)histLoad('ADJ')},
+const TABLOAD={plan:()=>{if(!REQ)Promise.all([planDates(),planLoad()])},init:()=>{loadDates('INIT');if(!HIST.INIT)histLoad('INIT')},in:()=>{loadDates('IN');if(!HIST.IN)histLoad('IN');reqOpenLoad().then(()=>{if(NP)inRender()})},adj:()=>{if(!HIST.ADJ)histLoad('ADJ');if(!HIST.MOVE)histLoad('MOVE')},
   sub:()=>{loadDates('SUB');if(!RES.SUB.hist)resHistLoad('SUB')},assy:()=>{loadDates('ASSY');if(!RES.ASSY.hist)resHistLoad('ASSY')},log:()=>logLoad()};
 function showTab(t){document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.tab===t));
   document.querySelectorAll('.tab').forEach(s=>s.classList.toggle('on',s.id==='t-'+t));try{localStorage.setItem('binv_tab',t)}catch(e){}if(TABLOAD[t])TABLOAD[t]()}
-function rerenderAll(){renderItemSels();renderStock();renderGroups();renderProdSel();renderPlanProdSel();planRender();planListRender();reqRender();renderProds();renderBomKpi();renderCfg();renderAdjBox();initRender();inRender();abRender();bomInfo();renderLast();
-  ['INIT','IN','ADJ'].forEach(k=>{if(HIST[k])histRender(k)});['SUB','ASSY'].forEach(k=>{if(RES[k].res)resRender(k);if(RES[k].hist)resHistRender(k)});if(LOG.length)logRender();
+function rerenderAll(){renderItemSels();renderMoveBox();renderStock();renderGroups();renderProdSel();renderPlanProdSel();planRender();planListRender();reqRender();renderProds();renderBomKpi();renderCfg();renderAdjBox();initRender();inRender();abRender();bomInfo();renderLast();
+  ['INIT','IN','ADJ','MOVE'].forEach(k=>{if(HIST[k])histRender(k)});['SUB','ASSY'].forEach(k=>{if(RES[k].res)resRender(k);if(RES[k].hist)resHistRender(k)});if(LOG.length)logRender();
   Object.keys(DATE_EL).forEach(k=>{if(DATES[k])renderDates(k)});if(BDET)renderProdDet()}
 async function boot(){
-  ['INIT','IN','ADJ'].forEach(k=>$('h-'+k).innerHTML=histHTML(k));
+  ['INIT','IN','ADJ','MOVE'].forEach(k=>$('h-'+k).innerHTML=histHTML(k));
   $('t-sub').innerHTML=resHTML('SUB');$('t-assy').innerHTML=resHTML('ASSY');
   applyLang();
   const d=today();
-  ['iDate','nDate','aDate','SUB-date','ASSY-date','lT','hINITT','hINT','hADJT','SUB-ht','ASSY-ht','pDate','rF','rT'].forEach(id=>$(id).value=d);
-  $('hINITF').value=addDay(d,-90);$('hINF').value=addDay(d,-6);$('hADJF').value=addDay(d,-30);$('SUB-hf').value=addDay(d,-6);$('ASSY-hf').value=addDay(d,-6);$('lF').value=addDay(d,-30);
+  ['iDate','nDate','aDate','mDate','SUB-date','ASSY-date','lT','hINITT','hINT','hADJT','hMOVET','SUB-ht','ASSY-ht','pDate','rF','rT'].forEach(id=>$(id).value=d);
+  $('hINITF').value=addDay(d,-90);$('hINF').value=addDay(d,-6);$('hADJF').value=addDay(d,-30);$('hMOVEF').value=addDay(d,-30);$('SUB-hf').value=addDay(d,-6);$('ASSY-hf').value=addDay(d,-6);$('lF').value=addDay(d,-30);
   try{$('worker').value=localStorage.getItem('binv_worker')||''}catch(e){}
   $('worker').addEventListener('change',()=>{try{localStorage.setItem('binv_worker',$('worker').value.trim())}catch(e){}});
   $('langBtn').onclick=()=>{LANG=LANG==='es'?'ko':'es';try{localStorage.setItem('binv_lang',LANG)}catch(e){}applyLang();rerenderAll()};
@@ -1858,7 +1932,7 @@ async function boot(){
   // 입고
   bindPaste('nPaste',inParse);$('nItem').onchange=()=>{if(NP){NP.rows.forEach(r=>r.item=$('nItem').value);inRender()}};$('nItem').dataset.ph='autoin';$('nAlloc').onchange=inRender;$('nCreate').onchange=inRender;$('nLen').onchange=inRender;$('nClear').onclick=()=>{clearPaste('nPaste');NP=null;inRender()};$('nSave').onclick=inSave;$('nPrev').addEventListener('change',inPick);
   // 이력 카드
-  ['INIT','IN','ADJ'].forEach(k=>{$(`h${k}Go`).onclick=()=>{SELD[k]=null;renderDates(k);histLoad(k)};$(`h${k}Q`).addEventListener('input',()=>histRender(k));$(`h${k}C`).onchange=()=>histLoad(k);$(`h${k}X`).onclick=()=>histXlsx(k)});
+  ['INIT','IN','ADJ','MOVE'].forEach(k=>{$(`h${k}Go`).onclick=()=>{SELD[k]=null;renderDates(k);histLoad(k)};$(`h${k}Q`).addEventListener('input',()=>histRender(k));$(`h${k}C`).onchange=()=>histLoad(k);$(`h${k}X`).onclick=()=>histXlsx(k)});
   // 실적
   ['SUB','ASSY'].forEach(k=>{bindPaste(k+'-paste',()=>resOnPaste(k));$(`${k}-date`).onchange=()=>resPreview(k);$(`${k}-fb`).onchange=()=>resPreview(k);
     $(`${k}-clear`).onclick=()=>{clearPaste(k+'-paste');RES[k].p=null;resPreview(k)};$(`${k}-commit`).onclick=()=>resCommit(k);
@@ -1866,6 +1940,9 @@ async function boot(){
   // 조정
   $('aCode').addEventListener('input',renderAdjBox);$('aItem').onchange=renderAdjBox;$('aQty').addEventListener('input',renderAdjBox);$('abItem').onchange=()=>abParse(PASTE.abPaste||'');document.querySelectorAll('input[name=aMode]').forEach(x=>x.onchange=renderAdjBox);$('aSave').onclick=adjSave;
   $('aZero').onclick=()=>{document.querySelector('input[name=aMode][value=set]').checked=true;$('aQty').value='0';renderAdjBox()};
+  $('mCode').addEventListener('input',renderMoveBox);$('mFrom').onchange=renderMoveBox;$('mTo').onchange=renderMoveBox;$('mQty').addEventListener('input',renderMoveBox);$('mSave').onclick=moveSave;
+  $('mAll').onclick=()=>{const it=mvItem(),f=$('mFrom').value;if(it&&f){$('mQty').value=Math.max(0,istock(it.code,f));renderMoveBox()}};
+  bindPaste('mbPaste',mbParse);$('mbClear').onclick=()=>{clearPaste('mbPaste');MBP=null;mbRender()};$('mbSave').onclick=mbSave;
   bindPaste('abPaste',abParse);document.querySelectorAll('input[name=abMode]').forEach(x=>x.onchange=abRender);$('abClear').onclick=()=>{clearPaste('abPaste');ABP=null;abRender()};$('abSave').onclick=abSave;
   // BOM
   bindPaste('bPaste',bomParse);$('bClear').onclick=()=>{clearPaste('bPaste');BOMP=null;bomInfo()};$('bUpload').onclick=bomUpload;$('bQ').addEventListener('input',renderProds);
