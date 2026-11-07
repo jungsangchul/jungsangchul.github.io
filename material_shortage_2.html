@@ -105,6 +105,7 @@ textarea{width:100%;min-height:150px;height:auto;padding:10px 12px;font-family:C
 /* 부족예상 표: 고정 레이아웃 — 가로 스크롤 없이 화면 폭에 맞춤 */
 .tw.fit{overflow-x:hidden;height:var(--fitH,calc(100vh - 20px));max-height:none;min-height:320px}
 #sTbl{table-layout:fixed;width:100%;font-size:13.5px}
+#nTbl{width:100%}#nTbl td{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:260px}
 #sTbl th,#sTbl td{padding:7px 6px;overflow:hidden}
 #sTbl th{white-space:normal;overflow-wrap:normal;line-height:1.2;font-size:13px;padding:9px 6px 8px;vertical-align:middle}
 #sTbl th[data-k="type"],#sTbl th[data-k="code"],#sTbl th[data-k="name"],#sTbl th[data-k="unit"],#sTbl th[data-k="car"]{font-size:14.5px;text-align:center}
@@ -355,7 +356,7 @@ td.hl{color:var(--ac);font-weight:700}
 </header>
 <nav id="nav" class="tabs">
   <button data-tab="sum" class="on"><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 14l4-4 4 3 5-6"/></svg><span data-t="tab_sum">부족예상</span></button>
-  <button data-tab="need"><svg viewBox="0 0 24 24"><path d="M9 3h6l1 2h4v16H4V5h4z"/><path d="M8 12h8M8 16h5"/></svg><span data-t="tab_need">작업필요자재 (17000)</span></button>
+  <button data-tab="need"><svg viewBox="0 0 24 24"><path d="M9 3h6l1 2h4v16H4V5h4z"/><path d="M8 12h8M8 16h5"/></svg><span data-t="tab_need">작업필요자재 (32030)</span></button>
   <button data-tab="cnt"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/><circle cx="19" cy="18" r="2"/></svg><span data-t="tab_cnt">실사</span></button>
   <button data-tab="rec"><svg viewBox="0 0 24 24"><path d="M12 4v12M6 10l6 6 6-6"/><path d="M4 20h16"/></svg><span data-t="tab_rec">현장입고 (30810)</span></button>
   <button data-tab="use"><svg viewBox="0 0 24 24"><path d="M12 20V8M6 14l6-6 6 6"/><path d="M4 4h16"/></svg><span data-t="tab_use">사용량 (32040)</span></button>
@@ -393,7 +394,7 @@ td.hl{color:var(--ac);font-weight:700}
     <div class="kpi" data-f="all"><span data-t="k_mat">자재 수</span><b id="kAll">-</b></div>
     <div class="kpi r" data-f="short"><span data-t="k_short">부족 (&lt;0)</span><b id="kShort">-</b></div>
     <div class="kpi a" data-f="care"><span data-t="k_care">주의</span><b id="kCare">-</b></div>
-    <div class="kpi g" data-f="all"><span data-t="k_ex">제외 LOT 행</span><b id="kEx">-</b></div>
+    <div class="kpi g" data-f="all"><span data-t="k_ex">잔량 −/0 행 (필요량 0)</span><b id="kEx">-</b></div>
   </div>
   <div class="tw fit"><table id="sTbl"></table></div>
   <p class="hint" data-t="formula">현재고 = 실사 − 사용량 + 입고량 − 반납(24170) + 조정 (0처리로 현장롤이 0이 되면 자동 0 — 양수 재고만 0으로 내리고, 음수는 그대로 표시) · 실사에 스캔된 롤이 조회기간 입고(30810)에도 있으면 입고량에서 제외 · 부족예상 = 현재고 + 창고재고 − 필요량 · 필요량은 같은 자재코드 합산(제외 LOT 제외) · 현장롤수 = TML·WIRE 입고 바코드 중 0처리 안 된 롤 수 + 실사에서 스캔했지만 TML·WIRE 입고이력에 없는 롤 (현재고를 0으로 조정하면 그 전에 입고된 롤은 0) (숫자에 마우스를 올리면 롤 수량합) · 창고롤수 = 창고보유자재(25010)의 개수</p>
@@ -401,10 +402,10 @@ td.hl{color:var(--ac);font-weight:700}
 
 <!-- ===== 17000 ===== -->
 <section class="tab" id="t-need">
-  <div class="grid2">
+  <div class="grid2" style="grid-template-columns:1fr">
     <div class="card">
-      <h3 data-t="need_h">작업필요자재 붙여넣기 (A~F열)</h3>
-      <div class="hint" data-t="need_hint">엑셀 17000 시트의 A~F열(자재코드·자재명·수량·단위·LOTNO·선번)을 복사해 붙여넣으세요. 헤더 행은 자동으로 건너뜁니다.</div>
+      <h3 data-t="need_h">작업필요자재 붙여넣기 (MES 32030 지시일자별 자재 사용량)</h3>
+      <div class="hint" data-t="need_hint">MES [32030] 지시일자별 자재 사용량 조회의 8열(지시일자·순위·자재명·업체명·품목그룹·총소요량·사용량·잔량)을 복사해 붙여넣으세요. 저장 시 잔량이 −인 행은 0으로, +인 행만 필요량으로 반영됩니다. 헤더 행은 자동으로 건너뜁니다.</div>
       <textarea id="nTxt"></textarea>
       <div class="prev" id="nPrev"></div>
       <div class="row">
@@ -416,23 +417,13 @@ td.hl{color:var(--ac);font-weight:700}
         <span class="hint" id="nLast" style="padding-bottom:8px"></span>
       </div>
     </div>
-    <div class="card">
-      <h3 data-t="ex_h">제외 LOT 설정</h3>
-      <div class="hint" data-t="ex_hint">LOTNO에 아래 번호가 포함된 행은 필요량에서 제외됩니다.</div>
-      <div class="row" style="margin:10px 0">
-        <input id="exLot" placeholder="LOT 번호" style="width:130px">
-        <input id="exMemo" placeholder="메모" style="flex:1;min-width:100px">
-        <button class="btn" id="exAdd" data-t="add">추가</button>
-      </div>
-      <div class="chips" id="exList"></div>
-    </div>
   </div>
   <div class="card">
     <div class="row" style="justify-content:space-between;margin-bottom:8px">
       <h3 style="margin:0"><span data-t="need_list">저장된 목록</span> <span class="hint" id="nInfo"></span></h3>
       <input id="nQ" placeholder="검색" style="width:170px">
     </div>
-    <div class="tw"><table id="nTbl"></table></div>
+    <div class="tw fit"><table id="nTbl"></table></div>
   </div>
 </section>
 
@@ -609,14 +600,13 @@ const KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6
 const H={apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json'};
 
 /* ---------- i18n ---------- */
-const ES={title:'Gestión de materiales · Corte',plant:'Planta 2 México · Torreón',tab_sum:'Faltantes',tab_need:'Material requerido (17000)',tab_cnt:'Inventario físico',
+const ES={title:'Gestión de materiales · Corte',plant:'Planta 2 México · Torreón',tab_sum:'Faltantes',tab_need:'Material requerido (32030)',tab_cnt:'Inventario físico',
 tab_rec:'Entrada a piso (30810)',tab_use:'Consumo (32040)',tab_ret:'Devoluciones (24170)',tab_mst:'Material en almacén (25010)',cntDate:'Fecha inventario',from:'Desde',to:'Hasta',
 thr:'Umbral alerta (<)',run:'Consultar',search:'Buscar',filter:'Mostrar',type:'Tipo',f_all:'Todo',f_short:'Faltante',f_care:'Alerta',f_chk:'Faltante+Alerta',f_need:'Solo 17000',f_extra:'Fuera de 17000 (piso)',
-copy:'Copiar',xlsx:'Excel',cut:'Alcance',cut_only:'Solo material de corte',k_mat:'Materiales',k_short:'Faltante (<0)',k_care:'Alerta',k_ex:'Filas LOT excluidas',
+copy:'Copiar',xlsx:'Excel',cut:'Alcance',cut_only:'Solo material de corte',k_mat:'Materiales',k_short:'Faltante (<0)',k_care:'Alerta',k_ex:'Saldo −/0 (req. 0)',
 formula:'Stock actual = Inventario − Consumo + Entrada − Devoluciones (24170) + Ajuste (sin rollos en piso tras cierre 0 → 0) · Pronóstico = Stock actual + Almacén − Requerido · Rollos piso = rollos recibidos (TML·WIRE) sin cierre (0); ajuste a 0 → rollos previos = 0 · Rollos alm. = Piezas de almacén (25010)',
-need_h:'Pegar material requerido (col. A~F)',need_hint:'Copie columnas A~F (código, nombre, cantidad, unidad, LOTNO, línea) y péguelas aquí.',
-mode:'Modo',m_replace:'Reemplazar todo',m_append:'Agregar a la lista',save:'Guardar',clearAll:'Borrar todo',ex_h:'LOT excluidos',
-ex_hint:'Las filas cuyo LOTNO contenga estos números no se suman.',add:'Agregar',need_list:'Lista guardada',mst_h:'Pegar material en almacén',
+need_h:'Pegar material requerido (MES 32030)',need_hint:'Copie las 8 columnas de [32030] (fecha, orden, código, proveedor, grupo, total, consumo, saldo). Al guardar, el saldo negativo se cambia a 0 y solo el saldo positivo se toma como requerido.',
+mode:'Modo',m_replace:'Reemplazar todo',m_append:'Agregar a la lista',save:'Guardar',clearAll:'Borrar todo',add:'Agregar',need_list:'Lista guardada',mst_h:'Pegar material en almacén',
 mst_hint:'Código, nombre, unidad, cantidad (almacén), piezas.',m_upsert:'Agregar/actualizar',m_replace2:'Reemplazar todo',
 mst_one:'Agregar / editar',del:'Eliminar',mst_click:'Haga clic en una fila para cargarla aquí.',mst_list:'Material en almacén',
 date:'Fecha',useRowDate:'Usar fecha de cada fila (si falta, la seleccionada)',paste:'Pegar datos',savedDates:'Fechas guardadas',viewDel:'Eliminar fecha',
@@ -668,34 +658,32 @@ async function ins(table,data,upsertKey){
 async function del(table,q){const r=await fetch(SB+table+'?'+q,{method:'DELETE',headers:H});if(!r.ok)throw new Error(await r.text())}
 
 /* ---------- state ---------- */
-let ROLLB={},ADJ=[],NEED=[],EX=[],MST=[],DATES=[],CFG={threshold:'2000'},SUM=null,sortK=null,sortD=1;
+let ROLLB={},ADJ=[],NEED=[],MST=[],DATES=[],CFG={threshold:'2000'},SUM=null,sortK=null,sortD=1;
 
 /* ---------- tabs ---------- */
 document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>{
   document.querySelectorAll('#nav button').forEach(x=>x.classList.toggle('on',x===b));
   document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on',x.id==='t-'+b.dataset.tab));
+  if(b.dataset.tab==='sum')sumRefresh();
 });
-
-/* ---------- 제외 LOT ---------- */
-const isEx=lot=>{const l=String(lot||'');return l!==''&&EX.some(e=>l.includes(e.lotno))};
-function renderEx(){
-  $('exList').innerHTML=EX.map(e=>`<span class="chip">${esc(e.lotno)} <small>${esc(e.memo||'')}</small><button data-l="${esc(e.lotno)}">×</button></span>`).join('')||'<span class="hint">-</span>';
-  $('exList').querySelectorAll('button').forEach(b=>b.onclick=async()=>{
-    if(!confirm(tr('제외 해제: ','Quitar: ')+b.dataset.l))return;
-    busy(1);try{await del('mshort_exlot_2','lotno=eq.'+encodeURIComponent(b.dataset.l));await loadEx();renderNeed();toast('OK')}catch(e){alert(e.message)}busy(0)});
+/* 부족예상 탭 클릭 시 새로고침 없이 최신 데이터로 재조회 */
+let sumBusy=false;
+async function sumRefresh(){
+  if(sumBusy||typeof calc!=='function')return;sumBusy=true;
+  try{await loadDates();await calc(true)}catch(e){console.warn('sumRefresh',e)}finally{sumBusy=false}
 }
-$('exAdd').onclick=async()=>{
-  const l=$('exLot').value.trim();if(!l)return;
-  busy(1);try{await ins('mshort_exlot_2',[{lotno:l,memo:$('exMemo').value.trim()}],'lotno');$('exLot').value='';$('exMemo').value='';await loadEx();renderNeed();toast('OK')}catch(e){alert(e.message)}busy(0)};
-async function loadEx(){EX=await sel('mshort_exlot_2','select=*&order=lotno');renderEx()}
 
 /* ---------- 17000 ---------- */
+/* ERP 32030: 지시일자·순위·자재명(=자재코드)·업체명·품목그룹·총소요량·사용량·잔량
+   필요량(qty) = 잔량이 +이면 잔량, −이면 0 */
 function parseNeed(txt){
-  return rows(txt).map(c=>({code:(c[0]||'').toUpperCase(),name:c[1]||'',qty:num(c[2]),unit:c[3]||'',lotno:c[4]||'',seonbeon:c[5]||''}))
-    .filter(r=>codeOk(r.code)&&!isNaN(r.qty));
+  return rows(txt).map(c=>{const t=num(c[5]),u=num(c[6]);let rm=num(c[7]);if(isNaN(rm)&&!isNaN(t)&&!isNaN(u))rm=t-u;
+    return{odate:toDate(c[0])||null,rnk:isNaN(num(c[1]))?null:Math.round(num(c[1])),code:(c[2]||'').toUpperCase(),name:c[3]||'',grp:c[4]||'',
+      total_qty:isNaN(t)?0:t,used_qty:isNaN(u)?0:u,remain:rm,qty:rm>0?rm:0}})
+    .filter(r=>codeOk(r.code)&&!isNaN(r.remain));
 }
-$('nTxt').oninput=()=>{const p=parseNeed($('nTxt').value);const ex=p.filter(r=>isEx(r.lotno)).length;
-  $('nPrev').textContent=p.length?tr(`인식 ${p.length}행 (제외 LOT ${ex}행)`,`${p.length} filas (${ex} excluidas)`):''};
+$('nTxt').oninput=()=>{const p=parseNeed($('nTxt').value);const pos=p.filter(r=>r.qty>0).length,neg=p.filter(r=>r.remain<0).length;
+  $('nPrev').textContent=p.length?tr(`인식 ${p.length}행 · 필요(+) ${pos}행 · 잔량 −→0 ${neg}행 · 0 ${p.length-pos-neg}행`,`${p.length} filas · requerido(+) ${pos} · saldo −→0 ${neg} · 0 ${p.length-pos-neg}`):''};
 $('nSave').onclick=async()=>{
   const p=parseNeed($('nTxt').value);if(!p.length)return toast(tr('인식된 행이 없습니다','Sin filas'));
   const rep=$('nMode').value==='replace';
@@ -705,13 +693,13 @@ $('nClear').onclick=async()=>{if(!confirm(tr('작업필요자재 전체 삭제?'
 async function loadNeed(){NEED=await sel('mshort_need_2','select=*&order=id');renderNeed()}
 function renderNeed(){
   const q=$('nQ').value.trim().toUpperCase();
-  const ex=NEED.filter(r=>isEx(r.lotno)).length;
   const lu=lastUpd(NEED,'created_at');
-  $('nInfo').textContent=tr(`${NEED.length}행 · 제외 ${ex}행`,`${NEED.length} filas · ${ex} excluidas`)+(lu?tr(` · 최종 업데이트 ${lu}`,` · Actualizado ${lu}`):'');
+  $('nInfo').textContent=tr(`${NEED.length}행`,`${NEED.length} filas`)+(lu?tr(` · 최종 업데이트 ${lu}`,` · Actualizado ${lu}`):'');
   $('nLast').textContent=lu?tr(`최종 업데이트: ${lu}`,`Última actualización: ${lu}`):'';
-  const list=NEED.filter(r=>!q||(r.code+' '+r.name+' '+(r.lotno||'')).toUpperCase().includes(q));
-  $('nTbl').innerHTML=`<tr><th>#</th><th>${tr('자재코드','Código')}</th><th>${tr('자재명','Nombre')}</th><th class="n">${tr('수량','Cant.')}</th><th>${tr('단위','Unidad')}</th><th>LOTNO</th><th>${tr('선번','Línea')}</th></tr>`+
-    list.slice(0,3000).map((r,i)=>`<tr class="${isEx(r.lotno)?'ex':''}"><td>${i+1}</td><td>${esc(r.code)}</td><td>${esc(r.name)}</td><td class="n">${fmt(r.qty)}</td><td>${esc(r.unit)}</td><td>${esc(r.lotno)}</td><td>${esc(r.seonbeon)}</td></tr>`).join('');
+  const list=NEED.filter(r=>!q||(r.code+' '+r.name+' '+(r.grp||'')).toUpperCase().includes(q));
+  const pos=NEED.filter(r=>Number(r.qty)>0).length;$('nInfo').textContent+=tr(` · 필요(+) ${pos}행`,` · requerido ${pos}`);
+  $('nTbl').innerHTML=`<tr><th>#</th><th>${tr('지시일자','Fecha')}</th><th class="n">${tr('순위','Orden')}</th><th>${tr('자재코드','Código')}</th><th>${tr('업체명','Proveedor')}</th><th>${tr('품목그룹','Grupo')}</th><th class="n">${tr('총소요량','Total')}</th><th class="n">${tr('사용량','Consumo')}</th><th class="n">${tr('잔량','Saldo')}</th><th class="n">${tr('필요량','Requerido')}</th></tr>`+
+    list.slice(0,3000).map((r,i)=>`<tr style="${Number(r.qty)>0?'':'opacity:.45'}"><td>${i+1}</td><td>${esc(r.odate||'')}</td><td class="n">${r.rnk??''}</td><td>${esc(r.code)}</td><td>${esc(r.name)}</td><td>${esc(r.grp||'')}</td><td class="n">${fmt(r.total_qty)}</td><td class="n">${fmt(r.used_qty)}</td><td class="n"${Number(r.remain)<0?' style="color:#e07070"':''}>${fmt(r.remain)}</td><td class="n"${Number(r.qty)>0?' style="color:#c9a84c;font-weight:700"':''}>${fmt(r.qty)}</td></tr>`).join('');
 }
 $('nQ').oninput=renderNeed;
 
@@ -1075,9 +1063,11 @@ async function calc(fresh=true){
     const C=sum(cnt),U=sum(use),R=sum(rec2),RT=sum(ret),W={},WR={};MST.forEach(r=>{const k=String(r.code||'').toUpperCase();W[k]=(W[k]||0)+(Number(r.qty)||0);WR[k]=(WR[k]||0)+(Number(r.cnt)||0);nm(r.code,r.name,r.unit)});
     use.forEach(r=>nm(r.code,r.name));rec.forEach(r=>nm(r.code,r.name,r.unit));ret.forEach(r=>nm(r.code,r.name,r.unit));
     const agg={},order=[];let exRows=0;
-    NEED.forEach(r=>{if(isEx(r.lotno)){exRows++;return}
-      if(!agg[r.code]){agg[r.code]={code:r.code,name:r.name,unit:r.unit,need:0};order.push(r.code)}
-      agg[r.code].need+=Number(r.qty)||0});
+    NEED.forEach(r=>{
+      const q=Number(r.qty)||0;if(q<=0){exRows++;return}   /* 32030 잔량 −/0 → 필요량 아님 */
+      const k=String(r.code||'').toUpperCase(),o=NM[k]||{};
+      if(!agg[r.code]){agg[r.code]={code:r.code,name:r.name||o.name||'',unit:r.unit||o.unit||'',need:0};order.push(r.code)}
+      agg[r.code].need+=q});
     const list=order.map((c,i)=>{const a=agg[c];c=String(c).toUpperCase();const cnt_=C[c]||0,u=U[c]||0,rc=R[c]||0,rt=RT[c]||0,w=W[c]||0;
       const F=fin(c=String(c).toUpperCase(),cnt_-u+rc-rt+(A[c]||0)),cur=F.cur,sh=cur+w-a.need;return{...a,i,cnt:cnt_,use:u,rec:rc,ret:rt,...F,roll:RL[c]||0,rollq:RQ[c]||0,wh:w,whroll:WR[c]||0,short:sh}});
     /* 17000에 없는 가공 보유 자재 — 실사·사용·입고·반납·현장롤·조정·창고보유 중 하나라도 있으면 전부 표시 (현재고 0 포함) */
@@ -1129,8 +1119,8 @@ function renderSum(){
   $('kCare').textContent=st.filter(s=>s==='care').length;$('kEx').textContent=SUM.exRows;
   const warn=[];if(SUM.cd&&SUM.f&&SUM.f!==SUM.cd)warn.push(tr(`⚠ 사용·입고 시작일(${SUM.f})이 실사일(${SUM.cd})과 다릅니다 — 현재고는 실사일부터 계산해야 맞습니다`,`⚠ Inicio (${SUM.f}) ≠ fecha de inventario (${SUM.cd})`));
   if(SUM.recX)warn.push(tr(`실사에 이미 스캔된 롤 ${SUM.recX}건(${fmt(SUM.recXq)})은 입고량에서 제외`,`${SUM.recX} rollos ya inventariados excluidos de entradas`));
-  $('sInfo').textContent=tr(`실사 ${SUM.cd||'-'} · 사용/입고 ${SUM.f||'-'} ~ ${SUM.t||'-'} · 제외 LOT: ${EX.map(e=>e.lotno).join(', ')||'없음'}`,
-    `Inventario ${SUM.cd||'-'} · ${SUM.f||'-'} ~ ${SUM.t||'-'} · LOT excluidos: ${EX.map(e=>e.lotno).join(', ')||'ninguno'}`)+
+  $('sInfo').textContent=tr(`실사 ${SUM.cd||'-'} · 사용/입고 ${SUM.f||'-'} ~ ${SUM.t||'-'}`,
+    `Inventario ${SUM.cd||'-'} · ${SUM.f||'-'} ~ ${SUM.t||'-'}`)+
     tr(` · 롤수: TML·WIRE 입고 − 0처리 (0처리 업로드 ${SUM.zAt?SUM.zAt.slice(0,16).replace('T',' '):'-'})`,` · Rollos: entradas TML·WIRE − cerrados (${SUM.zAt?SUM.zAt.slice(0,10):'-'})`);
   if(warn.length){const w=document.createElement('div');w.style.cssText='margin-top:6px;color:var(--amb);font-weight:700';w.textContent=warn.join(' · ');$('sInfo').appendChild(w)}
   const C=cols(),l=viewList();
@@ -1472,7 +1462,7 @@ $('sTbl').addEventListener('click',e=>{const c=e.target.closest('td.codelink,td.
 (async()=>{
   applyLang();$('sTo').value=today();$('aDate').value=today();busy(1);
   try{
-    const [cfg]=await Promise.all([sel('mshort_config_2','select=*'),loadEx(),loadNeed(),loadMst(),loadDates(),loadAdj()]);cfg.forEach(c=>CFG[c.key]=c.value);renderNeed();
+    const [cfg]=await Promise.all([sel('mshort_config_2','select=*'),loadNeed(),loadMst(),loadDates(),loadAdj()]);cfg.forEach(c=>CFG[c.key]=c.value);renderNeed();
     if($('sCnt').value)await calc(false);else renderSum();
   }catch(e){alert(tr('불러오기 오류: ','Error: ')+e.message)}
   busy(0);
@@ -1484,21 +1474,26 @@ document.querySelectorAll('.lang button').forEach(b=>b.onclick=()=>{if(b.dataset
    - 표 내부 스크롤이 맨 끝에 닿기 전에는 페이지 스크롤이 그 지점(표 헤더)보다 더 내려가지 않음
    - 표 내부 스크롤이 맨 끝이면 페이지가 더 내려가 아래 설명문까지 볼 수 있음 */
 (function(){
-  var GAP=8, tw=document.querySelector('#t-sum .tw.fit'), top=document.querySelector('.top'), tab=document.getElementById('t-sum');
-  if(!tw||!top||!tab) return;
+  var GAP=8, top=document.querySelector('.top');
+  if(!top) return;
   function topH(){ return top.offsetHeight||0; }
   function fit(){ var h=Math.max(320, window.innerHeight - topH() - GAP); document.documentElement.style.setProperty('--fitH', h+'px'); }
-  function limitY(){ return Math.max(0, Math.round(tw.getBoundingClientRect().top + window.scrollY - topH() - GAP)); }
-  function innerAtEnd(){ return tw.scrollHeight - tw.clientHeight - tw.scrollTop <= 1; }
+  /* 부족예상·작업필요자재 두 탭 모두 같은 방식 (탭별 .tw.fit) */
+  var ctrls=['t-sum','t-need'].map(function(id){
+    var tab=document.getElementById(id), tw=tab&&tab.querySelector('.tw.fit'); return tab&&tw?{tab:tab,tw:tw}:null;
+  }).filter(Boolean);
+  function cur(){ for(var i=0;i<ctrls.length;i++){ if(ctrls[i].tab.classList.contains('on')) return ctrls[i]; } return null; }
+  function limitY(tw){ return Math.max(0, Math.round(tw.getBoundingClientRect().top + window.scrollY - topH() - GAP)); }
+  function innerAtEnd(tw){ return tw.scrollHeight - tw.clientHeight - tw.scrollTop <= 1; }
   var busy=false;
   function gate(){
-    if(busy||!tab.classList.contains('on')) return;
-    var lim=limitY();
-    if(window.scrollY > lim + 1 && !innerAtEnd()){ busy=true; window.scrollTo(0,lim); busy=false; }
+    var c=cur(); if(busy||!c) return;
+    var lim=limitY(c.tw);
+    if(window.scrollY > lim + 1 && !innerAtEnd(c.tw)){ busy=true; window.scrollTo(0,lim); busy=false; }
   }
   window.addEventListener('resize',function(){ fit(); gate(); });
   window.addEventListener('scroll',gate,{passive:true});
-  tw.addEventListener('scroll',gate,{passive:true});
+  ctrls.forEach(function(c){ c.tw.addEventListener('scroll',gate,{passive:true}); });
   if(window.ResizeObserver){ new ResizeObserver(fit).observe(top); }
   fit();
 })();
