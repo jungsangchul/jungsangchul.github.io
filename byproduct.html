@@ -53,6 +53,19 @@ header .who input:focus{border-color:var(--ac);outline:none}
 .system-bar>span:first-child{display:flex;align-items:center;gap:8px}
 .system-bar>span:first-child::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--ac);box-shadow:0 0 6px var(--ac);animation:pulse 2.4s ease-in-out infinite}
 .system-bar .plant{color:var(--ac2);font-weight:700;white-space:nowrap}
+/* ── 위치 감지 배너 ── */
+.geo-bar{display:none;align-items:center;gap:12px;padding:9px 32px;font-size:13px;line-height:1.45;border-bottom:1px solid var(--line);background:#0e0e0e;color:var(--ink2)}
+.geo-bar.show{display:flex}
+.geo-bar .dot{width:9px;height:9px;border-radius:50%;flex:none;background:#4caf7d;box-shadow:0 0 8px #4caf7d}
+.geo-bar.warn{background:#1a1407;color:#f0d78a;border-color:rgba(224,168,74,.35)}.geo-bar.warn .dot{background:#e0a84a;box-shadow:0 0 8px #e0a84a}
+.geo-bar.block{background:#1f0b0b;color:#ffb3b3;border-color:rgba(255,80,80,.45);font-weight:600;font-size:14px}.geo-bar.block .dot{background:#ff5252;box-shadow:0 0 10px #ff5252;animation:pulse 1.2s ease-in-out infinite}
+.geo-bar .txt{flex:1;min-width:0}
+.geo-bar .btn.sm{height:30px;padding:0 12px;font-size:12.5px}
+.geo-bar .btn.sec{background:transparent;color:var(--ink2);border:1px solid var(--line2);box-shadow:none}
+.geo-bar .btn.go{background:linear-gradient(180deg,#ff7a7a,#e04545);color:#fff;box-shadow:0 4px 14px rgba(224,69,69,.35)}
+@media(max-width:760px){.geo-bar{padding:9px 16px;flex-wrap:wrap}.geo-bar .txt{width:100%}}
+body.geo-block :is(#t-in,#t-mw,#t-cf) :is(input:not([type=date]),textarea,select,button.btn:not(.sec)),body.geo-block #t-tr :is(textarea,button.btn:not(.sec)){pointer-events:none;opacity:.35;filter:grayscale(.6)}
+body.geo-block #in-save::after{content:' 🔒'}
 nav.tabs{display:flex;gap:6px;padding:12px 32px;background:var(--surface);border-bottom:1px solid var(--line2);overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;margin:0}
 nav.tabs::-webkit-scrollbar{display:none}
 nav.tabs button{flex-shrink:0;display:inline-flex;align-items:center;gap:7px;background:none;border:1px solid transparent;border-radius:999px;color:var(--mute);font-size:13.5px;font-weight:600;padding:8px 16px;letter-spacing:.02em;white-space:nowrap;transition:color .15s,background .15s,border-color .15s,box-shadow .15s}
@@ -490,6 +503,7 @@ table.cfg input{width:17px;height:17px}
     </div>
   </div>
   <div class="system-bar"><span data-t="sysbar">부산물 관리 / Gestión de subproductos · Producción maquinado</span><span class="plant" id="plantTag"></span></div>
+  <div class="geo-bar" id="geoBar"><span class="dot"></span><span class="txt" id="geoTxt"></span><button class="btn sm go" id="geoGo" style="display:none"></button><button class="btn sm sec" id="geoRetry" onclick="geoCheck(true)">↻ <span id="geoRetryT"></span></button></div>
 </header>
 <nav id="nav" class="tabs">
   <button data-tab="in" class="on"><svg viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M6 6l1.5 12h9L18 6"/><path d="M9 10h6M9.5 14h5"/></svg><span data-t="tab_in">부산물 측정 입력</span></button>
@@ -824,6 +838,7 @@ function applyLang(){
   $('plantTag').textContent=PLANT===2?L('멕시코 2공장 · Torreón','México Planta 2 · Torreón'):L('멕시코 1공장 · Monclova','México Planta 1 · Monclova');
   const pl='PLANT '+PLANT+' · '+(PLANT===2?L('토레온','Torreón'):L('몽클로바','Monclova'));
   ['in','rs','lr','sp','tr','us','mw','cf'].forEach(k=>{const e=$('pl-'+k);e.textContent=pl;e.className='fs-pl p'+PLANT});
+  if(GEO.checked)geoApply();
   renderAll();
 }
 document.querySelectorAll('.lang button').forEach(b=>b.onclick=()=>{curLang=b.dataset.l;try{localStorage.setItem('byp_lang',curLang)}catch(e){}applyLang()});
@@ -852,6 +867,51 @@ document.querySelectorAll('.mdl').forEach(m=>m.addEventListener('click',e=>{if(e
 
 /* ── Supabase REST ── */
 const H=()=>({apikey:SUPABASE_ANON,Authorization:'Bearer '+SUPABASE_ANON,'Content-Type':'application/json'});
+/* ── 위치 감지 · 다른 공장 데이터 입력 차단 ──
+   Monclova(1공장)·Torreón(2공장) 기준 GEO_RADIUS_KM 안이면 해당 공장으로 판정.
+   다른 공장 범위 안에서 열면 모든 쓰기(저장·삭제·사진·마스터·설정)를 차단.
+   GEO_STRICT=true 로 바꾸면 위치 미확인(권한 거부·범위 밖)일 때도 입력 차단. */
+const GEO_PLANTS={1:{name:'Monclova',ko:'몽클로바',lat:26.9103,lng:-101.4222},2:{name:'Torreón',ko:'토레온',lat:25.5428,lng:-103.4068}};
+const GEO_RADIUS_KM=40, GEO_STRICT=false;
+const GEO={at:null,dist:{},err:null,checked:false,blocked:false};
+function geoKm(a,b,c,d){const r=Math.PI/180,x=Math.sin((c-a)*r/2),y=Math.sin((d-b)*r/2);return 2*6371*Math.asin(Math.sqrt(x*x+Math.cos(a*r)*Math.cos(c*r)*y*y))}
+function geoEval(lat,lng){
+  GEO.dist={};let best=null;
+  for(const k of [1,2]){const P=GEO_PLANTS[k];const km=geoKm(lat,lng,P.lat,P.lng);GEO.dist[k]=km;if(km<=GEO_RADIUS_KM&&(best==null||km<GEO.dist[best]))best=k}
+  GEO.at=best==null?0:best;GEO.err=null;
+}
+function geoApply(){
+  GEO.checked=true;
+  const other=PLANT===1?2:1,P=GEO_PLANTS[PLANT],O=GEO_PLANTS[other];
+  const bar=$('geoBar'),txt=$('geoTxt'),go=$('geoGo');
+  $('geoRetryT').textContent=L('위치 재확인','Verificar ubicación');
+  let cls='',msg='',blocked=false;go.style.display='none';
+  if(GEO.at===PLANT){cls='';msg=L(`📍 위치 확인 · ${P.ko} (${P.name}) ${GEO.dist[PLANT].toFixed(1)} km — ${PLANT}공장 데이터 입력 가능`,`📍 Ubicación verificada · ${P.name} (${GEO.dist[PLANT].toFixed(1)} km) — captura habilitada para Planta ${PLANT}`)}
+  else if(GEO.at===other){cls='block';blocked=true;
+    msg=L(`⛔ 현재 위치는 ${O.ko}(${other}공장, ${GEO.dist[other].toFixed(1)} km)입니다. 이 화면은 ${PLANT}공장(${P.ko}) 데이터이므로 입력·저장·삭제가 차단되었습니다.`,`⛔ Está en ${O.name} (Planta ${other}, ${GEO.dist[other].toFixed(1)} km). Esta pantalla es de Planta ${PLANT} (${P.name}): captura, guardado y borrado bloqueados.`);
+    go.style.display='';go.textContent=L(`${other}공장 화면으로 이동 →`,`Ir a Planta ${other} →`);go.onclick=()=>{const u=new URL(location.href);u.searchParams.set('plant',String(other));location.href=u.toString()}}
+  else if(GEO.at===0){cls='warn';blocked=GEO_STRICT;
+    msg=L(`⚠ 현재 위치가 두 공장 범위(${GEO_RADIUS_KM} km) 밖입니다 (몽클로바 ${GEO.dist[1].toFixed(0)} km · 토레온 ${GEO.dist[2].toFixed(0)} km). ${blocked?'입력이 차단됩니다.':'공장 선택('+PLANT+'공장 '+P.ko+')을 확인하고 입력하세요.'}`,`⚠ Fuera del rango de ambas plantas (${GEO_RADIUS_KM} km): Monclova ${GEO.dist[1].toFixed(0)} km · Torreón ${GEO.dist[2].toFixed(0)} km. ${blocked?'Captura bloqueada.':'Confirme la planta ('+PLANT+' · '+P.name+') antes de capturar.'}`)}
+  else{cls='warn';blocked=GEO_STRICT;
+    const why=GEO.err===1?L('위치 권한이 거부됨','permiso de ubicación denegado'):GEO.err===3?L('응답 시간 초과','tiempo agotado'):GEO.err==='nosupport'?L('이 브라우저는 위치를 지원하지 않음','navegador sin geolocalización'):L('위치를 가져올 수 없음','no se pudo obtener la ubicación');
+    msg=L(`⚠ 위치 미확인 (${why}). ${blocked?'위치가 확인될 때까지 입력이 차단됩니다.':'공장 선택('+PLANT+'공장 '+P.ko+')을 확인하고 입력하세요.'} 브라우저 주소창의 위치 권한을 허용한 뒤 「위치 재확인」을 누르세요.`,`⚠ Ubicación no verificada (${why}). ${blocked?'Captura bloqueada hasta verificar.':'Confirme la planta ('+PLANT+' · '+P.name+') antes de capturar.'} Permita la ubicación en el navegador y pulse «Verificar ubicación».`)}
+  bar.className='geo-bar show'+(cls?' '+cls:'');txt.textContent=msg;
+  GEO.blocked=blocked;document.body.classList.toggle('geo-block',blocked);
+}
+function geoCheck(manual){
+  if(!navigator.geolocation){GEO.at=null;GEO.err='nosupport';geoApply();return}
+  if(manual)toast(L('위치 확인 중…','Verificando ubicación…'));
+  navigator.geolocation.getCurrentPosition(
+    pos=>{geoEval(pos.coords.latitude,pos.coords.longitude);geoApply();if(manual)toast(GEO.blocked?L('다른 공장 위치 — 입력 차단','Otra planta — captura bloqueada'):L('위치 확인 완료','Ubicación verificada'),GEO.blocked)},
+    e=>{GEO.at=null;GEO.err=e.code;geoApply()},
+    {enableHighAccuracy:true,timeout:12000,maximumAge:5*60*1000});
+}
+function geoGuard(){
+  if(!GEO.blocked)return;
+  const other=PLANT===1?2:1;
+  throw new Error(L(`⛔ 현재 위치(${GEO_PLANTS[other].ko} · ${other}공장)에서는 ${PLANT}공장 데이터를 입력할 수 없습니다.`,`⛔ Desde ${GEO_PLANTS[other].name} (Planta ${other}) no se pueden capturar datos de Planta ${PLANT}.`));
+}
+setInterval(()=>{if(document.visibilityState==='visible')geoCheck(false)},10*60*1000);
 async function sbGet(path){
   const out=[],step=1000;
   for(let from=0;;from+=step){
@@ -860,14 +920,14 @@ async function sbGet(path){
   return out;
 }
 async function sbUpsert(table,rows,onConflict){
-  if(!rows.length)return;
+  geoGuard();if(!rows.length)return;
   for(let i=0;i<rows.length;i+=500){
     const r=await fetch(SUPABASE_URL+'/rest/v1/'+table+(onConflict?'?on_conflict='+onConflict:''),{method:'POST',headers:{...H(),Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify(rows.slice(i,i+500))});
     if(!r.ok)throw new Error(await r.text());
   }
 }
-async function sbPatch(table,q,body){const r=await fetch(SUPABASE_URL+'/rest/v1/'+table+'?'+q,{method:'PATCH',headers:{...H(),Prefer:'return=minimal'},body:JSON.stringify(body)});if(!r.ok)throw new Error(await r.text())}
-async function sbDel(table,q){const r=await fetch(SUPABASE_URL+'/rest/v1/'+table+'?'+q,{method:'DELETE',headers:{...H(),Prefer:'return=minimal'}});if(!r.ok)throw new Error(await r.text())}
+async function sbPatch(table,q,body){geoGuard();const r=await fetch(SUPABASE_URL+'/rest/v1/'+table+'?'+q,{method:'PATCH',headers:{...H(),Prefer:'return=minimal'},body:JSON.stringify(body)});if(!r.ok)throw new Error(await r.text())}
+async function sbDel(table,q){geoGuard();const r=await fetch(SUPABASE_URL+'/rest/v1/'+table+'?'+q,{method:'DELETE',headers:{...H(),Prefer:'return=minimal'}});if(!r.ok)throw new Error(await r.text())}
 
 /* ── 공통 상태 ── */
 const S={mc:[],ratio:[],wireW:{},master:{},usCache:{}};
@@ -1942,6 +2002,7 @@ async function trExcel(){
   $('in-date').value=today();$('lr-date').value=today();$('sp-date').value=today();$('rs-month').value=today().slice(0,7);
   $('rs-from').value=today().slice(0,8)+'01';$('rs-to').value=today();
   $('us-from').value=today().slice(0,8)+'01';$('us-to').value=today();
+  geoCheck(false);
   load(true);
   try{await loadBase()}catch(e){toast(e.message,true)}finally{load(false)}
   applyLang();await inLoad();
