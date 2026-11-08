@@ -1626,7 +1626,7 @@ function sapEntry(rows){
   rows.forEach((c,i)=>{if(c.so!=null&&c.so!==''){out[i].ord=+c.so;return}const key=c.sap||('__'+i);(groups[key]=groups[key]||[]).push(i)});
   Object.entries(groups).forEach(([key,idx])=>{if(key.startsWith('__')||idx.length<2)return;const q=idx.reduce((s,i)=>rows[i].qa==null?s:s+rows[i].qa,0);
     const at=idx.find(i=>String(rows[i].cat).replace(/\s+/g,'')===key.replace(/\s+/g,''));
-    if(at!=null){out[at].lump=q;out[at].lab=key}else sub.push({lump:q,lab:key})});
+    if(at!=null){out[at].lump=q;out[at].lab=key;out[at].members=idx}else sub.push({lump:q,lab:key,members:idx})});
   out.sub=sub;return out;
 }
 /* ═══════════ ⑥ 로스율 현황 (일별 부산물현황 보고) ═══════════ */
@@ -1912,13 +1912,19 @@ async function lrExcel(mode){
     hdr([h2('Categoría','구분'),h2('Tipo de Pérdida',''),h2('로스종류',''),h2('Registro en SAP','SAP 등록명'),null,null,h2(D.d,'당일'),h2(ymL,'당월'),h2('Unidad','단위'),h2('Orden de captura','입력순서'),null],[[4,6],[10,11]],NAVY);
     const F3=[null,null,null,null,null,null,'#,##0.00','#,##0.00',null,'#,##0',null];const UNIT={w:'M',t:'EA',j:'EA'};
     ['w','t','j'].forEach((k,ki)=>{const rows=C.cats[k],dr=day.rows[k],mr=mtd.rows[k];const r0=r;const av=P=>P.rows[k].avg;
-      const E=sapEntry(rows);
-      const starts=[];rows.forEach((c,i)=>{const e=E[i];dataRow([i===0?MAT[k]:undefined,esN(c.cat)+(c.grp==='ext'?' (ext.)':''),c.cat,c.sap||'',undefined,undefined,c.qa,c.qm,UNIT[k],e.ord!=null?e.ord:(e.lump!=null?Math.round(e.lump):null),e.lab||null],F3,{labels:4,zebra:i%2===1});
+      const E=sapEntry(rows);const rowNo=[];
+      const starts=[];rows.forEach((c,i)=>{const e=E[i];rowNo[i]=r;dataRow([i===0?MAT[k]:undefined,esN(c.cat)+(c.grp==='ext'?' (ext.)':''),c.cat,c.sap||'',undefined,undefined,c.qa,c.qm,UNIT[k],e.ord!=null?e.ord:(e.lump!=null?Math.round(e.lump):null),e.lab||null],F3,{labels:4,zebra:i%2===1});
         if(e.lump!=null){ws.getCell(r-1,10).font=F.font({bold:true,color:{argb:GOLD}});ws.getCell(r-1,11).font=F.font({bold:true,color:{argb:GOLD}})}else if(e.ord!=null){ws.getCell(r-1,10).font=F.font({bold:true,color:{argb:'FF1D4ED8'}});ws.getCell(r-1,10).alignment={horizontal:'center',vertical:'middle'}}
         if(i===0||rows[i-1].sap!==c.sap||!c.sap)starts.push({row:r-1,end:r-1,sap:c.sap});else starts[starts.length-1].end=r-1});
       starts.forEach(x=>{ws.mergeCells(x.row,4,x.end,6);ws.getCell(x.row,4).alignment={vertical:'middle',horizontal:'center'}});
       dataRow([rows.length?undefined:MAT[k],'Subtotal','소계',undefined,undefined,undefined,rows.reduce((s,c)=>c.qa==null?s:s+c.qa,0)||(av(day)>0?dr.gen/av(day):null),rows.reduce((s,c)=>c.qm==null?s:s+c.qm,0)||(av(mtd)>0?mr.gen/av(mtd):null),UNIT[k],E.sub.length?Math.round(E.sub[0].lump):null,E.sub.length?E.sub.map(x=>x.lab).join(' / '):null],F3,{labels:4,bold:true,fill:AMB});ws.mergeCells(r-1,4,r-1,6);
       if(E.sub.length){ws.getCell(r-1,10).font=F.font({bold:true,color:{argb:GOLD}});ws.getCell(r-1,11).font=F.font({bold:true,color:{argb:GOLD}});if(E.sub.length>1)ws.getCell(r-1,10).value=E.sub.map(x=>Math.round(x.lump)).join(' / ')}
+      /* 입력순서 합산 셀 → 엑셀 함수 (G열 = 당일 수량) */
+      const subNo=r-1;
+      E.forEach((e,i)=>{if(e.lump==null)return;ws.getCell(rowNo[i],10).value={formula:e.members.map(j=>'G'+rowNo[j]).join('+'),result:Math.round(e.lump)}});
+      if(E.sub.length===1){const g=E.sub[0];const inG=new Set(g.members);const terms=[];const covered=new Set();
+        rows.forEach((c,i)=>{if(inG.has(i)||covered.has(i))return;const e=E[i];if(e.lump!=null){terms.push('J'+rowNo[i]);e.members.forEach(j=>covered.add(j))}else terms.push('G'+rowNo[i])});
+        ws.getCell(subNo,10).value={formula:'G'+subNo+(terms.length?'-'+terms.join('-'):''),result:Math.round(g.lump)}}
       if(r-1>r0)ws.mergeCells(r0,1,r-1,1);const mc=ws.getCell(r0,1);mc.alignment={vertical:'top',horizontal:'left'};mc.font=F.font({bold:true,size:11,color:{argb:['FF0369A1','FFB45309','FF15803D'][ki]}});mc.fill=fill('FFF1F5F9');});
     dataRow(['SCRAP','Fragmento de Terminal','단자칩','단자칩(측정단위)',undefined,undefined,day.scrap,mtd.scrap,'kg',null,null],F3,{labels:4,fill:'FFEDE9FE'});ws.mergeCells(r-1,4,r-1,6);
     ws.mergeCells(r,1,r,NC);ws.getCell(r,1).value=L('• 수량 환산 = 로스유형별 발생중량(kg) ÷ 재질 평균 단위중량(해당 기간) · 생산외 접수(ext.)는 접수당일 단위중량으로 환산 · Scrap은 kg · 입력순서: 번호 행은 개별 입력, 같은 SAP명으로 묶인 나머지 행은 첫 행에 합산 수량(당일)과 SAP명 표시','• Cantidad = kg por tipo ÷ peso unitario promedio del material · externo con el peso unitario del día de recepción · scrap en kg');ws.getCell(r,1).font=F.font({size:9,color:{argb:MUTE}});r++;
