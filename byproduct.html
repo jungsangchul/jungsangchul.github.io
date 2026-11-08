@@ -882,8 +882,9 @@ const H=()=>({apikey:SUPABASE_ANON,Authorization:'Bearer '+SUPABASE_ANON,'Conten
    다른 공장 범위 안에서 열면 모든 쓰기(저장·삭제·사진·마스터·설정)를 차단.
    GEO_STRICT=true 로 바꾸면 위치 미확인(권한 거부·범위 밖)일 때도 입력 차단. */
 const GEO_PLANTS={1:{name:'Monclova',ko:'몽클로바',lat:26.9103,lng:-101.4222},2:{name:'Torreón',ko:'토레온',lat:25.5428,lng:-103.4068}};
-const GEO_RADIUS_KM=40, GEO_STRICT=false;
-const GEO={at:null,dist:{},err:null,checked:false,blocked:false};
+const GEO_RADIUS_KM=40, GEO_STRICT=true;
+const GEO={at:null,dist:{},err:null,checked:false,blocked:GEO_STRICT}; /* 엄격 모드: 위치가 확인될 때까지 입력 차단 상태로 시작 */
+if(GEO_STRICT)document.addEventListener('DOMContentLoaded',()=>{if(!GEO.checked){document.body.classList.add('geo-block');const b=$('geoBar'),t=$('geoTxt');if(b&&t){b.className='geo-bar show warn';t.textContent=L('⏳ 위치 확인 중… 확인될 때까지 입력·저장·삭제가 잠깁니다','⏳ Verificando ubicación… captura bloqueada hasta verificar')}}});
 function geoKm(a,b,c,d){const r=Math.PI/180,x=Math.sin((c-a)*r/2),y=Math.sin((d-b)*r/2);return 2*6371*Math.asin(Math.sqrt(x*x+Math.cos(a*r)*Math.cos(c*r)*y*y))}
 function geoEval(lat,lng){
   GEO.dist={};let best=null;
@@ -919,9 +920,11 @@ function geoCheck(manual){
 function geoGuard(){
   if(!GEO.blocked)return;
   const other=PLANT===1?2:1;
-  throw new Error(L(`⛔ 현재 위치(${GEO_PLANTS[other].ko} · ${other}공장)에서는 ${PLANT}공장 데이터를 입력할 수 없습니다.`,`⛔ Desde ${GEO_PLANTS[other].name} (Planta ${other}) no se pueden capturar datos de Planta ${PLANT}.`));
+  if(GEO.at===other)throw new Error(L(`⛔ 현재 위치(${GEO_PLANTS[other].ko} · ${other}공장)에서는 ${PLANT}공장 데이터를 입력할 수 없습니다.`,`⛔ Desde ${GEO_PLANTS[other].name} (Planta ${other}) no se pueden capturar datos de Planta ${PLANT}.`));
+  if(GEO.at===0)throw new Error(L(`⛔ 현재 위치가 두 공장 범위(${GEO_RADIUS_KM} km) 밖이라 입력·저장·삭제가 차단되었습니다.`,`⛔ Fuera del rango de ambas plantas (${GEO_RADIUS_KM} km): captura bloqueada.`));
+  throw new Error(L('⛔ 위치가 확인되지 않아 입력·저장·삭제가 차단되었습니다. 브라우저 위치 권한을 허용하고 「위치 재확인」을 누르세요.','⛔ Ubicación no verificada: captura bloqueada. Permita la ubicación y pulse «Verificar ubicación».'));
 }
-setInterval(()=>{if(document.visibilityState==='visible')geoCheck(false)},10*60*1000);
+/* 위치 확인은 페이지 열 때 1회 + 「위치 재확인」 버튼으로만 (주기 재확인 없음) */
 async function sbGet(path){
   const out=[],step=1000;
   for(let from=0;;from+=step){
@@ -1008,7 +1011,8 @@ function catDist(k,T,R,ext){
   const rows=S.ratio.map(c=>({cat:c.cat,grp:'prod',mode:c.mode||'ratio',ded:c.deduct_from||'',p0:(+c[PK[k]]||0)/100,sap:c['sap_'+k]||'',kg:0}));
   rows.forEach(c=>{c.kg=c.mode==='measured'?(R||0):T*c.p0});
   let over=0;rows.filter(c=>c.mode==='measured').forEach(m=>{const t=rows.find(c=>c.cat===m.ded&&c.mode!=='measured')||rows.filter(c=>c.mode!=='measured').sort((a,b)=>b.p0-a.p0)[0];if(t&&m.kg>0){t.kg-=m.kg;if(t.kg<0){over+=-t.kg;t.kg=0}}});
-  const exts=Object.entries(ext||{}).map(([n,o])=>({cat:n,grp:'ext',mode:'ext',p0:0,kg:o[k]||0,sap:(EXTSAP[n]||{})['sap_'+k]||''}));
+  const extAll={};S.mc.filter(m=>m.kind==='ext'&&m.active).forEach(m=>extAll[extName(m.mc)]=null);Object.assign(extAll,ext||{});
+  const exts=Object.entries(extAll).map(([n,o])=>({cat:n,grp:'ext',mode:'ext',p0:0,kg:(o&&o[k])||0,sap:(EXTSAP[n]||{})['sap_'+k]||''}));
   const prodKg=rows.reduce((s,c)=>s+c.kg,0),extKg=exts.reduce((s,c)=>s+c.kg,0),allKg=prodKg+extKg;
   rows.forEach(c=>c.p=prodKg>0?c.kg/prodKg:0);exts.forEach(c=>c.p=extKg>0?c.kg/extKg:0);const all=[...rows,...exts];
   return {rows,exts,all,prodKg,extKg,allKg,over,T,R:R||0};
@@ -1026,7 +1030,7 @@ function extQty(usageRows,extDay){
   Object.entries(extDay||{}).forEach(([d,o])=>{const a=avgOf(d);Object.entries(o).forEach(([n,v])=>{const t=out[n]||(out[n]={w:{kg:0,q:0,miss:0},t:{kg:0,q:0,miss:0},j:{kg:0,q:0,miss:0}});['w','t','j'].forEach(k=>{const kg=v[k]||0;t[k].kg+=kg;if(kg>0){if(a[k]>0)t[k].q+=kg/a[k];else t[k].miss+=kg}})})});
   return out;
 }
-const extQ=(EQ,n,k)=>{const o=((EQ||{})[n]||{})[k];return o?(o.miss>0&&o.q===0?null:o.q):null};
+const extQ=(EQ,n,k)=>{const o=((EQ||{})[n]||{})[k];if(!o)return 0;return (o.miss>0&&o.q===0)?null:o.q}; /* 접수 없음=0 · 접수는 있으나 당일 단위중량 없음=null(–) */
 
 /* ── 탭 ── */
 document.querySelectorAll('nav.tabs button').forEach(b=>b.onclick=()=>{
@@ -1680,6 +1684,7 @@ function lrCalc(){
   const cats={};['w','t','j'].forEach(k=>{
     const find=(P,c)=>P.dist[k].all.find(x=>x.grp===c.grp&&x.cat===c.cat)||{kg:0,p:0};
     const keys=[];[mtd,day,prev].forEach(P=>P.dist[k].all.forEach(c=>{if(!keys.some(x=>x.grp===c.grp&&x.cat===c.cat))keys.push({grp:c.grp,cat:c.cat,mode:c.mode,sap:c.sap})}));
+    S.mc.filter(m=>m.kind==='ext'&&m.active).forEach(m=>{const n=extName(m.mc);if(!keys.some(x=>x.grp==='ext'&&x.cat===n))keys.push({grp:'ext',cat:n,mode:'ext',sap:(EXTSAP[n]||{})['sap_'+k]||''})});
     keys.sort((a,b)=>(a.grp===b.grp?0:a.grp==='prod'?-1:1));
     const q=(c,kg,P)=>c.grp==='ext'?extQ(P.EQ,c.cat,k):(P.rows[k].avg>0?kg/P.rows[k].avg:null);
     cats[k]=keys.map(c=>{const A=find(day,c),M=find(mtd,c),V=find(prev,c);return {cat:c.cat,grp:c.grp,mode:c.mode,sap:c.sap,a:A.kg,m:M.kg,pv:V.kg,pa:A.p,pm:M.p,ppv:V.p,p:M.p,diff:M.kg-V.kg,var:V.kg>0?(M.kg-V.kg)/V.kg:null,qa:q(c,A.kg,day),qm:q(c,M.kg,mtd)}});
@@ -1726,7 +1731,7 @@ function lrRender(){
   const scr=P=>`<td class="n mute">–</td><td class="n">${num(P.scrap,1)}</td><td class="n mute">–</td>`;
   const ymL=`${D.ym.slice(0,4)}년 ${D.ym.slice(5)}월`;
   const esN=c=>{const k=String(c||'').replace(/\s+/g,'');return CAT_ES[k]||CAT_ES[k.replace(/\(.*\)$/,'')]||''};
-  const extNames=[...new Set([...Object.keys(mtd.ext.rows),...Object.keys(day.ext.rows),...Object.keys(prev.ext.rows)])];
+  const extNames=[...new Set([...S.mc.filter(m=>m.kind==='ext'&&m.active).map(m=>extName(m.mc)),...Object.keys(mtd.ext.rows),...Object.keys(day.ext.rows),...Object.keys(prev.ext.rows)])];
   const xkg=(P,n)=>{const o=n?P.ext.rows[n]:P.ext.tot;return o?(o.w+o.t+o.j+o.s):0};
   const xcell=(P,n)=>`<td class="n mute">–</td><td class="n" style="color:#bba4f4">${num(xkg(P,n),1)}</td><td class="n mute">–</td>`;
   $('lr-rep-date').textContent=D.d;
@@ -1860,7 +1865,7 @@ async function lrExcel(mode){
     line('Subtotal','소계','sub',{bold:true,fill:AMB});
     dataRow(['Scrap','스크랩',null,day.scrap,null,null,mtd.scrap,null,null],F1,{zebra:true});
     line('TOTAL','합계','all',{bold:true,fill:AMB2});
-    const xNames=[...new Set([...Object.keys(mtd.ext.rows),...Object.keys(day.ext.rows),...Object.keys(prev.ext.rows)])];
+    const xNames=[...new Set([...S.mc.filter(m=>m.kind==='ext'&&m.active).map(m=>extName(m.mc)),...Object.keys(mtd.ext.rows),...Object.keys(day.ext.rows),...Object.keys(prev.ext.rows)])];
     if(xNames.length){const xk=(P,n)=>{const o=n?P.ext.rows[n]:P.ext.tot;return o?(o.w+o.t+o.j+o.s):0};
       dataRow(['Recepción externa',L('생산외 접수 (별도 측정 · 로스율 미포함)','externo (fuera de la tasa)'),null,null,null,null,null,null,null],F1,{bold:true,color:'FF6D28D9',fill:'FFF5F3FF'});
       xNames.forEach((n,i)=>dataRow([esN(n)||n,n,null,xk(day,n),null,null,xk(mtd,n),null,null],F1,{zebra:i%2===1,color:'FF5B21B6'}));
