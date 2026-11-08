@@ -970,11 +970,13 @@ function wireUw(g){
   return {uw:gw,nC:0,nAll:codes.length,src:gw?'group':''};
 }
 async function loadBase(){
-  const [mc,ratio,ww,mm]=await Promise.all([
+  const [mc,ratio,ww,mm,sg]=await Promise.all([
     sbGet(`byp_machine?plant=eq.${PLANT}&order=ord,mc`),
     sbGet(`byp_ratio?plant=eq.${PLANT}&order=ord,cat`),
     sbGet(`byp_wire_w?plant=eq.${PLANT}`),
-    sbGet(`byp_master?plant=eq.${PLANT}`)]);
+    sbGet(`byp_master?plant=eq.${PLANT}`),
+    sbGet(`byp_sap_grp?plant=eq.${PLANT}`).catch(()=>[])]);
+  S.sapGrp={};sg.forEach(g=>{if(g.ord!=null)S.sapGrp[g.mat+'|'+g.sap]=+g.ord});
   S.mc=mc;S.ratio=ratio;Object.keys(MK).forEach(k=>delete MK[k]);mc.forEach(m=>MK[m.mc]=m);
   Object.keys(EXTSAP).forEach(k=>delete EXTSAP[k]);mc.filter(m=>m.kind==='ext').forEach(m=>{const n=extName(m.mc);const o=EXTSAP[n]||(EXTSAP[n]={});['sap_w','sap_t','sap_j','sap_ord_w','sap_ord_t','sap_ord_j'].forEach(k=>{if(m[k]!=null&&m[k]!==''&&o[k]==null)o[k]=m[k]})});
   S.wireW={};ww.forEach(r=>S.wireW[wk(String(r.wtype).toUpperCase(),normSq(r.sq))]=Number(r.unit_w)||0);
@@ -1567,7 +1569,10 @@ function cfRender(){
   $('cf-sap').innerHTML=`<table><colgroup><col style="width:20%"><col style="width:26%"><col><col><col></colgroup><thead><tr><th>${L('구분','Grupo')}</th><th>${L('부산물 종류','Tipo')}</th>${SK.map(([k,n])=>`<th>SAP · ${n}</th>`).join('')}</tr></thead><tbody>
     ${S.ratio.map(c=>`<tr><td><span class="cat-grp prod">${grpN.prod}</span></td><td class="b">${esc(catN(c.cat))}</td>${SK.map(([k])=>`<td><div style="display:flex;gap:4px"><input class="cell tx" data-cat="${esc(c.cat)}" data-k="${k}" value="${esc(c[k]||'')}" placeholder="${L('SAP 등록명','Nombre SAP')}" style="flex:1;min-width:0"><input class="cell" type="number" min="1" step="1" data-cat="${esc(c.cat)}" data-ko="${k.replace('sap_','sap_ord_')}" value="${c[k.replace('sap_','sap_ord_')]??''}" placeholder="#" title="${L('입력순서','Orden')}" style="width:46px;flex:none;text-align:center"></div></td>`).join('')}</tr>`).join('')||`<tr><td colspan="5" class="empty">${L('종류 없음','Sin tipos')}</td></tr>`}
     ${exts.map(e=>`<tr><td><span class="cat-grp ext">${grpN.ext}</span></td><td class="b">${esc(catN(e.name))} <span class="mini">(${e.mcs.join('·')})</span></td>${SK.map(([k])=>`<td><div style="display:flex;gap:4px"><input class="cell tx" data-ext="${esc(e.name)}" data-k="${k}" value="${esc(e[k]||'')}" placeholder="${L('SAP 등록명','Nombre SAP')}" style="flex:1;min-width:0"><input class="cell" type="number" min="1" step="1" data-ext="${esc(e.name)}" data-ko="${k.replace('sap_','sap_ord_')}" value="${e[k.replace('sap_','sap_ord_')]??''}" placeholder="#" title="${L('입력순서','Orden')}" style="width:46px;flex:none;text-align:center"></div></td>`).join('')}</tr>`).join('')}</tbody>
-    <tfoot><tr><td colspan="5" class="mini" style="text-align:left;font-weight:400">${L('이름 옆 # = SAP 입력순서. 번호가 있는 종류는 개별로 입력하고, 같은 SAP명으로 묶인 나머지 종류는 「SAP 등록」 표·엑셀에서 첫 행에 합산 수량으로 표시됩니다 (예: 단자 폐단자 = 소계 − 리워크 − 샘플).','# junto al nombre = orden de captura en SAP; los tipos sin número y con el mismo nombre SAP se suman en la primera fila.')}</td></tr></tfoot></table>`;
+    <tfoot><tr><td colspan="5" class="mini" style="text-align:left;font-weight:400">${L('이름 옆 # = SAP 입력순서. 번호가 있는 종류는 개별로 입력하고, 번호 없이 같은 SAP명으로 묶인 종류들은 합산 1건으로 입력됩니다 (합산 표시 위치: SAP명과 같은 이름의 종류 행이 있으면 그 행, 없으면 소계 행 — 예: 단자 폐단자 = 소계 − 리워크 − 샘플 − 조립 − 기타).','# junto al nombre = orden de captura en SAP; los tipos sin número y con el mismo nombre SAP se capturan como una suma.')}</td></tr></tfoot></table>
+    ${(()=>{const G=sapGroupsCfg();const MN={w:'Wire',t:'Terminal',j:'Seal'};return `<div class="row hd" style="margin-top:12px"><h3 style="font-size:13px">${L('합산 그룹 입력순서','Orden de grupos sumados')}</h3></div>
+    <table><colgroup><col style="width:20%"><col style="width:26%"><col><col style="width:90px"></colgroup><thead><tr><th>${L('재질','Material')}</th><th>${L('SAP 등록명 (합산)','Nombre SAP (suma)')}</th><th>${L('묶이는 종류 수','Tipos')}</th><th class="c">${L('입력순서','Orden')}</th></tr></thead><tbody>
+    ${G.map(g=>`<tr><td class="b">${MN[g.k]}</td><td class="b">${esc(g.sap)}</td><td class="mini">${g.n}${L('개 종류 합산','tipos')}</td><td class="c"><input class="cell" type="number" min="1" step="1" data-gk="${g.k}" data-gsap="${esc(g.sap)}" value="${g.ord??''}" placeholder="#" style="width:60px;text-align:center"></td></tr>`).join('')||`<tr><td colspan="4" class="empty">${L('합산 그룹 없음','Sin grupos')}</td></tr>`}</tbody></table>`})()}`;
   cfChg();
 }
 function cfChg(){
@@ -1613,21 +1618,32 @@ async function cfSaveRatio(){
   if(rows.filter(r=>r.mode==='measured').length>1){toast(L('실측(차감) 방식 종류는 1개만 지정할 수 있습니다','Solo un tipo puede ser medido'),true);return}
   /* 생산외 접수 SAP 등록명 → 같은 표시명의 호기 전부에 저장 */
   const extSap={};document.querySelectorAll('#cf-sap input[data-ext]').forEach(i=>{const o=extSap[i.dataset.ext]=extSap[i.dataset.ext]||{};if(i.dataset.ko)o[i.dataset.ko]=i.value.trim()===''?null:parseInt(i.value,10);else o[i.dataset.k]=i.value.trim()||null});
+  const grpRows=[];document.querySelectorAll('#cf-sap input[data-gk]').forEach(i=>grpRows.push({plant:PLANT,mat:i.dataset.gk,sap:i.dataset.gsap,ord:i.value.trim()===''?null:parseInt(i.value,10)}));
   load(true);try{await sbUpsert('byp_ratio',rows,'plant,cat');S.ratio=rows;
+    if(grpRows.length){await sbUpsert('byp_sap_grp',grpRows,'plant,mat,sap');S.sapGrp={};grpRows.forEach(g=>{if(g.ord!=null)S.sapGrp[g.mat+'|'+g.sap]=g.ord})}
     for(const [n,sap] of Object.entries(extSap)){const mcs=S.mc.filter(m=>m.kind==='ext'&&extName(m.mc)===n);for(const m of mcs){await sbPatch('byp_machine',`plant=eq.${PLANT}&mc=eq.${encodeURIComponent(m.mc)}`,sap);Object.assign(m,sap)}}
     Object.keys(EXTSAP).forEach(k=>delete EXTSAP[k]);S.mc.filter(m=>m.kind==='ext').forEach(m=>{const n=extName(m.mc);const o=EXTSAP[n]||(EXTSAP[n]={});['sap_w','sap_t','sap_j','sap_ord_w','sap_ord_t','sap_ord_j'].forEach(k=>{if(m[k]!=null&&m[k]!==''&&o[k]==null)o[k]=m[k]})});
     RS.data=null;LR.data=null;toast(L('비율·SAP 등록명 저장 완료','Ratios y SAP guardados'));cfRender()}catch(e){toast(e.message,true)}finally{load(false)}
 }
 
 /* SAP 입력순서: 순서 번호가 있는 행은 그 번호 · 같은 SAP 등록명 그룹에서 순서 없는 행이 2개 이상이면 첫 행에 합산 수량(당일)+SAP명 표시 (예: 단자 폐단자 = 소계 − 리워크 − 샘플) */
-function sapEntry(rows){
-  /* 합산 표시 위치: 그룹 안에 SAP명과 같은 이름의 종류 행이 있으면 그 행(예: 기타), 없으면 소계 행(예: 폐단자) */
-  const out=rows.map(()=>({}));const groups={};const sub=[];
+function sapEntry(rows,k){
+  /* 합산 표시 위치: 그룹 안에 SAP명과 같은 이름의 종류 행이 있으면 그 행(예: 기타), 없으면 소계 행(예: 폐단자) · 합산 그룹의 입력순서는 설정(byp_sap_grp) */
+  const out=rows.map(()=>({}));const groups={};const sub=[];const gOrd=key=>(S.sapGrp||{})[(k||'')+'|'+key]??null;
   rows.forEach((c,i)=>{if(c.so!=null&&c.so!==''){out[i].ord=+c.so;return}const key=c.sap||('__'+i);(groups[key]=groups[key]||[]).push(i)});
   Object.entries(groups).forEach(([key,idx])=>{if(key.startsWith('__')||idx.length<2)return;const q=idx.reduce((s,i)=>rows[i].qa==null?s:s+rows[i].qa,0);
     const at=idx.find(i=>String(rows[i].cat).replace(/\s+/g,'')===key.replace(/\s+/g,''));
-    if(at!=null){out[at].lump=q;out[at].lab=key;out[at].members=idx}else sub.push({lump:q,lab:key,members:idx})});
+    if(at!=null){out[at].lump=q;out[at].lab=key;out[at].members=idx;out[at].gord=gOrd(key)}else sub.push({lump:q,lab:key,members:idx,gord:gOrd(key)})});
+  /* 소계 합산(폐단자)과 같은 SAP명인데 개별 순서가 있는 행 = 소계에서 빼는 행 → 표시용 */
+  sub.forEach(g=>rows.forEach((c,i)=>{if(out[i].ord!=null&&c.sap===g.lab)out[i].minus=true}));
   out.sub=sub;return out;
+}
+/* 설정용: 현재 SAP명·순서 설정에서 합산 그룹(순서 없는 같은 SAP명 2개 이상) 목록 산출 */
+function sapGroupsCfg(){
+  const res=[];['w','t','j'].forEach(k=>{const rows=[...S.ratio.map(c=>({sap:c['sap_'+k]||'',so:c['sap_ord_'+k]})),...Object.keys(EXTSAP).map(n=>({sap:(EXTSAP[n]||{})['sap_'+k]||'',so:(EXTSAP[n]||{})['sap_ord_'+k]}))];
+    const g={};rows.forEach(r=>{if(r.so!=null&&r.so!=='')return;if(!r.sap)return;g[r.sap]=(g[r.sap]||0)+1});
+    Object.entries(g).forEach(([sap,n])=>{if(n>=2)res.push({k,sap,n,ord:(S.sapGrp||{})[k+'|'+sap]??null})})});
+  return res;
 }
 /* ═══════════ ⑥ 로스율 현황 (일별 부산물현황 보고) ═══════════ */
 const LR={data:null};
@@ -1794,11 +1810,11 @@ function lrRender(){
     // SAP명 병합 구간 계산 (연속 동일)
     const spans=[];rows.forEach((c,i)=>{if(i>0&&rows[i-1].sap===c.sap&&c.sap)spans[spans.length-1].n++;else spans.push({i,n:1})});const spanAt=i=>spans.find(x=>x.i===i);
     const ta=rows.reduce((s,c)=>c.qa==null?s:s+c.qa,0)||(av(day)>0?dr.gen/av(day):null),tm=rows.reduce((s,c)=>c.qm==null?s:s+c.qm,0)||(av(mtd)>0?mr.gen/av(mtd):null);
-    const E=sapEntry(rows);
-    const eCell=e=>e.ord!=null?`<td class="n" style="border-left:1px solid var(--line2)"><span class="ord">${e.ord}</span></td>`:e.lump!=null?`<td class="n" style="border-left:1px solid var(--line2)"><b style="color:var(--ac2)">${num(e.lump,0)}</b> <span class="mini">${esc(e.lab)}</span></td>`:`<td style="border-left:1px solid var(--line2)"></td>`;
+    const E=sapEntry(rows,k);
+    const eCell=e=>e.ord!=null?`<td class="n" style="border-left:1px solid var(--line2)"><span class="ord">${e.ord}</span>${e.minus?` <span class="mini" style="color:#f0a0a0">${L('소계합산에서 차감','se resta')}</span>`:''}</td>`:e.lump!=null?`<td class="n" style="border-left:1px solid var(--line2)">${e.gord!=null?`<span class="ord">${e.gord}</span> `:''}<b style="color:var(--ac2)">${num(e.lump,0)}</b> <span class="mini">${esc(e.lab)}</span></td>`:`<td style="border-left:1px solid var(--line2)"></td>`;
     rows.forEach((c,i)=>{const sp=spanAt(i);
       sb+=`<tr>${i===0?`<td rowspan="${rows.length+1}" class="mat" style="color:${kcol[k]}">${MAT[k]}<div class="mini" style="margin-top:3px">${UNIT[k]}</div></td>`:''}<td class="lab2">${esc(esN(c.cat)||'')}${c.grp==='ext'?` <span class="mini" style="color:#bba4f4">(ext.)</span>`:''}</td><td class="lab2">${esc(c.cat)}</td>${sp?`<td rowspan="${sp.n}" class="lab" style="vertical-align:middle;border-left:1px solid var(--line2)">${esc(c.sap)||'<span class="mini">–</span>'}</td>`:''}<td class="n">${qF(c.qa)}</td><td class="n">${qF(c.qm)}</td>${eCell(E[i])}</tr>`});
-    sb+=`<tr class="sum">${rows.length?'':`<td class="mat" style="color:${kcol[k]}">${MAT[k]}</td>`}<td></td><td></td><td></td><td class="n">${qF(ta)}</td><td class="n">${qF(tm)}</td><td class="n" style="border-left:1px solid var(--line2)">${E.sub.map(x=>`<b style="color:var(--ac2)">${num(x.lump,0)}</b> <span class="mini">${esc(x.lab)}</span>`).join('<br>')}</td></tr>`});
+    sb+=`<tr class="sum">${rows.length?'':`<td class="mat" style="color:${kcol[k]}">${MAT[k]}</td>`}<td></td><td></td><td></td><td class="n">${qF(ta)}</td><td class="n">${qF(tm)}</td><td class="n" style="border-left:1px solid var(--line2)">${E.sub.map(x=>`${x.gord!=null?`<span class="ord">${x.gord}</span> `:''}<b style="color:var(--ac2)">${num(x.lump,0)}</b> <span class="mini">${esc(x.lab)}</span>`).join('<br>')}</td></tr>`});
   sb+=`<tr class="scrap"><td class="mat" style="color:#bba4f4">SCRAP<div class="mini" style="margin-top:3px">kg</div></td><td class="lab2">Fragmento de Terminal</td><td class="lab2">${L('단자칩 (측정단위)','단자칩')}</td><td class="lab">${L('단자칩(측정단위)','Fragmento de terminal')}</td><td class="n">${num(day.scrap,2)}</td><td class="n">${num(mtd.scrap,2)}</td><td></td></tr>`;
   $('lr-sap').innerHTML=`<table><colgroup><col style="width:8%"><col style="width:16%"><col style="width:12%"><col style="width:15%"><col><col><col style="width:17%"></colgroup><thead>
     <tr><th>${H2('Categoría','구분')}</th><th>${H2('Tipo de Pérdida','')}</th><th>${H2('로스종류','')}</th><th>${H2('Registro en SAP','SAP 등록명')}</th><th>${H2(D.d,'당일')}</th><th>${H2(ymL,'당월')}</th><th>${H2('Orden de captura','입력순서')}</th></tr></thead><tbody>${sb}</tbody></table>`;
@@ -1848,22 +1864,23 @@ async function lrExcel(mode){
     const fill=c=>({type:'pattern',pattern:'solid',fgColor:{argb:c}});const thin={style:'thin',color:{argb:LINE}};const BD={top:thin,left:thin,bottom:thin,right:thin};
     const med={style:'medium',color:{argb:SLATE}};
     const F={font:(o={})=>({name:'Calibri',size:10,...o})};
-    const NC=mode==='sap'?11:9,LC=String.fromCharCode(64+NC);
-    (mode==='sap'?[15,21,14,13,13,13,13,13,9,12,12]:[15,21,14,13,13,13,13,13,13]).forEach((w,i)=>ws.getColumn(i+1).width=w);
+    const NC=mode==='sap'?14:9,LC=String.fromCharCode(64+NC);
+    const COLS=mode==='sap'?[1,2,3,4,5,6,7,8,9,11,12]:[1,2,3,4,5,6,7,8,9]; /* 테두리·채움 대상 열 (SAP: J·M·N은 여백/수량) */
+    (mode==='sap'?[15,21,14,13,13,13,13,13,9,3,9,11,3,12]:[15,21,14,13,13,13,13,13,13]).forEach((w,i)=>ws.getColumn(i+1).width=w);
     let r=1;
     const setRow=(cells,o={})=>{const row=ws.getRow(r);cells.forEach((v,i)=>{if(v===undefined)return;const c=row.getCell(i+1);c.value=v;});row.height=o.h||18;return row};
     // 제목
     ws.mergeCells(r,1,r,6);ws.getCell(r,1).value='Informe diario de residuos';ws.getCell(r,1).font=F.font({bold:true,size:20,color:{argb:INK}});ws.getCell(r,1).alignment={vertical:'middle'};
-    ws.mergeCells(r,7,r,NC);ws.getCell(r,7).value=D.d;ws.getCell(r,7).font=F.font({bold:true,size:14,color:{argb:GOLD}});ws.getCell(r,7).alignment={horizontal:'right',vertical:'middle'};ws.getRow(r).height=30;r++;
+    ws.mergeCells(r,7,r,9);ws.getCell(r,7).value=D.d;ws.getCell(r,7).font=F.font({bold:true,size:14,color:{argb:GOLD}});ws.getCell(r,7).alignment={horizontal:'right',vertical:'middle'};ws.getRow(r).height=30;r++;
     ws.mergeCells(r,1,r,6);ws.getCell(r,1).value='일별 부산물 현황 보고';ws.getCell(r,1).font=F.font({size:11,color:{argb:GOLD},bold:true});
-    ws.mergeCells(r,7,r,NC);ws.getCell(r,7).value=`YURA HARNESS MÉXICO · ${L('멕시코 '+PLANT+'공장','México Planta '+PLANT)}`;ws.getCell(r,7).font=F.font({size:9,color:{argb:MUTE}});ws.getCell(r,7).alignment={horizontal:'right'};r++;
+    ws.mergeCells(r,7,r,9);ws.getCell(r,7).value=`YURA HARNESS MÉXICO · ${L('멕시코 '+PLANT+'공장','México Planta '+PLANT)}`;ws.getCell(r,7).font=F.font({size:9,color:{argb:MUTE}});ws.getCell(r,7).alignment={horizontal:'right'};r++;
     ws.getRow(r).height=4;r++;
-    const secTitle=(es,ko)=>{ws.mergeCells(r,1,r,NC);const c=ws.getCell(r,1);c.value={richText:[{text:'▪ '+es+'  ',font:F.font({bold:true,size:11,color:{argb:INK}})},{text:ko,font:F.font({size:10,color:{argb:GOLD},bold:true})}]};c.alignment={vertical:'middle'};c.border={bottom:med};ws.getRow(r).height=22;r++};
-    const hdr=(cells,merges,fillC)=>{const row=ws.getRow(r);row.height=34;for(let i=1;i<=NC;i++){const c=row.getCell(i);c.fill=fill(fillC);c.border=BD;c.alignment={horizontal:'center',vertical:'middle',wrapText:true};c.font=F.font({bold:true,color:{argb:'FFFFFFFF'},size:9.5})}
+    const secTitle=(es,ko)=>{ws.mergeCells(r,1,r,9);const c=ws.getCell(r,1);c.value={richText:[{text:'▪ '+es+'  ',font:F.font({bold:true,size:11,color:{argb:INK}})},{text:ko,font:F.font({size:10,color:{argb:GOLD},bold:true})}]};c.alignment={vertical:'middle'};c.border={bottom:med};ws.getRow(r).height=22;r++};
+    const hdr=(cells,merges,fillC)=>{const row=ws.getRow(r);row.height=34;for(const i of COLS){const c=row.getCell(i);c.fill=fill(fillC);c.border=BD;c.alignment={horizontal:'center',vertical:'middle',wrapText:true};c.font=F.font({bold:true,color:{argb:'FFFFFFFF'},size:9.5})}
       cells.forEach((v,i)=>{if(v!=null)row.getCell(i+1).value=v});merges.forEach(([a,b])=>ws.mergeCells(r,a,r,b));r++};
     const h2=(es,ko)=>({richText:[{text:es+'\n',font:F.font({bold:true,color:{argb:'FFFFFFFF'},size:9.5})},{text:ko,font:F.font({color:{argb:'FFFDE68A'},size:9})}]});
     const dataRow=(cells,fmts,o={})=>{const row=ws.getRow(r);row.height=o.h||18;
-      for(let i=1;i<=NC;i++){const c=row.getCell(i);c.border=BD;c.font=F.font({bold:!!o.bold,color:{argb:o.color||INK}});c.alignment={vertical:'middle',horizontal:i<=(o.labels||2)?'left':'right'};if(o.fill)c.fill=fill(o.fill);else if(o.zebra)c.fill=fill(ZEB);if(fmts[i-1])c.numFmt=fmts[i-1]}
+      for(const i of COLS){const c=row.getCell(i);c.border=BD;c.font=F.font({bold:!!o.bold,color:{argb:o.color||INK}});c.alignment={vertical:'middle',horizontal:i<=(o.labels||2)?'left':'right'};if(o.fill)c.fill=fill(o.fill);else if(o.zebra)c.fill=fill(ZEB);if(fmts[i-1])c.numFmt=fmts[i-1]}
       cells.forEach((v,i)=>{if(v!==undefined)row.getCell(i+1).value=v});r++;return row};
     // 표①
     if(SAP){ws.getCell(1,1).value='Registro en SAP';ws.getCell(2,1).value='SAP에 등록하는 내용정리'}
@@ -1909,25 +1926,29 @@ async function lrExcel(mode){
     ws.mergeCells(r,1,r,9);ws.getCell(r,1).value=L('• 가공생산팀 자체 = 측정 총량(R01 포함) × 「호기 · 종류비율 설정」 비율, 부적합수정은 R01 실측값(차감대상 종류에서 차감) · 생산외 접수(ext.)는 접수 중량 그대로(로스율 미포함) · 점유율은 그룹 내 비율 · 스크랩은 점유율 대상 제외','• Prod. maquinado = total medido × ratios (retrabajo = medido en R01, descontado) · externo (ext.) = peso recibido · scrap excluido');ws.getCell(r,1).font=F.font({size:9,color:{argb:MUTE}});r++;
     }else{
     secTitle('Registro en SAP','SAP에 등록하는 내용정리');
-    hdr([h2('Categoría','구분'),h2('Tipo de Pérdida',''),h2('로스종류',''),h2('Registro en SAP','SAP 등록명'),null,null,h2(D.d,'당일'),h2(ymL,'당월'),h2('Unidad','단위'),h2('Orden de captura','입력순서'),null],[[4,6],[10,11]],NAVY);
-    const F3=[null,null,null,null,null,null,'#,##0.00','#,##0.00',null,'#,##0',null];const UNIT={w:'M',t:'EA',j:'EA'};
+    hdr([h2('Categoría','구분'),h2('Tipo de Pérdida',''),h2('로스종류',''),h2('Registro en SAP','SAP 등록명'),null,null,h2(D.d,'당일'),h2(ymL,'당월'),h2('Unidad','단위'),null,h2('Orden de captura','입력순서'),null],[[4,6],[11,12]],NAVY);
+    const F3=[null,null,null,null,null,null,'#,##0.00','#,##0.00',null,null,'0',null,null,'#,##0'];const UNIT={w:'M',t:'EA',j:'EA'};
+    const YEL='FFFFFF00',BLUE='FF1D4ED8';
+    const qCell=(rr,formula,result,bold)=>{const c=ws.getCell(rr,14);c.value={formula,result};c.numFmt='#,##0';c.border=BD;c.font=F.font({bold:!!bold,color:{argb:INK}});c.alignment={horizontal:'right',vertical:'middle'}};
     ['w','t','j'].forEach((k,ki)=>{const rows=C.cats[k],dr=day.rows[k],mr=mtd.rows[k];const r0=r;const av=P=>P.rows[k].avg;
-      const E=sapEntry(rows);const rowNo=[];
-      const starts=[];rows.forEach((c,i)=>{const e=E[i];rowNo[i]=r;dataRow([i===0?MAT[k]:undefined,esN(c.cat)+(c.grp==='ext'?' (ext.)':''),c.cat,c.sap||'',undefined,undefined,c.qa,c.qm,UNIT[k],e.ord!=null?e.ord:(e.lump!=null?Math.round(e.lump):null),e.lab||null],F3,{labels:4,zebra:i%2===1});
-        if(e.lump!=null){ws.getCell(r-1,10).font=F.font({bold:true,color:{argb:GOLD}});ws.getCell(r-1,11).font=F.font({bold:true,color:{argb:GOLD}})}else if(e.ord!=null){ws.getCell(r-1,10).font=F.font({bold:true,color:{argb:'FF1D4ED8'}});ws.getCell(r-1,10).alignment={horizontal:'center',vertical:'middle'}}
+      const E=sapEntry(rows,k);const rowNo=[];
+      const starts=[];rows.forEach((c,i)=>{const e=E[i];rowNo[i]=r;const ordV=e.ord!=null?e.ord:(e.lump!=null&&e.gord!=null?e.gord:null);
+        dataRow([i===0?MAT[k]:undefined,esN(c.cat)+(c.grp==='ext'?' (ext.)':''),c.cat,c.sap||'',undefined,undefined,c.qa,c.qm,UNIT[k],undefined,ordV,e.lab||null],F3,{labels:4,zebra:i%2===1,fill:e.minus?YEL:undefined});
+        const kc=ws.getCell(r-1,11);kc.alignment={horizontal:'center',vertical:'middle'};if(ordV!=null)kc.font=F.font({bold:true,color:{argb:e.lump!=null?GOLD:BLUE}});
+        if(e.lab)ws.getCell(r-1,12).font=F.font({bold:true,color:{argb:GOLD}});
         if(i===0||rows[i-1].sap!==c.sap||!c.sap)starts.push({row:r-1,end:r-1,sap:c.sap});else starts[starts.length-1].end=r-1});
       starts.forEach(x=>{ws.mergeCells(x.row,4,x.end,6);ws.getCell(x.row,4).alignment={vertical:'middle',horizontal:'center'}});
-      dataRow([rows.length?undefined:MAT[k],'Subtotal','소계',undefined,undefined,undefined,rows.reduce((s,c)=>c.qa==null?s:s+c.qa,0)||(av(day)>0?dr.gen/av(day):null),rows.reduce((s,c)=>c.qm==null?s:s+c.qm,0)||(av(mtd)>0?mr.gen/av(mtd):null),UNIT[k],E.sub.length?Math.round(E.sub[0].lump):null,E.sub.length?E.sub.map(x=>x.lab).join(' / '):null],F3,{labels:4,bold:true,fill:AMB});ws.mergeCells(r-1,4,r-1,6);
-      if(E.sub.length){ws.getCell(r-1,10).font=F.font({bold:true,color:{argb:GOLD}});ws.getCell(r-1,11).font=F.font({bold:true,color:{argb:GOLD}});if(E.sub.length>1)ws.getCell(r-1,10).value=E.sub.map(x=>Math.round(x.lump)).join(' / ')}
-      /* 입력순서 합산 셀 → 엑셀 함수 (G열 = 당일 수량) */
+      dataRow([rows.length?undefined:MAT[k],'Subtotal','소계',undefined,undefined,undefined,rows.reduce((s,c)=>c.qa==null?s:s+c.qa,0)||(av(day)>0?dr.gen/av(day):null),rows.reduce((s,c)=>c.qm==null?s:s+c.qm,0)||(av(mtd)>0?mr.gen/av(mtd):null),UNIT[k],undefined,null,null],F3,{labels:4,bold:true,fill:AMB});ws.mergeCells(r-1,4,r-1,6);
+      /* N열 수량(엑셀 함수, G열=당일): 합산 행 = 구성원 합 · 소계 합산(폐단자) = 소계 − 그룹 밖 행(다른 합산은 N셀 참조) · 소계에서 빼는 행(노란색) = =G행 */
       const subNo=r-1;
-      E.forEach((e,i)=>{if(e.lump==null)return;ws.getCell(rowNo[i],10).value={formula:e.members.map(j=>'G'+rowNo[j]).join('+'),result:Math.round(e.lump)}});
+      E.forEach((e,i)=>{if(e.lump!=null)qCell(rowNo[i],e.members.map(j=>'G'+rowNo[j]).join('+'),Math.round(e.lump),true);else if(e.minus)qCell(rowNo[i],'G'+rowNo[i],Math.round(rows[i].qa||0),true)});
       if(E.sub.length===1){const g=E.sub[0];const inG=new Set(g.members);const terms=[];const covered=new Set();
-        rows.forEach((c,i)=>{if(inG.has(i)||covered.has(i))return;const e=E[i];if(e.lump!=null){terms.push('J'+rowNo[i]);e.members.forEach(j=>covered.add(j))}else terms.push('G'+rowNo[i])});
-        ws.getCell(subNo,10).value={formula:'G'+subNo+(terms.length?'-'+terms.join('-'):''),result:Math.round(g.lump)}}
+        rows.forEach((c,i)=>{if(inG.has(i)||covered.has(i))return;const e=E[i];if(e.lump!=null){terms.push('N'+rowNo[i]);e.members.forEach(j=>covered.add(j))}else terms.push('G'+rowNo[i])});
+        qCell(subNo,'G'+subNo+(terms.length?'-'+terms.join('-'):''),Math.round(g.lump),true);
+        const kc=ws.getCell(subNo,11);if(g.gord!=null){kc.value=g.gord;kc.font=F.font({bold:true,color:{argb:GOLD}});kc.alignment={horizontal:'center',vertical:'middle'}}ws.getCell(subNo,12).value=g.lab;ws.getCell(subNo,12).font=F.font({bold:true,color:{argb:GOLD}})}
       if(r-1>r0)ws.mergeCells(r0,1,r-1,1);const mc=ws.getCell(r0,1);mc.alignment={vertical:'top',horizontal:'left'};mc.font=F.font({bold:true,size:11,color:{argb:['FF0369A1','FFB45309','FF15803D'][ki]}});mc.fill=fill('FFF1F5F9');});
-    dataRow(['SCRAP','Fragmento de Terminal','단자칩','단자칩(측정단위)',undefined,undefined,day.scrap,mtd.scrap,'kg',null,null],F3,{labels:4,fill:'FFEDE9FE'});ws.mergeCells(r-1,4,r-1,6);
-    ws.mergeCells(r,1,r,NC);ws.getCell(r,1).value=L('• 수량 환산 = 로스유형별 발생중량(kg) ÷ 재질 평균 단위중량(해당 기간) · 생산외 접수(ext.)는 접수당일 단위중량으로 환산 · Scrap은 kg · 입력순서: 번호 행은 개별 입력, 같은 SAP명으로 묶인 나머지 행은 첫 행에 합산 수량(당일)과 SAP명 표시','• Cantidad = kg por tipo ÷ peso unitario promedio del material · externo con el peso unitario del día de recepción · scrap en kg');ws.getCell(r,1).font=F.font({size:9,color:{argb:MUTE}});r++;
+    dataRow(['SCRAP','Fragmento de Terminal','단자칩','단자칩(측정단위)',undefined,undefined,day.scrap,mtd.scrap,'kg',undefined,null,null],F3,{labels:4,fill:'FFEDE9FE'});ws.mergeCells(r-1,4,r-1,6);
+    ws.mergeCells(r,1,r,NC);ws.getCell(r,1).value=L('• 수량 환산 = 로스유형별 발생중량(kg) ÷ 재질 평균 단위중량(해당 기간) · 생산외 접수(ext.)는 접수당일 단위중량으로 환산 · Scrap은 kg · K열 = SAP 입력순서, L열 = 합산 SAP명, N열 = 입력 수량(당일, 엑셀 함수) — 노란 행은 소계 합산에서 빼서 개별 입력하는 종류','• Cantidad = kg por tipo ÷ peso unitario promedio del material · externo con el peso unitario del día de recepción · scrap en kg');ws.getCell(r,1).font=F.font({size:9,color:{argb:MUTE}});r++;
     }
     ws.pageSetup.printArea=`A1:${LC}${r}`;
     if(SAP){const buf=await wb.xlsx.writeBuffer();const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([buf]));a.download=`SAP등록_P${PLANT}_${D.d}.xlsx`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),3000);return}
