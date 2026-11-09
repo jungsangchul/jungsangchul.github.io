@@ -232,6 +232,9 @@ table.cfg input{width:17px;height:17px}
 .dnav .dow{font-family:var(--mono);font-size:12.5px;color:var(--mute);letter-spacing:.1em}
 .chart{background:#0d0d0d;border:1px solid var(--line2);border-radius:8px;padding:10px 8px 4px;overflow:hidden}
 .chart svg{display:block;width:100%;height:auto}
+.chart .nm{cursor:pointer}.chart .nm rect{transition:fill .15s}.chart .nm:hover rect,.chart .nm.on rect{fill:#f3dc8a;stroke:#fff;stroke-width:1.5}
+.ctip{position:fixed;z-index:98;display:none;max-width:min(380px,90vw);background:#141414;border:1px solid rgba(201,168,76,.6);border-left:4px solid var(--ac);border-radius:8px;padding:10px 13px;box-shadow:0 12px 32px rgba(0,0,0,.7);color:#eee;font-size:13.5px;line-height:1.5;white-space:pre-wrap;pointer-events:none}
+.ctip.pin{pointer-events:auto}.ctip b{display:block;color:var(--ac);font-family:var(--mono);font-size:12px;letter-spacing:.06em;margin-bottom:4px}.ctip small{display:block;color:#9a9a9a;margin-top:6px;font-size:11.5px}
 .leg{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:var(--ink2);padding:4px 6px 6px}
 .leg i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px}
 .bar-h{display:flex;flex-direction:column;gap:6px}
@@ -686,7 +689,7 @@ table.cfg input{width:17px;height:17px}
       <div class="card"><h3 data-t="tr_c2">월별 절단수량 · 1,000본당 발생 (kg)</h3><div class="chart" id="tr-chart2"></div></div>
     </div>
     <div class="card"><div class="row hd"><h3 data-t="tr_note">▶ 월별 특이사항 · 로스율 연계</h3><button class="btn" onclick="trSaveNotes()" data-t="save_notes">특이사항 저장</button></div>
-      <div class="hint" style="margin-bottom:8px" data-t="tr_note_hint">설비 고장·신차종 양산·샘플 생산·인원 교체 등 그 달 로스율에 영향을 준 사항을 적어 두면, 월별 로스율·kg/1,000본과 나란히 표시되고 그래프에 ✎ 표시가 붙습니다. 로스율 현황 보고서에도 당월 특이사항으로 나옵니다.</div>
+      <div class="hint" style="margin-bottom:8px" data-t="tr_note_hint">설비 고장·신차종 양산·샘플 생산·인원 교체 등 그 달 로스율에 영향을 준 사항을 적어 두면, 월별 로스율·kg/1,000본과 나란히 표시되고 그래프에 ✎ 표시가 붙습니다(✎에 마우스를 올리거나 클릭하면 내용 표시). 로스율 현황 보고서에도 당월 특이사항으로 나옵니다.</div>
       <div class="tw lr" id="tr-notes"></div></div>
     <div class="card"><h3 data-t="tr_t1">▶ 사용량 대비 월별 발생현황 · 로스율</h3><div class="tw lr" id="tr-t1"></div></div>
     <div class="card"><h3 data-t="tr_t2">▶ 절단본수 대비 월별 발생현황 (kg / 1,000본)</h3><div class="tw lr" id="tr-t2"></div></div>
@@ -792,6 +795,7 @@ table.cfg input{width:17px;height:17px}
   </div></div></div>
 <div class="big lightbox" id="big" onclick="this.classList.remove('on')"><img id="big-img" alt=""></div>
 <div class="toast" id="toast"></div>
+<div class="ctip" id="ctip"></div>
 <div class="load" id="load"><span class="fs-spin"></span>LOADING</div>
 <script>
 const SUPABASE_URL  = 'https://lrjurjhavlalhlwaplxd.supabase.co';
@@ -823,7 +827,7 @@ const KNAME={w:'Wire',t:'Terminal',j:'Seal',s:'Scrap'};
 const T={
  title:['가공생산팀 부산물 관리','Gestión de subproductos · Prod. maquinado'],
  sysbar:['부산물 관리 / Gestión de subproductos · Producción maquinado','Gestión de subproductos / 부산물 관리 · Producción maquinado'],
- tab_in:['부산물 측정 입력','Registro de pesaje'],tab_rs:['산출 현황','Resultados'],tab_lr:['로스율 현황','Tasa de pérdida'],tab_sp:['SAP 등록','Registro en SAP'],tab_tr:['발생추이 분석','Tendencia'],tr_title:['부산물 발생추이 분석 · 월별 / 연간','Tendencia de subproductos · mensual / anual'],tr_t1:['▶ 사용량 대비 월별 발생현황 · 로스율','▶ Mensual vs. uso · tasa de pérdida'],tr_t2:['▶ 절단본수 대비 월별 발생현황 (kg / 1,000본)','▶ Mensual por cortes (kg / 1,000 pz)'],tr_t3:['▶ 연도별 비교','▶ Comparación anual'],tr_c1:['월별 발생중량 (kg) · 로스율 (%)','Generado mensual (kg) · tasa (%)'],tr_c2:['월별 절단수량 · 1,000본당 발생 (kg)','Cortes mensuales · kg por 1,000'],tr_note:['▶ 월별 특이사항 · 로스율 연계','▶ Observaciones mensuales · vinculadas a la tasa'],save_notes:['특이사항 저장','Guardar observaciones'],tr_note_hint:['설비 고장·신차종 양산·샘플 생산·인원 교체 등 그 달 로스율에 영향을 준 사항을 적어 두면, 월별 로스율·kg/1,000본과 나란히 표시되고 그래프에 ✎ 표시가 붙습니다. 로스율 현황 보고서에도 당월 특이사항으로 나옵니다.','Anote lo que afectó la tasa del mes (fallas, arranque de modelo, muestras, cambio de personal…): se muestra junto a la tasa mensual, con ✎ en el gráfico y en el informe diario.'],year_sel:['연도','Año'],sp_title:['Registro en SAP · SAP 등록 내용정리','Registro en SAP · resumen para registrar'],sp_hint:['로스유형별 발생중량(kg)을 재질 평균 단위중량으로 나눠 SAP 등록 수량(전선 M · 단자/방수씰 EA)으로 환산합니다. SAP 등록명은 「호기 · 종류비율 설정」에서 지정하며, 같은 이름은 묶어서 표시됩니다.','El peso por tipo de pérdida (kg) se convierte a cantidad para SAP (cable M · terminal/sello EA) con el peso unitario promedio. Los nombres SAP se definen en «Máquinas · Ratios»; los iguales se agrupan.'],tab_us:['자재사용량 (32040)','Consumo de material (32040)'],tab_mw:['단위중량 마스터','Peso unitario'],tab_cf:['호기 · 종류비율 설정','Máquinas · Ratios'],
+ tab_in:['부산물 측정 입력','Registro de pesaje'],tab_rs:['산출 현황','Resultados'],tab_lr:['로스율 현황','Tasa de pérdida'],tab_sp:['SAP 등록','Registro en SAP'],tab_tr:['발생추이 분석','Tendencia'],tr_title:['부산물 발생추이 분석 · 월별 / 연간','Tendencia de subproductos · mensual / anual'],tr_t1:['▶ 사용량 대비 월별 발생현황 · 로스율','▶ Mensual vs. uso · tasa de pérdida'],tr_t2:['▶ 절단본수 대비 월별 발생현황 (kg / 1,000본)','▶ Mensual por cortes (kg / 1,000 pz)'],tr_t3:['▶ 연도별 비교','▶ Comparación anual'],tr_c1:['월별 발생중량 (kg) · 로스율 (%)','Generado mensual (kg) · tasa (%)'],tr_c2:['월별 절단수량 · 1,000본당 발생 (kg)','Cortes mensuales · kg por 1,000'],tr_note:['▶ 월별 특이사항 · 로스율 연계','▶ Observaciones mensuales · vinculadas a la tasa'],save_notes:['특이사항 저장','Guardar observaciones'],tr_note_hint:['설비 고장·신차종 양산·샘플 생산·인원 교체 등 그 달 로스율에 영향을 준 사항을 적어 두면, 월별 로스율·kg/1,000본과 나란히 표시되고 그래프에 ✎ 표시가 붙습니다(✎에 마우스를 올리거나 클릭하면 내용 표시). 로스율 현황 보고서에도 당월 특이사항으로 나옵니다.','Anote lo que afectó la tasa del mes (fallas, arranque de modelo, muestras, cambio de personal…): se muestra junto a la tasa mensual, con ✎ en el gráfico (pase el cursor o haga clic para ver) y en el informe diario.'],year_sel:['연도','Año'],sp_title:['Registro en SAP · SAP 등록 내용정리','Registro en SAP · resumen para registrar'],sp_hint:['로스유형별 발생중량(kg)을 재질 평균 단위중량으로 나눠 SAP 등록 수량(전선 M · 단자/방수씰 EA)으로 환산합니다. SAP 등록명은 「호기 · 종류비율 설정」에서 지정하며, 같은 이름은 묶어서 표시됩니다.','El peso por tipo de pérdida (kg) se convierte a cantidad para SAP (cable M · terminal/sello EA) con el peso unitario promedio. Los nombres SAP se definen en «Máquinas · Ratios»; los iguales se agrupan.'],tab_us:['자재사용량 (32040)','Consumo de material (32040)'],tab_mw:['단위중량 마스터','Peso unitario'],tab_cf:['호기 · 종류비율 설정','Máquinas · Ratios'],
  in_title:['부산물 발생량 측정 입력','Registro de pesaje de subproductos'],cut_qty:['절단수량 (본)','Cortes (pzas)'],del_day:['당일 전체 삭제','Borrar todo el día'],today:['오늘','Hoy'],worker:['측정자','Medido por'],paste_tot:['총량 붙여넣기','Pegar totales'],save:['저장','Guardar'],
  in_mc:['호기별 측정 (kg)','Pesaje por máquina (kg)'],only_val:['입력된 호기만','Solo con datos'],
  in_hint:['전선(Wire)·단자(Terminal)·방수씰(Seal)·스크랩(Scrap)은 종류별로 따로 계량하여 kg으로 입력합니다. 사진은 호기별로 첨부(카메라 촬영 가능)되며, 입력 후 반드시 <b>저장</b>을 눌러 주세요. 전체를 한 번에 계량한 값은 맨 위 「일괄 측정」 행(또는 「총량 붙여넣기」)에 넣으면, 하단에 호기별 합계와의 차이가 표시됩니다.',
@@ -2111,10 +2115,11 @@ function trRender(){
   /* 차트 */
   const lab=MON.map(m=>m+L('월',''));
   const noteMarks=months.map((m,i)=>{const n=(TR.data.note||{})[C.y+'-'+String(i+1).padStart(2,'0')];return n&&n.note.trim()?n.note.trim():null});
+  noteMarks.ym=months.map((m,i)=>C.y+'-'+String(i+1).padStart(2,'0'));noteMarks.info=noteMarks.ym.map(ym=>(TR.data.note||{})[ym]||{});
   trChart($('tr-chart1'),lab,[{vals:months.map(m=>m.gen.w),col:'#8fcbe8',lab:'Wire'},{vals:months.map(m=>m.gen.t),col:'#eebb62',lab:'Terminal'},{vals:months.map(m=>m.gen.j),col:'#6fd19a',lab:'Seal'},{vals:months.map(m=>m.gen.s),col:'#a98af0',lab:'Scrap'}],
     {vals:months.map(m=>m.rate.all==null?null:m.rate.all*100),col:'#c9a84c',lab:L('로스율 %','Tasa %'),fmt:v=>v.toFixed(2)+'%'},v=>num(v,0)+'kg',noteMarks);
   trChart($('tr-chart2'),lab,[{vals:months.map(m=>m.cut/1000),col:'#3b4a63',lab:L('절단 천본','Cortes (mil)')}],
-    {vals:months.map(m=>m.kk.all),col:'#c9a84c',lab:L('kg/1,000본 합계','kg/1,000 total'),fmt:v=>num(v,3),line2:{vals:months.map(m=>m.kk.s),col:'#a98af0',lab:L('Scrap kg/1,000본','Scrap kg/1,000')}},v=>num(v,0));
+    {vals:months.map(m=>m.kk.all),col:'#c9a84c',lab:L('kg/1,000본 합계','kg/1,000 total'),fmt:v=>num(v,3),line2:{vals:months.map(m=>m.kk.s),col:'#a98af0',lab:L('Scrap kg/1,000본','Scrap kg/1,000')}},v=>num(v,0),noteMarks);
   /* 표① 사용량 대비 */
   const tdN=(v,d=1)=>`<td class="n">${v==null?'–':num(v,d)}</td>`;
   const row1=(m,name,cls)=>`<tr class="${cls||''}"><td class="b">${name}</td><td class="n">${m.days||'–'}</td>${tdN(m.u.uw)}${tdN(m.u.ut)}${tdN(m.u.uj)}${tdN(m.use)}${tdN(m.gen.w)}${tdN(m.gen.t)}${tdN(m.gen.j)}${tdN(m.gen.s)}${tdN(m.all)}<td class="n">${rF(m.rate.w)}</td><td class="n">${rF(m.rate.t)}</td><td class="n">${rF(m.rate.j)}</td><td class="n b">${rF(m.rate.all)}</td></tr>`;
@@ -2153,10 +2158,21 @@ function trChart(el,labels,bars,line,fmtL,marks){
   let b='';labels.forEach((l,i)=>{let y0=YB(0);bars.forEach(bd=>{const v=bd.vals[i]||0;if(v<=0)return;const h=ih*v/maxB;b+=`<rect x="${X(i)-bw*.32}" y="${y0-h}" width="${bw*.64}" height="${h}" fill="${bd.col}" rx="1.5"><title>${l} ${bd.lab} ${num(v,1)}</title></rect>`;y0-=h});
     if(tot[i]>0)b+=`<text x="${X(i)}" y="${y0-6}" text-anchor="middle" font-size="12" font-weight="700" fill="#fff" ${FT} ${halo}>${fmtL(tot[i])}</text>`;
     b+=`<text x="${X(i)}" y="${Hh-pb+20}" text-anchor="middle" font-size="12.5" fill="#cfcfcf" ${FT}>${l}</text>`;
-    if(marks&&marks[i])b+=`<g><rect x="${X(i)-11}" y="${pt-16}" width="22" height="16" rx="4" fill="#e4c76a"/><text x="${X(i)}" y="${pt-4}" text-anchor="middle" font-size="11" font-weight="700" fill="#111">✎</text><title>${esc(marks[i])}</title></g>`});
+    if(marks&&marks[i])b+=`<g class="nm" data-i="${i}"><rect x="${X(i)-bw*.5}" y="0" width="${bw}" height="${pt+2}" fill="transparent"/><rect x="${X(i)-13}" y="${pt-17}" width="26" height="17" rx="4" fill="#e4c76a"/><text x="${X(i)}" y="${pt-4}" text-anchor="middle" font-size="11.5" font-weight="700" fill="#111" pointer-events="none">✎</text></g>`});
   const ln=(ser,main)=>{const pts=ser.vals.map((v,i)=>v==null?null:[X(i),YL(v)]).filter(Boolean);if(!pts.length)return '';return `<path d="${pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ')}" fill="none" stroke="${ser.col}" stroke-width="${main?3:2.2}" stroke-linejoin="round"/>`+ser.vals.map((v,i)=>v==null?'':`<circle cx="${X(i)}" cy="${YL(v)}" r="${main?5.5:4}" fill="${ser.col}" stroke="#0d0d0d" stroke-width="2"><title>${labels[i]} ${ser.lab} ${line.fmt(v)}</title></circle><text x="${X(i)}" y="${YL(v)-12}" text-anchor="middle" font-size="12.5" font-weight="700" fill="${ser.col}" ${FT} ${halo}>${line.fmt(v)}</text>`).join('')};
-  el.innerHTML=`<svg viewBox="0 0 ${W} ${Hh}">${g}${b}${ln(line,true)}${line.line2?ln(line.line2,false):''}</svg><div class="leg">${bars.map(bd=>`<span><i style="background:${bd.col}"></i>${bd.lab}</span>`).join('')}<span><i style="background:${line.col}"></i>${line.lab} (${L('우축','eje der.')})</span>${line.line2?`<span><i style="background:${line.line2.col}"></i>${line.line2.lab}</span>`:''}</div>`;
+  el.innerHTML=`<svg viewBox="0 0 ${W} ${Hh}">${g}${b}${ln(line,true)}${line.line2?ln(line.line2,false):''}</svg><div class="leg">${bars.map(bd=>`<span><i style="background:${bd.col}"></i>${bd.lab}</span>`).join('')}<span><i style="background:${line.col}"></i>${line.lab} (${L('우축','eje der.')})</span>${line.line2?`<span><i style="background:${line.line2.col}"></i>${line.line2.lab}</span>`:''}</div>${marks&&marks.some(Boolean)?`<div class="mini" style="margin-top:4px">✎ ${L('= 특이사항 있는 달 · 마우스를 올리거나 클릭하면 내용이 보입니다','= mes con observaciones · pase el cursor o haga clic')}</div>`:''}`;
+  /* ✎ 특이사항 툴팁: hover 시 표시, 클릭 시 고정(다시 클릭·바깥 클릭·ESC로 닫기) */
+  if(marks){el.querySelectorAll('g.nm').forEach(g=>{const i=+g.dataset.i,txt=marks[i];if(!txt)return;
+    const info=marks.info&&marks.info[i]||{};
+    const show=(pin)=>{const t=$('ctip');t.innerHTML=`<b>✎ ${esc(marks.ym?marks.ym[i]:labels[i])} · ${L('특이사항','Observaciones')}</b>${esc(txt)}${info.writer||info.updated_at?`<small>${esc(info.writer||'')}${info.writer&&info.updated_at?' · ':''}${info.updated_at?esc(String(info.updated_at).slice(0,10)):''}</small>`:''}`;
+      t.className='ctip'+(pin?' pin':'');t.style.display='block';const r=g.getBoundingClientRect();
+      let x=r.left+r.width/2-t.offsetWidth/2,y=r.bottom+8;x=Math.max(8,Math.min(x,innerWidth-t.offsetWidth-8));if(y+t.offsetHeight>innerHeight-8)y=r.top-t.offsetHeight-8;t.style.left=x+'px';t.style.top=y+'px'};
+    g.onmouseenter=()=>{if(!ctipPin)show(false)};g.onmouseleave=()=>{if(!ctipPin)$('ctip').style.display='none'};
+    g.onclick=e=>{e.stopPropagation();if(ctipPin===g){ctipHide();return}ctipHide();ctipPin=g;g.classList.add('on');show(true)};
+  })}
 }
+let ctipPin=null;function ctipHide(){if(ctipPin)ctipPin.classList.remove('on');ctipPin=null;const t=$('ctip');if(t)t.style.display='none'}
+document.addEventListener('click',e=>{if(ctipPin&&!e.target.closest('#ctip'))ctipHide()});document.addEventListener('keydown',e=>{if(e.key==='Escape')ctipHide()});window.addEventListener('scroll',()=>{if(ctipPin)ctipHide()},true);
 async function trSaveNotes(){
   const tas=[...document.querySelectorAll('#tr-notes textarea.note')];const ups=[],dels=[];const nt=TR.data.note||{};
   tas.forEach(t=>{const ym=t.dataset.ym,v=t.value.trim(),old=(nt[ym]||{}).note||'';if(v===old.trim())return;if(v)ups.push({plant:PLANT,ym,note:v,writer:($('in-worker')?.value||'').trim()||null,updated_at:new Date().toISOString()});else if(nt[ym])dels.push(ym)});
