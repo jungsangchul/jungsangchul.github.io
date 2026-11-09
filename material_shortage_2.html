@@ -1135,7 +1135,7 @@ function renderSum(){
       if(k==='cur')return`<td class="n adjc ${v<0?'neg':''}" data-adj="${esc(r.code)}" title="${tr('눌러서 재고조정','Toque para ajustar')}">${fmt(v)}</td>`;
       if(k==='whroll')return`<td class="n">${v?fmt(v):'<span class="hint">0</span>'}</td>`;
       if(k==='roll')return`<td class="n" title="${tr('현장 보유 롤 수량합','Cant. en rollos')}: ${fmt(r.rollq)}${r.rollx?tr(` · 재고조정 0으로 ${r.rollx}롤 제외`,` · ${r.rollx} rollos excluidos por ajuste a 0`):''}">${v?fmt(v):'<span class="hint">0</span>'}${r.rollx?'<span class="tag az">0</span>':''}</td>`;
-      if(k==='code')return`<td class="codelink" title="${tr('눌러서 적용차종 조회','Toque para ver modelos')}">${esc(v)}${r.extra?`<span class="tag xt" title="${tr('17000 작업필요자재에 없음','No está en 17000')}">${tr('현장','Piso')}</span>`:''}</td>`;
+      if(k==='code')return`<td class="codelink" data-name="${esc(r.name||'')}" title="${tr('눌러서 품목명 복사','Toque para copiar nombre')}">${esc(v)}${r.extra?`<span class="tag xt" title="${tr('17000 작업필요자재에 없음','No está en 17000')}">${tr('현장','Piso')}</span>`:''}</td>`;
       return n?`<td class="n ${v<0?'neg':''}">${fmt(v)}</td>`:`<td title="${esc(v)}">${esc(v)}</td>`}).join('')+'</tr>'}).join('');
   $('sTbl').querySelectorAll('td[data-adj]').forEach(td=>td.onclick=e=>{e.stopPropagation();openAdj(td.dataset.adj)});
   $('sTbl').querySelectorAll('th').forEach(th=>th.onclick=()=>{const k=th.dataset.k==='chk'?'short':th.dataset.k;
@@ -1456,7 +1456,10 @@ $('cXlsx').onclick=()=>{
 document.querySelector('#nav button[data-tab="car"]').addEventListener('click',()=>{hFillList();setTimeout(()=>$('cQ').focus(),50)});
 document.getElementById('langBtn').addEventListener('click',()=>{if(CAR)cRender()});
 /* 부족예상 표 · 자재이력조회에서 바로 열기 */
-$('sTbl').addEventListener('click',e=>{const c=e.target.closest('td.codelink,td.carc');if(!c)return;const tr_=c.closest('tr');const code=tr_&&tr_.dataset.code;if(code)openCar(code)});
+$('sTbl').addEventListener('click',async e=>{const c=e.target.closest('td.codelink,td.carc');if(!c)return;const tr_=c.closest('tr');const code=tr_&&tr_.dataset.code;if(!code)return;
+  if(c.classList.contains('carc')){openCar(code);return}
+  const nm=c.dataset.name||'';if(!nm){toast(tr('품목명 없음','Sin nombre'));return}
+  try{await navigator.clipboard.writeText(nm);toast(tr('품목명 복사됨: ','Nombre copiado: ')+nm)}catch(err){alert(err.message)}});
 
 /* ---------- init ---------- */
 (async()=>{
