@@ -2487,6 +2487,8 @@ const SB_URL='https://lrjurjhavlalhlwaplxd.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxyanVyamhhdmxhbGhsd2FwbHhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNzUxNDAsImV4cCI6MjA5NTY1MTE0MH0.DVFmZaT37R9CXSMHdnLx4YAVNTnlBGijkOIaoUo7Qsk';
 const Q=new URLSearchParams(location.search);
 const PLANT=Q.get('p')==='2'?2:1, EMP=(Q.get('e')||'').trim();
+const ASSY=(Q.get('t')||'').toLowerCase()==='a';   // t=a → 조립생산 자격인증(qualification_1_a / _2_a) · 없으면 가공
+const INFO_FN=ASSY?'cert_info_a':'cert_info', DEF_DEPT=ASSY?'PRODUCCION ENSAMBLE':'ELABORACIÓN';
 let lang=(Q.get('lang')||'es');try{lang=localStorage.getItem('cert_lang')||lang;}catch(e){}
 let info=null, shot=null;
 const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -2499,7 +2501,7 @@ function qrSvg(t){const q=qrcode(0,'M');q.addData(t);q.make();return q.createSvg
 const addMonths=(d,m)=>{if(!d)return'';const x=new Date(String(d).slice(0,10)+'T00:00:00');if(isNaN(x))return'';x.setMonth(x.getMonth()+(parseInt(m)||0));return x.toISOString().slice(0,10);};
 function certData(){
   const c=info.cfg||{}, r=info.result||{};
-  return {name:info.name,empNo:info.emp_no,plant:PLANT,dept:info.dept||c.certDept||'ELABORACIÓN',process:info.process,processEs:info.process_es||info.process||'',score:r.total_score!=null?r.total_score:'',
+  return {name:info.name,empNo:info.emp_no,plant:PLANT,dept:info.dept||c.certDept||DEF_DEPT,process:info.process,processEs:info.process_es||info.process||'',score:r.total_score!=null?r.total_score:'',
     grade:r.grade||'-',hireDate:(info.hire_date||'').slice(0,10),validDate:addMonths(r.date,c.certValidMonths||6),issueDate:(r.date||'').slice(0,10),
     manager:c.certManager||'Park Jae Yoon',body:c.certBody||CERT_DOC.DEFAULT_BODY,photo:info.photo||null,qrSvg:qrSvg(location.href.split('#')[0]),url:location.href};
 }
@@ -2555,7 +2557,7 @@ async function save(){if(!shot)return;const b=document.getElementById('saveBtn')
 function printCert(){const d=certData();const old=document.getElementById('pf');if(old)old.remove();const f=document.createElement('iframe');f.id='pf';f.style.cssText='position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden';
   document.body.appendChild(f);f.onload=()=>{const w=f.contentWindow;const go=()=>{try{w.focus();w.print();}catch(e){}};const fs=w.document.fonts;if(fs&&fs.ready)fs.ready.then(()=>setTimeout(go,150));else setTimeout(go,400);};f.srcdoc=CERT_DOC.build(d);}
 async function load(){
-  try{info=await rpc('cert_info',{p_plant:PLANT,p_empno:EMP});}
+  try{info=await rpc(INFO_FN,{p_plant:PLANT,p_empno:EMP});}
   catch(e){info=null;document.getElementById('loading').innerHTML=`<div class="empty"><div class="ic">⚠️</div><div style="font-weight:700">${L('서버 연결 실패','Error de conexión')}</div><div class="note">${esc(e.message)}</div><div class="row"><button class="btn btn-sec" onclick="location.reload()">🔄 ${L('다시 시도','Reintentar')}</button></div></div>`;return;}
   render();
 }
