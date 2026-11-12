@@ -4006,7 +4006,7 @@ document.addEventListener('DOMContentLoaded', renderExamQr);
       <th><span data-kr="총점" data-es="Total">총점</span></th>
       <th><span data-kr="합격" data-es="Resultado">합격</span></th>
       <th><span data-kr="등급" data-es="Nivel">등급</span></th>
-      <th><span data-kr="상세" data-es="Detalle">상세</span></th>
+      <th><span data-kr="상세 · 인증서" data-es="Detalle · Certificado">상세 · 인증서</span></th>
     </tr></thead>
     <tbody><tr>
         <td><input type="checkbox" class="row-chk" data-idx="2" onchange="updateSelectedCount()" style="width:auto;cursor:pointer"></td>
@@ -4473,6 +4473,12 @@ document.addEventListener('DOMContentLoaded', renderExamQr);
 .cert-prev iframe{width:100%;border:0;background:#fff;display:block;border-radius:4px;box-shadow:0 4px 18px rgba(0,0,0,.5);}
 .btn-cert{padding:.2rem .45rem;margin-left:.25rem;border-color:rgba(201,168,76,.55);color:var(--gold);}
 .btn-cert:hover{background:rgba(201,168,76,.15);}
+/* ════ 상세·인증서 열 고정 (2026-11-12) — 표를 옆으로 넘기지 않아도 「보기」·「인증서」 버튼이 항상 보이게 ════ */
+#resultsContainer .results-table thead tr th:last-child{position:sticky;right:0;z-index:3;background:var(--surface2);box-shadow:-10px 0 10px -8px rgba(0,0,0,.75);}
+#resultsContainer .results-table tbody tr td:last-child{position:sticky;right:0;z-index:1;background:#171717;box-shadow:-10px 0 10px -8px rgba(0,0,0,.75);white-space:nowrap;}
+#resultsContainer .results-table tbody tr.row-rework td:last-child{background:#1c1712;}
+.btn-cert{font-weight:700;}
+
 @media(max-width:900px){.cert-wrap{grid-template-columns:1fr;}}
 </style>
 <div class="modal-bg" id="certModal">
@@ -5920,7 +5926,7 @@ function renderResults(){
       <th><span data-kr="최종등급" data-es="Nivel final">최종등급</span></th>
       <th><span data-kr="MSA(계량형)" data-es="MSA(Variable)">MSA(계량형)</span></th>
       <th><span data-kr="최종판정" data-es="Veredicto Final">최종판정</span></th>
-      <th><span data-kr="상세" data-es="Detalle">상세</span></th>
+      <th><span data-kr="상세 · 인증서" data-es="Detalle · Certificado">상세 · 인증서</span></th>
     </tr></thead>
     <tbody>${sorted.map((r,i)=>{
       if(r._pending){
@@ -5959,7 +5965,7 @@ function renderResults(){
         <td>${_stOf(r)==='판정대기'?'<span style="color:var(--text2)">-</span>':grade}</td>
         <td>${msaBadge(fs)}</td>
         <td>${fsBadge(fs)}</td>
-        <td style="white-space:nowrap"><button class="btn btn-outline btn-sm" style="padding:.2rem .45rem" onclick="showDetail(${oi})">보기</button><button class="btn btn-outline btn-sm btn-cert" title="인증서 출력 / Imprimir certificado" onclick="showCert(${oi})">🪪</button></td>
+        <td style="white-space:nowrap"><button class="btn btn-outline btn-sm" style="padding:.2rem .45rem" onclick="showDetail(${oi})">보기</button><button class="btn btn-outline btn-sm btn-cert" title="인증서 출력 / Imprimir certificado" onclick="showCert(${oi})">🪪 <span data-kr="인증서" data-es="Certificado">인증서</span></button></td>
       </tr>`;}).join('')}
     </tbody></table></div>`;
 }
