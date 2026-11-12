@@ -3988,6 +3988,7 @@ document.addEventListener('DOMContentLoaded', renderExamQr);
           <span id="selectedCount" style="font-size:0.76rem;color:var(--text2);display:none">선택: <strong id="selectedCountNum" style="color:var(--accent)">0</strong>건</span>
           <button class="btn btn-danger btn-sm" id="deleteSelectedBtn" style="display:none" onclick="deleteSelected()">🗑️ 선택 삭제</button>
           <button class="btn btn-secondary btn-sm" onclick="CERT.printLabels()" style="border-color:rgba(201,168,76,.55);color:var(--gold)" title="선택 인원(없으면 표시된 전체)의 개인 QR 라벨 인쇄 — 스캔하면 인증서 확인·사진 등록">🔳 <span data-kr="QR 라벨" data-es="Etiquetas QR">QR 라벨</span></button>
+          <button class="btn btn-secondary btn-sm" onclick="BADGE.open()" style="border-color:rgba(91,163,232,.55);color:#5ba3e8" title="관리자·반장·조장·리워크 관리자 명찰(직책 포함) 인쇄 — 선택 인원이 있으면 그 인원 기준"><span data-kr="🪪 명찰 인쇄 (관리자·반장·조장)" data-es="🪪 Gafetes (líderes)">🪪 명찰 인쇄 (관리자·반장·조장)</span></button>
           <button class="btn btn-secondary btn-sm" onclick="exportExcel()"><span data-kr="📊 엑셀 저장" data-es="📊 Exportar Excel">📊 엑셀 저장</span></button>
           <button class="btn btn-danger btn-sm" onclick="clearResults()">🗑️ 전체 초기화</button>
         </div>
@@ -4455,6 +4456,88 @@ document.addEventListener('DOMContentLoaded', renderExamQr);
 </div>
 
 <!-- DETAIL MODAL -->
+<!-- ════ 명찰(Gafete) 출력 모달 (조립, 2026-11-12) ════ -->
+<style>
+/* ════ 명찰(Gafete) 출력 모달 (2026-11-04) ════ */
+.badge-modal{max-width:1240px;width:97%;padding:1.2rem 1.4rem 1.4rem;}
+.badge-wrap{display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:1.1rem;align-items:start;}
+.badge-list{max-height:62vh;overflow:auto;border:1px solid var(--border);border-radius:10px;}
+.badge-list table{width:100%;border-collapse:collapse;font-size:.78rem;}
+.badge-list th{position:sticky;top:0;background:var(--surface2);z-index:1;font-size:.7rem;color:var(--text2);text-align:left;padding:.4rem .5rem;border-bottom:1px solid var(--border);white-space:nowrap;}
+.badge-list td{padding:.3rem .5rem;border-bottom:1px solid var(--border);vertical-align:middle;}
+.badge-list tr.off td{opacity:.42;}
+.badge-list tr.sel td{background:rgba(201,168,76,.08);}
+.badge-list input[type=text]{padding:.28rem .45rem;font-size:.76rem;width:100%;min-width:0;}
+.badge-list select{padding:.28rem .4rem;font-size:.74rem;}
+.badge-list .nm{font-weight:700;line-height:1.15;}
+.badge-list .sub{font-size:.66rem;color:var(--text2);line-height:1.2;}
+.badge-side{display:flex;flex-direction:column;gap:.7rem;}
+.badge-prev{background:#2a2a2a;border:1px solid var(--border);border-radius:10px;padding:12px;display:flex;justify-content:center;}
+.badge-prev iframe{border:0;background:transparent;display:block;}
+.badge-opts{display:grid;grid-template-columns:1fr 1fr;gap:.45rem .6rem;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:.7rem;}
+.badge-opts label{font-size:.7rem;margin-bottom:.15rem;}
+.badge-opts select,.badge-opts input{padding:.35rem .5rem;font-size:.8rem;}
+.badge-opts .span2{grid-column:1/-1;}
+.btn-badge{padding:.2rem .45rem;margin-left:.25rem;border-color:rgba(91,163,232,.55);color:var(--sky);}
+.btn-badge:hover{background:rgba(91,163,232,.15);}
+@media(max-width:980px){.badge-wrap{grid-template-columns:1fr;}}
+</style>
+<div class="modal-bg" id="badgeModal">
+  <div class="modal badge-modal">
+    <div class="modal-title">🪪 <span data-kr="명찰 출력 — 관리자 · 반장 · 조장" data-es="Gafetes — Supervisores · Líderes">명찰 출력 — 관리자 · 반장 · 조장</span>
+      <span id="badgeCount" style="color:var(--text2);font-weight:500;font-size:.78rem;margin-left:.5rem"></span>
+      <button class="modal-close" onclick="BADGE.close()">✕</button></div>
+    <div style="display:flex;gap:.45rem;flex-wrap:wrap;align-items:center;margin-bottom:.7rem">
+      <button class="btn btn-gold" onclick="BADGE.print()">🖨 <span data-kr="선택 명찰 인쇄" data-es="Imprimir gafetes">선택 명찰 인쇄</span></button>
+      <button class="btn btn-secondary btn-sm" onclick="BADGE.toggleAll(true)" data-kr="전체 선택" data-es="Todos">전체 선택</button>
+      <button class="btn btn-secondary btn-sm" onclick="BADGE.toggleAll(false)" data-kr="전체 해제" data-es="Ninguno">전체 해제</button>
+      <span style="flex:1"></span>
+      <input type="text" id="badgeAdd" list="badgeAddList" placeholder="다른 인원 추가 — 이름/사번 입력 후 Enter (관리자·조장 등)" style="width:300px;flex:none;font-size:.78rem;padding:.35rem .6rem" onkeydown="if(event.key==='Enter'){BADGE.addFromInput();event.preventDefault();}">
+      <datalist id="badgeAddList"></datalist>
+      <button class="btn btn-secondary btn-sm" onclick="BADGE.addFromInput()">➕ <span data-kr="추가" data-es="Agregar">추가</span></button>
+    </div>
+    <div class="badge-wrap">
+      <div class="badge-list"><table><thead><tr>
+        <th style="width:28px;text-align:center"><input type="checkbox" id="badgeChkAll" checked onchange="BADGE.toggleAll(this.checked)" style="width:auto;cursor:pointer"></th>
+        <th data-kr="이름 (ES) / 사번 / 공정" data-es="Nombre / N°Emp / Proceso">이름 (ES) / 사번 / 공정</th>
+        <th style="width:110px" data-kr="한글 이름" data-es="Nombre (KR)">한글 이름</th>
+        <th style="width:168px" data-kr="직책" data-es="Puesto">직책</th>
+        <th style="width:190px">Puesto (ES)</th>
+        <th style="width:120px" data-kr="직책 (한글)" data-es="Puesto (KR)">직책 (한글)</th>
+        <th style="width:150px" data-kr="부서 (명찰 하단)" data-es="Depto.">부서 (명찰 하단)</th>
+      </tr></thead><tbody id="badgeRows"></tbody></table></div>
+      <div class="badge-side">
+        <div class="badge-prev"><iframe id="badgeFrame" title="gafete"></iframe></div>
+        <div style="font-size:.7rem;color:var(--text2);text-align:center;margin-top:-.3rem" id="badgePrevWho"></div>
+        <div class="badge-opts">
+          <div><label data-kr="용지" data-es="Papel">용지</label>
+            <select id="bPaper" onchange="BADGE.render()">
+              <option value="letter" data-kr="Letter — 명찰 8매(2×4) 재단선" data-es="Letter — 8 gafetes (2×4)">Letter — 명찰 8매(2×4) 재단선</option>
+              <option value="card" data-kr="카드 1매씩 (85.6×54mm 카드 프린터)" data-es="1 gafete por página (85.6×54mm)">카드 1매씩 (85.6×54mm 카드 프린터)</option>
+            </select></div>
+          <div><label data-kr="매수 (인당)" data-es="Copias">매수 (인당)</label><input type="number" id="bCopies" min="1" max="10" value="1" onchange="BADGE.render()"></div>
+          <div class="span2" style="display:flex;gap:1rem;flex-wrap:wrap;font-size:.76rem">
+            <label style="display:flex;gap:.35rem;align-items:center;cursor:pointer;margin:0"><input type="checkbox" id="bShowProc" checked onchange="BADGE.render()" style="width:auto"> <span data-kr="직책 아래 담당공정(ES) 표시" data-es="Mostrar proceso bajo el puesto">직책 아래 담당공정(ES) 표시</span></label>
+          </div>
+          <div><label data-kr="색상" data-es="Color">색상</label>
+            <select id="bColor" onchange="BADGE.render()">
+              <option value="auto" data-kr="직책별 자동 (반장 골드 · 조장 블루 · 교육조장 그린 · 리워크 오렌지 · 관리자 퍼플)" data-es="Por puesto">직책별 자동 (반장 골드 · 조장 블루 · 교육조장 그린 · 리워크 오렌지 · 관리자 퍼플)</option>
+              <option value="gold">골드 / Dorado</option><option value="blue">블루 / Azul</option><option value="green">그린 / Verde</option><option value="orange">오렌지 / Naranja</option><option value="purple">퍼플 / Morado</option><option value="red">레드 / Rojo</option><option value="teal">틸 / Turquesa</option><option value="black">블랙 / Negro</option>
+            </select></div>
+          <div><label data-kr="스타일" data-es="Estilo">스타일</label>
+            <select id="bStyle" onchange="BADGE.render()">
+              <option value="modern" data-kr="모던 — 상단 라인 · 코너 아크 · 직책 블록 · 네이비 푸터" data-es="Moderno — línea superior · arco · pie azul marino">모던 — 상단 라인 · 코너 아크 · 직책 블록 · 네이비 푸터</option>
+              <option value="stripe" data-kr="스트라이프 — 좌측 세로 컬러 밴드(직책 한글) · 미니멀" data-es="Franja — banda vertical de color · minimalista">스트라이프 — 좌측 세로 컬러 밴드(직책 한글) · 미니멀</option>
+              <option value="legacy" data-kr="기존 — 색 모서리 + 직책 띠 (이전 디자인)" data-es="Anterior — esquinas de color">기존 — 색 모서리 + 직책 띠 (이전 디자인)</option>
+            </select></div>
+          <div class="span2" style="font-size:.68rem;color:var(--text2);line-height:1.45">
+            <span data-kr="명찰 구성: 로고 · 직책(ES + 한글) · 담당공정 · 이름(ES) · 한글 이름 · 하단 부서 · 사번 — 85.6×54mm. 직책별 색상 자동, 긴 직책명은 자동 축소. 한글 이름·부서는 출결근태(TRESS) 직원마스터에서 자동 연결, 비어 있으면 직접 입력. 직책은 공정명으로 자동 판정(반장·리워크) 후 수정 가능 — 관리자·조장은 「다른 인원 추가」로 넣고 직책을 고르면 됩니다(명단에 없으면 출결근태 직원마스터에서 검색)." data-es="Gafete: logo · puesto (ES + KR) · proceso · nombre · nombre KR · depto. · N° emp. (85.6×54mm). Color por puesto; nombre KR y depto. vienen del maestro de empleados (TRESS); el puesto se detecta por el proceso y se puede editar.">명찰 구성: 로고 · 직책(ES + 한글) · 담당공정 · 이름(ES) · 한글 이름 · 하단 부서 · 사번 — 85.6×54mm. 직책별 색상 자동, 긴 직책명은 자동 축소. 한글 이름·부서는 출결근태(TRESS) 직원마스터에서 자동 연결, 비어 있으면 직접 입력. 직책은 공정명으로 자동 판정(반장·리워크) 후 수정 가능 — 관리자·조장은 「다른 인원 추가」로 넣고 직책을 고르면 됩니다(명단에 없으면 출결근태 직원마스터에서 검색).</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 <!-- ════ 인증서 출력 모달 (조립, 2026-11-10) ════ -->
 <style>
 .cert-modal{max-width:1180px;width:96%;padding:1.2rem 1.4rem 1.4rem;}
@@ -4490,6 +4573,7 @@ document.addEventListener('DOMContentLoaded', renderExamQr);
         <div class="cert-actions">
           <button class="btn btn-gold" onclick="CERT.print()">🖨 <span data-kr="인증서 인쇄" data-es="Imprimir">인증서 인쇄</span></button>
           <button class="btn btn-secondary" onclick="CERT.printLabel()">🔳 <span data-kr="개인 QR 라벨" data-es="Etiqueta QR">개인 QR 라벨</span></button>
+          <button class="btn btn-secondary" onclick="BADGE.openOne()" style="border-color:rgba(91,163,232,.55);color:#5ba3e8">🪪 <span data-kr="명찰 (직책)" data-es="Gafete">명찰 (직책)</span></button>
           <span style="font-size:.7rem;color:var(--text2)" data-kr="Gerente·유효기간·본문·QR주소 = 공장 공통, 변경 시 자동 저장" data-es="Gerente·vigencia·texto·URL = común por planta, se guarda al cambiar">Gerente·유효기간·본문·QR주소 = 공장 공통, 변경 시 자동 저장</span>
         </div>
         <div class="cert-photo-row">
@@ -8195,5 +8279,286 @@ var CERT=(function(){
   return {open,close,render,onChange,print,printLabel,printLabels,saveCfg,pickPhoto,onPhotoFile,delPhoto,applyCfg,urlOf,_cur:()=>cur,_printDoc:printDoc,_cfg:cfg};
 })();
 function showCert(idx){CERT.open(idx);}
+</script>
+<script>
+// ════ 명찰(Gafete) 출력 — 조립생산팀: 관리자·반장·조장·교육조장·리워크 관리자 (2026-11-12, 가공 명찰과 같은 디자인) ════
+// · 결과 이력 헤더 「🪪 명찰 인쇄」 → 역할 인원 자동 추출(선택 인원이 있으면 그 인원) → 직책·한글이름·부서 확인 → 인쇄
+// · 인증서 모달 「🪪 명찰 (직책)」 → 해당 인원 1명
+// · 디자인 3종: modern(기본 — 상단 라인 · 코너 아크 · 직책 블록 · 네이비 푸터) / stripe(좌측 세로 컬러 밴드) / legacy(기존 코너 웨지)
+// · 한글 이름·부서: att_employees(TRESS 직원마스터) name_ko / team 자동 연결 — 85.6×54mm(CR80)
+window.BADGE_DOC=(function(){
+  const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const FONT='<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@500;700&family=Noto+Sans+KR:wght@400;500;700;900&family=Montserrat:wght@600;700;800&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet">';
+  const LOGO=()=>{try{const m=String(CERT_DOC&&CERT_DOC._logo||'');if(m)return m;}catch(e){}return '';};
+  const CSS=`
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact;font-family:'Montserrat','Noto Sans KR','IBM Plex Sans KR',Arial,Helvetica,sans-serif;color:#111;-webkit-font-smoothing:antialiased}
+  .card{position:relative;width:85.6mm;height:54mm;background:#fff;overflow:hidden;color:#111;break-inside:avoid;page-break-inside:avoid;--c:#c9a84c;--c2:#8a6d1f;--c3:#f3e6c2;--c4:#5c4812;--navy:#111c33;--ink:#15213a}
+  .card img.lg{display:block;height:7mm;width:auto;mix-blend-mode:multiply}
+  .card .lgtx{display:inline-block;font-weight:800;font-size:12pt;letter-spacing:1px;line-height:1;color:var(--ink)}
+  .mono{font-family:'JetBrains Mono','Courier New',Courier,monospace}
+  .ko-f{font-family:'Noto Sans KR','IBM Plex Sans KR',sans-serif}
+
+  /* ── modern (기본) ── */
+  .card.modern .top{position:absolute;left:0;right:0;top:0;height:1.7mm;background:linear-gradient(90deg,var(--c2) 0%,var(--c) 55%,var(--c3) 100%)}
+  .card.modern .arc{position:absolute;right:-12mm;top:-12mm;width:30mm;height:30mm;border-radius:50%;background:var(--c3);opacity:.85}
+  .card.modern .arc2{position:absolute;right:-8mm;top:-8mm;width:22mm;height:22mm;border-radius:50%;border:.55mm solid var(--c);opacity:.32}
+  .card.modern .arc3{position:absolute;right:2.8mm;top:2.8mm;width:2mm;height:2mm;border-radius:50%;background:linear-gradient(135deg,var(--c),var(--c2))}
+  .card.modern .logo{position:absolute;left:5mm;top:4.1mm}
+  .card.modern .tt{position:absolute;left:5mm;right:5mm;top:14.6mm}
+  .card.modern .tt .row{display:flex;align-items:center;gap:1.7mm;min-width:0}
+  .card.modern .tt .bar{flex:none;width:1.1mm;height:5.4mm;border-radius:.35mm;background:linear-gradient(180deg,var(--c),var(--c2))}
+  .card.modern .tt .es{font-weight:800;font-size:8.6pt;}
+  .card.modern .tt .es.t2{font-size:7.9pt;letter-spacing:.6px}.card.modern .tt .es.t3{font-size:7.1pt;letter-spacing:.4px}.card.modern .tt .es.t4{font-size:6.3pt;letter-spacing:.2px}
+  .card.modern .tt .es{letter-spacing:.9px;line-height:1;color:var(--c2);text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+  .card.modern .tt .kt{flex:none;font-weight:700;font-size:6.3pt;line-height:1;color:#fff;padding:.75mm 1.7mm .7mm;border-radius:.9mm;background:linear-gradient(135deg,var(--c) 0%,var(--c2) 100%);letter-spacing:.3px;white-space:nowrap}
+  .card.modern .tt .pr{margin:.9mm 0 0 2.8mm;font-weight:600;font-size:5.9pt;line-height:1.15;color:#6b7280;letter-spacing:.25px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .card.modern .tt.np .pr{display:none}
+  .card.modern .nb{position:absolute;left:5mm;right:5mm;top:23.6mm;bottom:9.4mm;display:flex;flex-direction:column;justify-content:center;gap:.9mm}
+  .card.modern .nb.np{top:21.8mm}
+  .card.modern .nm{font-weight:800;font-size:12.4pt;line-height:1.1;letter-spacing:.15px;text-transform:uppercase;color:var(--ink);word-break:break-word}
+  .card.modern .nm.s2{font-size:11pt}.card.modern .nm.s3{font-size:9.6pt}
+  .card.modern .ko{font-weight:700;font-size:9.4pt;letter-spacing:1.6px;line-height:1.1;color:var(--c2)}
+  .card.modern .ft{position:absolute;left:0;right:0;bottom:0;height:7.8mm;background:var(--navy);display:flex;align-items:center;justify-content:space-between;padding:0 5mm;color:#fff}
+  .card.modern .ft::before{content:"";position:absolute;left:0;right:0;top:-.7mm;height:.7mm;background:linear-gradient(90deg,var(--c3) 0%,var(--c) 45%,var(--c2) 100%)}
+  .card.modern .ft .dp{font-weight:700;font-size:6.3pt;letter-spacing:.9px;text-transform:uppercase;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:46mm;opacity:.95}
+  .card.modern .ft .en{font-weight:700;font-size:8pt;letter-spacing:1.2px;color:var(--c3)}
+
+  /* ── stripe (좌측 세로 밴드) ── */
+  .card.stripe .band{position:absolute;left:0;top:0;bottom:0;width:10.5mm;background:linear-gradient(180deg,var(--c2) 0%,var(--c) 100%);display:flex;align-items:center;justify-content:center}
+  .card.stripe .band .kt{writing-mode:vertical-rl;text-orientation:upright;color:#fff;font-weight:700;font-size:8.2pt;letter-spacing:1.4px;white-space:nowrap;line-height:1}
+  .card.stripe .band::after{content:"";position:absolute;left:3.4mm;right:3.4mm;bottom:4mm;height:.5mm;background:rgba(255,255,255,.55);border-radius:.3mm}
+  .card.stripe .band::before{content:"";position:absolute;left:3.4mm;right:3.4mm;top:4mm;height:.5mm;background:rgba(255,255,255,.55);border-radius:.3mm}
+  .card.stripe .edge{position:absolute;left:10.5mm;top:0;bottom:0;width:.45mm;background:var(--c3)}
+  .card.stripe .logo{position:absolute;left:14.2mm;top:4mm}
+  .card.stripe .tt{position:absolute;left:14.2mm;right:4.5mm;top:14.3mm}
+  .card.stripe .tt .es{font-weight:800;font-size:8.6pt;}
+  .card.stripe .tt .es.t2{font-size:7.9pt;letter-spacing:.6px}.card.stripe .tt .es.t3{font-size:7.3pt;letter-spacing:.4px}.card.stripe .tt .es.t4{font-size:6.6pt;letter-spacing:.2px}
+  .card.stripe .tt .es{letter-spacing:.9px;line-height:1;color:var(--c2);text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .card.stripe .tt .pr{margin-top:.9mm;font-weight:600;font-size:5.9pt;line-height:1.15;color:#6b7280;letter-spacing:.25px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .card.stripe .tt.np .pr{display:none}
+  .card.stripe .nb{position:absolute;left:14.2mm;right:4.5mm;top:22.6mm;bottom:9.6mm;display:flex;flex-direction:column;justify-content:center;gap:.9mm}
+  .card.stripe .nb.np{top:20.6mm}
+  .card.stripe .nm{font-weight:800;font-size:12pt;line-height:1.1;letter-spacing:.15px;text-transform:uppercase;color:var(--ink);word-break:break-word}
+  .card.stripe .nm.s2{font-size:10.6pt}.card.stripe .nm.s3{font-size:9.2pt}
+  .card.stripe .ko{font-weight:700;font-size:9.2pt;letter-spacing:1.6px;line-height:1.1;color:var(--c2)}
+  .card.stripe .ft{position:absolute;left:14.2mm;right:4.5mm;bottom:3.6mm;height:5.2mm;border-top:.35mm solid var(--c3);display:flex;align-items:flex-end;justify-content:space-between;padding-top:1.2mm}
+  .card.stripe .ft .dp{font-weight:700;font-size:6.2pt;letter-spacing:.8px;text-transform:uppercase;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:42mm}
+  .card.stripe .ft .en{font-weight:700;font-size:8pt;letter-spacing:1.2px;color:var(--c2)}
+
+  /* ── legacy (기존 코너 웨지) ── */
+  .card.legacy{font-family:'Noto Sans KR','IBM Plex Sans KR',Arial,sans-serif}
+  .card.legacy .w{position:absolute;background:linear-gradient(135deg,var(--c) 0%,var(--c2) 100%)}
+  .card.legacy .w.tl{left:0;top:0;width:34mm;height:9mm;clip-path:polygon(0 0,30mm 0,0 7mm)}
+  .card.legacy .w.tr{right:0;top:0;width:34mm;height:9mm;clip-path:polygon(100% 0,calc(100% - 30mm) 0,100% 7mm)}
+  .card.legacy .w.bl{left:0;bottom:0;width:28mm;height:7mm;clip-path:polygon(0 100%,24mm 100%,0 calc(100% - 5.2mm))}
+  .card.legacy .w.br{right:0;bottom:0;width:28mm;height:7mm;clip-path:polygon(100% 100%,calc(100% - 24mm) 100%,100% calc(100% - 5.2mm))}
+  .card.legacy .g{position:absolute;background:var(--c3);opacity:.95}
+  .card.legacy .g.tl{left:0;top:0;width:36mm;height:9.5mm;clip-path:polygon(31.3mm 0,33.8mm 0,0 7.9mm,0 7.3mm)}
+  .card.legacy .g.tr{right:0;top:0;width:36mm;height:9.5mm;clip-path:polygon(calc(100% - 31.3mm) 0,calc(100% - 33.8mm) 0,100% 7.9mm,100% 7.3mm)}
+  .card.legacy .g.bl{left:0;bottom:0;width:30mm;height:7.5mm;clip-path:polygon(25mm 100%,27.3mm 100%,0 calc(100% - 5.9mm),0 calc(100% - 5.4mm))}
+  .card.legacy .g.br{right:0;bottom:0;width:30mm;height:7.5mm;clip-path:polygon(calc(100% - 25mm) 100%,calc(100% - 27.3mm) 100%,100% calc(100% - 5.9mm),100% calc(100% - 5.4mm))}
+  .card.legacy .logo{position:absolute;left:0;right:0;top:2mm;text-align:center}
+  .card.legacy .logo img{height:8.6mm;display:inline-block}
+  .card.legacy .ttl{position:absolute;left:0;right:0;top:11.6mm;text-align:center}
+  .card.legacy .ttl .pill{display:inline-block;background:linear-gradient(135deg,var(--c) 0%,var(--c2) 100%);color:#fff;font-weight:700;font-size:7.6pt;letter-spacing:.6px;line-height:1;padding:1.25mm 3.4mm;border-radius:1.2mm;white-space:nowrap;max-width:70mm;overflow:hidden;text-overflow:ellipsis;box-shadow:0 .5mm 1.2mm rgba(0,0,0,.18)}
+  .card.legacy .ttl .pill .kt{font-weight:700;margin-left:1.6mm;padding-left:1.6mm;border-left:.25mm solid rgba(255,255,255,.55)}
+  .card.legacy .ttl .pr{font-size:5.9pt;color:var(--c4);font-weight:500;margin-top:.6mm;line-height:1.15;letter-spacing:.2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 12mm}
+  .card.legacy .ttl.np .pr{display:none}
+  .card.legacy .nb{position:absolute;left:4mm;right:4mm;top:19.2mm;bottom:11.5mm;padding:0 2mm;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.1mm}
+  .card.legacy .nb.np{top:17.4mm}
+  .card.legacy .nb::after{content:"";position:absolute;left:22mm;right:22mm;bottom:1.2mm;height:.5mm;border-radius:.3mm;background:linear-gradient(90deg,rgba(255,255,255,0),var(--c) 25%,var(--c) 75%,rgba(255,255,255,0))}
+  .card.legacy .nm{text-align:center;font-weight:700;font-size:11.2pt;line-height:1.12;letter-spacing:.1px;text-transform:uppercase;color:#14213d;word-break:break-word}
+  .card.legacy .nm.s2{font-size:9.6pt}.card.legacy .nm.s3{font-size:8.4pt}
+  .card.legacy .ko{text-align:center;font-weight:700;font-size:10.5pt;letter-spacing:.6px;line-height:1.1;color:var(--c4)}
+  .card.legacy .dp{position:absolute;left:3mm;bottom:6.4mm;max-width:36mm;font-weight:700;font-size:6.4pt;line-height:1.18;letter-spacing:.2px;text-transform:uppercase;color:var(--c4)}
+  .card.legacy .en{position:absolute;right:3.2mm;bottom:6.6mm;font-family:'Courier New',Courier,monospace;font-weight:700;font-size:8.2pt;letter-spacing:.3px;color:#14213d}
+
+  /* 용지 */
+  body.p-card .card{page-break-after:always}
+  body.p-card .card:last-child{page-break-after:auto}
+  body.p-letter .sheet{width:215.9mm;min-height:279.4mm;padding:14mm 0 0;display:grid;grid-template-columns:repeat(2,85.6mm);grid-auto-rows:54mm;column-gap:12mm;row-gap:7mm;justify-content:center;align-content:start;page-break-after:always;margin:0 auto}
+  body.p-letter .sheet:last-child{page-break-after:auto}
+  body.p-letter .card{outline:.2mm dashed #9a9a9a;outline-offset:0}
+  @media screen{body.p-letter .sheet{box-shadow:0 2px 12px rgba(0,0,0,.25);margin-bottom:6mm}}
+  `;
+  function esClass(t){const L=String(t||'').length;return L>24?'t4':(L>18?'t3':(L>12?'t2':''));}
+  function nameClass(n){const L=String(n||'').length;return L>40?'s3':(L>30?'s2':'');}
+  const PAL={gold:['#c9a84c','#8a6d1f','#f6ecd0','#5c4812'],blue:['#2f6fde','#1b3f8f','#dde8fb','#15336f'],green:['#1aa37a','#0e6b4f','#d7f2e8','#0b5340'],orange:['#ff7a1a','#c24f00','#ffe3cc','#8f3a00'],purple:['#7b3fe4','#4d1fa3','#e9dcfb','#3c177f'],red:['#d62828','#8f1313','#f9d9d9','#6e0f0f'],teal:['#0ea5b5','#0b6f7a','#d6f3f6','#08525a'],black:['#3a3a3a','#141414','#d9d9d9','#111']};
+  const ROLE_COLOR={banjang:'gold',jojang:'blue',leader:'blue',train:'green',rework:'orange',admin:'purple',custom:'red'};
+  function palOf(d,opts){const k=(opts&&opts.color&&opts.color!=='auto')?opts.color:(ROLE_COLOR[d.title]||'gold');return PAL[k]||PAL.gold;}
+  function card(d,opts){
+    opts=opts||{};
+    const logo=LOGO();
+    const P=palOf(d,opts);const style=['modern','stripe','legacy'].includes(opts.style)?opts.style:'modern';
+    const nm=String(d.name||'');const np=opts.showProc===false||!d.proc;
+    const vars=`--c:${P[0]};--c2:${P[1]};--c3:${P[2]};--c4:${P[3]}`;
+    const logoEl=logo?`<img class="lg" src="${logo}" alt="YURA HARNESS">`:'<span class="lgtx">YURA HARNESS</span>';
+    if(style==='legacy'){
+      const title=[d.es?`<span class="es">${esc(d.es)}</span>`:'',d.ko?`<span class="kt ko-f">${esc(d.ko)}</span>`:''].filter(Boolean).join('');
+      return `<div class="card legacy" style="${vars}">
+  <div class="w tl"></div><div class="w tr"></div><div class="w bl"></div><div class="w br"></div>
+  <div class="g tl"></div><div class="g tr"></div><div class="g bl"></div><div class="g br"></div>
+  <div class="logo">${logoEl}</div>
+  <div class="ttl${opts.showProc===false?' np':''}">${title?`<div class="pill">${title}</div>`:''}<div class="pr">${esc(d.proc||'')}</div></div>
+  <div class="nb${np?' np':''}"><div class="nm ${nameClass(nm)}">${esc(nm)}</div><div class="ko ko-f">${esc(d.nameKo||'')}</div></div>
+  <div class="dp">${esc(d.dept||'')}</div>
+  <div class="en">${esc(d.empNo||'')}</div>
+</div>`;
+    }
+    if(style==='stripe'){
+      return `<div class="card stripe" style="${vars}">
+  <div class="band"><span class="kt ko-f">${esc(d.ko||d.es||'')}</span></div><div class="edge"></div>
+  <div class="logo">${logoEl}</div>
+  <div class="tt${opts.showProc===false?' np':''}"><div class="es ${esClass(d.es)}">${esc(d.es||'')}</div><div class="pr">${esc(d.proc||'')}</div></div>
+  <div class="nb${np?' np':''}"><div class="nm ${nameClass(nm)}">${esc(nm)}</div><div class="ko ko-f">${esc(d.nameKo||'')}</div></div>
+  <div class="ft"><span class="dp">${esc(d.dept||'')}</span><span class="en mono">${esc(d.empNo||'')}</span></div>
+</div>`;
+    }
+    return `<div class="card modern" style="${vars}">
+  <div class="top"></div><div class="arc"></div><div class="arc2"></div><div class="arc3"></div>
+  <div class="logo">${logoEl}</div>
+  <div class="tt${opts.showProc===false?' np':''}"><div class="row"><span class="bar"></span><span class="es ${esClass(d.es)}">${esc(d.es||'')}</span>${d.ko?`<span class="kt ko-f">${esc(d.ko)}</span>`:''}</div><div class="pr">${esc(d.proc||'')}</div></div>
+  <div class="nb${np?' np':''}"><div class="nm ${nameClass(nm)}">${esc(nm)}</div><div class="ko ko-f">${esc(d.nameKo||'')}</div></div>
+  <div class="ft"><span class="dp">${esc(d.dept||'')}</span><span class="en mono">${esc(d.empNo||'')}</span></div>
+</div>`;
+  }
+  // list=[{name,nameKo,empNo,es,ko,proc,dept}] · opts={paper:'letter'|'card',copies,showProc,color,style,zoom}
+  function build(list,opts){
+    opts=opts||{};const paper=opts.paper==='card'?'card':'letter';const copies=Math.max(1,parseInt(opts.copies)||1);
+    const cards=[];list.forEach(d=>{for(let i=0;i<copies;i++)cards.push(card(d,opts));});
+    let body='';
+    if(paper==='card'){body=cards.join('\n');}
+    else{for(let i=0;i<cards.length;i+=8)body+=`<div class="sheet">${cards.slice(i,i+8).join('\n')}</div>`;}
+    const page=paper==='card'?'@page{size:85.6mm 54mm;margin:0}':'@page{size:letter;margin:0}';
+    return `<!doctype html><html><head><meta charset="utf-8"><title>Gafetes (${list.length})</title>${FONT}<style>${page}${CSS}${opts.zoom?`html{zoom:${opts.zoom}}`:''}${opts.preview?'html,body{background:transparent}':''}</style></head><body class="p-${paper}">${body}</body></html>`;
+  }
+  function preview(d,opts){
+    return `<!doctype html><html><head><meta charset="utf-8">${FONT}<style>${CSS}html,body{background:transparent}body{display:flex;justify-content:center;padding:0}.card{box-shadow:0 3px 14px rgba(0,0,0,.45);border-radius:2.6mm}${opts&&opts.zoom?`html{zoom:${opts.zoom}}`:''}</style></head><body>${card(d,opts)}</body></html>`;
+  }
+  return {build,preview,card};
+})();
+var BADGE=(function(){
+  const PLANT=1;const SFX='';
+  const $=id=>document.getElementById(id);
+  const TITLES=[
+    {id:'admin',es:'SUPERVISOR',ko:'관리자'},
+    {id:'banjang',es:'LÍDER DE LÍNEA',ko:'반장'},
+    {id:'jojang',es:'LÍDER DE GRUPO',ko:'조장'},
+    {id:'train',es:'LÍDER DE CAPACITACIÓN',ko:'교육조장'},
+    {id:'rework',es:'SUPERVISOR DE RE-WORK',ko:'리워크 관리자'},
+    {id:'custom',es:'',ko:''}
+  ];
+  const ROLE_RE=/조장|반장|lider|líder|re-?work|수정|교육|관리|리더|supervisor|jefe/i;
+  let rows=[],sel=0,_t=null,_dirty={};
+  const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  function titleOf(proc){const s=String(proc||'');
+    if(/re-?work|수정/i.test(s))return'rework';
+    if(/교육\s*조장|capacita/i.test(s))return'train';
+    if(/관리|supervisor|jefe|gerente/i.test(s))return'admin';
+    if(/조장|l[ií]der\s+de\s+grupo/i.test(s))return'jojang';
+    if(/반장|리더|lider|líder/i.test(s))return'banjang';   // 조립 명단의 「Lider」 = 반장
+    return'custom';}
+  function deptOf(team){if(!team)return'';const m=String(team).match(/\(([^)]+)\)/);const d=(m?m[1]:String(team)).trim().toUpperCase();return d.normalize('NFD').replace(/[̀-ͯ]/g,'');}   // 「가공생산팀(Produccion maquinado)」 → PRODUCCION MAQUINADO
+  function certDept(){return 'PRODUCCION ENSAMBLE';}   // TRESS 직원마스터에 없을 때 기본 부서
+  function procEs(s,r){return (s&&s.processEs)||(r&&r.processEs)||'';}
+  function mkRow(st,r){const empNo=String((st&&st.empId)||(r&&r.empId)||'').trim();const proc=(st&&st.process)||(r&&r.process)||'';const t=titleOf(proc);const T=TITLES.find(x=>x.id===t);
+    return {empNo,name:(st&&st.name)||(r&&r.name)||'',nameKo:'',process:proc,proc:procEs(st,r)||proc,title:t,es:T.es,ko:T.ko,dept:'',on:true,_ko:false};}
+  function stuOf(e){return (students||[]).find(s=>String(s.empId||'').trim()===e)||null;}
+  function resOf(e){return (results||[]).find(r=>String(r.empId||'').trim()===e)||null;}
+  // ── 열기: 선택 인원 → 없으면 역할(조장·리더·교육조장·리워크·관리) 인원 전체 ──
+  async function open(list){
+    let base=[];
+    if(Array.isArray(list)&&list.length){base=list;}
+    else{
+      const chk=[...document.querySelectorAll('.row-chk:checked')];
+      if(chk.length){const seen=new Set();chk.forEach(c=>{const r=results[parseInt(c.dataset.idx)];if(!r||!r.empId)return;const e=String(r.empId).trim();if(seen.has(e))return;seen.add(e);base.push(mkRow(stuOf(e),r));});}
+      else{const seen=new Set();(students||[]).forEach(s=>{const e=String(s.empId||'').trim();if(!e||seen.has(e)||!ROLE_RE.test(String(s.process||'')+' '+String(s.processEs||'')))return;seen.add(e);base.push(mkRow(s,resOf(e)));});
+        (results||[]).forEach(r=>{const e=String(r.empId||'').trim();if(!e||seen.has(e)||!ROLE_RE.test(String(r.process||'')))return;seen.add(e);base.push(mkRow(null,r));});}
+    }
+    base.sort((a,b)=>(TITLES.findIndex(t=>t.id===a.title)-TITLES.findIndex(t=>t.id===b.title))||a.empNo.localeCompare(b.empNo,undefined,{numeric:true}));
+    rows=base;sel=0;_dirty={};
+    $('badgeModal').classList.add('open');$('badgeChkAll').checked=true;
+    fillDatalist();renderRows();render();
+    if(rows.length)await fetchMaster(rows.map(r=>r.empNo));
+    if(!rows.length)_showSaveToast('명찰 대상(관리자·반장·조장·리워크) 인원이 없습니다 — 「다른 인원 추가」로 넣을 수 있습니다');
+  }
+  // 인증서 모달에서 1명
+  function openOne(){try{const c=CERT._cur&&CERT._cur();if(!c)return;open([mkRow(stuOf(c.empNo),c.r)]);}catch(e){alert('인증서 모달에서 인원을 먼저 선택하세요');}}
+  function close(){$('badgeModal').classList.remove('open');}
+  // ── TRESS 직원마스터: 한글 이름 · 부서 ──
+  async function fetchMaster(ids){
+    const want=[...new Set(ids.filter(Boolean))];if(!want.length)return;
+    const map={};
+    try{for(let i=0;i<want.length;i+=80){const part=want.slice(i,i+80);
+        const q=part.map(e=>'"'+e.replace(/"/g,'')+'"').join(',');
+        const arr=await sbFetch(`att_employees${SFX}?select=employee_id,name_ko,team,active&employee_id=in.(${q})&order=active.desc.nullslast`);
+        (arr||[]).forEach(a=>{if(!map[a.employee_id])map[a.employee_id]=a;});}
+    }catch(e){console.warn('직원마스터 조회 실패',e);_showSaveToast('⚠️ 직원마스터(한글이름·부서) 조회 실패: '+e.message);}
+    rows.forEach(r=>{if(_dirty[r.empNo])return;const a=map[r.empNo];if(!a)return;
+      if(a.name_ko&&!r._koEdited){r.nameKo=String(a.name_ko).trim();r._ko=true;}
+      if(!r._deptEdited){r.dept=deptOf(a.team)||r.dept;}});
+    rows.forEach(r=>{if(!r.dept)r.dept=certDept();});
+    renderRows();render();
+  }
+  // ── 목록 ──
+  function renderRows(){
+    const tb=$('badgeRows');
+    tb.innerHTML=rows.map((r,i)=>`<tr class="${r.on?'':'off'}${i===sel?' sel':''}" onclick="BADGE.pick(${i},event)">
+      <td style="text-align:center"><input type="checkbox" ${r.on?'checked':''} onchange="BADGE.setOn(${i},this.checked)" style="width:auto;cursor:pointer"></td>
+      <td><div class="nm">${esc(r.name)}</div><div class="sub rt-mono">${esc(r.empNo)} · ${esc(r.process||'')}${r.proc&&r.proc!==r.process?' / '+esc(r.proc):''}</div></td>
+      <td><input type="text" value="${esc(r.nameKo)}" placeholder="${r._ko?'':'한글 이름'}" oninput="BADGE.set(${i},'nameKo',this.value,true)" style="${r._ko?'':'border-color:rgba(230,162,60,.6)'}"></td>
+      <td><select onchange="BADGE.setTitle(${i},this.value)">${TITLES.map(t=>`<option value="${t.id}" ${t.id===r.title?'selected':''}>${t.id==='custom'?'직접 입력':t.ko+' · '+t.es}</option>`).join('')}</select></td>
+      <td><input type="text" value="${esc(r.es)}" oninput="BADGE.set(${i},'es',this.value)" placeholder="Puesto (ES)"></td>
+      <td><input type="text" value="${esc(r.ko)}" oninput="BADGE.set(${i},'ko',this.value)" placeholder="직책 (한글)"></td>
+      <td><input type="text" value="${esc(r.dept)}" oninput="BADGE.set(${i},'dept',this.value,true)" placeholder="PRODUCCION ENSAMBLE"></td>
+    </tr>`).join('')||`<tr><td colspan="7" style="text-align:center;color:var(--text2);padding:1.2rem">대상 인원이 없습니다 — 위 「다른 인원 추가」로 등록하세요</td></tr>`;
+    const n=rows.filter(r=>r.on).length;$('badgeCount').textContent=rows.length?`${n} / ${rows.length}명 선택`:'';
+  }
+  function pick(i,ev){if(ev&&/^(INPUT|SELECT|OPTION)$/.test(ev.target.tagName))return;sel=i;[...$('badgeRows').children].forEach((tr,k)=>tr.classList.toggle('sel',k===i));render();}
+  function setOn(i,v){rows[i].on=v;const tr=$('badgeRows').children[i];if(tr)tr.classList.toggle('off',!v);$('badgeCount').textContent=`${rows.filter(r=>r.on).length} / ${rows.length}명 선택`;}
+  function set(i,k,v,edited){rows[i][k]=v;if(edited){rows[i][k==='nameKo'?'_koEdited':'_deptEdited']=true;if(k==='nameKo')rows[i]._ko=!!v;}sel=i;[...$('badgeRows').children].forEach((tr,n)=>tr.classList.toggle('sel',n===i));clearTimeout(_t);_t=setTimeout(render,200);}
+  function setTitle(i,id){const T=TITLES.find(t=>t.id===id)||TITLES[TITLES.length-1];rows[i].title=id;if(id!=='custom'){rows[i].es=T.es;rows[i].ko=T.ko;}
+    const tr=$('badgeRows').children[i];if(tr){const ins=tr.querySelectorAll('input[type=text]');ins[1].value=rows[i].es;ins[2].value=rows[i].ko;}sel=i;[...$('badgeRows').children].forEach((tr,n)=>tr.classList.toggle('sel',n===i));render();}
+  function toggleAll(v){rows.forEach(r=>r.on=v);$('badgeChkAll').checked=v;renderRows();}
+  // ── 다른 인원 추가 ──
+  function fillDatalist(){const dl=$('badgeAddList');if(!dl)return;const seen=new Set();
+    dl.innerHTML=(students||[]).filter(s=>s.empId&&!seen.has(s.empId)&&seen.add(s.empId)).map(s=>`<option value="${esc(s.empId)}">${esc(s.name)} · ${esc(s.process||'')}</option>`).join('');}
+  async function addFromInput(){
+    const inp=$('badgeAdd');const q=inp.value.trim();if(!q)return;const ql=q.toLowerCase();
+    let s=(students||[]).find(x=>String(x.empId||'').trim().toLowerCase()===ql)||(students||[]).find(x=>String(x.name||'').toLowerCase().includes(ql));
+    let r=null;if(!s){r=(results||[]).find(x=>String(x.empId||'').trim().toLowerCase()===ql||String(x.name||'').toLowerCase().includes(ql));}
+    let row=null;
+    if(!s&&!r){   // 자격인증 명단에 없는 인원(관리자 등) → 출결근태(TRESS) 직원마스터에서 검색
+      try{const k=q.replace(/[*(),"\\]/g,' ').trim();
+        const arr=await sbFetch(`att_employees${SFX}?select=employee_id,name,name_ko,team,active&or=(employee_id.ilike.${encodeURIComponent(k)},name.ilike.*${encodeURIComponent(k)}*,name_ko.ilike.*${encodeURIComponent(k)}*)&order=active.desc.nullslast&limit=1`);
+        const a=arr&&arr[0];
+        if(a){const T=TITLES.find(t=>t.id==='admin');
+          row={empNo:String(a.employee_id).trim(),name:a.name||'',nameKo:'',process:'',proc:'',title:'admin',es:T.es,ko:T.ko,dept:'',on:true,_ko:false};}
+      }catch(e){console.warn('직원마스터 검색 실패',e);}
+      if(!row){alert('자격인증 명단·출결근태 직원마스터에서 찾을 수 없습니다: '+q);return;}
+    }
+    if(!row)row=mkRow(s,r);if(!row.empNo){alert('사번이 없는 인원은 명찰을 만들 수 없습니다');return;}
+    if(rows.some(x=>x.empNo===row.empNo)){_showSaveToast('이미 목록에 있는 인원입니다');inp.value='';return;}
+    rows.push(row);sel=rows.length-1;inp.value='';renderRows();render();await fetchMaster([row.empNo]);
+  }
+  // ── 미리보기 · 인쇄 ──
+  function opts(){return {paper:$('bPaper').value,copies:$('bCopies').value,showProc:$('bShowProc').checked,color:$('bColor').value,style:$('bStyle').value};}
+  function render(){
+    const fr=$('badgeFrame');const d=rows[sel]||rows.find(r=>r.on)||null;
+    const zoom=1.12;fr.style.width=Math.round(85.6*3.7795*zoom+28)+'px';fr.style.height=Math.round(54*3.7795*zoom+30)+'px';
+    $('badgePrevWho').textContent=d?`미리보기: ${d.name} · ${d.empNo}  (목록에서 행을 클릭하면 바뀜)`:'';
+    fr.srcdoc=d?BADGE_DOC.preview(d,Object.assign({zoom},opts())):'<html><body style="background:transparent"></body></html>';
+  }
+  function print(){
+    const list=rows.filter(r=>r.on);if(!list.length){alert('선택된 인원이 없습니다');return;}
+    const miss=list.filter(r=>!r.nameKo);
+    if(miss.length&&!confirm(`한글 이름이 비어 있는 인원 ${miss.length}명이 있습니다:\n${miss.slice(0,8).map(r=>r.name+' ('+r.empNo+')').join('\n')}${miss.length>8?'\n…':''}\n\n그대로 인쇄할까요?`))return;
+    const html=BADGE_DOC.build(list,opts());
+    try{CERT._printDoc(html);}catch(e){const w=window.open('','_blank');w.document.write(html);w.document.close();setTimeout(()=>{try{w.print();}catch(x){}},600);}
+    _showSaveToast(`🪪 명찰 ${list.length}명 × ${opts().copies}매 인쇄`);
+  }
+  return {open,openOne,close,pick,setOn,set,setTitle,toggleAll,addFromInput,render,print,titleOf,TITLES};
+})();
 </script>
 </body></html>
