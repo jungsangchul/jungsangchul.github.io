@@ -2114,7 +2114,7 @@ function updateSaveStatus(s){
   else if(s==='saved'){ic.textContent='✅';tx.textContent='저장됨';tx.style.color='#4caf7d';}
   else if(s==='error'){ic.textContent='⚠️';tx.textContent='저장 실패';tx.style.color='#e05c5c';}
 }
-var APP_BUILD=20261023;  // [자동업데이트] 배포할 때마다 숫자를 올리면 구버전 기기가 스스로 새로고침
+var APP_BUILD=20261112;  // [자동업데이트] 배포할 때마다 숫자를 올리면 구버전 기기가 스스로 새로고침
 // ════ [서버 전용 v3] 서버 연결 잠금 오버레이 (가공공정과 동일한 Supabase 전용 운영) ════
 function showServerLock(attempt){
   var el=document.getElementById('server-lock');
@@ -2794,8 +2794,9 @@ async function init(){
   }
   // [TRESS 연동] 서버 로드 후 입사·퇴사 자동 반영 + 10분마다 재확인
   try{ await autoImportResigned(); }catch(_e){}
+  try{ await autoReinstateFromTress(); }catch(_e){}
   try{ await autoImportNewHires(); }catch(_e){}
-  try{ setInterval(function(){ autoImportResigned().then(function(){ autoImportNewHires(); }); }, 10*60*1000); }catch(_e){}
+  try{ setInterval(function(){ autoImportResigned().then(function(){ return autoReinstateFromTress(); }).then(function(){ autoImportNewHires(); }); }, 10*60*1000); }catch(_e){}
   // 페이지 닫힐 때 저장 보장
   window.addEventListener('beforeunload', function(){
     if(_sst){
@@ -2811,6 +2812,7 @@ async function init(){
 //  ② 조립생산팀(team LIKE '조립생산팀%') 재직자 중 직원목록에 없는 인원 → 기본값으로 자동 입사 등록
 //     (입사일: hire_date, 없으면 마스터 등록일 / 공정·반·성별·교통은 직원수정에서 보완, _autoImported 표식)
 //  ③ 자동등록 후 다른 팀으로 바뀐 인원(14일 이내·결근기록 없음)은 목록에서 제외
+//  ④ 근태관리에 퇴사로 남아 있지만 TRESS에서 재직인 사번 → 재직 복구 (2026-11-12)
 // 매칭: 사번(empno ↔ employee_id), 사번 없는 직원만 이름(악센트/공백 무시) 완전일치 보조
 var TRESS_ROSTER_TABLE='att_employees', TRESS_APP_EMP_TABLE='att2_1a_employees';
 var RESIGN_SYNC_DEFAULT_CODE = 3;
@@ -2878,6 +2880,40 @@ async function autoImportResigned(){
     console.log('[TRESS 퇴사연동] '+changed.length+'명:',changed);
   }catch(e){ console.warn('[TRESS 퇴사연동] 실패:',e); }
   finally{ _resignSyncBusy=false; }
+}
+// ④ [2026-11-12] TRESS 기준 재직 복구: 근태관리에는 퇴사로 되어 있지만 직원 마스터(TRESS)에서는
+//    조립생산팀 재직(active=true)인 사번 → 재직으로 되돌림 (입사일·공정·반·교대 이력은 그대로 유지)
+var _reinstateSyncBusy=false;
+async function autoReinstateFromTress(){
+  if(_reinstateSyncBusy) return;
+  _reinstateSyncBusy=true;
+  try{
+    var sb=getSB(); if(!sb) return;
+    if(typeof _serverSynced!=='undefined' && !_serverSynced) return;
+    var r=await sb.from(TRESS_ROSTER_TABLE).select('employee_id,active,team')
+      .eq('active',true).like('team','조립생산팀%').range(0,9999);
+    if(r.error||!Array.isArray(r.data)||!r.data.length) return;
+    var act={};
+    r.data.forEach(function(a){ var no=String((a&&a.employee_id)||'').trim().toUpperCase(); if(no) act[no]=true; });
+    // 같은 사번의 재직 행이 이미 있으면(재입사로 따로 등록된 경우) 복구하지 않음
+    var live={};
+    (DB.employees||[]).forEach(function(e){ if(!e||e.resigned) return; var no=String(e.empno||'').trim().toUpperCase(); if(no) live[no]=true; });
+    var changed=[], now=new Date().toISOString();
+    (DB.employees||[]).forEach(function(e){
+      if(!e||!e.resigned) return;
+      var no=String(e.empno||'').trim().toUpperCase();
+      if(!no||!act[no]||live[no]) return;
+      e.resigned=false; e.resignDate=null; e.resignCode=null; e._mt=now;
+      live[no]=true;
+      changed.push(e.name);
+    });
+    if(!changed.length) return;
+    _tressAfterChange(now);
+    await _tressRefreshUI();
+    toast((currentLang==='es'?'♻️ Reactivados según TRESS: ':'♻️ TRESS 재직 기준 복구: ')+_tressNames(changed),'#1f7a4a');
+    console.log('[TRESS 재직복구] '+changed.length+'명:',changed);
+  }catch(e){ console.warn('[TRESS 재직복구] 실패:',e); }
+  finally{ _reinstateSyncBusy=false; }
 }
 async function autoImportNewHires(){
   if(_newHireSyncBusy) return;
