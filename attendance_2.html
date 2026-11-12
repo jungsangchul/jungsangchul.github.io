@@ -4583,9 +4583,16 @@ async function loadQrAbsCandidates(){
     var sb=getSB();
     if(!sb){ st.style.color='#e05c5c'; st.textContent='Supabase 연결 안 됨'; return; }
     var b=qraDayBoundsISO(d);
-    var res=await sb.from('attendance_records_2').select('employee_id').gte('created_at', b.start).lt('created_at', b.end);
-    if(res.error){ st.style.color='#e05c5c'; st.textContent='조회 실패: '+res.error.message; return; }
-    (res.data||[]).forEach(function(r){ if(r.employee_id) present.add(String(r.employee_id).toUpperCase()); });
+    // [수정] Supabase 는 한 번에 최대 1000행만 반환 → TRESS 출·퇴근 기록(하루 1,500행+)이 잘려 출근자가 결근 후보로 잡히던 문제. 1000행씩 끝까지 조회.
+    var PAGE=1000, from=0;
+    while(true){
+      var res=await sb.from('attendance_records_2').select('employee_id').gte('created_at', b.start).lt('created_at', b.end).order('id',{ascending:true}).range(from, from+PAGE-1);
+      if(res.error){ st.style.color='#e05c5c'; st.textContent='조회 실패: '+res.error.message; return; }
+      var rows=res.data||[];
+      rows.forEach(function(r){ if(r.employee_id) present.add(String(r.employee_id).toUpperCase()); });
+      if(rows.length<PAGE) break;
+      from+=PAGE;
+    }
   }catch(e){ st.style.color='#e05c5c'; st.textContent='조회 오류: '+(e&&e.message||e); return; }
   var alreadyAbs=new Set(DB.absences.filter(function(a){return a.date===d;}).map(function(a){return a.empId;}));
   var cands=(DB.employees||[]).filter(function(e){
