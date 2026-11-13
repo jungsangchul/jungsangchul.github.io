@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>가공생산팀 현장점검</title>
+<title>현장점검</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;700&family=Space+Mono:wght@400;700&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
@@ -581,6 +581,17 @@ table.cfg input{width:17px;height:17px}
  .lg .li{flex-wrap:wrap}.lg .tt{flex-basis:calc(100% - 44px)}.lg .rt{flex-basis:100%;justify-content:flex-end}
  .hs{display:none}.rate{min-width:0}.rate .b{display:none}.rate .v{width:auto}table.fit td,table.fit th{padding:8px 4px}table.fit th.n{min-width:0}table.fit th{white-space:normal}.idc{font-size:12px}.ms{display:block!important}}
 .ms{display:none}
+header button.who{background:none;padding:0 14px;cursor:pointer;max-width:340px;overflow:hidden}
+header button.who:hover{border-color:#555}
+#meTxt{color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:13px}
+#meTxt.none{color:var(--amb)}
+.cb.ro{opacity:.42;cursor:not-allowed}
+.banner{display:none;align-items:center;gap:12px;padding:11px 14px;margin-bottom:10px;border-radius:var(--r);border:1px solid rgba(224,168,74,.45);background:var(--ambbg);color:#f0d78a;font-weight:600;font-size:14px;flex-wrap:wrap}
+.banner.on{display:flex}.banner span{flex:1;min-width:200px}
+.wd{display:flex;gap:6px;flex-wrap:wrap}
+.wd label{display:inline-flex;align-items:center;justify-content:center;min-width:44px;height:40px;padding:0 10px;border:1px solid var(--line2);border-radius:7px;cursor:pointer;font-weight:700;color:var(--mute);font-size:13.5px;user-select:none}
+.wd label:has(input:checked){background:var(--ac-soft);border-color:rgba(201,168,76,.5);color:var(--ac)}
+.wd input{display:none}
 table.fit{table-layout:auto}
 table.fit td,table.fit th{padding:8px 7px}
 table.fit td:nth-child(2){white-space:normal}
@@ -591,11 +602,11 @@ table.fit td:nth-child(2){white-space:normal}
 <header>
   <div class="bar">
     <div class="brand"><div class="brand-text">
-      <h1 data-t="title">가공생산팀 현장점검</h1>
+      <h1 data-t="title">현장점검</h1>
       <div class="brand-sub">Yura Harness México · Floor Inspection</div>
     </div></div>
     <div class="hdr-right">
-      <label class="who"><span data-t="who">점검자</span><input id="who" autocomplete="off"></label>
+      <button type="button" class="who" id="meBtn" onclick="meOpen()"><span data-t="who">점검자</span><b id="meTxt"></b></button>
       <div class="lang"><button id="lg-ko" data-l="ko" class="on">한국어</button><button id="lg-es" data-l="es">Español</button></div>
     </div>
   </div>
@@ -632,10 +643,12 @@ table.fit td:nth-child(2){white-space:normal}
       <label class="f" style="flex:1;min-width:150px;max-width:260px"><span data-t="mc_find">호기 찾기</span><input id="in-q" placeholder="A01…" oninput="inGrid()"></label>
       <label class="chkl"><input type="checkbox" id="in-ng" onchange="inGrid()"><span data-t="only_ng">미준수 호기만</span></label>
       <label class="chkl"><input type="checkbox" id="in-todo" onchange="inGrid()"><span data-t="only_todo">미입력 호기만</span></label>
+      <label class="chkl"><input type="checkbox" id="in-all" onchange="inRender()"><span data-t="in_all">다른 팀 항목도 보기 (읽기 전용)</span></label>
       <span class="sp"></span>
       <button class="btn sec" onclick="fillAllOk()" data-t="fill_ok">미입력 전부 「준수」 처리</button>
     </div>
     <div class="hint" data-t="in_hint" style="margin-bottom:10px"></div>
+    <div class="banner" id="in-banner"><span id="in-banner-t"></span><button class="btn" onclick="meOpen()" data-t="me_pick">점검자 선택</button></div>
     <div class="stick" id="in-stick"></div>
     <div class="ig" id="in-grid"></div>
   </div>
@@ -653,6 +666,7 @@ table.fit td:nth-child(2){white-space:normal}
       <label class="f" id="st-tw" style="display:none"><span data-t="to">종료</span><input type="date" id="st-t"></label>
       <label class="f" id="st-yw" style="display:none"><span data-t="year">연도</span><input type="number" id="st-y" style="width:110px" min="2025" max="2099"></label>
       <label class="f"><span data-t="shift">근무조</span><select id="st-sh"></select></label>
+      <label class="f"><span data-t="team">관련팀</span><select id="st-team" style="max-width:220px"></select></label>
       <label class="f" style="flex:1;min-width:150px;max-width:260px"><span data-t="find_w">사번 · 이름 찾기</span><input id="st-q" oninput="stRender()"></label>
       <label class="chkl"><input type="checkbox" id="st-ngonly" onchange="stRender()"><span data-t="st_ngonly">미준수 있는 사람만</span></label>
     </div>
@@ -690,6 +704,15 @@ table.fit td:nth-child(2){white-space:normal}
     <div class="hint" data-t="cf_grade_hint" style="margin-top:10px"></div>
   </div>
   <div class="card">
+    <h3 data-t="cf_insp">팀별 지정 점검자</h3>
+    <div class="row" style="margin-bottom:10px">
+      <label class="f" style="min-width:220px"><span data-t="ci_team">점검 담당 팀</span><select id="ci-team"></select></label>
+      <button class="btn" onclick="ciAdd()" data-t="ci_add">＋ 점검자 지정 (사번)</button>
+    </div>
+    <div class="hint" data-t="ci_hint" style="margin-bottom:10px"></div>
+    <div class="tw" style="max-height:none"><table class="fit" id="ci-tbl"></table></div>
+  </div>
+  <div class="card">
     <h3 data-t="cf_mc">점검 호기 · 기본 작업자</h3>
     <div class="row" style="margin-bottom:10px">
       <label class="f" style="flex:1;min-width:200px;max-width:420px"><span data-t="cf_newmc">호기 추가 (여러 개는 쉼표·줄바꿈)</span><input id="cf-new" placeholder="A47, A48"></label>
@@ -723,7 +746,15 @@ table.fit td:nth-child(2){white-space:normal}
   <div class="mbd">
     <label class="f" style="margin-bottom:10px"><span data-t="it_ko">점검항목 (한국어)</span><input id="it-ko" maxlength="200"></label>
     <label class="f" style="margin-bottom:10px"><span data-t="it_es">점검항목 (Español)</span><input id="it-es" maxlength="200"></label>
-    <label class="f" style="margin-bottom:10px"><span data-t="it_scope">대상 호기 (비우면 전체)</span><input id="it-scope" placeholder="A, P  /  J01, J02"></label>
+    <div class="row" style="margin-bottom:10px">
+      <label class="f" style="flex:1;min-width:200px"><span data-t="team">관련팀</span><select id="it-team"></select></label>
+      <label class="f" style="flex:1;min-width:200px"><span data-t="it_scope">대상 호기 (비우면 전체)</span><input id="it-scope" placeholder="A, P  /  J01, J02"></label>
+    </div>
+    <div class="row" style="margin-bottom:10px">
+      <label class="f"><span data-t="it_cyc">점검 주기</span><select id="it-cyc" onchange="itCyc()"></select></label>
+      <div class="f" id="it-wdw"><span data-t="it_wd">점검 요일</span><div class="wd" id="it-wd"></div></div>
+      <label class="f" id="it-mdw" style="flex:1;min-width:180px"><span data-t="it_md">점검일 (매월, 쉼표로 여러 날)</span><input id="it-md" placeholder="1, 15"></label>
+    </div>
     <div class="row" style="margin-bottom:6px">
       <label class="f"><span data-t="it_from">적용 시작일</span><input type="date" id="it-from"></label>
       <label class="f"><span data-t="it_to">적용 종료일</span><input type="date" id="it-to"></label>
@@ -768,7 +799,8 @@ const STN=()=>({ok:L('준수','Cumple'),ng:L('미준수','No cumple'),na:L('해�
 const SHN=v=>v==='N'?L('야간','Noche'):L('주간','Día');
 
 /* ── 상태 ── */
-const S={emps:[],EM:{},items:[],mcAll:[],imc:{},grade:{S:98,A:95,B:90,C:80,min:10}};
+const S={emps:[],EM:{},items:[],mcAll:[],imc:{},insp:[],grade:{S:98,A:95,B:90,C:80,min:10}};
+let ME='';try{ME=localStorage.getItem('insp_me_'+PLANT)||''}catch(e){}
 let D=today(),SH='D';
 let CH={},WK={},RM={};          // 점검 셀 · 호기별 작업자 · 호기별 미준수 메모
 const dirty=new Set();
@@ -776,7 +808,7 @@ const ST={data:null,key:'',sort:{k:'rate',dir:-1}};
 
 /* ── i18n ── */
 const T={
- title:['가공생산팀 현장점검','Inspección de piso · Prod. maquinado'],
+ title:['현장점검','Inspección de piso'],
  sysbar:['현장점검 · 지시이행 관리 / Inspección de piso','Inspección de piso · cumplimiento de instrucciones / 현장점검'],
  who:['점검자','Inspector'],
  tab_in:['점검 입력','Registro'],tab_st:['개인별 이행 통계','Estadística por operador'],tab_it:['점검항목 관리','Puntos de inspección'],tab_cf:['호기 · 등급 설정','Máquinas · grados'],
@@ -799,12 +831,17 @@ const T={
  it_ko:['점검항목 (한국어)','Punto (coreano)'],it_es:['점검항목 (Español)','Punto (español)'],it_scope:['대상 호기 (비우면 전체)','Máquinas (vacío = todas)'],it_from:['적용 시작일','Inicio'],it_to:['적용 종료일','Fin'],it_1day:['하루만','Solo un día'],it_cont:['계속 적용','Continuo'],it_ord:['순서','Orden'],
  it_mhint:['대상 호기 예: <b>A</b> = A01~A46 전체, <b>A, P</b> = A·P 호기, <b>J01, J02</b> = 해당 호기만. 한국어·스페인어 중 하나만 입력해도 됩니다.','Ejemplo de máquinas: <b>A</b> = todas las A01~A46, <b>A, P</b> = máquinas A y P, <b>J01, J02</b> = solo esas. Puede escribir solo en un idioma.'],
  cancel:['취소','Cancelar'],save:['저장','Guardar'],
+ team:['관련팀','Equipo responsable'],in_all:['다른 팀 항목도 보기 (읽기 전용)','Ver puntos de otros equipos (solo lectura)'],me_pick:['점검자 선택','Elegir inspector'],
+ it_cyc:['점검 주기','Frecuencia'],it_wd:['점검 요일','Días de la semana'],it_md:['점검일 (매월, 쉼표로 여러 날)','Días del mes (separe con coma)'],
+ cf_insp:['팀별 지정 점검자','Inspectores designados por equipo'],ci_team:['점검 담당 팀','Equipo a inspeccionar'],ci_add:['＋ 점검자 지정 (사번)','＋ Designar inspector'],
+ ci_hint:['여기에 지정된 사람만 점검을 입력할 수 있습니다. 화면 위 「점검자」에서 본인을 선택하면 <b>자기 팀이 관련팀으로 지정된 점검항목</b>과 「공통」 항목만 체크할 수 있고, 다른 팀 항목은 읽기 전용입니다. 한 사람을 여러 팀에 지정할 수 있습니다.',
+  'Solo las personas designadas aquí pueden registrar inspecciones. Al elegirse en «Inspector» (arriba) solo podrá marcar los <b>puntos asignados a su equipo</b> y los «comunes»; los de otros equipos quedan en solo lectura. Una persona puede designarse en varios equipos.'],
 };
 function applyLang(){
   document.documentElement.lang=curLang;
   document.querySelectorAll('[data-t]').forEach(el=>{const k=el.dataset.t;if(T[k])el.innerHTML=T[k][curLang==='es'?1:0]});
   $('lg-ko').classList.toggle('on',curLang==='ko');$('lg-es').classList.toggle('on',curLang==='es');
-  document.title=L('가공생산팀 현장점검','Inspección de piso')+' · '+L(PLANT+'공장','Planta '+PLANT);
+  document.title=L('현장점검','Inspección de piso')+' · '+L(PLANT+'공장','Planta '+PLANT);
   $('plantTag').textContent=PLANT===2?L('멕시코 2공장 · Torreón','México Planta 2 · Torreón'):L('멕시코 1공장 · Monclova','México Planta 1 · Monclova');
   const pl='PLANT '+PLANT+' · '+(PLANT===2?L('토레온','Torreón'):L('몽클로바','Monclova'));
   ['in','st','it','cf'].forEach(k=>{const e=$('pl-'+k);e.textContent=pl;e.className='fs-pl p'+PLANT});
@@ -812,7 +849,8 @@ function applyLang(){
   const mm={m:L('월별','Mensual'),r:L('기간 지정','Rango'),y:L('연간','Anual')};
   document.querySelectorAll('#st-mode button').forEach(b=>b.textContent=mm[b.dataset.v]);
   const sv=$('st-sh').value;$('st-sh').innerHTML=`<option value="">${L('전체','Todos')}</option><option value="D">${SHN('D')}</option><option value="N">${SHN('N')}</option>`;$('st-sh').value=sv;
-  $('w-q').placeholder=L('사번 또는 이름 입력','No. de empleado o nombre');$('who').placeholder=L('점검자','Inspector');
+  $('w-q').placeholder=L('사번 또는 이름 입력','No. de empleado o nombre');
+  const tv=$('st-team').value;$('st-team').innerHTML=`<option value="">${L('전체','Todos')}</option>`+teamList().map(t=>`<option value="${esc(t)}">${esc(teamName(t))}</option>`).join('');$('st-team').value=tv;
   $('cf-imp').style.display=PLANT===1?'none':'';
   renderAll();
 }
@@ -824,9 +862,7 @@ function load(on){$('load').style.display=on?'flex':'none'}
 function mdlOpen(id){$(id).classList.add('on')}
 function mdlClose(id){$(id).classList.remove('on')}
 document.querySelectorAll('.mdl').forEach(m=>m.addEventListener('mousedown',e=>{if(e.target===m)m.classList.remove('on')}));
-const who=()=>$('who').value.trim();
-try{$('who').value=localStorage.getItem('insp_who')||''}catch(e){}
-$('who').addEventListener('change',()=>{try{localStorage.setItem('insp_who',who())}catch(e){}});
+const who=()=>ME?empName(ME):'';
 function setSave(s){const e=$('savest');e.className='savest '+s;const t=new Date();const hm=pad(t.getHours())+':'+pad(t.getMinutes());
   e.textContent=s==='ing'?L('● 저장 중…','● Guardando…'):s==='ok'?L('✓ 저장됨 ','✓ Guardado ')+hm:s==='err'?L('! 저장 실패 — 다시 시도 중','! Error al guardar — reintentando'):''}
 
@@ -858,13 +894,15 @@ const errMsg=e=>{let m=e&&e.message||String(e);try{const j=JSON.parse(m);m=j.mes
 const empName=id=>{const e=S.EM[id];return e?e.name:(id||'')};
 const empLabel=id=>{const e=S.EM[id];if(!e)return id||'';return e.name+(e.name_ko&&e.name_ko!==e.name?' · '+e.name_ko:'')};
 async function loadBase(){
-  const [emps,items,im,bm,cfg]=await Promise.all([
+  const [emps,items,im,bm,cfg,insp]=await Promise.all([
     sbGet(`${EMP_TBL}?select=employee_id,name,name_ko,team,active&order=employee_id`),
     sbGet(`insp_item?plant=eq.${PLANT}&order=ord,id`),
     sbGet(`insp_mc?plant=eq.${PLANT}&order=ord,mc`),
     PLANT===1?sbGet(`byp_machine?plant=eq.1&select=mc,ord,active,kind&order=ord,mc`).catch(()=>[]):Promise.resolve([]),
-    sbGet(`insp_config?plant=eq.${PLANT}`)
+    sbGet(`insp_config?plant=eq.${PLANT}`),
+    sbGet(`insp_inspector?plant=eq.${PLANT}&order=team,emp_id`)
   ]);
+  S.insp=insp;if(ME&&!insp.some(x=>x.emp_id===ME))ME='';
   S.emps=emps;S.EM={};emps.forEach(e=>S.EM[e.employee_id]=e);
   S.items=items;
   buildMc(im,bm);
@@ -882,7 +920,27 @@ const MCS=()=>S.mcAll.filter(m=>mcOn(m.mc));
 const defW=(mc,sh)=>(S.imc[mc]||{})[(sh||SH)==='N'?'emp_n':'emp_d']||null;
 const itTitle=it=>L(it.title_ko||it.title_es,it.title_es||it.title_ko);
 const itOther=it=>{const o=L(it.title_es,it.title_ko);return o&&o!==itTitle(it)?o:''};
-const dayItems=d=>S.items.filter(i=>i.d_from<=d&&(!i.d_to||i.d_to>=d));
+/* 점검 주기: D 매일 · W 매주(요일) · M 매월(일자, 말일 초과는 말일) */
+const cycDays=it=>String(it.cycle_days||'').split(',').map(s=>s.trim()).filter(Boolean).map(Number).filter(n=>!isNaN(n));
+function cycOn(it,d){const c=it.cycle||'D';if(c==='D')return true;const dt=new Date(d+'T00:00:00'),l=cycDays(it);
+  if(c==='W')return l.includes(dt.getDay());
+  if(c==='M'){const last=new Date(dt.getFullYear(),dt.getMonth()+1,0).getDate(),day=dt.getDate();return l.some(n=>n===day||(n>last&&day===last))}
+  return true}
+const WDO=[1,2,3,4,5,6,0];
+function cycLabel(it){const c=it.cycle||'D',l=cycDays(it);
+  if(c==='W')return L('매주 ','Semanal ')+WDO.filter(n=>l.includes(n)).map(n=>L(DOW[n],DOWES[n])).join('·');
+  if(c==='M')return L('매월 ','Mensual ')+l.sort((a,b)=>a-b).join('·')+L('일','');
+  return L('매일','Diario')}
+const dayItems=d=>S.items.filter(i=>i.d_from<=d&&(!i.d_to||i.d_to>=d)&&cycOn(i,d));
+/* 관련팀 · 지정 점검자 */
+const teamName=t=>{if(!t)return L('공통','Común');const m=String(t).match(/^(.+?)\((.+)\)$/);return m?L(m[1],m[2]):t};
+function teamList(){const s=new Set();S.emps.forEach(e=>{if(e.active!==false&&e.team)s.add(e.team)});S.insp.forEach(x=>s.add(x.team));S.items.forEach(i=>{if(i.team)s.add(i.team)});return [...s].sort((a,b)=>a.localeCompare(b))}
+const myTeams=()=>ME?S.insp.filter(x=>x.emp_id===ME).map(x=>x.team):[];
+function canItem(it){if(!ME)return false;const t=myTeams();return t.length>0&&(!it.team||t.includes(it.team))}
+const viewItems=()=>{const its=dayItems(D);return(!ME||$('in-all').checked)?its:its.filter(canItem)};
+const itemNo=()=>{const m={};dayItems(D).forEach((it,i)=>m[it.id]=i+1);return m};
+function meRender(){const e=$('meTxt');e.className=ME?'':'none';e.textContent=ME?ME+' · '+empName(ME)+' ('+myTeams().map(teamName).join(', ')+')':L('선택하세요','Seleccione')}
+function meOpen(){if(!S.insp.length){toast(L('지정된 점검자가 없습니다 — 「호기 · 등급 설정」 탭에서 팀별 점검자를 먼저 지정하세요.','No hay inspectores designados — desígnelos en «Máquinas · grados».'),true);return}wOpen({type:'me',mc:L('점검자','Inspector')})}
 function inScope(it,mc){const s=(it.scope||'').trim();if(!s)return true;const m=mc.toUpperCase();
   return s.split(/[,\s]+/).filter(Boolean).some(t=>{t=t.toUpperCase();return m===t||(m.startsWith(t)&&/^\d+$/.test(m.slice(t.length)))})}
 async function saveMc(mc,patch){
@@ -912,18 +970,24 @@ document.querySelectorAll('#in-sh button').forEach(b=>b.onclick=async()=>{
   SH=b.dataset.v;document.querySelectorAll('#in-sh button').forEach(x=>x.classList.toggle('on',x===b));
   load(true);try{await loadDay()}catch(e){toast(errMsg(e),true)}load(false);inRender();
 });
-function inRender(){inItems();inKpi();inStick();inGrid()}
+function inRender(){meRender();inBanner();inItems();inKpi();inStick();inGrid()}
+function inBanner(){
+  const b=$('in-banner'),its=dayItems(D),mine=its.filter(canItem).length;
+  if(!ME){b.classList.add('on');$('in-banner-t').textContent=L('점검자를 선택해야 점검을 입력할 수 있습니다. 지금은 읽기 전용입니다.','Elija un inspector para registrar. Ahora está en solo lectura.')}
+  else if(its.length&&!mine){b.classList.add('on');$('in-banner-t').textContent=L('오늘은 내 팀('+myTeams().map(teamName).join(', ')+')에 해당하는 점검항목이 없습니다.','Hoy no hay puntos para mi equipo ('+myTeams().map(teamName).join(', ')+').')}
+  else b.classList.remove('on');
+}
 function inItems(){
-  const its=dayItems(D);
-  $('in-items').innerHTML=its.length?its.map((it,i)=>{
+  const its=viewItems(),no=itemNo();
+  $('in-items').innerHTML=its.length?its.map(it=>{
     const o=itOther(it),one=it.d_to&&it.d_to===it.d_from;
-    return `<div class="li"><span class="no">${i+1}</span><div class="tt">${esc(itTitle(it))}${o?`<small>${esc(o)}</small>`:''}</div>
-      <div class="rt">${it.scope?`<span class="tag xt" style="margin:0">${esc(it.scope)}</span>`:''}<span class="tag ${one?'care':'ok'}">${one?L('오늘만','Solo hoy'):it.d_to?'~ '+it.d_to.slice(5):L('계속','Continuo')}</span>
+    return `<div class="li" style="${canItem(it)||!ME?'':'opacity:.55'}"><span class="no">${no[it.id]}</span><div class="tt">${esc(itTitle(it))}${o?`<small>${esc(o)}</small>`:''}</div>
+      <div class="rt"><span class="tag ${it.team?'az':'none'}" style="margin:0;font-size:12.5px;padding:2px 9px">${esc(teamName(it.team))}</span>${it.scope?`<span class="tag xt" style="margin:0">${esc(it.scope)}</span>`:''}<span class="tag ${one?'care':'ok'}">${one?L('오늘만','Solo hoy'):cycLabel(it)+(it.d_to?' ~'+it.d_to.slice(5):'')}</span>
       <button class="btn sec sm" onclick="itOpen(${it.id})">${L('수정','Editar')}</button><button class="btn red sm" onclick="itEnd(${it.id},'${D}')">${L('종료','Finalizar')}</button></div></div>`}).join('')
-   :`<div class="hint" style="padding:10px 4px">${L('이 날짜에 적용되는 점검항목이 없습니다. 「＋ 점검항목 추가」로 오늘의 지시사항을 등록하세요.','No hay puntos de inspección para esta fecha. Registre las instrucciones del día con «＋ Agregar punto».')}</div>`;
+   :`<div class="hint" style="padding:10px 4px">${dayItems(D).length?L('내 팀에 해당하는 점검항목이 없습니다.','No hay puntos para mi equipo.'):L('이 날짜(주기)에 해당하는 점검항목이 없습니다. 「＋ 점검항목 추가」로 지시사항을 등록하세요.','No hay puntos de inspección para esta fecha. Regístrelos con «＋ Agregar punto».')}</div>`;
 }
 function dayStat(){
-  const its=dayItems(D),ms=MCS();let tot=0,ok=0,ng=0,na=0,nw=0;
+  const its=viewItems(),ms=MCS();let tot=0,ok=0,ng=0,na=0,nw=0;
   ms.forEach(m=>{let any=false;its.forEach(it=>{if(!inScope(it,m.mc))return;any=true;tot++;const c=CH[it.id+'|'+m.mc];if(c){if(c.status==='ok')ok++;else if(c.status==='ng')ng++;else if(c.status==='na')na++}});if(any&&!WK[m.mc])nw++});
   return{tot,ok,ng,na,nw,done:ok+ng+na,mc:ms.length};
 }
@@ -937,27 +1001,28 @@ function inKpi(){
    <div class="kpi ${s.nw?'a':''}"><span>${L('작업자 미지정','Sin operador')}</span><b>${num(s.nw)}<small style="font-size:16px;color:var(--mute)"> / ${num(s.mc)} ${L('호기','máq.')}</small></b></div>`;
 }
 function inStick(){
-  const its=dayItems(D),e=$('in-stick');
+  const its=viewItems(),e=$('in-stick'),no=itemNo();
   e.style.display=its.length?'flex':'none';
   e.style.top=($('top').offsetHeight+6)+'px';
-  e.innerHTML=its.map((it,i)=>`<span class="ch" title="${esc(itTitle(it))}"><b>${i+1}</b><span>${esc(itTitle(it))}</span></span>`).join('');
+  e.innerHTML=its.map(it=>`<span class="ch" title="${esc(itTitle(it))}"><b>${no[it.id]}</b><span>${esc(itTitle(it))}</span></span>`).join('');
 }
 function rowHtml(m,its){
   const mc=m.mc,w=WK[mc];let ng=0,todo=0;
-  const cells=its.map((it,i)=>{
+  const no=rowHtml.no||itemNo();
+  const cells=its.map(it=>{
     if(!inScope(it,mc))return `<span class="cb x"></span>`;
-    const c=CH[it.id+'|'+mc],st=c?c.status:'';if(st==='ng')ng++;if(!st)todo++;
-    return `<button class="cb ${st}" data-i="${it.id}" title="${esc(itTitle(it))}${st?' — '+STN()[st]:''}"><i>${i+1}</i><u>${st?SYM[st]:''}</u></button>`}).join('');
+    const c=CH[it.id+'|'+mc],st=c?c.status:'',can=canItem(it);if(st==='ng')ng++;if(!st&&can)todo++;
+    return `<button class="cb ${st}${can?'':' ro'}" ${can?`data-i="${it.id}"`:''} title="${esc(itTitle(it))}${st?' — '+STN()[st]:''}${can?'':' · '+L('읽기 전용','solo lectura')}"><i>${no[it.id]}</i><u>${st?SYM[st]:''}</u></button>`}).join('');
   return `<div class="ig-r${ng?' hasng':''}${!w?' nw':''}" data-mc="${esc(mc)}" data-ng="${ng}" data-todo="${todo}">
     <div class="ig-mc">${esc(mc)}</div>
     <div class="ig-w"><button class="wbtn${w?'':' none'}" data-w="1">${w?`<span class="id">${esc(w)}</span><span class="nm">${esc(empLabel(w))}</span>`:L('＋ 작업자 지정 (사번)','＋ Asignar operador')}</button></div>
     <div class="ig-c">${cells}${todo?`<button class="btn sec sm" data-rowok="1" title="${L('이 호기 미입력 전부 준수','Marcar pendientes de esta máquina')}">○ ${L('전체','Todo')}</button>`:''}</div>
-    ${ng?`<div class="ig-m"><span>✕ ${L('미준수 내용','Detalle')}</span><input data-memo="1" maxlength="300" value="${esc(RM[mc]||'')}" placeholder="${L('미준수 내용 · 조치사항 입력','Detalle del incumplimiento / acción')}"></div>`:''}
+    ${ng?`<div class="ig-m"><span>✕ ${L('미준수 내용','Detalle')}</span><input data-memo="1" ${ME?'':'disabled'} maxlength="300" value="${esc(RM[mc]||'')}" placeholder="${L('미준수 내용 · 조치사항 입력','Detalle del incumplimiento / acción')}"></div>`:''}
   </div>`;
 }
 function inGrid(){
-  const its=dayItems(D),q=norm($('in-q').value.trim()),fNg=$('in-ng').checked,fTodo=$('in-todo').checked;
-  if(!its.length){$('in-grid').innerHTML=`<div class="hint" style="padding:22px;text-align:center">${L('점검항목을 먼저 등록하세요.','Registre primero los puntos de inspección.')}</div>`;return}
+  const its=viewItems(),q=norm($('in-q').value.trim()),fNg=$('in-ng').checked,fTodo=$('in-todo').checked;rowHtml.no=itemNo();
+  if(!its.length){$('in-grid').innerHTML=`<div class="hint" style="padding:22px;text-align:center">${L('표시할 점검항목이 없습니다.','No hay puntos de inspección para mostrar.')}</div>`;return}
   const ms=MCS().filter(m=>its.some(it=>inScope(it,m.mc))&&(!q||norm(m.mc).includes(q)||norm(WK[m.mc]||'').includes(q)||norm(empLabel(WK[m.mc])).includes(q)));
   let html=ms.map(m=>rowHtml(m,its)).join('');
   const box=$('in-grid');box.innerHTML=html||`<div class="hint" style="padding:22px;text-align:center">${S.mcAll.length?L('해당하는 호기가 없습니다.','Sin máquinas.'):L('등록된 호기가 없습니다. 「호기 · 등급 설정」 탭에서 호기를 추가하세요.','No hay máquinas. Agréguelas en «Máquinas · grados».')}</div>`;
@@ -966,7 +1031,7 @@ function inGrid(){
 function rowRefresh(mc){
   const r=[...$('in-grid').querySelectorAll('.ig-r')].find(x=>x.dataset.mc===mc);if(!r)return;
   const m=S.mcAll.find(x=>x.mc===mc),act=document.activeElement&&document.activeElement.dataset.memo&&r.contains(document.activeElement);
-  const t=document.createElement('div');t.innerHTML=rowHtml(m,dayItems(D));const n=t.firstElementChild;r.replaceWith(n);
+  rowHtml.no=itemNo();const t=document.createElement('div');t.innerHTML=rowHtml(m,viewItems());const n=t.firstElementChild;r.replaceWith(n);
   if(act){const i=n.querySelector('[data-memo]');if(i){i.focus();i.setSelectionRange(i.value.length,i.value.length)}}
 }
 const NEXT={'':'ok',ok:'ng',ng:'na',na:''};
@@ -974,15 +1039,17 @@ $('in-grid').addEventListener('click',e=>{
   const row=e.target.closest('.ig-r');if(!row)return;const mc=row.dataset.mc;
   const cb=e.target.closest('.cb');
   if(cb&&cb.dataset.i){const k=cb.dataset.i+'|'+mc,cur=CH[k]?CH[k].status:'',nx=NEXT[cur];if(nx)CH[k]={status:nx};else delete CH[k];mark(k);rowRefresh(mc);inKpi();return}
-  if(e.target.closest('[data-w]')){wOpen({type:'day',mc});return}
-  if(e.target.closest('[data-rowok]')){dayItems(D).forEach(it=>{const k=it.id+'|'+mc;if(inScope(it,mc)&&!CH[k]){CH[k]={status:'ok'};mark(k)}});rowRefresh(mc);inKpi()}
+  if(e.target.closest('.cb.ro')){toast(ME?L('다른 팀 점검항목은 입력할 수 없습니다.','No puede registrar puntos de otro equipo.'):L('먼저 점검자를 선택하세요.','Elija primero un inspector.'),true);return}
+  if(e.target.closest('[data-w]')){if(!ME){toast(L('먼저 점검자를 선택하세요.','Elija primero un inspector.'),true);return}wOpen({type:'day',mc});return}
+  if(e.target.closest('[data-rowok]')){dayItems(D).filter(canItem).forEach(it=>{const k=it.id+'|'+mc;if(inScope(it,mc)&&!CH[k]){CH[k]={status:'ok'};mark(k)}});rowRefresh(mc);inKpi()}
 });
 $('in-grid').addEventListener('change',e=>{
   if(!e.target.dataset.memo)return;const mc=e.target.closest('.ig-r').dataset.mc;RM[mc]=e.target.value.trim();
   dayItems(D).forEach(it=>{const k=it.id+'|'+mc;if(CH[k]&&CH[k].status==='ng')mark(k)});
 });
 function fillAllOk(){
-  const its=dayItems(D);if(!its.length)return;let n=0;
+  if(!ME){toast(L('먼저 점검자를 선택하세요.','Elija primero un inspector.'),true);return}
+  const its=dayItems(D).filter(canItem);if(!its.length)return;let n=0;
   const nw=MCS().filter(m=>!WK[m.mc]&&its.some(it=>inScope(it,m.mc))).length;
   if(!confirm(L(`미입력 칸을 전부 「준수」로 처리합니다.${nw?`\n(작업자 미지정 호기 ${nw}대 — 통계에 개인으로 잡히지 않습니다)`:''}\n진행할까요?`,`Se marcarán como «Cumple» todas las casillas pendientes.${nw?`\n(${nw} máquinas sin operador — no cuentan para la estadística personal)`:''}\n¿Continuar?`)))return;
   MCS().forEach(m=>its.forEach(it=>{const k=it.id+'|'+m.mc;if(inScope(it,m.mc)&&!CH[k]){CH[k]={status:'ok'};mark(k);n++}}));
@@ -997,7 +1064,7 @@ async function doFlush(){
   if(!dirty.size)return;
   const keys=[...dirty];dirty.clear();const d=D,sh=SH,now=new Date().toISOString(),up=[],del={};
   keys.forEach(k=>{const p=k.indexOf('|'),iid=k.slice(0,p),mc=k.slice(p+1),c=CH[k];
-    if(c&&c.status){const e=WK[mc]||null;up.push({plant:PLANT,d,shift:sh,item_id:+iid,mc,emp_id:e,emp_name:e?empName(e):null,status:c.status,memo:c.status==='ng'?(RM[mc]||null):null,inspector:who()||null,updated_at:now})}
+    if(c&&c.status){const e=WK[mc]||null;up.push({plant:PLANT,d,shift:sh,item_id:+iid,mc,emp_id:e,emp_name:e?empName(e):null,status:c.status,memo:c.status==='ng'?(RM[mc]||null):null,inspector:who()||null,inspector_id:ME||null,updated_at:now})}
     else(del[iid]=del[iid]||[]).push(mc)});
   try{
     if(up.length)await sbUpsert('insp_check',up,'plant,d,shift,item_id,mc');
@@ -1010,13 +1077,16 @@ window.addEventListener('beforeunload',e=>{if(dirty.size){flush();e.preventDefau
 /* ── 작업자 선택 (사번) ── */
 let WCTX=null;
 function wOpen(ctx){
-  WCTX=ctx;$('w-ttl').textContent=ctx.mc+' · '+L('작업자 선택','Seleccionar operador')+(ctx.type==='def'?' ('+L('기본','predet.')+' · '+SHN(ctx.shift)+')':' ('+SHN(SH)+')');
+  WCTX=ctx;$('w-ttl').textContent=ctx.type==='me'||ctx.type==='insp'?ctx.mc:ctx.mc+' · '+L('작업자 선택','Seleccionar operador')+(ctx.type==='def'?' ('+L('기본','predet.')+' · '+SHN(ctx.shift)+')':' ('+SHN(SH)+')');
+  $('w-all').closest('label').style.display=ctx.type==='me'?'none':'';$('w-all').checked=ctx.type==='insp';
   $('w-q').value='';wRender();mdlOpen('mdl-w');setTimeout(()=>$('w-q').focus(),50);
 }
 function wRender(){
   const q=norm($('w-q').value.trim()),all=$('w-all').checked;
-  const cur=WCTX?(WCTX.type==='day'?WK[WCTX.mc]:defW(WCTX.mc,WCTX.shift)):null;
-  let list=S.emps.filter(e=>e.active!==false&&(all||/maquinado/i.test(e.team||'')));
+  const ty=WCTX?WCTX.type:'';
+  const cur=ty==='me'?ME:ty==='day'?WK[WCTX.mc]:ty==='def'?defW(WCTX.mc,WCTX.shift):null;
+  let list=ty==='me'?[...new Set(S.insp.map(x=>x.emp_id))].map(id=>({...(S.EM[id]||{employee_id:id,name:id}),team:S.insp.filter(x=>x.emp_id===id).map(x=>teamName(x.team)).join(', ')}))
+    :S.emps.filter(e=>e.active!==false&&(all||/maquinado/i.test(e.team||'')));
   if(q)list=list.filter(e=>norm(e.employee_id).includes(q)||norm(e.name).includes(q)||norm(e.name_ko).includes(q));
   const tot=list.length;list=list.slice(0,120);
   $('w-list').innerHTML=list.map(e=>`<div class="p" data-id="${esc(e.employee_id)}"><span class="id">${esc(e.employee_id)}</span><span class="nm">${esc(e.name)}${e.employee_id===cur?' ✓':''}<small>${e.name_ko&&e.name_ko!==e.name?esc(e.name_ko)+' · ':''}${esc(e.team||'')}</small></span></div>`).join('')
@@ -1027,6 +1097,8 @@ $('w-list').addEventListener('click',e=>{const p=e.target.closest('.p');if(p)wPi
 $('w-q').addEventListener('keydown',e=>{if(e.key==='Enter'){const p=$('w-list').querySelector('.p');if(p)wPick(p.dataset.id)}});
 async function wPick(id){
   const c=WCTX;if(!c)return;mdlClose('mdl-w');
+  if(c.type==='me'){await flush();ME=id||'';try{localStorage.setItem('insp_me_'+PLANT,ME)}catch(e){}inRender();return}
+  if(c.type==='insp'){if(id)ciSave(id);return}
   try{
     if(c.type==='day'){
       WK[c.mc]=id;Object.keys(CH).forEach(k=>{if(k.slice(k.indexOf('|')+1)===c.mc)mark(k)});
@@ -1046,16 +1118,26 @@ function itOpen(id){
   const it=id?S.items.find(x=>x.id===id):null;IT_EDIT=it;
   $('it-ttl').textContent=it?L('점검항목 수정','Editar punto'):L('점검항목 추가','Agregar punto');
   $('it-ko').value=it?it.title_ko||'':'';$('it-es').value=it?it.title_es||'':'';$('it-scope').value=it?it.scope||'':'';
+  $('it-team').innerHTML=`<option value="">${L('공통 (모든 지정 점검자)','Común (todos los inspectores)')}</option>`+teamList().map(t=>`<option value="${esc(t)}">${esc(teamName(t))}</option>`).join('');
+  $('it-team').value=it?it.team||'':(myTeams()[0]||'');
+  $('it-cyc').innerHTML=`<option value="D">${L('매일','Diario')}</option><option value="W">${L('매주 (요일 지정)','Semanal (días)')}</option><option value="M">${L('매월 (일자 지정)','Mensual (fechas)')}</option>`;
+  $('it-cyc').value=it?it.cycle||'D':'D';const cd=it?cycDays(it):[];
+  $('it-wd').innerHTML=WDO.map(n=>`<label><input type="checkbox" value="${n}" ${it&&it.cycle==='W'&&cd.includes(n)?'checked':''}>${L(DOW[n],DOWES[n])}</label>`).join('');
+  $('it-md').value=it&&it.cycle==='M'?cd.join(', '):'';itCyc();
   $('it-from').value=it?it.d_from:D;$('it-to').value=it?it.d_to||'':'';
   $('it-ord').value=it?it.ord:(Math.max(0,...S.items.map(x=>x.ord||0))+1);
   mdlOpen('mdl-it');setTimeout(()=>$('it-ko').focus(),50);
 }
+function itCyc(){const c=$('it-cyc').value;$('it-wdw').style.display=c==='W'?'':'none';$('it-mdw').style.display=c==='M'?'':'none'}
 async function itSave(){
   const ko=$('it-ko').value.trim(),es=$('it-es').value.trim(),f=$('it-from').value,t=$('it-to').value||null;
   if(!ko&&!es){toast(L('점검항목 내용을 입력하세요.','Escriba el punto de inspección.'),true);return}
   if(!f){toast(L('적용 시작일을 입력하세요.','Indique la fecha de inicio.'),true);return}
   if(t&&t<f){toast(L('종료일이 시작일보다 빠릅니다.','La fecha final es anterior al inicio.'),true);return}
-  const body={title_ko:ko||es,title_es:es||null,scope:$('it-scope').value.trim().toUpperCase()||null,d_from:f,d_to:t,ord:+$('it-ord').value||0};
+  const cyc=$('it-cyc').value;let cdays=null;
+  if(cyc==='W'){const l=[...$('it-wd').querySelectorAll('input:checked')].map(x=>x.value);if(!l.length){toast(L('점검 요일을 선택하세요.','Elija los días de la semana.'),true);return}cdays=l.join(',')}
+  if(cyc==='M'){const l=[...new Set($('it-md').value.split(/[,\s]+/).filter(Boolean).map(Number))];if(!l.length||l.some(n=>!Number.isInteger(n)||n<1||n>31)){toast(L('매월 점검일을 1~31 숫자로 입력하세요 (예: 1, 15).','Indique los días del mes entre 1 y 31 (ej.: 1, 15).'),true);return}cdays=l.sort((a,b)=>a-b).join(',')}
+  const body={title_ko:ko||es,title_es:es||null,team:$('it-team').value||null,cycle:cyc,cycle_days:cdays,scope:$('it-scope').value.trim().toUpperCase()||null,d_from:f,d_to:t,ord:+$('it-ord').value||0};
   try{
     if(IT_EDIT){await sbPatch('insp_item','id=eq.'+IT_EDIT.id,body);Object.assign(IT_EDIT,body)}
     else{const row=await sbInsert('insp_item',{plant:PLANT,...body,created_by:who()||null});S.items.push(row)}
@@ -1077,20 +1159,38 @@ async function itDel(id){
 function itRender(){
   const t=today(),all=$('it-all').checked;
   const rows=S.items.filter(it=>all||!it.d_to||it.d_to>=t);
-  $('it-tbl').innerHTML=`<thead><tr><th class="n" style="width:48px">No</th><th>${L('점검항목','Punto de inspección')}</th><th>${L('대상 호기','Máquinas')}</th><th>${L('시작','Inicio')}</th><th>${L('종료','Fin')}</th><th>${L('상태','Estado')}</th><th></th></tr></thead><tbody>`
+  $('it-tbl').innerHTML=`<thead><tr><th class="n" style="width:48px">No</th><th>${L('점검항목','Punto de inspección')}</th><th>${L('관련팀','Equipo')}</th><th>${L('주기','Frecuencia')}</th><th>${L('대상 호기','Máquinas')}</th><th>${L('시작','Inicio')}</th><th>${L('종료','Fin')}</th><th>${L('상태','Estado')}</th><th></th></tr></thead><tbody>`
    +(rows.length?rows.map(it=>{const o=itOther(it),st=it.d_to&&it.d_to<t?'end':it.d_from>t?'wait':'on';
      return `<tr><td class="n">${it.ord}</td><td class="b">${esc(itTitle(it))}${o?`<div style="font-weight:400;color:var(--mute);font-size:13px">${esc(o)}</div>`:''}</td>
+      <td><span class="tag ${it.team?'az':'none'}" style="margin:0;font-size:12.5px;padding:2px 9px;white-space:normal">${esc(teamName(it.team))}</span></td><td style="white-space:nowrap">${cycLabel(it)}</td>
       <td>${it.scope?esc(it.scope):`<span style="color:var(--mute)">${L('전체','Todas')}</span>`}</td><td class="n" style="text-align:left">${it.d_from}</td><td class="n" style="text-align:left">${it.d_to||`<span style="color:var(--mute)">${L('계속','Continuo')}</span>`}</td>
       <td><span class="tag ${st==='on'?'ok':st==='wait'?'care':'none'}">${st==='on'?L('적용중','Vigente'):st==='wait'?L('예정','Programado'):L('종료','Finalizado')}</span></td>
       <td style="white-space:nowrap;text-align:right"><button class="btn sec sm" onclick="itOpen(${it.id})">${L('수정','Editar')}</button> ${st==='end'?`<button class="btn sec sm" onclick="itResume(${it.id})">${L('재개','Reanudar')}</button>`:`<button class="btn sec sm" onclick="itEnd(${it.id},'${t}')">${L('종료','Finalizar')}</button>`} <button class="btn red sm" onclick="itDel(${it.id})">${L('삭제','Eliminar')}</button></td></tr>`}).join('')
-    :`<tr><td class="empty" colspan="7">${L('등록된 점검항목이 없습니다.','No hay puntos registrados.')}</td></tr>`)+'</tbody>';
+    :`<tr><td class="empty" colspan="9">${L('등록된 점검항목이 없습니다.','No hay puntos registrados.')}</td></tr>`)+'</tbody>';
 }
 
 /* ══════════ ④ 호기 · 등급 설정 ══════════ */
 const QE=mc=>encodeURIComponent(mc).replace(/'/g,'%27');
 function cfW(q,sh){wOpen({type:'def',mc:decodeURIComponent(q),shift:sh})}
+function ciRender(){
+  const tv=$('ci-team').value;$('ci-team').innerHTML=`<option value="">${L('작업자 소속팀으로 지정','Equipo del empleado')}</option>`+teamList().map(t=>`<option value="${esc(t)}">${esc(teamName(t))}</option>`).join('');$('ci-team').value=tv;
+  $('ci-tbl').innerHTML=`<thead><tr><th>${L('점검 담당 팀','Equipo')}</th><th>${L('사번','No.')}</th><th>${L('이름','Nombre')}</th><th class="hm">${L('소속','Adscripción')}</th><th></th></tr></thead><tbody>`
+   +(S.insp.length?S.insp.map((x,i)=>{const e=S.EM[x.emp_id]||{};return `<tr><td><span class="tag az" style="margin:0;font-size:12.5px;padding:2px 9px;white-space:normal">${esc(teamName(x.team))}</span></td><td><span style="font-family:var(--mono);font-size:13px;color:var(--ac)">${esc(x.emp_id)}</span></td><td class="b" style="white-space:normal">${esc(empLabel(x.emp_id))}</td><td class="hm" style="color:var(--mute)">${esc(teamName(e.team||''))}</td><td style="text-align:right"><button class="btn red sm" onclick="ciDel(${i})">${L('해제','Quitar')}</button></td></tr>`}).join('')
+    :`<tr><td class="empty" colspan="5">${L('지정된 점검자가 없습니다 — 점검자를 지정해야 점검 입력이 가능합니다.','No hay inspectores designados — son necesarios para registrar inspecciones.')}</td></tr>`)+'</tbody>';
+}
+function ciAdd(){wOpen({type:'insp',mc:L('점검자 지정','Designar inspector')})}
+async function ciSave(id){
+  const team=$('ci-team').value||(S.EM[id]||{}).team;
+  if(!team){toast(L('팀을 선택하세요.','Elija el equipo.'),true);return}
+  if(S.insp.some(x=>x.emp_id===id&&x.team===team)){toast(L('이미 지정되어 있습니다.','Ya está designado.'));return}
+  try{await sbUpsert('insp_inspector',[{plant:PLANT,emp_id:id,team}],'plant,emp_id,team');S.insp.push({plant:PLANT,emp_id:id,team});S.insp.sort((a,b)=>a.team.localeCompare(b.team)||a.emp_id.localeCompare(b.emp_id));renderAll();toast(L('점검자로 지정했습니다.','Inspector designado.'))}catch(e){toast(errMsg(e),true)}
+}
+async function ciDel(i){
+  const x=S.insp[i];if(!x||!confirm(L(`${x.emp_id} ${empName(x.emp_id)} — ${teamName(x.team)} 점검자 지정을 해제할까요?`,`¿Quitar a ${x.emp_id} ${empName(x.emp_id)} como inspector de ${teamName(x.team)}?`)))return;
+  try{await sbDel('insp_inspector',`plant=eq.${PLANT}&emp_id=eq.${encodeURIComponent(x.emp_id)}&team=eq.${encodeURIComponent(x.team)}`);S.insp.splice(i,1);if(ME&&!S.insp.some(y=>y.emp_id===ME)){ME='';try{localStorage.removeItem('insp_me_'+PLANT)}catch(e){}}renderAll()}catch(e){toast(errMsg(e),true)}
+}
 function cfRender(){
-  const g=S.grade;
+  ciRender();const g=S.grade;
   $('cf-grade').innerHTML=['S','A','B','C'].map(k=>`<label class="f"><span><span class="gr ${k}">${k}</span> ≥ %</span><input type="number" step="0.1" min="0" max="100" id="g-${k}" value="${g[k]}"></label>`).join('')
    +`<label class="f"><span><span class="gr D">D</span></span><input disabled value="< ${g.C}%"></label>
      <label class="f"><span>${L('최소 점검 건수','Mín. de registros')}</span><input type="number" min="0" id="g-min" value="${g.min}"></label>
@@ -1152,12 +1252,12 @@ document.querySelectorAll('#st-mode button').forEach(b=>b.onclick=()=>{
   document.querySelectorAll('#st-mode button').forEach(x=>x.classList.toggle('on',x===b));const v=b.dataset.v;
   $('st-mw').style.display=v==='m'?'':'none';$('st-fw').style.display=$('st-tw').style.display=v==='r'?'':'none';$('st-yw').style.display=v==='y'?'':'none';stLoad();
 });
-['st-m','st-f','st-t','st-y','st-sh'].forEach(id=>$(id).addEventListener('change',()=>stLoad()));
+['st-m','st-f','st-t','st-y','st-sh','st-team'].forEach(id=>$(id).addEventListener('change',()=>stLoad()));
 async function stLoad(force){
-  const r=stRange(),sh=$('st-sh').value||null,key=[r.from,r.to,sh].join('|');
+  const r=stRange(),sh=$('st-sh').value||null,tm=$('st-team').value||null,key=[r.from,r.to,sh,tm].join('|');
   if(!force&&ST.key===key&&ST.data){stRender();return}
   await flush();load(true);
-  try{ST.data=await sbRpc('insp_stat',{p_plant:PLANT,p_from:r.from,p_to:r.to,p_shift:sh});ST.key=key;ST.range=r}
+  try{ST.data=await sbRpc('insp_stat',{p_plant:PLANT,p_from:r.from,p_to:r.to,p_shift:sh,p_team:tm});ST.key=key;ST.range=r}
   catch(e){ST.data=null;toast(errMsg(e),true)}
   load(false);stRender();
 }
@@ -1225,8 +1325,9 @@ function stRender(){
   $('st-day').innerHTML=days.length?`<div class="dbar">${days.map(x=>`<div class="c" title="${x.d} (${dow(x.d)}) · ○${x.ok} ✕${x.ng} · ${pct(x.ok+x.ng?x.ok/(x.ok+x.ng)*100:null)}"><i class="r" style="height:${x.ng/dm*100}%"></i><i class="g" style="height:${x.ok/dm*100}%"></i></div>`).join('')}</div><div class="dlab"><span>${days[0].d}</span><span style="color:var(--grn)">■ ${L('준수','Cumple')} <span style="color:var(--red)">■ ${L('미준수','No cumple')}</span></span><span>${days[days.length-1].d}</span></div>`:`<div class="hint">${L('데이터 없음','Sin datos')}</div>`;
 }
 async function ngRows(extra){
-  const r=ST.range,sh=$('st-sh').value;
-  return sbGet(`insp_check?plant=eq.${PLANT}&d=gte.${r.from}&d=lte.${r.to}${sh?'&shift=eq.'+sh:''}${extra||''}&select=d,shift,item_id,mc,emp_id,emp_name,status,memo,inspector&order=d.desc,mc`);
+  const r=ST.range,sh=$('st-sh').value,tm=$('st-team').value;
+  const ids=tm?S.items.filter(i=>i.team===tm).map(i=>i.id):null;if(ids&&!ids.length)return[];
+  return sbGet(`insp_check?plant=eq.${PLANT}&d=gte.${r.from}&d=lte.${r.to}${sh?'&shift=eq.'+sh:''}${ids?'&item_id=in.('+ids.join(',')+')':''}${extra||''}&select=d,shift,item_id,mc,emp_id,emp_name,status,memo,inspector&order=d.desc,mc`);
 }
 async function eOpen(id){
   const r=ST.range,row=stRows().find(x=>x.emp_id===id);if(!row)return;
@@ -1265,7 +1366,7 @@ async function stExcel(){
     const r=ST.range,g=S.grade,wb=new ExcelJS.Workbook(),im={};S.items.forEach(i=>im[i.id]=i);
     const head=(ws,cols,title)=>{
       ws.mergeCells(1,1,1,cols.length);const c=ws.getCell(1,1);c.value=title;c.font={name:'Malgun Gothic',size:14,bold:true,color:{argb:'FF1A1A1A'}};ws.getRow(1).height=26;
-      ws.mergeCells(2,1,2,cols.length);ws.getCell(2,1).value=`YURA HARNESS MÉXICO · Planta ${PLANT} · ${r.from} ~ ${r.to}${$('st-sh').value?' · '+SHN($('st-sh').value):''}  |  S≥${g.S}% A≥${g.A}% B≥${g.B}% C≥${g.C}% · min ${g.min}`;ws.getCell(2,1).font={name:'Malgun Gothic',size:9,color:{argb:'FF666666'}};
+      ws.mergeCells(2,1,2,cols.length);ws.getCell(2,1).value=`YURA HARNESS MÉXICO · Planta ${PLANT} · ${r.from} ~ ${r.to}${$('st-sh').value?' · '+SHN($('st-sh').value):''}${$('st-team').value?' · '+teamName($('st-team').value):''}  |  S≥${g.S}% A≥${g.A}% B≥${g.B}% C≥${g.C}% · min ${g.min}`;ws.getCell(2,1).font={name:'Malgun Gothic',size:9,color:{argb:'FF666666'}};
       const h=ws.getRow(4);cols.forEach((c,i)=>{const cell=h.getCell(i+1);cell.value=c[0];cell.font={name:'Malgun Gothic',size:10,bold:true,color:{argb:'FFFFFFFF'}};cell.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF1F1F1F'}};cell.alignment={vertical:'middle',horizontal:'center',wrapText:true};cell.border={bottom:{style:'medium',color:{argb:'FFC9A84C'}}};ws.getColumn(i+1).width=c[1]});
       h.height=30;ws.views=[{state:'frozen',ySplit:4}];
     };
@@ -1284,8 +1385,8 @@ async function stExcel(){
     body(ws2,ngs.map(x=>[x.d,SHN(x.shift),x.mc,x.emp_id||'',x.emp_id?empName(x.emp_id)||x.emp_name||'':'',im[x.item_id]?itTitle(im[x.item_id]):'#'+x.item_id,x.memo||'',x.inspector||'']));
     /* 3) 항목별 */
     const ws3=wb.addWorksheet(L('항목별','Por punto'));
-    head(ws3,[[L('점검항목 (한국어)','Punto (KO)'),50],[L('점검항목 (Español)','Punto (ES)'),50],[L('준수','Cumple'),9],[L('미준수','No cumple'),10],[L('해당없음','N/A'),9],[L('이행률','Tasa'),10]],L('현장점검 · 점검항목별 이행률','Inspección de piso · cumplimiento por punto'));
-    body(ws3,(ST.data.item||[]).map(x=>{const it=im[x.item_id]||{},n=x.ok+x.ng;return[it.title_ko||'#'+x.item_id,it.title_es||'',x.ok,x.ng,x.na,n?x.ok/n:'']}),{5:'0.0%'});
+    head(ws3,[[L('점검항목 (한국어)','Punto (KO)'),50],[L('점검항목 (Español)','Punto (ES)'),50],[L('관련팀','Equipo'),26],[L('주기','Frecuencia'),16],[L('준수','Cumple'),9],[L('미준수','No cumple'),10],[L('해당없음','N/A'),9],[L('이행률','Tasa'),10]],L('현장점검 · 점검항목별 이행률','Inspección de piso · cumplimiento por punto'));
+    body(ws3,(ST.data.item||[]).map(x=>{const it=im[x.item_id]||{},n=x.ok+x.ng;return[it.title_ko||'#'+x.item_id,it.title_es||'',teamName(it.team),it.id?cycLabel(it):'',x.ok,x.ng,x.na,n?x.ok/n:'']}),{7:'0.0%'});
     const buf=await wb.xlsx.writeBuffer(),a=document.createElement('a');
     a.href=URL.createObjectURL(new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));a.download=`${L('현장점검_이행통계','Inspeccion_cumplimiento')}_P${PLANT}_${r.label}.xlsx`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),4000);
   }catch(e){toast(errMsg(e),true)}
@@ -1305,7 +1406,7 @@ window.addEventListener('resize',()=>{$('in-stick').style.top=($('top').offsetHe
   if(new Date().getHours()>=18){SH='N';document.querySelectorAll('#in-sh button').forEach(x=>x.classList.toggle('on',x.dataset.v==='N'))}
   applyLang();load(true);
   try{await loadBase();await loadDay()}catch(e){toast(errMsg(e),true)}
-  load(false);renderAll();
+  load(false);applyLang();
 })();
 </script>
 </body>
