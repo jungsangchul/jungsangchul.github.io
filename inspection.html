@@ -629,6 +629,7 @@ table.fit td:nth-child(2){white-space:normal}
       <label class="f"><span data-t="date">점검일</span>
         <span class="dnav"><button class="btn sec" onclick="dayMove(-1)">‹</button><input type="date" id="in-d"><button class="btn sec" onclick="dayMove(1)">›</button><button class="btn sec" style="width:auto;padding:0 12px;font-size:13.5px" onclick="daySet(today())" data-t="today">오늘</button></span></label>
       <label class="f"><span data-t="shift">근무조</span><span class="seg" id="in-sh"><button data-v="D" class="on"></button><button data-v="N"></button></span></label>
+      <label class="f" style="min-width:200px"><span data-t="team_sel">점검 팀</span><select id="in-team" onchange="teamSet(this.value)"></select></label>
       <span class="sp"></span>
       <button class="btn" onclick="itOpen()" data-t="it_add">＋ 점검항목 추가</button>
     </div>
@@ -800,7 +801,7 @@ const SHN=v=>v==='N'?L('야간','Noche'):L('주간','Día');
 
 /* ── 상태 ── */
 const S={emps:[],EM:{},items:[],mcAll:[],imc:{},insp:[],grade:{S:98,A:95,B:90,C:80,min:10}};
-let ME='';try{ME=localStorage.getItem('insp_me_'+PLANT)||''}catch(e){}
+let ME='',TEAM='';try{ME=localStorage.getItem('insp_me_'+PLANT)||'';TEAM=localStorage.getItem('insp_team_'+PLANT)||''}catch(e){}
 let D=today(),SH='D';
 let CH={},WK={},RM={};          // 점검 셀 · 호기별 작업자 · 호기별 미준수 메모
 const dirty=new Set();
@@ -831,7 +832,7 @@ const T={
  it_ko:['점검항목 (한국어)','Punto (coreano)'],it_es:['점검항목 (Español)','Punto (español)'],it_scope:['대상 호기 (비우면 전체)','Máquinas (vacío = todas)'],it_from:['적용 시작일','Inicio'],it_to:['적용 종료일','Fin'],it_1day:['하루만','Solo un día'],it_cont:['계속 적용','Continuo'],it_ord:['순서','Orden'],
  it_mhint:['대상 호기 예: <b>A</b> = A01~A46 전체, <b>A, P</b> = A·P 호기, <b>J01, J02</b> = 해당 호기만. 한국어·스페인어 중 하나만 입력해도 됩니다.','Ejemplo de máquinas: <b>A</b> = todas las A01~A46, <b>A, P</b> = máquinas A y P, <b>J01, J02</b> = solo esas. Puede escribir solo en un idioma.'],
  cancel:['취소','Cancelar'],save:['저장','Guardar'],
- team:['관련팀','Equipo responsable'],in_all:['다른 팀 항목도 보기 (읽기 전용)','Ver puntos de otros equipos (solo lectura)'],me_pick:['점검자 선택','Elegir inspector'],
+ team:['관련팀','Equipo responsable'],team_sel:['점검 팀','Equipo'],in_all:['다른 팀 항목도 보기 (읽기 전용)','Ver puntos de otros equipos (solo lectura)'],me_pick:['점검자 선택','Elegir inspector'],
  it_cyc:['점검 주기','Frecuencia'],it_wd:['점검 요일','Días de la semana'],it_md:['점검일 (매월, 쉼표로 여러 날)','Días del mes (separe con coma)'],
  cf_insp:['팀별 지정 점검자','Inspectores designados por equipo'],ci_team:['점검 담당 팀','Equipo a inspeccionar'],ci_add:['＋ 점검자 지정 (사번)','＋ Designar inspector'],
  ci_hint:['여기에 지정된 사람만 점검을 입력할 수 있습니다. 화면 위 「점검자」에서 본인을 선택하면 <b>자기 팀이 관련팀으로 지정된 점검항목</b>과 「공통」 항목만 체크할 수 있고, 다른 팀 항목은 읽기 전용입니다. 한 사람을 여러 팀에 지정할 수 있습니다.',
@@ -937,10 +938,16 @@ const teamName=t=>{if(!t)return L('공통','Común');const m=String(t).match(/^(
 function teamList(){const s=new Set();S.emps.forEach(e=>{if(e.active!==false&&e.team)s.add(e.team)});S.insp.forEach(x=>s.add(x.team));S.items.forEach(i=>{if(i.team)s.add(i.team)});return [...s].sort((a,b)=>a.localeCompare(b))}
 const myTeams=()=>ME?S.insp.filter(x=>x.emp_id===ME).map(x=>x.team):[];
 function canItem(it){if(!ME)return false;const t=myTeams();return t.length>0&&(!it.team||t.includes(it.team))}
-const viewItems=()=>{const its=dayItems(D);return(!ME||$('in-all').checked)?its:its.filter(canItem)};
+/* 점검 팀 선택: 고른 팀(+공통) 항목만 표시 — 점검자가 그 팀 지정자가 아니면 읽기 전용 */
+const viewItems=()=>{const its=dayItems(D);if($('in-all').checked)return its;if(TEAM)return its.filter(it=>!it.team||it.team===TEAM);return ME?its.filter(canItem):its};
+function relTeams(){const s=new Set();S.insp.forEach(x=>s.add(x.team));S.items.forEach(i=>{if(i.team)s.add(i.team)});const l=[...s].sort((a,b)=>a.localeCompare(b));return l.length?l:teamList()}
+function teamSel(){const l=relTeams();if(TEAM&&!l.includes(TEAM))TEAM='';
+  $('in-team').innerHTML=`<option value="">${ME?L('내 팀 전체','Mis equipos'):L('전체 팀','Todos los equipos')}</option>`+l.map(t=>`<option value="${esc(t)}">${esc(teamName(t))}${ME&&myTeams().includes(t)?' ✓':''}</option>`).join('');$('in-team').value=TEAM}
+function teamSet(v){TEAM=v||'';try{localStorage.setItem('insp_team_'+PLANT,TEAM)}catch(e){}inRender()}
 const itemNo=()=>{const m={};dayItems(D).forEach((it,i)=>m[it.id]=i+1);return m};
 function meRender(){const e=$('meTxt');e.className=ME?'':'none';e.textContent=ME?ME+' · '+empName(ME)+' ('+myTeams().map(teamName).join(', ')+')':L('선택하세요','Seleccione')}
-function meOpen(){if(!S.insp.length){toast(L('지정된 점검자가 없습니다 — 「호기 · 등급 설정」 탭에서 팀별 점검자를 먼저 지정하세요.','No hay inspectores designados — desígnelos en «Máquinas · grados».'),true);return}wOpen({type:'me',mc:L('점검자','Inspector')})}
+function meOpen(){if(TEAM&&!S.insp.some(x=>x.team===TEAM)){toast(L(teamName(TEAM)+' 팀에 지정된 점검자가 없습니다 — 「호기 · 등급 설정」 탭에서 지정하세요.','No hay inspectores designados para '+teamName(TEAM)+'.'),true);return}
+  if(!S.insp.length){toast(L('지정된 점검자가 없습니다 — 「호기 · 등급 설정」 탭에서 팀별 점검자를 먼저 지정하세요.','No hay inspectores designados — desígnelos en «Máquinas · grados».'),true);return}wOpen({type:'me',mc:L('점검자 선택','Elegir inspector')+(TEAM?' · '+teamName(TEAM):'')})}
 function inScope(it,mc){const s=(it.scope||'').trim();if(!s)return true;const m=mc.toUpperCase();
   return s.split(/[,\s]+/).filter(Boolean).some(t=>{t=t.toUpperCase();return m===t||(m.startsWith(t)&&/^\d+$/.test(m.slice(t.length)))})}
 async function saveMc(mc,patch){
@@ -970,11 +977,12 @@ document.querySelectorAll('#in-sh button').forEach(b=>b.onclick=async()=>{
   SH=b.dataset.v;document.querySelectorAll('#in-sh button').forEach(x=>x.classList.toggle('on',x===b));
   load(true);try{await loadDay()}catch(e){toast(errMsg(e),true)}load(false);inRender();
 });
-function inRender(){meRender();inBanner();inItems();inKpi();inStick();inGrid()}
+function inRender(){teamSel();meRender();inBanner();inItems();inKpi();inStick();inGrid()}
 function inBanner(){
-  const b=$('in-banner'),its=dayItems(D),mine=its.filter(canItem).length;
+  const b=$('in-banner'),its=viewItems(),mine=its.filter(canItem).length;
   if(!ME){b.classList.add('on');$('in-banner-t').textContent=L('점검자를 선택해야 점검을 입력할 수 있습니다. 지금은 읽기 전용입니다.','Elija un inspector para registrar. Ahora está en solo lectura.')}
-  else if(its.length&&!mine){b.classList.add('on');$('in-banner-t').textContent=L('오늘은 내 팀('+myTeams().map(teamName).join(', ')+')에 해당하는 점검항목이 없습니다.','Hoy no hay puntos para mi equipo ('+myTeams().map(teamName).join(', ')+').')}
+  else if(TEAM&&!myTeams().includes(TEAM)){b.classList.add('on');$('in-banner-t').textContent=L(teamName(TEAM)+' 지정 점검자가 아니어서 이 팀 항목은 읽기 전용입니다 (공통 항목만 입력 가능).','No es inspector designado de '+teamName(TEAM)+': sus puntos son de solo lectura (solo puede registrar los comunes).')}
+  else if(dayItems(D).length&&!mine){b.classList.add('on');$('in-banner-t').textContent=L('오늘은 내 팀('+myTeams().map(teamName).join(', ')+')에 해당하는 점검항목이 없습니다.','Hoy no hay puntos para mi equipo ('+myTeams().map(teamName).join(', ')+').')}
   else b.classList.remove('on');
 }
 function inItems(){
@@ -1085,7 +1093,7 @@ function wRender(){
   const q=norm($('w-q').value.trim()),all=$('w-all').checked;
   const ty=WCTX?WCTX.type:'';
   const cur=ty==='me'?ME:ty==='day'?WK[WCTX.mc]:ty==='def'?defW(WCTX.mc,WCTX.shift):null;
-  let list=ty==='me'?[...new Set(S.insp.map(x=>x.emp_id))].map(id=>({...(S.EM[id]||{employee_id:id,name:id}),team:S.insp.filter(x=>x.emp_id===id).map(x=>teamName(x.team)).join(', ')}))
+  let list=ty==='me'?[...new Set(S.insp.filter(x=>!TEAM||x.team===TEAM).map(x=>x.emp_id))].map(id=>({...(S.EM[id]||{employee_id:id,name:id}),team:S.insp.filter(x=>x.emp_id===id).map(x=>teamName(x.team)).join(', ')}))
     :S.emps.filter(e=>e.active!==false&&(all||/maquinado/i.test(e.team||'')));
   if(q)list=list.filter(e=>norm(e.employee_id).includes(q)||norm(e.name).includes(q)||norm(e.name_ko).includes(q));
   const tot=list.length;list=list.slice(0,120);
@@ -1119,7 +1127,7 @@ function itOpen(id){
   $('it-ttl').textContent=it?L('점검항목 수정','Editar punto'):L('점검항목 추가','Agregar punto');
   $('it-ko').value=it?it.title_ko||'':'';$('it-es').value=it?it.title_es||'':'';$('it-scope').value=it?it.scope||'':'';
   $('it-team').innerHTML=`<option value="">${L('공통 (모든 지정 점검자)','Común (todos los inspectores)')}</option>`+teamList().map(t=>`<option value="${esc(t)}">${esc(teamName(t))}</option>`).join('');
-  $('it-team').value=it?it.team||'':(myTeams()[0]||'');
+  $('it-team').value=it?it.team||'':(TEAM||myTeams()[0]||'');
   $('it-cyc').innerHTML=`<option value="D">${L('매일','Diario')}</option><option value="W">${L('매주 (요일 지정)','Semanal (días)')}</option><option value="M">${L('매월 (일자 지정)','Mensual (fechas)')}</option>`;
   $('it-cyc').value=it?it.cycle||'D':'D';const cd=it?cycDays(it):[];
   $('it-wd').innerHTML=WDO.map(n=>`<label><input type="checkbox" value="${n}" ${it&&it.cycle==='W'&&cd.includes(n)?'checked':''}>${L(DOW[n],DOWES[n])}</label>`).join('');
