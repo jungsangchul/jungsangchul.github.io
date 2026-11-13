@@ -2488,7 +2488,8 @@ const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZ
 const Q=new URLSearchParams(location.search);
 const PLANT=Q.get('p')==='2'?2:1, EMP=(Q.get('e')||'').trim();
 const ASSY=(Q.get('t')||'').toLowerCase()==='a';   // t=a → 조립생산 자격인증(qualification_1_a / _2_a) · 없으면 가공
-const INFO_FN=ASSY?'cert_info_a':'cert_info', DEF_DEPT=ASSY?'PRODUCCION ENSAMBLE':'ELABORACIÓN';
+const MAINT=(Q.get('t')||'').toLowerCase()==='m';   // t=m → 보전자 자격인증(maint_cert / maint_cert2)
+const INFO_FN=MAINT?'cert_info_m':ASSY?'cert_info_a':'cert_info', DEF_DEPT=MAINT?'MANTENIMIENTO':ASSY?'PRODUCCION ENSAMBLE':'ELABORACIÓN';
 let lang=(Q.get('lang')||'es');try{lang=localStorage.getItem('cert_lang')||lang;}catch(e){}
 let info=null, shot=null;
 const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
