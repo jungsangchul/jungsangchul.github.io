@@ -365,6 +365,8 @@ input[type=checkbox],input[type=radio]{accent-color:#c9a84c;width:auto}
 .cert-prev iframe{width:100%;border:0;background:#fff;display:block;border-radius:4px;box-shadow:0 4px 18px rgba(0,0,0,.5)}
 .btn-cert{padding:.2rem .5rem;border:1px solid rgba(201,168,76,.55);background:none;color:var(--gold);border-radius:999px;cursor:pointer;font-size:13px}
 .btn-cert:hover{background:rgba(201,168,76,.15)}
+.st-ph{display:inline-flex;width:34px;height:44px;border:1px solid var(--border);border-radius:5px;background:var(--bg);overflow:hidden;align-items:center;justify-content:center;vertical-align:middle;color:#555;font-size:14px;margin-right:6px}
+.st-ph img{width:100%;height:100%;object-fit:cover;display:block}
 .cert-url{font-family:var(--mono);font-size:12px;color:var(--teal);word-break:break-all;margin-top:.25rem}
 @media(max-width:900px){.cert-wrap{grid-template-columns:1fr}}
 </style>
@@ -590,6 +592,7 @@ input[type=checkbox],input[type=radio]{accent-color:#c9a84c;width:auto}
       <div><label data-t="plant"></label><select id="adPlant"><option value="1">1공장 Monclova</option><option value="2">2공장 Torreón</option></select></div>
       <div><button class="btn btn-primary" onclick="addStaff()">＋ <span data-t="add"></span></button></div>
     </div>
+    <div class="hint" style="font-size:12.5px;margin:.2rem 0 .6rem">📷 <span data-t="c_ph_hint"></span></div>
     <div class="tw"><table class="results-table" id="staffT"></table></div>
   </div>
   <div class="card">
@@ -608,6 +611,7 @@ input[type=checkbox],input[type=radio]{accent-color:#c9a84c;width:auto}
 
 <div class="modal-bg" id="modal" onclick="if(event.target===this)closeModal()"><div class="modal" id="modalBody"></div></div>
 <div class="modal-bg no-print" id="certModal" onclick="if(event.target===this)MCERT.close()"><div class="modal cert-modal" id="certBody"></div></div>
+<input type="file" id="mcPhFile" accept="image/*" style="display:none" onchange="MCERT.onListFile(this)"><input type="file" id="mcPhCam" accept="image/*" capture="environment" style="display:none" onchange="MCERT.onListFile(this)">
 <div class="toast" id="toast"></div>
 
 <script>
@@ -2959,7 +2963,7 @@ Object.assign(TX,{
 cert:['인증서','Certificado'],c_title:['인증서 출력','Imprimir certificado'],c_print:['인증서 인쇄','Imprimir'],c_label:['개인 QR 라벨','Etiqueta QR'],c_labels:['QR 라벨','Etiquetas QR'],
 c_photo:['사진','Foto'],c_pick:['PC에서 등록/변경','Subir desde PC'],c_loading:['조회중…','Cargando…'],
 c_ph_ok:['✅ 사진 있음 (사번 기준 자동 연결)','✅ Con foto (vinculada por No. de empleado)'],
-c_ph_no:['📷 미등록 — 인증서의 QR을 핸드폰으로 스캔해 업로드하거나 여기서 등록','📷 Sin foto — escanee el QR del certificado con el celular o súbala aquí'],
+c_ph_no:['📷 미등록 — 아래 버튼으로 촬영·선택해 등록 (또는 인증서의 QR을 핸드폰으로 스캔)','📷 Sin foto — tome o elija una foto abajo (o escanee el QR del certificado)'],
 c_ph_none:['사진 없음 → 인증서에 업로드 QR 표시','Sin foto → QR de carga en el certificado'],
 c_name:['Nombre (성명)','Nombre'],c_emp:['N° de empleado (사번)','N° de empleado'],c_dept:['Departamento (부서)','Departamento'],c_proc:['Proceso (인증서 본문 공정명 · 공통)','Proceso (texto del certificado · común)'],
 c_score:['Nota (실기 평균)','Nota (promedio práctico)'],c_grade:['Grado (등급)','Grado'],c_hire:['Fecha de ingreso (입사일)','Fecha de ingreso'],c_eval:['평가일 (유효기간 기준)','Fecha de evaluación'],
@@ -2969,6 +2973,7 @@ c_noemp:['사번이 없습니다. 「관리」 탭 보전자 명단에 사번을
 c_notpass:['합격(조건부 합격 포함) 상태가 아닙니다. 그래도 인증서를 출력할까요?','No está aprobado (ni condicional). ¿Imprimir el certificado de todos modos?'],
 c_cfg_saved:['✓ 공통 설정 저장','✓ Configuración guardada'],c_del_photo:['인증서용 사진을 삭제할까요?\n(근태관리 직원 사진이 있으면 그 사진이 다시 연결됩니다)','¿Eliminar la foto del certificado?'],
 c_ph_saved:['📷 사진 등록 완료','📷 Foto registrada'],c_no_list:['사번이 있는 인원이 없습니다','No hay personal con No. de empleado'],
+c_shoot:['사진 촬영','Tomar foto'],c_file:['사진 선택','Elegir foto'],c_ph_reg:['사진 등록/변경','Registrar / cambiar foto'],c_ph_hint:['보전 인원은 근태 사진이 자동 연결되지 않습니다. 여기서 촬영하거나 파일을 선택해 등록하세요.','El personal de mantenimiento no tiene foto vinculada. Tome o elija una foto aquí.'],
 c_dept_tress:['출결근태(TRESS) 부서','Depto. TRESS'],c_dept_def:['기본값','predeterminado'],
 });
 let LANG=localStorage.getItem('mcert_lang')||'ko';
@@ -3428,8 +3433,8 @@ async function delRec(tb,id){if(!confirm(T('del_confirm')))return;try{await sb(t
 
 /* ===================== ADMIN ===================== */
 function renderAdmin(){
-  document.getElementById('staffT').innerHTML=`<thead><tr><th>#</th><th class="l">${T('name')}</th><th>${T('empno')}</th><th>${T('plant')}</th><th>${T('active')}</th><th></th></tr></thead><tbody>`+
-   STAFF.map((s,i)=>`<tr><td class="mono">${i+1}</td><td class="l">${esc(s.name)}</td><td><input type="text" value="${esc(s.emp_no||'')}" style="width:120px" onchange="updStaff(${s.id},{emp_no:this.value.trim()})"></td>
+  document.getElementById('staffT').innerHTML=`<thead><tr><th>#</th><th class="l">${T('name')}</th><th>${T('c_photo')}</th><th>${T('empno')}</th><th>${T('plant')}</th><th>${T('active')}</th><th></th></tr></thead><tbody>`+
+   STAFF.map((s,i)=>`<tr><td class="mono">${i+1}</td><td class="l">${esc(s.name)}</td><td style="white-space:nowrap"><span class="st-ph" data-ph="${esc(String(s.emp_no||'').trim())}">👤</span><button type="button" class="btn-cert" data-phup="${s.id}" data-cam="1" title="${T('c_shoot')}">📷</button> <button type="button" class="btn-cert" data-phup="${s.id}" title="${T('c_file')}">🖼</button></td><td><input type="text" value="${esc(s.emp_no||'')}" style="width:120px" onchange="updStaff(${s.id},{emp_no:this.value.trim()})"></td>
     <td><select style="width:auto" onchange="updStaff(${s.id},{plant:this.value})">${opts([['1',plantLabel('1')],['2',plantLabel('2')]],s.plant)}</select></td>
     <td><input type="checkbox" style="width:auto" ${s.active?'checked':''} onchange="updStaff(${s.id},{active:this.checked})"></td><td><button class="btn btn-danger btn-sm" onclick="delStaff(${s.id})">🗑</button></td></tr>`).join('')+'</tbody>';
   document.getElementById('cfPass').value=CFG.theoryPass;document.getElementById('cfShuffle').value=CFG.shuffle?'1':'0';
@@ -3437,6 +3442,7 @@ function renderAdmin(){
   document.getElementById('qbankT').innerHTML=`<thead><tr><th>No</th><th class="l">${LANG==='ko'?'문제':'Pregunta'}</th><th>${T('answer')}</th></tr></thead><tbody>`+
    Q.map((q,i)=>`<tr><td class="mono">${i+1}</td><td class="l">${esc(L(q))}<div class="muted" style="margin-top:3px">${q.o.map((o,k)=>`<span style="${k===q.a?'color:var(--green);font-weight:700':''}">${ABCD[k]}) ${esc(o[li])}</span>`).join(' &nbsp; ')}</div></td><td><span class="grade-a">${ABCD[q.a]}</span></td></tr>`).join('')+
    `<tr><td class="mono">21</td><td class="l">${esc(L(Q21))}</td><td class="muted">${LANG==='ko'?'서술형':'Abierta'}</td></tr></tbody>`;
+  try{MCERT.fillThumbs()}catch(e){}
 }
 async function addStaff(){
   const name=document.getElementById('adName').value.trim(); if(!name)return;
@@ -3618,8 +3624,8 @@ var MCERT=(function(){
     <div class="cert-wrap"><div class="cert-side">
       <div class="cert-actions"><button class="btn btn-primary" onclick="MCERT.print()">🖨 ${T('c_print')}</button><button class="btn btn-secondary" onclick="MCERT.printLabel()">🔳 ${T('c_label')}</button></div>
       <div class="cert-photo-row"><div class="cert-thumb" id="cPhotoThumb"></div><div style="min-width:0;flex:1"><div id="cPhotoState" style="font-size:12.5px;margin-bottom:.45rem"></div>
-        <div style="display:flex;gap:.4rem;flex-wrap:wrap"><button class="btn btn-secondary btn-sm" onclick="document.getElementById('cPhotoFile').click()">📁 ${T('c_pick')}</button><button class="btn btn-danger btn-sm" id="cPhotoDel" style="display:none" onclick="MCERT.delPhoto()">🗑 ${T('del')}</button>
-        <input type="file" id="cPhotoFile" accept="image/*" style="display:none" onchange="MCERT.onPhotoFile(this)"></div></div></div>
+        <div style="display:flex;gap:.4rem;flex-wrap:wrap"><button class="btn btn-primary btn-sm" onclick="document.getElementById('cPhotoCam').click()">📷 ${T('c_shoot')}</button><button class="btn btn-secondary btn-sm" onclick="document.getElementById('cPhotoFile').click()">🖼 ${T('c_file')}</button><button class="btn btn-danger btn-sm" id="cPhotoDel" style="display:none" onclick="MCERT.delPhoto()">🗑 ${T('del')}</button>
+        <input type="file" id="cPhotoFile" accept="image/*" style="display:none" onchange="MCERT.onPhotoFile(this)"><input type="file" id="cPhotoCam" accept="image/*" capture="environment" style="display:none" onchange="MCERT.onPhotoFile(this)"></div></div></div>
       <div class="cert-grid">
         ${f('c_name','cName')}${f('c_emp','cEmp',{ro:1})}
         ${f('c_dept','cDept',{tail:' <span id="cDeptSrc" style="color:var(--teal)"></span>'})}${f('c_proc','cProc',{src:'proc'})}
@@ -3720,26 +3726,42 @@ var MCERT=(function(){
     try{await sb(TB.config+'',{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=representation'},body:JSON.stringify({key:'cert',value})});toast(T('c_cfg_saved'));}
     catch(e){console.warn('인증서 설정 저장 실패',e);toast(T('err')+': '+e.message);}
   }
+  // ── 관리 탭 보전자 명단: 사진 썸네일 · 바로 등록 ──
+  const phCache=new Map();let upEmp=null;   // 사번 → dataURL | null
+  async function photoOf(e){if(phCache.has(e))return phCache.get(e);let v=null;
+    try{const p=await rpc('cert_photo_get',{p_plant:P,p_empno:e});v=(typeof p==='string'&&p.startsWith('data:'))?p:null;}catch(x){return null;}
+    phCache.set(e,v);return v;}
+  function paintThumb(e){const v=phCache.get(e);document.querySelectorAll('.st-ph[data-ph]').forEach(el=>{if(el.dataset.ph===e)el.innerHTML=v?`<img src="${v}" alt="">`:'👤';});}
+  async function fillThumbs(){const es=[...new Set([...document.querySelectorAll('.st-ph[data-ph]')].map(el=>el.dataset.ph).filter(Boolean))];
+    for(const e of es){await photoOf(e);paintThumb(e);}}
+  function pickFor(id,cam){const s=STAFF.find(x=>x.id===id);const e=String(s&&s.emp_no||'').trim();if(!e){alert(T('c_noemp'));return;}upEmp=e;$(cam?'mcPhCam':'mcPhFile').click();}
+  async function onListFile(inp){const f=inp.files&&inp.files[0];inp.value='';const e=upEmp;upEmp=null;if(!f||!e)return;
+    try{const dataUrl=await shrink(f,640,0.85);
+      const res=await rpc('cert_photo_set',{p_plant:P,p_empno:e,p_photo:dataUrl,p_source:'admin'});
+      if(res&&res.ok===false){alert(res.msg||T('err'));return;}
+      phCache.set(e,dataUrl);paintThumb(e);toast(T('c_ph_saved'));
+    }catch(x){alert(T('err')+': '+x.message);}}
   async function onPhotoFile(inp){
     const f=inp.files&&inp.files[0];inp.value='';if(!f||!cur)return;
     try{const dataUrl=await shrink(f,640,0.85);
       const res=await rpc('cert_photo_set',{p_plant:P,p_empno:cur.empNo,p_photo:dataUrl,p_source:'admin'});
       if(res&&res.ok===false){alert(res.msg||T('err'));return;}
-      cur.photo=dataUrl;setPhotoUI('ok');render();toast(T('c_ph_saved'));
+      cur.photo=dataUrl;phCache.set(cur.empNo,dataUrl);paintThumb(cur.empNo);setPhotoUI('ok');render();toast(T('c_ph_saved'));
     }catch(e){alert(T('err')+': '+e.message);}
   }
   async function delPhoto(){
     if(!cur||!confirm(T('c_del_photo')))return;
     try{await rpc('cert_photo_del',{p_plant:P,p_empno:cur.empNo});
       const p=await rpc('cert_photo_get',{p_plant:P,p_empno:cur.empNo});cur.photo=(typeof p==='string'&&p.startsWith('data:'))?p:null;
-      setPhotoUI(cur.photo?'ok':'none');render();}catch(e){alert(T('err')+': '+e.message);}
+      phCache.set(cur.empNo,cur.photo);paintThumb(cur.empNo);setPhotoUI(cur.photo?'ok':'none');render();}catch(e){alert(T('err')+': '+e.message);}
   }
   function shrink(file,max,q){return new Promise((ok,no)=>{const img=new Image();const u=URL.createObjectURL(file);
     img.onload=()=>{URL.revokeObjectURL(u);let w=img.naturalWidth,h=img.naturalHeight;const s=Math.min(1,max/Math.max(w,h));w=Math.round(w*s);h=Math.round(h*s);
       const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);ok(c.toDataURL('image/jpeg',q));};
     img.onerror=()=>{URL.revokeObjectURL(u);no(new Error('image'));};img.src=u;});}
-  document.addEventListener('click',e=>{const b=e.target.closest('[data-cert]');if(b){e.stopPropagation();open(b.dataset.cert);}});
-  return {open,close,render,onChange,print,printLabel,printLabels,saveCfg,onPhotoFile,delPhoto,urlOf,_cfg:cfg};
+  document.addEventListener('click',e=>{const b=e.target.closest('[data-cert]');if(b){e.stopPropagation();open(b.dataset.cert);return;}
+    const u=e.target.closest('[data-phup]');if(u)pickFor(parseInt(u.dataset.phup),!!u.dataset.cam);});
+  return {open,close,render,onChange,print,printLabel,printLabels,saveCfg,onPhotoFile,delPhoto,fillThumbs,onListFile,urlOf,_cfg:cfg};
 })();
 </script>
 </body>
