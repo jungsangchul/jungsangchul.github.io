@@ -1234,9 +1234,24 @@ function phRender(){
 function shrink(file){return new Promise(res=>{const img=new Image();const u=URL.createObjectURL(file);img.onload=()=>{const MAX=900;let w=img.width,h=img.height;const r=Math.min(1,MAX/Math.max(w,h));w=Math.round(w*r);h=Math.round(h*r);const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);URL.revokeObjectURL(u);res(c.toDataURL('image/jpeg',.65))};img.src=u})}
 /* 엑셀 삽입용 썸네일: data URL → 긴 변 max px JPEG */
 function thumbOf(dataUrl,max){return new Promise(res=>{const img=new Image();img.onload=()=>{let w=img.width,h=img.height;const r=Math.min(1,max/Math.max(w,h));w=Math.round(w*r)||1;h=Math.round(h*r)||1;const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);res({b64:c.toDataURL('image/jpeg',.7).split(',')[1],w,h})};img.onerror=()=>res(null);img.src=dataUrl})}
+/* 엑셀용 썸네일 확보: 저장된 thumb 사용, 없으면 원본을 소량씩 받아 생성 후 thumb 열에 저장(다음부터 빠름) */
+async function phThumbs(list){
+  const by={};list.forEach(p=>by[p.id]=p);const ids=list.map(p=>p.id);
+  const pool=async(n,jobs)=>{let i=0;await Promise.all(Array.from({length:n},async()=>{while(i<jobs.length)await jobs[i++]()}))};
+  const chunks=(a,n)=>{const o=[];for(let i=0;i<a.length;i+=n)o.push(a.slice(i,i+n));return o};
+  const need=[];
+  await pool(3,chunks(ids,100).map(c=>async()=>{(await sbGet(`byp_photo?id=in.(${c.join(',')})&select=id,thumb`)).forEach(r=>{if(r.thumb)by[r.id].src=r.thumb;else need.push(r.id)})}));
+  let done=0;const tot=need.length;
+  await pool(3,chunks(need,8).map(c=>async()=>{
+    const rs=await sbGet(`byp_photo?id=in.(${c.join(',')})&select=id,data`);
+    for(const r of rs){const th=await thumbOf(r.data,320);if(!th)continue;by[r.id].th=th;
+      try{await sbPatch('byp_photo','id=eq.'+r.id,{thumb:'data:image/jpeg;base64,'+th.b64})}catch(e){}}
+    done+=c.length;toast(L(`사진 준비 중 ${done}/${tot}`,`Preparando fotos ${done}/${tot}`))}));
+  for(const p of list){if(!p.th&&p.src)p.th=await thumbOf(p.src,320)}
+}
 async function phAdd(files){
   if(!files||!files.length)return;load(true);
-  try{const rows=[];for(const f of files){rows.push({plant:PLANT,d:IN.date,mc:PH.mc,kind:PH.kind,data:await shrink(f)})}
+  try{const rows=[];for(const f of files){const dt=await shrink(f);const th=await thumbOf(dt,320);rows.push({plant:PLANT,d:IN.date,mc:PH.mc,kind:PH.kind,data:dt,thumb:th?'data:image/jpeg;base64,'+th.b64:null})}
     await sbUpsert('byp_photo',rows);toast(L(`사진 ${rows.length}장 저장`,`${rows.length} fotos`));
     await phOpen(PH.mc)}
   catch(e){toast(e.message,true)}finally{load(false)}
@@ -1980,7 +1995,8 @@ async function inExcel(){
   try{
     await loadExcelJS();
     const rows=await sbGet(`byp_daily?plant=eq.${PLANT}&d=gte.${f}&d=lte.${t}&select=d,mc,wire_kg,term_kg,seal_kg,scrap_kg,memo,worker&order=d,mc`);
-    const ph=await sbGet(`byp_photo?plant=eq.${PLANT}&d=gte.${f}&d=lte.${t}&select=d,mc,kind,data&order=d,mc,id`);const phc={},phs={};ph.forEach(p=>{const k=p.d+'|'+p.mc;phc[k]=(phc[k]||0)+1;(phs[k]=phs[k]||[]).push(p)});
+    const ph=await sbGet(`byp_photo?plant=eq.${PLANT}&d=gte.${f}&d=lte.${t}&select=id,d,mc,kind&order=d,mc,id`);const phc={},phs={};ph.forEach(p=>{const k=p.d+'|'+p.mc;phc[k]=(phc[k]||0)+1;(phs[k]=phs[k]||[]).push(p)});
+    await phThumbs(Object.values(phs).flatMap(a=>a.slice(0,3)));
     const cuts={};(await sbGet(`byp_cut?plant=eq.${PLANT}&d=gte.${f}&d=lte.${t}&select=d,qty`)).forEach(c=>cuts[c.d]=Number(c.qty)||0);
     const wb=new ExcelJS.Workbook();wb.creator='YURA HARNESS MÉXICO';const sheet=(...a)=>xlSheet(wb,`${f} ~ ${t}`,...a);
     const G=sumDaily(rows);const days=Object.keys(G.byDay).sort();const dm={},da={};
@@ -1997,7 +2013,7 @@ async function inExcel(){
     const PH_H=96,PH_W=128; /* pt / px */
     for(let i=0;i<rows.length;i++){const r=rows[i];const ps=(phs[r.d+'|'+r.mc]||[]).slice(0,NP);if(!ps.length)continue;
       const xr=5+i;ws2.getRow(xr).height=PH_H;
-      for(let j=0;j<ps.length;j++){const th=await thumbOf(ps[j].data,320);if(!th)continue;const id=wb.addImage({base64:th.b64,extension:'jpeg'});
+      for(let j=0;j<ps.length;j++){const th=ps[j].th;if(!th)continue;const id=wb.addImage({base64:th.b64,extension:'jpeg'});
         const sc=Math.min(PH_W/th.w,(PH_H*1.33-6)/th.h);ws2.addImage(id,{tl:{col:10+j+0.05,row:xr-1+0.04},ext:{width:Math.round(th.w*sc),height:Math.round(th.h*sc)},editAs:'oneCell'})}}
     const T=inTotals(true);const list=[{mc:ALL},...S.mc.filter(m=>m.active)];
     sheet('당일',L(`${d} 호기별 입력 (화면 값)`,`${d} por máquina (valores en pantalla)`),[L('호기','Máquina'),'Wire','Terminal','Seal','Scrap',L('합계','Total'),L('메모','Nota')],
