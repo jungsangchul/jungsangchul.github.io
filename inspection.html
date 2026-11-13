@@ -716,9 +716,11 @@ table.fit td:nth-child(2){white-space:normal}
   <div class="card">
     <h3 data-t="cf_mc">점검 호기 · 기본 작업자</h3>
     <div class="row" style="margin-bottom:10px">
-      <label class="f" style="flex:1;min-width:200px;max-width:420px"><span data-t="cf_newmc">호기 추가 (여러 개는 쉼표·줄바꿈)</span><input id="cf-new" placeholder="A47, A48"></label>
+      <label class="f" style="min-width:220px"><span data-t="ci_team">점검 담당 팀</span><select id="cf-team" onchange="cfTeamSet(this.value)"></select></label>
+      <label class="f" style="flex:1;min-width:200px;max-width:420px"><span data-t="cf_newmc">점검 대상 추가 (여러 개는 쉼표·줄바꿈)</span><input id="cf-new" placeholder="A47, A48" onkeydown="if(event.key==='Enter')cfAdd()"></label>
       <button class="btn" onclick="cfAdd()" data-t="add">추가</button>
       <button class="btn sec" id="cf-imp" onclick="cfImport()" data-t="cf_imp">부산물 관리 호기 불러오기</button>
+      <button class="btn sec" id="cf-copy" onclick="cfCopy()" data-t="cf_copy">가공생산팀 호기 가져오기</button>
       <span class="sp"></span>
       <label class="chkl"><input type="checkbox" id="cf-off" onchange="cfRender()"><span data-t="cf_showoff">점검 제외 호기 포함</span></label>
     </div>
@@ -800,7 +802,7 @@ const STN=()=>({ok:L('준수','Cumple'),ng:L('미준수','No cumple'),na:L('해�
 const SHN=v=>v==='N'?L('야간','Noche'):L('주간','Día');
 
 /* ── 상태 ── */
-const S={emps:[],EM:{},items:[],mcAll:[],imc:{},insp:[],grade:{S:98,A:95,B:90,C:80,min:10}};
+const S={emps:[],EM:{},items:[],mcAll:[],imc:{},tmc:[],insp:[],grade:{S:98,A:95,B:90,C:80,min:10}};
 let ME='',TEAM='';try{ME=localStorage.getItem('insp_me_'+PLANT)||'';TEAM=localStorage.getItem('insp_team_'+PLANT)||''}catch(e){}
 let D=today(),SH='D';
 let CH={},WK={},RM={};          // 점검 셀 · 호기별 작업자 · 호기별 미준수 메모
@@ -827,10 +829,10 @@ const T={
  cf_title:['호기 · 기본 작업자 · 등급 기준','Máquinas · operadores · criterios de grado'],cf_grade:['이행률 등급 기준 (급여 인상 반영용)','Criterio de grado (para aumento salarial)'],
  cf_grade_hint:['이행률 = 준수 ÷ (준수 + 미준수) — 「해당없음」은 제외합니다. 기간 내 점검 건수가 최소 건수보다 적으면 <b>평가보류</b>로 표시합니다. 통계 탭에서 <b>연간</b>을 선택하면 급여 인상 심사 기간의 개인별 이행률·등급을 한 번에 보고 엑셀로 받을 수 있습니다.',
   'Tasa = Cumple ÷ (Cumple + No cumple); «N/A» se excluye. Con menos registros que el mínimo se muestra <b>pendiente</b>. En la pestaña de estadística elija <b>Anual</b> para ver y descargar la tasa y el grado por operador del periodo de revisión salarial.'],
- cf_mc:['점검 호기 · 기본 작업자','Máquinas · operador predeterminado'],cf_newmc:['호기 추가 (여러 개는 쉼표·줄바꿈)','Agregar máquinas (separe con coma)'],add:['추가','Agregar'],cf_imp:['부산물 관리 호기 불러오기','Importar máquinas de Subproductos'],cf_showoff:['점검 제외 호기 포함','Incluir excluidas'],
+ cf_mc:['팀별 점검 대상 (호기 · 라인) · 기본 작업자','Objetos de inspección por equipo · operador predeterminado'],cf_newmc:['점검 대상 추가 (여러 개는 쉼표·줄바꿈)','Agregar objetos (separe con coma)'],cf_copy:['가공생산팀 호기 가져오기','Copiar máquinas de Maquinado'],add:['추가','Agregar'],cf_imp:['부산물 관리 호기 불러오기','Importar máquinas de Subproductos'],cf_showoff:['점검 제외 대상 포함','Incluir excluidos'],
  w_all:['전체 팀','Todos los equipos'],w_clear:['지정 해제','Quitar'],
- it_ko:['점검항목 (한국어)','Punto (coreano)'],it_es:['점검항목 (Español)','Punto (español)'],it_scope:['대상 호기 (비우면 전체)','Máquinas (vacío = todas)'],it_from:['적용 시작일','Inicio'],it_to:['적용 종료일','Fin'],it_1day:['하루만','Solo un día'],it_cont:['계속 적용','Continuo'],it_ord:['순서','Orden'],
- it_mhint:['대상 호기 예: <b>A</b> = A01~A46 전체, <b>A, P</b> = A·P 호기, <b>J01, J02</b> = 해당 호기만. 한국어·스페인어 중 하나만 입력해도 됩니다.','Ejemplo de máquinas: <b>A</b> = todas las A01~A46, <b>A, P</b> = máquinas A y P, <b>J01, J02</b> = solo esas. Puede escribir solo en un idioma.'],
+ it_ko:['점검항목 (한국어)','Punto (coreano)'],it_es:['점검항목 (Español)','Punto (español)'],it_scope:['대상 (비우면 관련팀 대상 전체)','Objetos (vacío = todos los del equipo)'],it_from:['적용 시작일','Inicio'],it_to:['적용 종료일','Fin'],it_1day:['하루만','Solo un día'],it_cont:['계속 적용','Continuo'],it_ord:['순서','Orden'],
+ it_mhint:['대상 호기 예: <b>A</b> = A01~A46 전체, <b>A, P</b> = A·P 호기, <b>J01, J02</b> = 해당 호기만. 점검 대상은 <b>관련팀에 설정된 대상 목록</b>(「호기 · 등급 설정」 탭) 안에서 적용됩니다. 한국어·스페인어 중 하나만 입력해도 됩니다.','Ejemplo de máquinas: <b>A</b> = todas las A01~A46, <b>A, P</b> = máquinas A y P, <b>J01, J02</b> = solo esas. Se aplica dentro de la <b>lista de objetos del equipo responsable</b> (pestaña «Máquinas · grados»). Puede escribir solo en un idioma.'],
  cancel:['취소','Cancelar'],save:['저장','Guardar'],
  team:['관련팀','Equipo responsable'],team_sel:['점검 팀','Equipo'],in_all:['다른 팀 항목도 보기 (읽기 전용)','Ver puntos de otros equipos (solo lectura)'],me_pick:['점검자 선택','Elegir inspector'],
  it_cyc:['점검 주기','Frecuencia'],it_wd:['점검 요일','Días de la semana'],it_md:['점검일 (매월, 쉼표로 여러 날)','Días del mes (separe con coma)'],
@@ -852,7 +854,6 @@ function applyLang(){
   const sv=$('st-sh').value;$('st-sh').innerHTML=`<option value="">${L('전체','Todos')}</option><option value="D">${SHN('D')}</option><option value="N">${SHN('N')}</option>`;$('st-sh').value=sv;
   $('w-q').placeholder=L('사번 또는 이름 입력','No. de empleado o nombre');
   const tv=$('st-team').value;$('st-team').innerHTML=`<option value="">${L('전체','Todos')}</option>`+teamList().map(t=>`<option value="${esc(t)}">${esc(teamName(t))}</option>`).join('');$('st-team').value=tv;
-  $('cf-imp').style.display=PLANT===1?'none':'';
   renderAll();
 }
 document.querySelectorAll('.lang button').forEach(b=>b.onclick=()=>{curLang=b.dataset.l;try{localStorage.setItem('insp_lang',curLang)}catch(e){}applyLang()});
@@ -895,17 +896,18 @@ const errMsg=e=>{let m=e&&e.message||String(e);try{const j=JSON.parse(m);m=j.mes
 const empName=id=>{const e=S.EM[id];return e?e.name:(id||'')};
 const empLabel=id=>{const e=S.EM[id];if(!e)return id||'';return e.name+(e.name_ko&&e.name_ko!==e.name?' · '+e.name_ko:'')};
 async function loadBase(){
-  const [emps,items,im,bm,cfg,insp]=await Promise.all([
+  const [emps,items,im,bm,cfg,insp,tmc]=await Promise.all([
     sbGet(`${EMP_TBL}?select=employee_id,name,name_ko,team,active&order=employee_id`),
     sbGet(`insp_item?plant=eq.${PLANT}&order=ord,id`),
     sbGet(`insp_mc?plant=eq.${PLANT}&order=ord,mc`),
     PLANT===1?sbGet(`byp_machine?plant=eq.1&select=mc,ord,active,kind&order=ord,mc`).catch(()=>[]):Promise.resolve([]),
     sbGet(`insp_config?plant=eq.${PLANT}`),
-    sbGet(`insp_inspector?plant=eq.${PLANT}&order=team,emp_id`)
+    sbGet(`insp_inspector?plant=eq.${PLANT}&order=team,emp_id`),
+    sbGet(`insp_team_mc?plant=eq.${PLANT}&order=team,ord,mc`)
   ]);
   S.insp=insp;if(ME&&!insp.some(x=>x.emp_id===ME))ME='';
   S.emps=emps;S.EM={};emps.forEach(e=>S.EM[e.employee_id]=e);
-  S.items=items;
+  S.items=items;S.tmc=tmc;
   buildMc(im,bm);
   const g=cfg.find(c=>c.key==='grade');if(g&&g.val)S.grade={...S.grade,...g.val};
 }
@@ -913,11 +915,27 @@ function buildMc(im,bm){
   S.imc={};im.forEach(m=>S.imc[m.mc]=m);S.byp=bm||S.byp||[];
   const list=[],seen=new Set();
   S.byp.filter(m=>m.active&&m.kind!=='ext').forEach(m=>{seen.add(m.mc);list.push({mc:m.mc,ord:m.ord||0,src:'byp'})});
-  im.forEach(m=>{if(!seen.has(m.mc))list.push({mc:m.mc,ord:1e6+(m.ord||0),src:'own'})});
-  S.mcAll=list.sort((a,b)=>a.ord-b.ord||a.mc.localeCompare(b.mc,undefined,{numeric:true}));
+  im.forEach(m=>{if(m.base!==false&&!seen.has(m.mc))list.push({mc:m.mc,ord:1e6+(m.ord||0),src:'own'})});
+  S.mcAll=list.sort(mcSort);TSC={};
 }
 const mcOn=mc=>!(S.imc[mc]&&S.imc[mc].active===false);
-const MCS=()=>S.mcAll.filter(m=>mcOn(m.mc));
+/* 팀별 점검 대상 — 가공생산팀: 기본 호기 목록(부산물 연동+직접 추가) · 다른 팀: insp_team_mc (미설정이면 가공 목록 사용) */
+let TSC={};
+const mcSort=(a,b)=>a.ord-b.ord||a.mc.localeCompare(b.mc,undefined,{numeric:true});
+const isMaq=t=>!t||/maquinado/i.test(t);
+const maqTeam=()=>teamList().find(t=>/maquinado/i.test(t))||'';
+const teamOwn=t=>!isMaq(t)&&S.tmc.some(x=>x.team===t);
+const teamMcs=t=>teamOwn(t)?S.tmc.filter(x=>x.team===t).map(x=>({mc:x.mc,ord:x.ord||0,src:'team',on:x.active!==false})).sort(mcSort):S.mcAll.map(m=>({...m,on:mcOn(m.mc)}));
+function MCS(t){const k='t:'+(isMaq(t)?'':t);return TSC[k]||(TSC[k]=teamMcs(t).filter(m=>m.on))}
+function mcsOf(teams){
+  if(teams&&teams.length===1)return MCS(teams[0]);
+  const k='u:'+(teams?teams.join('|'):'*');if(TSC[k])return TSC[k];
+  const ts=teams||['',...new Set(S.tmc.map(x=>x.team))],seen=new Set(),out=[];
+  ts.forEach(t=>MCS(t).forEach(m=>{if(!seen.has(m.mc)){seen.add(m.mc);out.push(m)}}));return TSC[k]=out}
+const teamHas=(t,mc)=>{const k='s:'+t;return(TSC[k]||(TSC[k]=new Set(MCS(t).map(m=>m.mc)))).has(mc)};
+const mcOwner=mc=>(S.tmc.find(x=>x.mc===mc&&x.active!==false&&!S.mcAll.some(m=>m.mc===mc))||{}).team||'';
+const viewMcs=()=>mcsOf($('in-all').checked?null:TEAM?[TEAM]:ME&&myTeams().length?myTeams():null);
+const applies=(it,mc)=>inScope(it,mc)&&(!it.team||teamHas(it.team,mc));
 const defW=(mc,sh)=>(S.imc[mc]||{})[(sh||SH)==='N'?'emp_n':'emp_d']||null;
 const itTitle=it=>L(it.title_ko||it.title_es,it.title_es||it.title_ko);
 const itOther=it=>{const o=L(it.title_es,it.title_ko);return o&&o!==itTitle(it)?o:''};
@@ -951,9 +969,9 @@ function meOpen(){if(TEAM&&!S.insp.some(x=>x.team===TEAM)){toast(L(teamName(TEAM
 function inScope(it,mc){const s=(it.scope||'').trim();if(!s)return true;const m=mc.toUpperCase();
   return s.split(/[,\s]+/).filter(Boolean).some(t=>{t=t.toUpperCase();return m===t||(m.startsWith(t)&&/^\d+$/.test(m.slice(t.length)))})}
 async function saveMc(mc,patch){
-  const cur=S.imc[mc]||{plant:PLANT,mc,ord:0,active:true,emp_d:null,emp_n:null};
-  const row={plant:PLANT,mc,ord:cur.ord||0,active:cur.active!==false,emp_d:cur.emp_d||null,emp_n:cur.emp_n||null,...patch,updated_at:new Date().toISOString()};
-  await sbUpsert('insp_mc',[row],'plant,mc');S.imc[mc]=row;
+  const cur=S.imc[mc]||{plant:PLANT,mc,ord:0,active:true,emp_d:null,emp_n:null,base:S.mcAll.some(m=>m.mc===mc)};
+  const row={plant:PLANT,mc,ord:cur.ord||0,active:cur.active!==false,emp_d:cur.emp_d||null,emp_n:cur.emp_n||null,base:cur.base!==false,...patch,updated_at:new Date().toISOString()};
+  await sbUpsert('insp_mc',[row],'plant,mc');S.imc[mc]=row;TSC={};
 }
 
 /* ══════════ ① 점검 입력 ══════════ */
@@ -961,7 +979,7 @@ async function loadDay(){
   const rows=await sbGet(`insp_check?plant=eq.${PLANT}&d=eq.${D}&shift=eq.${SH}&select=item_id,mc,emp_id,status,memo`);
   CH={};WK={};RM={};const has={};
   rows.forEach(r=>{CH[r.item_id+'|'+r.mc]={status:r.status};has[r.mc]=1;if(r.emp_id&&!WK[r.mc])WK[r.mc]=r.emp_id;if(r.memo&&!RM[r.mc])RM[r.mc]=r.memo});
-  S.mcAll.forEach(m=>{if(!has[m.mc])WK[m.mc]=defW(m.mc)});
+  mcsOf(null).forEach(m=>{if(!has[m.mc])WK[m.mc]=defW(m.mc)});
 }
 async function daySet(d){
   if(!d)return;await flush();
@@ -995,8 +1013,8 @@ function inItems(){
    :`<div class="hint" style="padding:10px 4px">${dayItems(D).length?L('내 팀에 해당하는 점검항목이 없습니다.','No hay puntos para mi equipo.'):L('이 날짜(주기)에 해당하는 점검항목이 없습니다. 「＋ 점검항목 추가」로 지시사항을 등록하세요.','No hay puntos de inspección para esta fecha. Regístrelos con «＋ Agregar punto».')}</div>`;
 }
 function dayStat(){
-  const its=viewItems(),ms=MCS();let tot=0,ok=0,ng=0,na=0,nw=0;
-  ms.forEach(m=>{let any=false;its.forEach(it=>{if(!inScope(it,m.mc))return;any=true;tot++;const c=CH[it.id+'|'+m.mc];if(c){if(c.status==='ok')ok++;else if(c.status==='ng')ng++;else if(c.status==='na')na++}});if(any&&!WK[m.mc])nw++});
+  const its=viewItems(),ms=viewMcs().filter(m=>its.some(it=>applies(it,m.mc)));let tot=0,ok=0,ng=0,na=0,nw=0;
+  ms.forEach(m=>{let any=false;its.forEach(it=>{if(!applies(it,m.mc))return;any=true;tot++;const c=CH[it.id+'|'+m.mc];if(c){if(c.status==='ok')ok++;else if(c.status==='ng')ng++;else if(c.status==='na')na++}});if(any&&!WK[m.mc])nw++});
   return{tot,ok,ng,na,nw,done:ok+ng+na,mc:ms.length};
 }
 function inKpi(){
@@ -1018,7 +1036,7 @@ function rowHtml(m,its){
   const mc=m.mc,w=WK[mc];let ng=0,todo=0;
   const no=rowHtml.no||itemNo();
   const cells=its.map(it=>{
-    if(!inScope(it,mc))return `<span class="cb x"></span>`;
+    if(!applies(it,mc))return `<span class="cb x"></span>`;
     const c=CH[it.id+'|'+mc],st=c?c.status:'',can=canItem(it);if(st==='ng')ng++;if(!st&&can)todo++;
     return `<button class="cb ${st}${can?'':' ro'}" ${can?`data-i="${it.id}"`:''} title="${esc(itTitle(it))}${st?' — '+STN()[st]:''}${can?'':' · '+L('읽기 전용','solo lectura')}"><i>${no[it.id]}</i><u>${st?SYM[st]:''}</u></button>`}).join('');
   return `<div class="ig-r${ng?' hasng':''}${!w?' nw':''}" data-mc="${esc(mc)}" data-ng="${ng}" data-todo="${todo}">
@@ -1031,14 +1049,14 @@ function rowHtml(m,its){
 function inGrid(){
   const its=viewItems(),q=norm($('in-q').value.trim()),fNg=$('in-ng').checked,fTodo=$('in-todo').checked;rowHtml.no=itemNo();
   if(!its.length){$('in-grid').innerHTML=`<div class="hint" style="padding:22px;text-align:center">${L('표시할 점검항목이 없습니다.','No hay puntos de inspección para mostrar.')}</div>`;return}
-  const ms=MCS().filter(m=>its.some(it=>inScope(it,m.mc))&&(!q||norm(m.mc).includes(q)||norm(WK[m.mc]||'').includes(q)||norm(empLabel(WK[m.mc])).includes(q)));
+  const ms=viewMcs().filter(m=>its.some(it=>applies(it,m.mc))&&(!q||norm(m.mc).includes(q)||norm(WK[m.mc]||'').includes(q)||norm(empLabel(WK[m.mc])).includes(q)));
   let html=ms.map(m=>rowHtml(m,its)).join('');
-  const box=$('in-grid');box.innerHTML=html||`<div class="hint" style="padding:22px;text-align:center">${S.mcAll.length?L('해당하는 호기가 없습니다.','Sin máquinas.'):L('등록된 호기가 없습니다. 「호기 · 등급 설정」 탭에서 호기를 추가하세요.','No hay máquinas. Agréguelas en «Máquinas · grados».')}</div>`;
+  const box=$('in-grid');box.innerHTML=html||`<div class="hint" style="padding:22px;text-align:center">${viewMcs().length?L('해당하는 점검 대상이 없습니다.','Sin objetos de inspección.'):L('등록된 점검 대상(호기)이 없습니다. 「호기 · 등급 설정」 탭에서 팀별 점검 대상을 추가하세요.','No hay objetos de inspección. Agréguelos por equipo en «Máquinas · grados».')}</div>`;
   if(fNg||fTodo)box.querySelectorAll('.ig-r').forEach(r=>{const show=(fNg&&+r.dataset.ng>0)||(fTodo&&+r.dataset.todo>0);r.style.display=show?'':'none'});
 }
 function rowRefresh(mc){
   const r=[...$('in-grid').querySelectorAll('.ig-r')].find(x=>x.dataset.mc===mc);if(!r)return;
-  const m=S.mcAll.find(x=>x.mc===mc),act=document.activeElement&&document.activeElement.dataset.memo&&r.contains(document.activeElement);
+  const m={mc},act=document.activeElement&&document.activeElement.dataset.memo&&r.contains(document.activeElement);
   rowHtml.no=itemNo();const t=document.createElement('div');t.innerHTML=rowHtml(m,viewItems());const n=t.firstElementChild;r.replaceWith(n);
   if(act){const i=n.querySelector('[data-memo]');if(i){i.focus();i.setSelectionRange(i.value.length,i.value.length)}}
 }
@@ -1048,8 +1066,8 @@ $('in-grid').addEventListener('click',e=>{
   const cb=e.target.closest('.cb');
   if(cb&&cb.dataset.i){const k=cb.dataset.i+'|'+mc,cur=CH[k]?CH[k].status:'',nx=NEXT[cur];if(nx)CH[k]={status:nx};else delete CH[k];mark(k);rowRefresh(mc);inKpi();return}
   if(e.target.closest('.cb.ro')){toast(ME?L('다른 팀 점검항목은 입력할 수 없습니다.','No puede registrar puntos de otro equipo.'):L('먼저 점검자를 선택하세요.','Elija primero un inspector.'),true);return}
-  if(e.target.closest('[data-w]')){if(!ME){toast(L('먼저 점검자를 선택하세요.','Elija primero un inspector.'),true);return}wOpen({type:'day',mc});return}
-  if(e.target.closest('[data-rowok]')){dayItems(D).filter(canItem).forEach(it=>{const k=it.id+'|'+mc;if(inScope(it,mc)&&!CH[k]){CH[k]={status:'ok'};mark(k)}});rowRefresh(mc);inKpi()}
+  if(e.target.closest('[data-w]')){if(!ME){toast(L('먼저 점검자를 선택하세요.','Elija primero un inspector.'),true);return}wOpen({type:'day',mc,team:TEAM||mcOwner(mc)});return}
+  if(e.target.closest('[data-rowok]')){dayItems(D).filter(canItem).forEach(it=>{const k=it.id+'|'+mc;if(applies(it,mc)&&!CH[k]){CH[k]={status:'ok'};mark(k)}});rowRefresh(mc);inKpi()}
 });
 $('in-grid').addEventListener('change',e=>{
   if(!e.target.dataset.memo)return;const mc=e.target.closest('.ig-r').dataset.mc;RM[mc]=e.target.value.trim();
@@ -1057,10 +1075,10 @@ $('in-grid').addEventListener('change',e=>{
 });
 function fillAllOk(){
   if(!ME){toast(L('먼저 점검자를 선택하세요.','Elija primero un inspector.'),true);return}
-  const its=dayItems(D).filter(canItem);if(!its.length)return;let n=0;
-  const nw=MCS().filter(m=>!WK[m.mc]&&its.some(it=>inScope(it,m.mc))).length;
+  const its=viewItems().filter(canItem);if(!its.length)return;let n=0;const ms=viewMcs();
+  const nw=ms.filter(m=>!WK[m.mc]&&its.some(it=>applies(it,m.mc))).length;
   if(!confirm(L(`미입력 칸을 전부 「준수」로 처리합니다.${nw?`\n(작업자 미지정 호기 ${nw}대 — 통계에 개인으로 잡히지 않습니다)`:''}\n진행할까요?`,`Se marcarán como «Cumple» todas las casillas pendientes.${nw?`\n(${nw} máquinas sin operador — no cuentan para la estadística personal)`:''}\n¿Continuar?`)))return;
-  MCS().forEach(m=>its.forEach(it=>{const k=it.id+'|'+m.mc;if(inScope(it,m.mc)&&!CH[k]){CH[k]={status:'ok'};mark(k);n++}}));
+  ms.forEach(m=>its.forEach(it=>{const k=it.id+'|'+m.mc;if(applies(it,m.mc)&&!CH[k]){CH[k]={status:'ok'};mark(k);n++}}));
   inRender();toast(L(`${n}건 준수 처리`,`${n} marcados como Cumple`));
 }
 
@@ -1094,7 +1112,7 @@ function wRender(){
   const ty=WCTX?WCTX.type:'';
   const cur=ty==='me'?ME:ty==='day'?WK[WCTX.mc]:ty==='def'?defW(WCTX.mc,WCTX.shift):null;
   let list=ty==='me'?[...new Set(S.insp.filter(x=>!TEAM||x.team===TEAM).map(x=>x.emp_id))].map(id=>({...(S.EM[id]||{employee_id:id,name:id}),team:S.insp.filter(x=>x.emp_id===id).map(x=>teamName(x.team)).join(', ')}))
-    :S.emps.filter(e=>e.active!==false&&(all||/maquinado/i.test(e.team||'')));
+    :S.emps.filter(e=>e.active!==false&&(all||(isMaq(WCTX&&WCTX.team)?/maquinado/i.test(e.team||''):e.team===WCTX.team)));
   if(q)list=list.filter(e=>norm(e.employee_id).includes(q)||norm(e.name).includes(q)||norm(e.name_ko).includes(q));
   const tot=list.length;list=list.slice(0,120);
   $('w-list').innerHTML=list.map(e=>`<div class="p" data-id="${esc(e.employee_id)}"><span class="id">${esc(e.employee_id)}</span><span class="nm">${esc(e.name)}${e.employee_id===cur?' ✓':''}<small>${e.name_ko&&e.name_ko!==e.name?esc(e.name_ko)+' · ':''}${esc(e.team||'')}</small></span></div>`).join('')
@@ -1179,7 +1197,7 @@ function itRender(){
 
 /* ══════════ ④ 호기 · 등급 설정 ══════════ */
 const QE=mc=>encodeURIComponent(mc).replace(/'/g,'%27');
-function cfW(q,sh){wOpen({type:'def',mc:decodeURIComponent(q),shift:sh})}
+function cfW(q,sh){wOpen({type:'def',mc:decodeURIComponent(q),shift:sh,team:CFT})}
 function ciRender(){
   const tv=$('ci-team').value;$('ci-team').innerHTML=`<option value="">${L('작업자 소속팀으로 지정','Equipo del empleado')}</option>`+teamList().map(t=>`<option value="${esc(t)}">${esc(teamName(t))}</option>`).join('');$('ci-team').value=tv;
   $('ci-tbl').innerHTML=`<thead><tr><th>${L('점검 담당 팀','Equipo')}</th><th>${L('사번','No.')}</th><th>${L('이름','Nombre')}</th><th class="hm">${L('소속','Adscripción')}</th><th></th></tr></thead><tbody>`
@@ -1203,46 +1221,81 @@ function cfRender(){
    +`<label class="f"><span><span class="gr D">D</span></span><input disabled value="< ${g.C}%"></label>
      <label class="f"><span>${L('최소 점검 건수','Mín. de registros')}</span><input type="number" min="0" id="g-min" value="${g.min}"></label>
      <button class="btn" onclick="cfGradeSave()">${L('기준 저장','Guardar criterio')}</button>`;
-  $('cf-hint').innerHTML=PLANT===1
-   ?L('1공장 호기는 <b>부산물 관리</b> 앱의 호기 목록(생산호기 · R01)을 그대로 불러옵니다 — 부산물 관리에서 호기를 추가·중지하면 여기에도 바로 반영됩니다. 점검에서만 빼려면 「점검 대상」을 끄세요.','Las máquinas de Planta 1 se leen de la app <b>Subproductos</b> (producción · R01); los cambios allí se reflejan aquí. Para excluir solo de la inspección, desactive «Inspeccionar».')
-   :L('2공장은 호기를 직접 등록합니다. 「부산물 관리 호기 불러오기」로 부산물 관리 앱의 호기 목록을 한 번에 가져올 수도 있습니다.','En Planta 2 las máquinas se registran aquí. También puede importarlas de la app Subproductos.');
-  const off=$('cf-off').checked,ms=S.mcAll.filter(m=>off||mcOn(m.mc));
+  /* 팀별 점검 대상 */
+  const tl=teamList(),mq=maqTeam(),opts=(mq?[]:['']).concat(tl);
+  if(!opts.includes(CFT))CFT=TEAM&&opts.includes(TEAM)?TEAM:(mq||opts[0]||'');
+  $('cf-team').innerHTML=opts.map(t=>`<option value="${esc(t)}">${esc(t?teamName(t):L('가공생산팀 (기본)','Maquinado (base)'))}${teamOwn(t)?' ●':''}</option>`).join('');$('cf-team').value=CFT;
+  const maq=isMaq(CFT),own=teamOwn(CFT),fb=!maq&&!own,tn=esc(teamName(CFT));
+  $('cf-imp').style.display=PLANT===2&&maq?'':'none';$('cf-copy').style.display=maq?'none':'';
+  $('cf-new').placeholder=maq?'A47, A48':'LINE 1, LINE 2';
+  $('cf-hint').innerHTML=!maq
+   ?(fb?L(`<b>${tn}</b>은(는) 아직 점검 대상을 설정하지 않아 <b>가공생산팀 호기 목록</b>을 그대로 사용 중입니다. 대상을 추가하거나 「가공생산팀 호기 가져오기」를 누르면 이 팀 전용 목록으로 바뀌고, 그때부터 이 팀 점검항목은 그 목록에만 표시됩니다.`,`<b>${tn}</b> aún no tiene objetos propios y usa la <b>lista de máquinas de Maquinado</b>. Al agregar objetos o pulsar «Copiar máquinas de Maquinado» tendrá su propia lista, y sus puntos solo se mostrarán en ella.`)
+       :L(`<b>${tn}</b> 전용 점검 대상입니다 — 이 팀이 관련팀인 점검항목은 아래 대상에만 표시됩니다. 호기뿐 아니라 라인·구역·검사대 등 이름을 자유롭게 등록할 수 있습니다. 목록을 모두 삭제하면 다시 가공생산팀 호기 목록을 사용합니다.`,`Objetos propios de <b>${tn}</b>: los puntos de este equipo solo se muestran en estos objetos. Puede registrar máquinas, líneas, áreas, mesas de inspección, etc. Si elimina todos, vuelve a usar la lista de Maquinado.`))
+   :PLANT===1
+   ?L('가공생산팀(1공장) 호기는 <b>부산물 관리</b> 앱의 호기 목록(생산호기 · R01)을 그대로 불러옵니다 — 부산물 관리에서 호기를 추가·중지하면 여기에도 바로 반영됩니다. 점검에서만 빼려면 「점검 대상」을 끄세요. 다른 팀의 점검 대상은 위 「점검 담당 팀」을 바꿔서 설정합니다.','Las máquinas de Maquinado (Planta 1) se leen de la app <b>Subproductos</b> (producción · R01); los cambios allí se reflejan aquí. Para excluir solo de la inspección, desactive «Inspeccionar». Para otros equipos, cambie «Equipo» arriba.')
+   :L('가공생산팀(2공장)은 호기를 직접 등록합니다. 「부산물 관리 호기 불러오기」로 부산물 관리 앱의 호기 목록을 한 번에 가져올 수도 있습니다. 다른 팀의 점검 대상은 위 「점검 담당 팀」을 바꿔서 설정합니다.','En Maquinado (Planta 2) las máquinas se registran aquí. También puede importarlas de la app Subproductos. Para otros equipos, cambie «Equipo» arriba.');
+  const off=$('cf-off').checked,ms=teamMcs(CFT).filter(m=>off||m.on);
   const wb=(mc,sh)=>{const id=defW(mc,sh);return `<button class="wbtn${id?'':' none'}" style="max-width:300px" onclick="cfW('${QE(mc)}','${sh}')">${id?`<span class="id">${esc(id)}</span><span class="nm">${esc(empLabel(id))}</span>`:L('＋ 지정','＋ Asignar')}</button>`};
-  $('cf-tbl').innerHTML=`<thead><tr><th>${L('호기','Máquina')}</th><th class="hm">${L('구분','Origen')}</th><th>${L('주간 기본 작업자','Operador día')}</th><th>${L('야간 기본 작업자','Operador noche')}</th><th>${L('점검 대상','Inspeccionar')}</th><th></th></tr></thead><tbody>`
-   +(ms.length?ms.map(m=>{const q=QE(m.mc);return `<tr style="${mcOn(m.mc)?'':'opacity:.5'}"><td class="b" style="font-family:var(--code);font-size:18px">${esc(m.mc)}</td>
-      <td class="hm"><span class="tag ${m.src==='byp'?'xt':'none'}" style="margin:0">${m.src==='byp'?L('부산물 연동','Subproductos'):L('직접 추가','Manual')}</span></td>
+  const src=m=>fb?['none',L('가공 목록 사용','Lista de Maquinado')]:m.src==='byp'?['xt',L('부산물 연동','Subproductos')]:m.src==='team'?['az',L('팀 지정','Del equipo')]:['none',L('직접 추가','Manual')];
+  $('cf-tbl').innerHTML=`<thead><tr><th>${maq?L('호기','Máquina'):L('점검 대상','Objeto')}</th><th class="hm">${L('구분','Origen')}</th><th>${L('주간 기본 작업자','Operador día')}</th><th>${L('야간 기본 작업자','Operador noche')}</th><th>${L('점검 대상','Inspeccionar')}</th><th></th></tr></thead><tbody>`
+   +(ms.length?ms.map(m=>{const q=QE(m.mc),sr=src(m);return `<tr style="${m.on?'':'opacity:.5'}"><td class="b" style="font-family:var(--code);font-size:18px">${esc(m.mc)}</td>
+      <td class="hm"><span class="tag ${sr[0]}" style="margin:0">${sr[1]}</span></td>
       <td>${wb(m.mc,'D')}</td><td>${wb(m.mc,'N')}</td>
-      <td><label class="chkl" style="padding:0"><input type="checkbox" ${mcOn(m.mc)?'checked':''} onchange="cfToggle('${q}',this.checked)"></label></td>
-      <td style="text-align:right">${m.src==='own'?`<button class="btn red sm" onclick="cfDel('${q}')">${L('삭제','Eliminar')}</button>`:''}</td></tr>`}).join('')
-    :`<tr><td class="empty" colspan="6">${L('등록된 호기가 없습니다.','No hay máquinas.')}</td></tr>`)+'</tbody>';
+      <td><label class="chkl" style="padding:0"><input type="checkbox" ${m.on?'checked':''} ${fb?'disabled':''} onchange="cfToggle('${q}',this.checked)"></label></td>
+      <td style="text-align:right">${!fb&&m.src!=='byp'?`<button class="btn red sm" onclick="cfDel('${q}')">${L('삭제','Eliminar')}</button>`:''}</td></tr>`}).join('')
+    :`<tr><td class="empty" colspan="6">${L('등록된 점검 대상이 없습니다.','No hay objetos de inspección.')}</td></tr>`)+'</tbody>';
 }
 async function cfGradeSave(){
   const g={S:+$('g-S').value,A:+$('g-A').value,B:+$('g-B').value,C:+$('g-C').value,min:Math.max(0,parseInt($('g-min').value)||0)};
   if(!(g.S>g.A&&g.A>g.B&&g.B>g.C&&g.C>0&&g.S<=100)){toast(L('기준은 S > A > B > C 순으로 입력하세요.','Los criterios deben ser S > A > B > C.'),true);return}
   try{await sbUpsert('insp_config',[{plant:PLANT,key:'grade',val:g}],'plant,key');S.grade=g;renderAll();toast(L('등급 기준을 저장했습니다.','Criterio guardado.'))}catch(e){toast(errMsg(e),true)}
 }
-async function cfToggle(mc,on){mc=decodeURIComponent(mc);try{await saveMc(mc,{active:on});renderAll()}catch(e){toast(errMsg(e),true)}}
+let CFT='';try{CFT=localStorage.getItem('insp_cft_'+PLANT)||''}catch(e){}
+function cfTeamSet(v){CFT=v||'';try{localStorage.setItem('insp_cft_'+PLANT,CFT)}catch(e){}cfRender()}
+const tmcQ=mc=>`plant=eq.${PLANT}&team=eq.${encodeURIComponent(CFT)}`+(mc==null?'':`&mc=eq.${encodeURIComponent(mc)}`);
+async function tmcReload(){S.tmc=await sbGet(`insp_team_mc?plant=eq.${PLANT}&order=team,ord,mc`);TSC={};mcsOf(null).forEach(m=>{if(!(m.mc in WK))WK[m.mc]=defW(m.mc)})}
+async function tmcAdd(names){
+  let ord=Math.max(0,...S.tmc.filter(x=>x.team===CFT).map(x=>x.ord||0));const now=new Date().toISOString();
+  await sbUpsert('insp_team_mc',names.map(mc=>({plant:PLANT,team:CFT,mc,ord:++ord,active:true,updated_at:now})),'plant,team,mc');await tmcReload();
+}
+async function cfToggle(mc,on){mc=decodeURIComponent(mc);
+  try{if(isMaq(CFT))await saveMc(mc,{active:on});else{await sbPatch('insp_team_mc',tmcQ(mc),{active:on,updated_at:new Date().toISOString()});await tmcReload()}renderAll()}catch(e){toast(errMsg(e),true)}}
 async function cfAdd(){
-  const names=[...new Set($('cf-new').value.split(/[,\n\t;]+/).map(s=>s.trim().toUpperCase()).filter(Boolean))].filter(n=>!S.mcAll.some(m=>m.mc===n));
-  if(!names.length){toast(L('추가할 새 호기가 없습니다.','No hay máquinas nuevas.'),true);return}
-  let ord=Math.max(0,...Object.values(S.imc).map(m=>m.ord||0));
+  const maq=isMaq(CFT),has=maq?S.mcAll.map(m=>m.mc):S.tmc.filter(x=>x.team===CFT).map(x=>x.mc);
+  const names=[...new Set($('cf-new').value.split(/[,\n\t;]+/).map(s=>s.trim().toUpperCase()).filter(Boolean))].filter(n=>!has.includes(n));
+  if(!names.length){toast(L('추가할 새 점검 대상이 없습니다.','No hay objetos nuevos.'),true);return}
   try{
-    await sbUpsert('insp_mc',names.map(mc=>({plant:PLANT,mc,ord:++ord,active:true,emp_d:null,emp_n:null,updated_at:new Date().toISOString()})),'plant,mc');
-    buildMc(await sbGet(`insp_mc?plant=eq.${PLANT}&order=ord,mc`));names.forEach(n=>WK[n]=null);$('cf-new').value='';renderAll();toast(L(`${names.length}대 추가`,`${names.length} agregadas`));
+    if(maq){
+      let ord=Math.max(0,...Object.values(S.imc).map(m=>m.ord||0));
+      await sbUpsert('insp_mc',names.map(mc=>({plant:PLANT,mc,ord:++ord,active:true,base:true,emp_d:(S.imc[mc]||{}).emp_d||null,emp_n:(S.imc[mc]||{}).emp_n||null,updated_at:new Date().toISOString()})),'plant,mc');
+      buildMc(await sbGet(`insp_mc?plant=eq.${PLANT}&order=ord,mc`));names.forEach(n=>{if(!(n in WK))WK[n]=defW(n)});
+    }else await tmcAdd(names);
+    $('cf-new').value='';renderAll();toast(L(`${names.length}개 추가`,`${names.length} agregados`));
   }catch(e){toast(errMsg(e),true)}
+}
+async function cfCopy(){
+  if(isMaq(CFT))return;
+  const has=S.tmc.filter(x=>x.team===CFT).map(x=>x.mc),names=MCS('').map(m=>m.mc).filter(n=>!has.includes(n));
+  if(!names.length){toast(L('새로 가져올 호기가 없습니다.','No hay máquinas nuevas.'));return}
+  if(!confirm(L(`가공생산팀 호기 ${names.length}대를 ${teamName(CFT)} 점검 대상으로 가져올까요?\n(가져온 뒤 필요 없는 대상은 삭제하거나 「점검 대상」을 끄면 됩니다)`,`¿Copiar ${names.length} máquinas de Maquinado como objetos de ${teamName(CFT)}?\n(Después puede eliminar o desactivar los que no necesite)`)))return;
+  try{await tmcAdd(names);renderAll();toast(L(`${names.length}대 가져옴`,`${names.length} copiadas`))}catch(e){toast(errMsg(e),true)}
 }
 async function cfImport(){
   try{
     const bm=(await sbGet(`byp_machine?plant=eq.${PLANT}&select=mc,ord,active,kind&order=ord,mc`)).filter(m=>m.active&&m.kind!=='ext'&&!S.mcAll.some(x=>x.mc===m.mc));
     if(!bm.length){toast(L('새로 가져올 호기가 없습니다.','No hay máquinas nuevas.'));return}
-    await sbUpsert('insp_mc',bm.map(m=>({plant:PLANT,mc:m.mc,ord:m.ord||0,active:true,emp_d:null,emp_n:null,updated_at:new Date().toISOString()})),'plant,mc');
-    buildMc(await sbGet(`insp_mc?plant=eq.${PLANT}&order=ord,mc`));bm.forEach(m=>WK[m.mc]=null);renderAll();toast(L(`${bm.length}대 가져옴`,`${bm.length} importadas`));
+    await sbUpsert('insp_mc',bm.map(m=>({plant:PLANT,mc:m.mc,ord:m.ord||0,active:true,base:true,emp_d:(S.imc[m.mc]||{}).emp_d||null,emp_n:(S.imc[m.mc]||{}).emp_n||null,updated_at:new Date().toISOString()})),'plant,mc');
+    buildMc(await sbGet(`insp_mc?plant=eq.${PLANT}&order=ord,mc`));bm.forEach(m=>{if(!(m.mc in WK))WK[m.mc]=defW(m.mc)});renderAll();toast(L(`${bm.length}대 가져옴`,`${bm.length} importadas`));
   }catch(e){toast(errMsg(e),true)}
 }
 async function cfDel(mc){
-  mc=decodeURIComponent(mc);
-  if(!confirm(L(`${mc} 호기를 목록에서 삭제할까요?\n(점검 기록은 유지됩니다)`,`¿Eliminar ${mc} de la lista?\n(Los registros se conservan)`)))return;
-  try{await sbDel('insp_mc',`plant=eq.${PLANT}&mc=eq.${encodeURIComponent(mc)}`);buildMc(Object.values(S.imc).filter(m=>m.mc!==mc));renderAll()}catch(e){toast(errMsg(e),true)}
+  mc=decodeURIComponent(mc);const maq=isMaq(CFT);
+  if(!confirm(L(`${mc} 을(를) ${maq?'':teamName(CFT)+' '}점검 대상 목록에서 삭제할까요?\n(점검 기록은 유지됩니다)`,`¿Eliminar ${mc} de la lista${maq?'':' de '+teamName(CFT)}?\n(Los registros se conservan)`)))return;
+  try{
+    if(maq){await sbDel('insp_mc',`plant=eq.${PLANT}&mc=eq.${encodeURIComponent(mc)}`);buildMc(Object.values(S.imc).filter(m=>m.mc!==mc))}
+    else{await sbDel('insp_team_mc',tmcQ(mc));await tmcReload()}
+    renderAll();
+  }catch(e){toast(errMsg(e),true)}
 }
 
 /* ══════════ ② 개인별 이행 통계 ══════════ */
