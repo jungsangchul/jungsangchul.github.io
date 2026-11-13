@@ -592,6 +592,29 @@ header button.who:hover{border-color:#555}
 .wd label{display:inline-flex;align-items:center;justify-content:center;min-width:44px;height:40px;padding:0 10px;border:1px solid var(--line2);border-radius:7px;cursor:pointer;font-weight:700;color:var(--mute);font-size:13.5px;user-select:none}
 .wd label:has(input:checked){background:var(--ac-soft);border-color:rgba(201,168,76,.5);color:var(--ac)}
 .wd input{display:none}
+.lg .rt{flex-wrap:wrap;justify-content:flex-end}
+.phb{display:inline-flex;align-items:center;gap:6px;cursor:pointer;padding:3px 9px 3px 3px;border:1px solid var(--line2);border-radius:8px;background:#0d0d0d;vertical-align:middle}
+.phb:hover{border-color:var(--ac)}
+.phb img{width:34px;height:34px;object-fit:cover;border-radius:5px;border:2px solid #3f9a6c;display:block}
+.phb img.b{border-color:#e05c5c}
+.phb span{font-family:var(--mono);font-size:12.5px;white-space:nowrap}
+.phb .g{color:var(--grn)}.phb .r{color:#ff8f8f}
+.phz{border:1px solid rgba(76,175,125,.5);background:rgba(76,175,125,.06);border-radius:var(--r);padding:10px;min-width:0}
+.phz.bad{border-color:rgba(224,92,92,.5);background:rgba(224,92,92,.06)}
+.phz[data-k]{cursor:pointer;outline:none}
+.phz.sel{box-shadow:0 0 0 2px var(--ac)}
+.phz .pt{display:none;font-family:var(--mono);font-size:12px;color:var(--ac);font-weight:400}
+.phz.sel .pt{display:inline}
+.phh{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;font-size:13.5px;color:var(--grn)}
+.phz.bad .phh{color:#ff8f8f}
+.phl{display:flex;gap:10px;flex-wrap:wrap;min-height:44px;align-items:center}
+.phl .t{position:relative;width:84px;height:84px}
+.phl .t img{width:100%;height:100%;object-fit:cover;border-radius:7px;display:block}
+.phl .t button{position:absolute;top:-7px;right:-7px;width:24px;height:24px;border-radius:50%;border:0;background:#e05c5c;color:#fff;font-weight:700;font-size:14px;line-height:1;padding:0}
+.phl .e{color:var(--mute);font-size:12.5px}
+.phv{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.phv img{width:100%;border-radius:8px;margin-bottom:10px;display:block}
+@media(max-width:700px){.phv{grid-template-columns:1fr}}
 table.fit{table-layout:auto}
 table.fit td,table.fit th{padding:8px 7px}
 table.fit td:nth-child(2){white-space:normal}
@@ -687,7 +710,8 @@ table.fit td:nth-child(2){white-space:normal}
 
 <!-- ═══ ③ 점검항목 관리 ═══ -->
 <section class="tab" id="t-it">
-  <div class="fs-head2"><h2 data-t="it_title">점검항목(지시사항) 관리</h2><span class="fs-pl" id="pl-it"></span><span class="s">Inspection items</span><span class="sp"></span>
+  <div class="fs-head2"><h2 data-t="it_title">점검항목(지시사항) 관리</h2><span class="fs-pl" id="pl-it"></span><span class="s">Inspection items</span>
+    <label style="display:inline-flex;align-items:center;gap:8px;margin-left:8px"><span data-t="team" style="font-family:var(--mono);font-size:12.5px;letter-spacing:.08em;color:var(--mute)">관련팀</span><select id="it-fteam" style="height:40px;min-width:200px;border-color:rgba(201,168,76,.55);color:var(--ac);font-weight:700" onchange="itTeamSet(this.value)"></select></label><span class="sp"></span>
     <label class="chkl" style="padding:0"><input type="checkbox" id="it-all" onchange="itRender()"><span data-t="it_showend">종료된 항목 포함</span></label>
     <button class="btn" onclick="itOpen()" data-t="it_add">＋ 점검항목 추가</button></div>
   <div class="card">
@@ -765,9 +789,21 @@ table.fit td:nth-child(2){white-space:normal}
       <button class="btn sec" onclick="$('it-to').value=''" data-t="it_cont">계속 적용</button>
       <label class="f"><span data-t="it_ord">순서</span><input type="number" id="it-ord" style="width:80px"></label>
     </div>
+    <div class="phv" style="margin:6px 0 10px">
+      <div class="phz" data-k="good" tabindex="0" onclick="phSel('good')"><div class="phh"><span><span data-t="ph_good">○ 모범사례 (이렇게 합니다)</span> <span class="pt">Ctrl+V</span></span><button class="btn sec sm" onclick="event.stopPropagation();phPick('good')" data-t="ph_add">＋ 사진</button></div><div class="phl" id="ph-good"></div></div>
+      <div class="phz bad" data-k="bad" tabindex="0" onclick="phSel('bad')"><div class="phh"><span><span data-t="ph_bad">✕ 안 좋은 사례 (이러면 미준수)</span> <span class="pt">Ctrl+V</span></span><button class="btn sec sm" onclick="event.stopPropagation();phPick('bad')" data-t="ph_add">＋ 사진</button></div><div class="phl" id="ph-bad"></div></div>
+    </div>
+    <div class="hint" data-t="ph_hint" style="margin-bottom:8px"></div>
+    <input type="file" id="ph-file" accept="image/*" multiple style="display:none">
     <div class="hint" data-t="it_mhint"></div>
     <div class="row" style="justify-content:flex-end;margin-top:14px"><button class="btn sec" onclick="mdlClose('mdl-it')" data-t="cancel">취소</button><button class="btn" onclick="itSave()" data-t="save">저장</button></div>
   </div>
+</div></div>
+
+<!-- 모범 / 안 좋은 사례 사진 보기 -->
+<div class="mdl yh-modal" id="mdl-ph"><div class="mbox" style="width:min(1100px,100%)">
+  <div class="mhd"><b id="ph-ttl"></b><button onclick="mdlClose('mdl-ph')">×</button></div>
+  <div class="mbd" id="ph-body"></div>
 </div></div>
 
 <!-- 개인 상세 -->
@@ -802,7 +838,7 @@ const STN=()=>({ok:L('준수','Cumple'),ng:L('미준수','No cumple'),na:L('해�
 const SHN=v=>v==='N'?L('야간','Noche'):L('주간','Día');
 
 /* ── 상태 ── */
-const S={emps:[],EM:{},items:[],mcAll:[],imc:{},tmc:[],insp:[],grade:{S:98,A:95,B:90,C:80,min:10}};
+const S={emps:[],EM:{},items:[],mcAll:[],imc:{},tmc:[],insp:[],ph:[],grade:{S:98,A:95,B:90,C:80,min:10}};
 let ME='',TEAM='';try{ME=localStorage.getItem('insp_me_'+PLANT)||'';TEAM=localStorage.getItem('insp_team_'+PLANT)||''}catch(e){}
 let D=today(),SH='D';
 let CH={},WK={},RM={};          // 점검 셀 · 호기별 작업자 · 호기별 미준수 메모
@@ -834,6 +870,7 @@ const T={
  it_ko:['점검항목 (한국어)','Punto (coreano)'],it_es:['점검항목 (Español)','Punto (español)'],it_scope:['대상 (비우면 관련팀 대상 전체)','Objetos (vacío = todos los del equipo)'],it_from:['적용 시작일','Inicio'],it_to:['적용 종료일','Fin'],it_1day:['하루만','Solo un día'],it_cont:['계속 적용','Continuo'],it_ord:['순서','Orden'],
  it_mhint:['대상 호기 예: <b>A</b> = A01~A46 전체, <b>A, P</b> = A·P 호기, <b>J01, J02</b> = 해당 호기만. 점검 대상은 <b>관련팀에 설정된 대상 목록</b>(「호기 · 등급 설정」 탭) 안에서 적용됩니다. 한국어·스페인어 중 하나만 입력해도 됩니다.','Ejemplo de máquinas: <b>A</b> = todas las A01~A46, <b>A, P</b> = máquinas A y P, <b>J01, J02</b> = solo esas. Se aplica dentro de la <b>lista de objetos del equipo responsable</b> (pestaña «Máquinas · grados»). Puede escribir solo en un idioma.'],
  cancel:['취소','Cancelar'],save:['저장','Guardar'],
+ ph_good:['○ 모범사례 (이렇게 합니다)','○ Buen ejemplo (así se hace)'],ph_bad:['✕ 안 좋은 사례 (이러면 미준수)','✕ Mal ejemplo (así no cumple)'],ph_add:['＋ 사진','＋ Foto'],ph_hint:['화면을 캡처(복사)한 뒤 <b>모범사례 / 안 좋은 사례 칸을 클릭하고 Ctrl+V</b> 로 바로 붙여넣을 수 있습니다. 이미지 파일을 칸에 끌어다 놓거나 「＋ 사진」으로 선택해도 됩니다.','Capture (copie) la pantalla, <b>haga clic en el recuadro de buen / mal ejemplo y pulse Ctrl+V</b> para pegar. También puede arrastrar un archivo de imagen o usar «＋ Foto».'],
  team:['관련팀','Equipo responsable'],team_sel:['점검 팀','Equipo'],in_all:['다른 팀 항목도 보기 (읽기 전용)','Ver puntos de otros equipos (solo lectura)'],me_pick:['점검자 선택','Elegir inspector'],
  it_cyc:['점검 주기','Frecuencia'],it_wd:['점검 요일','Días de la semana'],it_md:['점검일 (매월, 쉼표로 여러 날)','Días del mes (separe con coma)'],
  cf_insp:['팀별 지정 점검자','Inspectores designados por equipo'],ci_team:['점검 담당 팀','Equipo a inspeccionar'],ci_add:['＋ 점검자 지정 (사번)','＋ Designar inspector'],
@@ -908,6 +945,7 @@ async function loadBase(){
   S.insp=insp;if(ME&&!insp.some(x=>x.emp_id===ME))ME='';
   S.emps=emps;S.EM={};emps.forEach(e=>S.EM[e.employee_id]=e);
   S.items=items;S.tmc=tmc;
+  S.ph=await sbGet(`insp_item_photo?plant=eq.${PLANT}&select=id,item_id,kind,thumb&order=id`).catch(()=>[]);
   buildMc(im,bm);
   const g=cfg.find(c=>c.key==='grade');if(g&&g.val)S.grade={...S.grade,...g.val};
 }
@@ -919,13 +957,13 @@ function buildMc(im,bm){
   S.mcAll=list.sort(mcSort);TSC={};
 }
 const mcOn=mc=>!(S.imc[mc]&&S.imc[mc].active===false);
-/* 팀별 점검 대상 — 가공생산팀: 기본 호기 목록(부산물 연동+직접 추가) · 다른 팀: insp_team_mc (미설정이면 가공 목록 사용) */
+/* 팀별 점검 대상 — 가공생산팀: 기본 호기 목록(부산물 연동+직접 추가) · 다른 팀: insp_team_mc 에 직접 추가한 대상만 (없으면 빈 목록) */
 let TSC={};
 const mcSort=(a,b)=>a.ord-b.ord||a.mc.localeCompare(b.mc,undefined,{numeric:true});
 const isMaq=t=>!t||/maquinado/i.test(t);
 const maqTeam=()=>teamList().find(t=>/maquinado/i.test(t))||'';
 const teamOwn=t=>!isMaq(t)&&S.tmc.some(x=>x.team===t);
-const teamMcs=t=>teamOwn(t)?S.tmc.filter(x=>x.team===t).map(x=>({mc:x.mc,ord:x.ord||0,src:'team',on:x.active!==false})).sort(mcSort):S.mcAll.map(m=>({...m,on:mcOn(m.mc)}));
+const teamMcs=t=>!isMaq(t)?S.tmc.filter(x=>x.team===t).map(x=>({mc:x.mc,ord:x.ord||0,src:'team',on:x.active!==false})).sort(mcSort):S.mcAll.map(m=>({...m,on:mcOn(m.mc)}));
 function MCS(t){const k='t:'+(isMaq(t)?'':t);return TSC[k]||(TSC[k]=teamMcs(t).filter(m=>m.on))}
 function mcsOf(teams){
   if(teams&&teams.length===1)return MCS(teams[0]);
@@ -1008,7 +1046,7 @@ function inItems(){
   $('in-items').innerHTML=its.length?its.map(it=>{
     const o=itOther(it),one=it.d_to&&it.d_to===it.d_from;
     return `<div class="li" style="${canItem(it)||!ME?'':'opacity:.55'}"><span class="no">${no[it.id]}</span><div class="tt">${esc(itTitle(it))}${o?`<small>${esc(o)}</small>`:''}</div>
-      <div class="rt"><span class="tag ${it.team?'az':'none'}" style="margin:0;font-size:12.5px;padding:2px 9px">${esc(teamName(it.team))}</span>${it.scope?`<span class="tag xt" style="margin:0">${esc(it.scope)}</span>`:''}<span class="tag ${one?'care':'ok'}">${one?L('오늘만','Solo hoy'):cycLabel(it)+(it.d_to?' ~'+it.d_to.slice(5):'')}</span>
+      <div class="rt"><span class="tag ${it.team?'az':'none'}" style="margin:0;font-size:12.5px;padding:2px 9px">${esc(teamName(it.team))}</span>${it.scope?`<span class="tag xt" style="margin:0">${esc(it.scope)}</span>`:''}<span class="tag ${one?'care':'ok'}">${one?L('오늘만','Solo hoy'):cycLabel(it)+(it.d_to?' ~'+it.d_to.slice(5):'')}</span>${phBadge(it)}
       <button class="btn sec sm" onclick="itOpen(${it.id})">${L('수정','Editar')}</button><button class="btn red sm" onclick="itEnd(${it.id},'${D}')">${L('종료','Finalizar')}</button></div></div>`}).join('')
    :`<div class="hint" style="padding:10px 4px">${dayItems(D).length?L('내 팀에 해당하는 점검항목이 없습니다.','No hay puntos para mi equipo.'):L('이 날짜(주기)에 해당하는 점검항목이 없습니다. 「＋ 점검항목 추가」로 지시사항을 등록하세요.','No hay puntos de inspección para esta fecha. Regístrelos con «＋ Agregar punto».')}</div>`;
 }
@@ -1141,11 +1179,11 @@ async function wPick(id){
 /* ══════════ ③ 점검항목 관리 ══════════ */
 let IT_EDIT=null;
 function itOpen(id){
-  const it=id?S.items.find(x=>x.id===id):null;IT_EDIT=it;
+  const it=id?S.items.find(x=>x.id===id):null;IT_EDIT=it;PHM={add:[],del:[]};phSel('good');phRenderM();
   $('it-ttl').textContent=it?L('점검항목 수정','Editar punto'):L('점검항목 추가','Agregar punto');
   $('it-ko').value=it?it.title_ko||'':'';$('it-es').value=it?it.title_es||'':'';$('it-scope').value=it?it.scope||'':'';
   $('it-team').innerHTML=`<option value="">${L('공통 (모든 지정 점검자)','Común (todos los inspectores)')}</option>`+teamList().map(t=>`<option value="${esc(t)}">${esc(teamName(t))}</option>`).join('');
-  $('it-team').value=it?it.team||'':(TEAM||myTeams()[0]||'');
+  $('it-team').value=it?it.team||'':($('t-it').classList.contains('on')&&ITT?(ITT==='-'?'':ITT):(TEAM||myTeams()[0]||''));
   $('it-cyc').innerHTML=`<option value="D">${L('매일','Diario')}</option><option value="W">${L('매주 (요일 지정)','Semanal (días)')}</option><option value="M">${L('매월 (일자 지정)','Mensual (fechas)')}</option>`;
   $('it-cyc').value=it?it.cycle||'D':'D';const cd=it?cycDays(it):[];
   $('it-wd').innerHTML=WDO.map(n=>`<label><input type="checkbox" value="${n}" ${it&&it.cycle==='W'&&cd.includes(n)?'checked':''}>${L(DOW[n],DOWES[n])}</label>`).join('');
@@ -1165,10 +1203,61 @@ async function itSave(){
   if(cyc==='M'){const l=[...new Set($('it-md').value.split(/[,\s]+/).filter(Boolean).map(Number))];if(!l.length||l.some(n=>!Number.isInteger(n)||n<1||n>31)){toast(L('매월 점검일을 1~31 숫자로 입력하세요 (예: 1, 15).','Indique los días del mes entre 1 y 31 (ej.: 1, 15).'),true);return}cdays=l.sort((a,b)=>a-b).join(',')}
   const body={title_ko:ko||es,title_es:es||null,team:$('it-team').value||null,cycle:cyc,cycle_days:cdays,scope:$('it-scope').value.trim().toUpperCase()||null,d_from:f,d_to:t,ord:+$('it-ord').value||0};
   try{
-    if(IT_EDIT){await sbPatch('insp_item','id=eq.'+IT_EDIT.id,body);Object.assign(IT_EDIT,body)}
-    else{const row=await sbInsert('insp_item',{plant:PLANT,...body,created_by:who()||null});S.items.push(row)}
-    S.items.sort((a,b)=>(a.ord-b.ord)||(a.id-b.id));mdlClose('mdl-it');renderAll();toast(L('저장했습니다.','Guardado.'));
-  }catch(e){toast(errMsg(e),true)}
+    load(true);let iid;
+    if(IT_EDIT){await sbPatch('insp_item','id=eq.'+IT_EDIT.id,body);Object.assign(IT_EDIT,body);iid=IT_EDIT.id}
+    else{const row=await sbInsert('insp_item',{plant:PLANT,...body,created_by:who()||null});S.items.push(row);iid=row.id}
+    S.items.sort((a,b)=>(a.ord-b.ord)||(a.id-b.id));
+    let phErr=null;
+    try{
+      if(PHM.del.length){await sbDel('insp_item_photo','id=in.('+PHM.del.join(',')+')');S.ph=S.ph.filter(p=>!PHM.del.includes(p.id))}
+      for(const a of PHM.add){const r=await sbInsert('insp_item_photo',{plant:PLANT,item_id:iid,kind:a.kind,data:a.data,thumb:a.thumb,created_by:who()||null});S.ph.push({id:r.id,item_id:iid,kind:a.kind,thumb:a.thumb})}
+    }catch(e){phErr=e}
+    load(false);mdlClose('mdl-it');renderAll();
+    if(phErr)toast(L('항목은 저장했지만 사진 저장에 실패했습니다: ','El punto se guardó, pero falló la foto: ')+(/insp_item_photo/.test(phErr.message)?L('inspection_photo.sql 을 먼저 실행해 주세요.','ejecute primero inspection_photo.sql.'):errMsg(phErr)),true);
+    else toast(L('저장했습니다.','Guardado.'));
+  }catch(e){load(false);toast(errMsg(e),true)}
+}
+/* ── 점검항목 사진: 모범사례 / 안 좋은 사례 ── */
+let PHM={add:[],del:[]},PHK='good',PHN=0;const PH_MAX=4;
+const phOf=(id,k)=>S.ph.filter(p=>p.item_id===id&&p.kind===k);
+function phBadge(it){const g=phOf(it.id,'good'),b=phOf(it.id,'bad');if(!g.length&&!b.length)return'';
+  return `<span class="phb" onclick="phView(${it.id})" title="${L('모범사례 · 안 좋은 사례 사진 보기','Ver fotos de buen / mal ejemplo')}">${g[0]?`<img src="${g[0].thumb}" alt="">`:''}${b[0]?`<img class="b" src="${b[0].thumb}" alt="">`:''}<span><b class="g">○ ${g.length}</b> · <b class="r">✕ ${b.length}</b></span></span>`}
+function phRenderM(){['good','bad'].forEach(k=>{
+  const ex=IT_EDIT?phOf(IT_EDIT.id,k).filter(p=>!PHM.del.includes(p.id)):[],ad=PHM.add.filter(a=>a.kind===k);
+  $('ph-'+k).innerHTML=ex.map(p=>`<div class="t"><img src="${p.thumb}" alt=""><button onclick="phRm(${p.id},0)">×</button></div>`).join('')+ad.map(a=>`<div class="t"><img src="${a.thumb}" alt=""><button onclick="phRm(${a.tmp},1)">×</button></div>`).join('')
+    ||`<span class="e">${L('사진 없음 — 「＋ 사진」으로 추가 (최대 '+PH_MAX+'장)','Sin fotos — agregue con «＋ Foto» (máx. '+PH_MAX+')')}</span>`})}
+function phRm(id,isNew){if(isNew)PHM.add=PHM.add.filter(a=>a.tmp!==id);else PHM.del.push(id);phRenderM()}
+function phSel(k){PHK=k;document.querySelectorAll('#mdl-it .phz').forEach(z=>z.classList.toggle('sel',z.dataset.k===k))}
+function phPick(k){phSel(k);$('ph-file').value='';$('ph-file').click()}
+function phShrink(file,max,q){return new Promise((ok,ng)=>{const img=new Image(),u=URL.createObjectURL(file);
+  img.onload=()=>{const r=Math.min(1,max/Math.max(img.width,img.height)),w=Math.round(img.width*r)||1,h=Math.round(img.height*r)||1,c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);URL.revokeObjectURL(u);ok(c.toDataURL('image/jpeg',q))};
+  img.onerror=()=>{URL.revokeObjectURL(u);ng(new Error(L('이미지를 읽을 수 없습니다.','No se pudo leer la imagen.')))};img.src=u})}
+async function phAddFiles(list,k){
+  const cur=(IT_EDIT?phOf(IT_EDIT.id,k).filter(p=>!PHM.del.includes(p.id)).length:0)+PHM.add.filter(a=>a.kind===k).length;
+  const files=[...list].filter(f=>f&&/^image\//.test(f.type));if(!files.length)return;
+  if(cur+files.length>PH_MAX)toast(L('사진은 종류별 최대 '+PH_MAX+'장입니다.','Máximo '+PH_MAX+' fotos por tipo.'),true);
+  for(const f of files.slice(0,Math.max(0,PH_MAX-cur))){try{PHM.add.push({kind:k,tmp:++PHN,data:await phShrink(f,1400,.8),thumb:await phShrink(f,220,.7)})}catch(err){toast(err.message,true)}}
+  phRenderM();
+}
+$('ph-file').addEventListener('change',e=>phAddFiles(e.target.files,PHK));
+/* 캡처 붙여넣기(Ctrl+V) · 끌어다 놓기 */
+document.addEventListener('paste',e=>{
+  if(!$('mdl-it').classList.contains('on'))return;
+  const fs=[...(e.clipboardData&&e.clipboardData.items||[])].filter(i=>i.kind==='file'&&/^image\//.test(i.type)).map(i=>i.getAsFile());
+  if(!fs.length)return;e.preventDefault();phAddFiles(fs,PHK);toast(L(PHK==='good'?'모범사례에 붙여넣었습니다.':'안 좋은 사례에 붙여넣었습니다.',PHK==='good'?'Pegado en buen ejemplo.':'Pegado en mal ejemplo.'));
+});
+document.querySelectorAll('#mdl-it .phz').forEach(z=>{
+  z.addEventListener('dragover',e=>{e.preventDefault();phSel(z.dataset.k)});
+  z.addEventListener('drop',e=>{e.preventDefault();phSel(z.dataset.k);phAddFiles(e.dataTransfer.files,z.dataset.k)});
+});
+async function phView(id){
+  const it=S.items.find(x=>x.id===id);if(!it)return;
+  $('ph-ttl').textContent=itTitle(it);$('ph-body').innerHTML=`<div class="hint"><span class="fs-spin"></span>${L('불러오는 중…','Cargando…')}</div>`;mdlOpen('mdl-ph');
+  try{
+    const rows=await sbGet(`insp_item_photo?item_id=eq.${id}&select=id,kind,data&order=id`),o=itOther(it);
+    const col=(k,cls,ttl)=>`<div class="phz ${cls}"><div class="phh"><span>${ttl}</span></div>${rows.filter(r=>r.kind===k).map(r=>`<img src="${r.data}" alt="">`).join('')||`<span class="e" style="color:var(--mute);font-size:13px">${L('등록된 사진 없음','Sin fotos')}</span>`}</div>`;
+    $('ph-body').innerHTML=(o?`<div class="hint" style="margin-bottom:10px">${esc(o)}</div>`:'')+`<div class="phv">${col('good','',T.ph_good[curLang==='es'?1:0])}${col('bad','bad',T.ph_bad[curLang==='es'?1:0])}</div>`;
+  }catch(e){$('ph-body').innerHTML=`<div class="hint" style="color:var(--red)">${esc(errMsg(e))}</div>`}
 }
 async function itEnd(id,date){
   const it=S.items.find(x=>x.id===id);if(!it)return;
@@ -1182,12 +1271,16 @@ async function itDel(id){
   try{await sbDel('insp_item','id=eq.'+id);S.items=S.items.filter(x=>x.id!==id);renderAll()}
   catch(e){toast(/foreign key|23503|violates/.test(e.message)?L('점검 기록이 있는 항목은 삭제할 수 없습니다 — 「종료」로 처리하세요.','No se puede eliminar un punto con registros — use «Finalizar».'):errMsg(e),true)}
 }
+let ITT='';try{ITT=localStorage.getItem('insp_itt_'+PLANT)||''}catch(e){}
+function itTeamSet(v){ITT=v||'';try{localStorage.setItem('insp_itt_'+PLANT,ITT)}catch(e){}itRender()}
 function itRender(){
   const t=today(),all=$('it-all').checked;
-  const rows=S.items.filter(it=>all||!it.d_to||it.d_to>=t);
+  const tl=teamList();if(ITT&&ITT!=='-'&&!tl.includes(ITT))ITT='';
+  $('it-fteam').innerHTML=`<option value="">${L('전체 팀','Todos los equipos')}</option>`+tl.map(x=>`<option value="${esc(x)}">${esc(teamName(x))} (${S.items.filter(i=>i.team===x).length})</option>`).join('')+`<option value="-">${L('공통','Común')} (${S.items.filter(i=>!i.team).length})</option>`;$('it-fteam').value=ITT;
+  const rows=S.items.filter(it=>(all||!it.d_to||it.d_to>=t)&&(!ITT||(ITT==='-'?!it.team:it.team===ITT)));
   $('it-tbl').innerHTML=`<thead><tr><th class="n" style="width:48px">No</th><th>${L('점검항목','Punto de inspección')}</th><th>${L('관련팀','Equipo')}</th><th>${L('주기','Frecuencia')}</th><th>${L('대상 호기','Máquinas')}</th><th>${L('시작','Inicio')}</th><th>${L('종료','Fin')}</th><th>${L('상태','Estado')}</th><th></th></tr></thead><tbody>`
    +(rows.length?rows.map(it=>{const o=itOther(it),st=it.d_to&&it.d_to<t?'end':it.d_from>t?'wait':'on';
-     return `<tr><td class="n">${it.ord}</td><td class="b">${esc(itTitle(it))}${o?`<div style="font-weight:400;color:var(--mute);font-size:13px">${esc(o)}</div>`:''}</td>
+     return `<tr><td class="n">${it.ord}</td><td class="b">${esc(itTitle(it))}${o?`<div style="font-weight:400;color:var(--mute);font-size:13px">${esc(o)}</div>`:''}${phBadge(it)?`<div style="margin-top:6px">${phBadge(it)}</div>`:''}</td>
       <td><span class="tag ${it.team?'az':'none'}" style="margin:0;font-size:12.5px;padding:2px 9px;white-space:normal">${esc(teamName(it.team))}</span></td><td style="white-space:nowrap">${cycLabel(it)}</td>
       <td>${it.scope?esc(it.scope):`<span style="color:var(--mute)">${L('전체','Todas')}</span>`}</td><td class="n" style="text-align:left">${it.d_from}</td><td class="n" style="text-align:left">${it.d_to||`<span style="color:var(--mute)">${L('계속','Continuo')}</span>`}</td>
       <td><span class="tag ${st==='on'?'ok':st==='wait'?'care':'none'}">${st==='on'?L('적용중','Vigente'):st==='wait'?L('예정','Programado'):L('종료','Finalizado')}</span></td>
@@ -1225,12 +1318,11 @@ function cfRender(){
   const tl=teamList(),mq=maqTeam(),opts=(mq?[]:['']).concat(tl);
   if(!opts.includes(CFT))CFT=TEAM&&opts.includes(TEAM)?TEAM:(mq||opts[0]||'');
   $('cf-team').innerHTML=opts.map(t=>`<option value="${esc(t)}">${esc(t?teamName(t):L('가공생산팀 (기본)','Maquinado (base)'))}${teamOwn(t)?' ●':''}</option>`).join('');$('cf-team').value=CFT;
-  const maq=isMaq(CFT),own=teamOwn(CFT),fb=!maq&&!own,tn=esc(teamName(CFT));
-  $('cf-imp').style.display=PLANT===2&&maq?'':'none';$('cf-copy').style.display=maq?'none':'';
+  const maq=isMaq(CFT),fb=false,tn=esc(teamName(CFT));
+  $('cf-imp').style.display=PLANT===2&&maq?'':'none';$('cf-copy').style.display='none';
   $('cf-new').placeholder=maq?'A47, A48':'LINE 1, LINE 2';
   $('cf-hint').innerHTML=!maq
-   ?(fb?L(`<b>${tn}</b>은(는) 아직 점검 대상을 설정하지 않아 <b>가공생산팀 호기 목록</b>을 그대로 사용 중입니다. 대상을 추가하거나 「가공생산팀 호기 가져오기」를 누르면 이 팀 전용 목록으로 바뀌고, 그때부터 이 팀 점검항목은 그 목록에만 표시됩니다.`,`<b>${tn}</b> aún no tiene objetos propios y usa la <b>lista de máquinas de Maquinado</b>. Al agregar objetos o pulsar «Copiar máquinas de Maquinado» tendrá su propia lista, y sus puntos solo se mostrarán en ella.`)
-       :L(`<b>${tn}</b> 전용 점검 대상입니다 — 이 팀이 관련팀인 점검항목은 아래 대상에만 표시됩니다. 호기뿐 아니라 라인·구역·검사대 등 이름을 자유롭게 등록할 수 있습니다. 목록을 모두 삭제하면 다시 가공생산팀 호기 목록을 사용합니다.`,`Objetos propios de <b>${tn}</b>: los puntos de este equipo solo se muestran en estos objetos. Puede registrar máquinas, líneas, áreas, mesas de inspección, etc. Si elimina todos, vuelve a usar la lista de Maquinado.`))
+   ?L(`<b>${tn}</b> 전용 점검 대상입니다 — 가공생산팀 호기와 별개이며, 여기에 <b>직접 추가한 대상에만</b> 이 팀 점검항목이 표시됩니다. 호기·라인·구역·검사대 등 이름을 하나씩(또는 쉼표로 여러 개) 추가하세요.`,`Objetos propios de <b>${tn}</b>, independientes de las máquinas de Maquinado: los puntos de este equipo solo se muestran en los objetos <b>agregados aquí</b>. Agregue máquinas, líneas, áreas o mesas una por una (o varias separadas por coma).`)
    :PLANT===1
    ?L('가공생산팀(1공장) 호기는 <b>부산물 관리</b> 앱의 호기 목록(생산호기 · R01)을 그대로 불러옵니다 — 부산물 관리에서 호기를 추가·중지하면 여기에도 바로 반영됩니다. 점검에서만 빼려면 「점검 대상」을 끄세요. 다른 팀의 점검 대상은 위 「점검 담당 팀」을 바꿔서 설정합니다.','Las máquinas de Maquinado (Planta 1) se leen de la app <b>Subproductos</b> (producción · R01); los cambios allí se reflejan aquí. Para excluir solo de la inspección, desactive «Inspeccionar». Para otros equipos, cambie «Equipo» arriba.')
    :L('가공생산팀(2공장)은 호기를 직접 등록합니다. 「부산물 관리 호기 불러오기」로 부산물 관리 앱의 호기 목록을 한 번에 가져올 수도 있습니다. 다른 팀의 점검 대상은 위 「점검 담당 팀」을 바꿔서 설정합니다.','En Maquinado (Planta 2) las máquinas se registran aquí. También puede importarlas de la app Subproductos. Para otros equipos, cambie «Equipo» arriba.');
@@ -1243,7 +1335,7 @@ function cfRender(){
       <td>${wb(m.mc,'D')}</td><td>${wb(m.mc,'N')}</td>
       <td><label class="chkl" style="padding:0"><input type="checkbox" ${m.on?'checked':''} ${fb?'disabled':''} onchange="cfToggle('${q}',this.checked)"></label></td>
       <td style="text-align:right">${!fb&&m.src!=='byp'?`<button class="btn red sm" onclick="cfDel('${q}')">${L('삭제','Eliminar')}</button>`:''}</td></tr>`}).join('')
-    :`<tr><td class="empty" colspan="6">${L('등록된 점검 대상이 없습니다.','No hay objetos de inspección.')}</td></tr>`)+'</tbody>';
+    :`<tr><td class="empty" colspan="6">${maq?L('등록된 점검 대상이 없습니다.','No hay objetos de inspección.'):L(teamName(CFT)+' 점검 대상이 아직 없습니다 — 위 「점검 대상 추가」에 이름을 입력해 추가하세요.','Aún no hay objetos para '+teamName(CFT)+' — agréguelos arriba.')}</td></tr>`)+'</tbody>';
 }
 async function cfGradeSave(){
   const g={S:+$('g-S').value,A:+$('g-A').value,B:+$('g-B').value,C:+$('g-C').value,min:Math.max(0,parseInt($('g-min').value)||0)};
