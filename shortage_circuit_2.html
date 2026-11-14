@@ -260,7 +260,7 @@ textarea#lotBox{width:100%;min-height:160px;padding:10px;border:1px solid var(--
 /* ── 화면 분리: 조립 신청 / 조립 이력 · 접수 / 가공생산 ── */
 .tabs{flex-wrap:wrap}
 @media (max-width:2050px){header h1 small{display:none}}
-@media (max-width:1720px){.tabs button{padding:7px 11px}.tabs button.rw-tab{margin-left:6px}a.brand{font-size:14px;letter-spacing:.06em;padding-right:12px}header{gap:10px;padding-left:16px;padding-right:16px}}
+@media (max-width:1900px){.tabs button{padding:7px 11px}.tabs button.rw-tab{margin-left:6px}a.brand{font-size:14px;letter-spacing:.06em;padding-right:12px}header{gap:10px;padding-left:16px;padding-right:16px}}
 .pick .ph .legend{margin-left:6px}
 @media (max-width:1050px){.asm-top .lgq{grid-column:1/-1;justify-content:flex-start}.asm-top .lgq label.wq{flex:1 1 auto}.asm-top .wqrow input{flex:1 1 auto;min-width:0;width:auto}}
 .saved{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;border:1px solid #2b4a36;background:#14231a;border-radius:6px;padding:8px 10px;font-size:13px;color:var(--ok)}
@@ -302,6 +302,123 @@ textarea#lotBox{width:100%;min-height:160px;padding:10px;border:1px solid var(--
   #viewHist .hist,#viewProc .hist{display:flex;flex-direction:column;max-height:calc(100vh - var(--hh,66px) - 36px)}
   #viewHist .hist>.scroll,#viewProc .hist>.scroll{flex:1 1 auto;min-height:0;max-height:none}
 }
+/* ── 통계 분석 (신청 내역 · 발생 빈도 · 공급 리드타임) ── */
+/* 차트 색: 앱 강조색을 색각 검증(validate_palette) 통과값으로 맞춘 것 — 계열1 #3FA0C8 · 계열2 #d95926 (카드 #0E1114 · 패널 #171B1F 양쪽 표면에서 통과) */
+:root{--viz-1:#3FA0C8;--viz-2:#d95926;--viz-mute:#4a545d;--viz-grid:#252b31;--viz-base:#3a444d}
+.sa .hbar label.f{min-width:118px}
+.sa .hbar select{max-width:210px}
+.sa .hbar #saWn{text-transform:uppercase}
+.sa .hbar label.f.sw{flex:1 1 150px;min-width:150px;max-width:270px}
+.sa .hbar label.f.sw>input{width:100%}
+.sa-note{padding:8px 14px;border-bottom:1px solid var(--line);font-size:12.5px;color:var(--sub);display:flex;gap:6px 14px;flex-wrap:wrap;align-items:center;min-height:38px}
+.sa-note .fchip{display:inline-flex;gap:6px;align-items:center;border:1px solid var(--accent);color:var(--accent);border-radius:14px;padding:2px 10px;font-weight:600;cursor:pointer;background:var(--hit);font-size:12.5px}
+.sa-note .fchip:hover{background:#22384a}
+#saBody{padding:14px;display:grid;gap:14px;min-width:0}
+#saBody.ld{opacity:.45;pointer-events:none}
+.sa-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(156px,1fr));gap:10px}
+.sa-kpi{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px;min-width:0}
+.sa-kpi>span{display:block;font-size:12px;color:var(--sub);line-height:1.35}
+.sa-kpi>b{display:block;font-size:24px;font-weight:600;line-height:1.25;color:var(--ink);font-variant-numeric:normal;margin-top:2px;white-space:nowrap}
+.sa-kpi>b small{font-size:13px;font-weight:500;color:var(--sub);margin-left:3px}
+.sa-kpi>em{display:block;font-style:normal;font-size:12px;color:var(--sub);margin-top:3px;line-height:1.4}
+.sa-sec{display:flex;align-items:center;gap:10px 12px;flex-wrap:wrap;margin:8px 0 -4px;padding-top:10px;border-top:1px solid var(--line)}
+.sa-sec h2{margin:0;font-size:16px;color:var(--gold);letter-spacing:.01em}
+.sa-sec .status{font-size:12.5px}
+.sa-sec .seg button{padding:5px 11px;font-size:12.5px}
+.sa-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:12px}
+.sa-card{grid-column:span 4;background:var(--bg);border:1px solid var(--line);border-radius:8px;min-width:0;display:flex;flex-direction:column}
+.sa-card.w3{grid-column:span 3}.sa-card.w5{grid-column:span 5}.sa-card.w6{grid-column:span 6}.sa-card.w7{grid-column:span 7}.sa-card.w8{grid-column:span 8}.sa-card.w12{grid-column:span 12}
+@media (max-width:1280px){.sa-card,.sa-card.w3,.sa-card.w5,.sa-card.w6,.sa-card.w7,.sa-card.w8{grid-column:span 6}}
+@media (max-width:900px){.sa-card,.sa-card.w3,.sa-card.w5,.sa-card.w6,.sa-card.w7,.sa-card.w8{grid-column:span 12}}
+@media (max-width:420px){#saBody{padding:8px 6px!important}.sa-cb{padding:10px 8px 12px!important}.sa-ch{padding:10px 8px 0!important}}
+@media (max-width:520px){#saBody{padding:10px}.sa-kpis{grid-template-columns:1fr 1fr;gap:8px}.sa-kpi{padding:9px 10px}.sa-kpi>b{font-size:21px}.sa-cb{padding:10px 10px 12px}.sa-ch{padding:10px 10px 0}}
+.sa-ch{display:flex;align-items:center;gap:6px 8px;flex-wrap:wrap;padding:10px 12px 0}
+.sa-ch h3{margin:0;font-size:14px;font-weight:700}
+.sa-ch .status{font-size:12px}
+.sa-ch .sp{flex:1}
+.sa-ch .seg button{padding:3px 9px;font-size:12px}
+.sa-tvb{border:1px solid var(--line);background:transparent;border-radius:5px;padding:2px 8px;font-size:12px;color:var(--sub);cursor:pointer}
+.sa-tvb:hover,.sa-tvb:focus-visible{color:var(--ink);border-color:var(--sub)}
+.sa-cb{padding:10px 12px 12px;min-width:0;flex:1;container-type:inline-size;container-name:sacb}
+.sa-cb .status{font-size:12.5px}
+/* 세로 막대 */
+.sa-cols{padding-top:18px}
+.sa-plot{position:relative;margin-left:40px}
+.sa-plot i.g{position:absolute;left:0;right:0;height:0;border-top:1px solid var(--viz-grid)}
+.sa-plot i.g.base{border-top-color:var(--viz-base)}
+.sa-plot i.g em{position:absolute;left:-40px;width:34px;text-align:right;top:-9px;font-style:normal;font-size:12px;color:var(--sub);white-space:nowrap}
+.sa-slots{position:absolute;inset:0;display:flex;align-items:stretch;gap:2px}
+.sa-slots .s{flex:1 1 0;min-width:0;position:relative;display:flex;align-items:flex-end;justify-content:center;outline:none}
+.sa-slots .s b{display:block;width:min(24px,78%);background:var(--viz-1);border-radius:4px 4px 0 0}
+.sa-slots .s:hover,.sa-slots .s:focus-visible{background:rgba(255,255,255,.05)}
+.sa-slots .s:hover b,.sa-slots .s:focus-visible b{filter:brightness(1.25)}
+.sa-slots .s u{position:absolute;left:50%;transform:translateX(-50%);text-decoration:none;font-size:12px;color:var(--ink);font-weight:600;white-space:nowrap;pointer-events:none}
+.sa-xl{display:flex;gap:2px;margin:5px 0 0 40px}
+.sa-xl span{flex:1 1 0;min-width:0;text-align:center;font-size:12px;color:var(--sub);white-space:nowrap;overflow:visible;height:17px;display:flex;justify-content:center}
+/* 가로 막대 (순위) */
+.sa-hb{display:grid;grid-template-columns:minmax(64px,36%) minmax(0,1fr);gap:8px;align-items:center;padding:4px 4px;outline:none;border-radius:4px}
+.sa-hb.k{cursor:pointer}
+.sa-hb:hover,.sa-hb:focus-visible{background:rgba(255,255,255,.05)}
+.sa-hb .l{font-size:13px;color:var(--ink);line-height:1.25;overflow-wrap:anywhere}
+.sa-hb .l.nw{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sa-hb .t{display:flex;align-items:center;gap:6px;min-width:0}
+.sa-hb .t b{display:block;height:14px;background:var(--viz-1);border-radius:0 4px 4px 0;min-width:2px;flex:0 0 auto}
+.sa-hb:hover .t b,.sa-hb:focus-visible .t b{filter:brightness(1.25)}
+.sa-hb.o .t b{background:var(--viz-mute)}
+.sa-hb .t em{font-style:normal;font-size:12.5px;color:var(--ink);font-weight:600;white-space:nowrap}
+.sa-hb .t small{font-size:12px;color:var(--sub);white-space:nowrap}
+/* 표 */
+/* 표는 카드 폭에 맞춰 덜 중요한 칸부터 접는다(q1→q7). 그래도 넘치면 잘라내지 않고 그 표만 옆으로 민다 */
+.sa-tw{overflow-x:auto;overflow-y:hidden}
+.sa-tw table{white-space:normal;width:100%}
+.sa-tw th{position:static;background:transparent;white-space:nowrap;padding:6px 7px}
+.sa-tw td{padding:6px 7px;vertical-align:middle}
+.sa-tw td.e{max-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sa-tw td.nw{white-space:nowrap}
+.sa-tw th.s{cursor:pointer;user-select:none}
+.sa-tw th.s:hover{color:var(--ink)}
+.sa-tw th.s.on{color:var(--accent)}
+.sa-tw tr.tot td{border-top:1px solid var(--sub);font-weight:700}
+.sa-tw .p4,.sa-tw .p6{display:none}
+.sa-tw small.sa-pn2{font-size:11.5px;font-weight:400;color:var(--sub);white-space:nowrap;margin-top:2px;line-height:1.2}
+@container sacb (max-width:1149px){.sa-tw .q1{display:none}}
+@container sacb (max-width:859px){.sa-tw .q2{display:none}}
+@container sacb (max-width:639px){.sa-tw .q3{display:none}}
+@container sacb (max-width:579px){.sa-tw .q4{display:none}.sa-tw .p4{display:block}}
+@container sacb (max-width:459px){.sa-tw .q5{display:none}.sa-tw td.nw.sn{white-space:normal}}
+@container sacb (max-width:399px){.sa-tw .q6{display:none}.sa-tw .p6{display:block}.sa-tw{--ibw:.5}.sa-tw th,.sa-tw td{padding:6px 5px}}
+@container sacb (max-width:309px){.sa-tw .q7{display:none}.sa-tw table{font-size:12.5px}.sa-tw th,.sa-tw td{padding:6px 4px}.sa-tw .st{font-size:11px;padding:1px 5px}.sa-tw .sa-lnk{font-size:13px}.sa-tw small.sa-pn2{font-size:10.5px}.sa-tw{--ibw:.36}.sa-tw th{font-size:11.5px;letter-spacing:-.02em}}
+.sa-lnk{color:var(--accent);font-weight:700;cursor:pointer;border:0;background:transparent;padding:0;border-bottom:1px dotted var(--accent);font-size:14px}
+.sa-lnk:hover,.sa-lnk:focus-visible{color:#8fd0e8;outline:none}
+.sa-ib{display:inline-block;height:10px;background:var(--viz-1);border-radius:0 3px 3px 0;vertical-align:middle;margin-right:6px;min-width:2px}
+.sa-stage td.bar{width:34%}
+.sa-stage td.bar b{display:block;height:14px;background:var(--viz-1);border-radius:0 4px 4px 0;min-width:2px}
+.sa-stage tr{outline:none}
+.sa-stage tbody tr:hover td,.sa-stage tbody tr:focus-visible td{background:rgba(255,255,255,.05)}
+.sa-sum{font-size:12.5px;color:var(--sub);margin:0 0 8px;line-height:1.5}
+.sa-sum b{color:var(--ink);font-weight:700}
+/* 선 그래프 */
+.sa-lg{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--sub);margin:0 0 4px 46px}
+.sa-lg i{display:inline-block;width:16px;height:0;border-top:2px solid;vertical-align:middle;margin-right:5px}
+.sa-svg{display:block;width:100%;overflow:visible;outline:none}
+.sa-svg text{font-size:12px;fill:var(--sub);font-family:inherit}
+.sa-svg text.v{fill:var(--ink);font-weight:600}
+.sa-svg .gl{stroke:var(--viz-grid);stroke-width:1}
+.sa-svg .bl{stroke:var(--viz-base);stroke-width:1}
+.sa-svg .ch{stroke:var(--sub);stroke-width:1;visibility:hidden}
+.sa-svg path.ln{fill:none;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+/* 말풍선 */
+.sa-tip{position:fixed;z-index:60;pointer-events:none;background:#0b0e11;border:1px solid #3a444d;border-radius:6px;padding:7px 10px;font-size:12.5px;box-shadow:0 6px 18px rgba(0,0,0,.45);max-width:340px;line-height:1.45}
+.sa-tip .tt{color:var(--sub);margin-bottom:3px}
+.sa-tip .tr{display:flex;gap:8px;align-items:baseline}
+.sa-tip .tr b{color:var(--ink);font-weight:700;white-space:nowrap}
+.sa-tip .tr span{color:var(--sub)}
+.sa-tip .tr i{flex:0 0 12px;height:0;border-top:2px solid var(--viz-1);align-self:center}
+
+/* 머리줄 — 「통계 분석」 탭이 늘어난 만큼, 좁은 화면에서 여백 · 글자를 한 단계 더 줄여 한 줄 유지 (스페인어는 글자가 길어 1740px 이하부터) */
+@media (max-width:1560px){.tabs button{padding:7px 8px;font-size:13px}.tabs .cnt{margin-left:4px;padding:0 5px}.tabs button.rw-tab{margin-left:4px}.tabs button.rw-tab .rw-ico{margin-right:4px}a.brand{padding-right:10px}header{gap:8px;padding-left:12px;padding-right:12px}header .yh-close-cap{display:none}}
+@media (max-width:1740px){html[lang="es"] .tabs button{padding:7px 8px;font-size:13px}html[lang="es"] .tabs .cnt{margin-left:4px;padding:0 5px}html[lang="es"] .tabs button.rw-tab{margin-left:4px}html[lang="es"] .tabs button.rw-tab .rw-ico{margin-right:4px}html[lang="es"] a.brand{padding-right:10px}html[lang="es"] header{gap:8px;padding-left:12px;padding-right:12px}html[lang="es"] header .yh-close-cap{display:none}}
+@media (max-width:2400px){html[lang="es"] header h1 small{display:none}}
 </style>
 
 <!-- ═══ 포털 공통 (yh-common-v2): 제목 서체 · 닫기 버튼 · 최소 글자 크기 ═══ -->
@@ -409,6 +526,7 @@ textarea#lotBox{width:100%;min-height:160px;padding:10px;border:1px solid var(--
     <button id="tabAsm" class="on"><span data-i="tAsm">조립 신청</span></button>
     <button id="tabHist"><span data-i="tHist">조립 이력 · 접수</span><span class="cnt" id="apprCnt" title="팀장 승인대기 / Por aprobar"></span><span class="cnt" id="asmCnt" title="선재 접수대기 / Por recibir" style="background:var(--ok);color:#06210f"></span></button>
     <button id="tabProc"><span data-i="tProc">가공생산</span><span class="cnt" id="newCnt" title="가공 접수 대기 / Por recibir"></span><span class="cnt" id="retCnt" title="반납 확인 대기 / Devolución por confirmar" style="background:#E07A3F;color:#2a1003"></span></button>
+    <button id="tabStat"><span data-i="tStat">📊 통계 분석</span></button>
     <button id="tabRework" class="rw-tab"><span class="rw-ico">🔁</span><span data-i="rwBtn">REWORK 삭제회로 관리</span></button>
     <button id="tabMaster"><span data-i="tMaster">서브리스트</span></button>
   </nav>
@@ -553,6 +671,25 @@ textarea#lotBox{width:100%;min-height:160px;padding:10px;border:1px solid var(--
       </table>
       <div class="empty hidden" id="hpEmpty" data-i="noReq">신청 내역이 없습니다.</div>
     </div>
+  </div>
+</section>
+
+<!-- ============ 통계 분석 ============ -->
+<section id="viewStat" class="hidden">
+  <div class="panel sa">
+    <div class="hbar">
+      <div class="f fx"><span data-i="period">기간</span><div class="seg" id="saPre"><button type="button" data-p="m1" data-i="pMonth">1개월</button><button type="button" data-p="m3" data-i="pMonth3">3개월</button><button type="button" data-p="m6" data-i="pMonth6">6개월</button><button type="button" data-p="all" data-i="pAll">전체</button></div></div>
+      <label class="f"><span data-i="saFromL">신청 시작일</span><input type="date" id="saFrom"></label>
+      <label class="f"><span data-i="saToL">신청 종료일</span><input type="date" id="saTo"></label>
+      <label class="f"><span data-i="saPnL">품번</span><select id="saPn"></select></label>
+      <label class="f"><span data-i="saLineL">조립 라인</span><select id="saLine"></select></label>
+      <label class="f sw"><span data-i="saWnL">회로(선번) 지정</span><input id="saWn" autocomplete="off" spellcheck="false" placeholder="DD146"></label>
+      <label class="chk"><input type="checkbox" id="saAllSt"><span data-i="saAllStL">반려 · 취소 포함</span></label>
+      <span style="flex:1"></span>
+      <button type="button" class="btn ok" id="saXlsx" data-i="xlsx">📗 엑셀 저장</button>
+    </div>
+    <div class="sa-note" id="saNote"></div>
+    <div id="saBody"></div>
   </div>
 </section>
 
@@ -711,6 +848,7 @@ textarea#lotBox{width:100%;min-height:160px;padding:10px;border:1px solid var(--
     <div class="mbtns"><button class="btn" id="rwAdjClear" data-i="cartClear">비우기</button><button class="btn" id="rwAdjClose" data-i="close">닫기</button><button class="btn pri" id="rwAdjSave" data-i="rwAdjSave">조정 추가 · 갱신 저장</button></div>
   </div>
 </div>
+<div class="sa-tip hidden" id="saTip" role="tooltip"></div>
 <div class="modal hidden" id="wqModal" role="dialog" aria-modal="true" aria-labelledby="wqT">
   <div class="mbox wq" id="wqBox" tabindex="-1" style="outline:none">
     <div class="wqhead"><h3 id="wqT"></h3>
@@ -1966,16 +2104,16 @@ $('tabRework').onclick=()=>{show('Rework');if(!RW.loaded)loadRework();};
 $('rwBack').onclick=()=>{show('Proc');loadReqs();};
 
 /* ---------- 탭 ---------- */
-function show(v){['Asm','Hist','Proc','Master','Rework'].forEach(k=>{$('view'+k).classList.toggle('hidden',k!==v);const t=$('tab'+k);if(t)t.classList.toggle('on',k===v);});LS.set('tab'+PLANT,v);}
+function show(v){['Asm','Hist','Proc','Stat','Master','Rework'].forEach(k=>{$('view'+k).classList.toggle('hidden',k!==v);const t=$('tab'+k);if(t)t.classList.toggle('on',k===v);});LS.set('tab'+PLANT,v);}
 /* 배지를 누르면 그 대기 목록으로 바로 이동 */
 function goHist(p,st){const S=H[p];if(st!=null&&S.st!==st){S.st=st;S.sel.clear();}show(p==='ha'?'Hist':'Proc');renderHist(p);loadReqs();window.scrollTo(0,0);}
 $('tabAsm').onclick=()=>{show('Asm');loadReqs();if(!TOUCH)$('scanIn').focus();};
 $('tabHist').onclick=e=>{const c=e.target.closest('.cnt');goHist('ha',c?(c.id==='apprCnt'?'wait':'ship'):null);};
 $('tabProc').onclick=e=>{const c=e.target.closest('.cnt');goHist('hp',c?(c.id==='newCnt'?'승인':'반납'):null);};
 $('tabMaster').onclick=()=>show('Master');
-$('reloadBtn').onclick=()=>{loadMaster();loadReqs();loadLots();if(RW.loaded)loadRework();};
+$('reloadBtn').onclick=()=>{loadMaster();loadReqs();loadLots();if(RW.loaded)loadRework();if(!$('viewStat').classList.contains('hidden'))saLoad(true);};
 $('langBtn').onclick=()=>{lang=lang==='ko'?'es':'ko';LS.set('lang',lang);applyLang();};
-function renderAll(){wqRender();renderPick();renderCart();renderSaved();renderRecent();renderProc();renderRework();}
+function renderAll(){wqRender();renderPick();renderCart();renderSaved();renderRecent();renderProc();renderRework();if(SA.loaded&&!$('viewStat').classList.contains('hidden'))saRender();}
 
 /* ---------- 화면 분리 · 이력 조회 보조 ---------- */
 Object.assign(KO,{mineOnly:'내 라인만',noLine:'라인 미입력',cg_wait:'승인대기',cg_proc:'가공 진행 중',cg_ship:'출고 · 접수대기',cg_done:'접수완료',cg_rej:'반려 · 취소',cg_ret:'반납',
@@ -2016,6 +2154,366 @@ $('aSaved').onclick=e=>{if(!e.target.closest('button'))return;$('haQ').value='';
 /* 머리글 높이 → 화면 높이에 맞춘 목록 크기 */
 (()=>{const h=document.querySelector('header'),set=()=>document.documentElement.style.setProperty('--hh',h.offsetHeight+'px');set();
   if(window.ResizeObserver)new ResizeObserver(set).observe(h);addEventListener('resize',set);})();
+
+/* ---------- 통계 분석: 신청 내역 · 발생 빈도 · 특정 회로 · 공급 리드타임 ---------- */
+Object.assign(KO,{sa_load:'분석 데이터를 불러오는 중…',sa_none:'이 조건에 해당하는 신청 내역이 없습니다.',sa_off:'서버 연결이 안 되어 최근 내역만으로 분석했습니다.',
+ sa_basis:'신청일 {a} ~ {b} · {n}선 분석 · 시간은 달력 시간(야간·휴일 포함) · 라인명은 표기를 통일해 집계',sa_excl:'반려 · 취소 {n}선 제외',sa_incl:'반려 · 취소 포함',
+ sa_fPn:'품번',sa_fLine:'라인',sa_fWn:'회로',sa_clear:'필터 모두 해제',sa_noLine:'(라인 미입력)',sa_noShip:'출고된 건 없음',
+ sa_uL:'선',sa_uDay:'일',sa_uKind:'종',sa_uEa:'개',sa_uMin:'분',sa_uH:'시간',sa_uD:'일',
+ sa_k1:'신청 건수',sa_k1c:'신청 묶음 {a}건 · 수량 {b}',sa_k2:'신청 발생일',sa_k2c:'일평균 {a}선 · 최다 {b}선 ({c})',sa_k3:'회로 종류',sa_k3c:'품번 {a}종 · 라인 {b}개',
+ sa_k4:'반복 발생 회로 (2회 이상)',sa_k4c:'전체 회로의 {a} · 전체 건수의 {b}',sa_k5:'공급 리드타임',sa_k5c:'신청→출고 중앙값 · 평균 {a} · 90% 이내 {b} · {n}선',sa_k6c:'조립승인→출고 중앙값 · 평균 {a} · 90% 이내 {b} · {n}선',
+ sa_k6:'가공 구간 리드타임',sa_k7:'24시간 내 공급률',sa_k7c:'3일 내 {a} · 7일 내 {b}',sa_k8:'진행 중 (미출고)',sa_k8c:'최장 대기 {a}',sa_k9:'반려 · 취소',sa_k9c:'전체 신청 {a}선의 {b}',
+ sa_s1:'발생 빈도',sa_s1d:'언제 · 어디서 · 무엇이 많이 신청되는가 (막대를 누르면 그 라인 · 품번만 분석)',sa_s2:'특정 회로',sa_s3:'공급 리드타임',sa_s3d:'기준 구간',
+ sa_cTrend:'신청 추이',sa_gD:'일',sa_gW:'주',sa_gM:'월',sa_cWd:'요일별',sa_cHr:'시간대별',sa_cLine:'라인별',sa_cPn:'품번별',sa_cGt:'선 구분별',sa_cWhy:'신청 사유 (메모 키워드 기준)',
+ sa_cnt:'건수(선)',sa_reqN:'신청 묶음',sa_qty:'수량',sa_share:'비중',sa_etcN:'기타 {n}개',sa_plain:'일반',sa_hPeriod:'기간',sa_hHour:'시',sa_tv:'표',sa_cv:'그래프',sa_hItem:'항목',sa_hEx:'대표 메모',
+ sa_cTop:'많이 신청된 회로',sa_pareto:'회로 {t}종 중 상위 20%({a}종)가 전체 건수의 {b} · 선번을 누르면 그 회로만 분석합니다',sa_topN:'상위 {n}',sa_hKind:'구분 · 함께 만드는 선',sa_hSpec:'사양',sa_hCnt:'신청 횟수',sa_hDays:'발생일',sa_hGap:'평균 간격',
+ sa_hWn:'선번',sa_hLine:'주요 라인',sa_hLast:'최근 신청',sa_hLt:'리드타임(중앙값)',sa_hOpen:'진행 중',sa_cDet:'신청 내역',sa_hReq:'신청',sa_hBy:'신청자',sa_hSt:'상태',sa_hMemo:'메모',
+ sa_m_ship:'신청 → 출고',sa_m_proc:'조립승인 → 출고',sa_m_recv:'신청 → 조립접수',sa_cStage:'단계별 소요시간',sa_stg0:'신청 → 조립승인',sa_stg1:'조립승인 → 가공접수',sa_stg2:'가공접수 → 가공승인',sa_stg3:'가공승인 → 출고',sa_stg4:'출고 → 조립접수',
+ sa_hStage:'단계',sa_hWd:'요일',sa_hBand:'구간',sa_hN:'선 수',sa_barAvg:'평균 (막대)',sa_med:'중앙값',sa_avg:'평균',sa_p90:'90% 이내',sa_n:'건수',sa_max:'최대',sa_bad:'시각 순서가 맞지 않는 {n}건은 제외',sa_cDist:'리드타임 분포',sa_cum:'누적',
+ sa_distSum:'24시간 이내 {a} · 3일 이내 {b} · 7일 이내 {c} ({n}선)',sa_b0:'2시간 이하',sa_b1:'2~4시간',sa_b2:'4~8시간',sa_b3:'8~24시간',sa_b4:'1~2일',sa_b5:'2~3일',sa_b6:'3~7일',sa_b7:'7일 초과',
+ sa_cLtT:'리드타임 추이',sa_byShip:'출고 주 기준',sa_byRecv:'조립접수 주 기준',sa_cLtLine:'라인별 리드타임 (중앙값)',sa_cSlow:'오래 걸린 건 (상위 10)',sa_hLead:'리드타임',sa_hLong:'가장 긴 구간',
+ sa_cOpen:'진행 중 대기 현황',sa_hWait:'신청 후 경과(중앙값)',sa_hWaitMax:'최장',sa_oldest:'가장 오래 대기 중',sa_hEnd:'완료',
+ sa_r_dmg:'손상 · 파손',sa_r_rew:'재작업',sa_r_lot:'로트 미완성',sa_r_bob:'보빈 완성용',sa_r_plan:'작업계획 완료용',sa_r_falt:'부족 (기타)',sa_r_none:'메모 없음',sa_r_etc:'기타'});
+Object.assign(ES,{tStat:'📊 Análisis',pMonth6:'6 meses',pAll:'Todo',saFromL:'Solicitud desde',saToL:'Solicitud hasta',saPnL:'No. de parte',saLineL:'Línea',saWnL:'Circuito específico',saAllStL:'Incluir rechazados · cancelados',
+ sa_load:'Cargando datos…',sa_none:'No hay solicitudes con estas condiciones.',sa_off:'Sin conexión: análisis solo con los registros recientes.',
+ sa_basis:'Solicitudes del {a} al {b} · {n} circuitos · tiempo calendario (incluye noches y fines de semana) · nombres de línea unificados',sa_excl:'{n} rechazados · cancelados excluidos',sa_incl:'Incluye rechazados · cancelados',
+ sa_fPn:'No. parte',sa_fLine:'Línea',sa_fWn:'Circuito',sa_clear:'Quitar filtros',sa_noLine:'(sin línea)',sa_noShip:'Sin entregas',
+ sa_uL:'circ.',sa_uDay:'días',sa_uKind:'tipos',sa_uEa:'',sa_uMin:' min',sa_uH:' h',sa_uD:' d',
+ sa_k1:'Circuitos solicitados',sa_k1c:'{a} solicitudes · cant. {b}',sa_k2:'Días con solicitudes',sa_k2c:'Prom. {a}/día · máx. {b} ({c})',sa_k3:'Circuitos distintos',sa_k3c:'{a} No. de parte · {b} líneas',
+ sa_k4:'Circuitos repetidos (2+ veces)',sa_k4c:'{a} de los circuitos · {b} de las solicitudes',sa_k5:'Tiempo de suministro',sa_k5c:'Solicitud→entrega, mediana · prom. {a} · P90 {b} · {n} circ.',sa_k6c:'Aprob. ens.→entrega, mediana · prom. {a} · P90 {b} · {n} circ.',
+ sa_k6:'Tramo de Corte',sa_k7:'Entregado en 24 h',sa_k7c:'En 3 días {a} · en 7 días {b}',sa_k8:'En proceso (sin entregar)',sa_k8c:'Espera máx. {a}',sa_k9:'Rechazados · cancelados',sa_k9c:'{b} de {a} circuitos solicitados',
+ sa_s1:'Frecuencia',sa_s1d:'Cuándo, dónde y qué se solicita más (toque una barra para analizar solo esa línea o No. de parte)',sa_s2:'Circuito específico',sa_s3:'Tiempo de suministro',sa_s3d:'Tramo',
+ sa_cTrend:'Tendencia de solicitudes',sa_gD:'Día',sa_gW:'Sem.',sa_gM:'Mes',sa_cWd:'Por día de la semana',sa_cHr:'Por hora',sa_cLine:'Por línea',sa_cPn:'Por No. de parte',sa_cGt:'Por tipo de cable',sa_cWhy:'Motivo (según la nota)',
+ sa_cnt:'Circuitos',sa_reqN:'Solicitudes',sa_qty:'Cant.',sa_share:'Part.',sa_etcN:'Otros {n}',sa_plain:'Normal',sa_hPeriod:'Periodo',sa_hHour:'h',sa_tv:'Tabla',sa_cv:'Gráfica',sa_hItem:'Concepto',sa_hEx:'Nota típica',
+ sa_cTop:'Circuitos más solicitados',sa_pareto:'De {t} circuitos, el 20% superior ({a}) concentra el {b} · toque el circuito para analizarlo',sa_topN:'Top {n}',sa_hKind:'Tipo · se hacen juntos',sa_hSpec:'Especificación',sa_hCnt:'Veces',sa_hDays:'Días',sa_hGap:'Intervalo prom.',
+ sa_hWn:'Circuito',sa_hLine:'Línea principal',sa_hLast:'Última solicitud',sa_hLt:'Suministro (mediana)',sa_hOpen:'En proceso',sa_cDet:'Solicitudes',sa_hReq:'Solicitud',sa_hBy:'Solicitó',sa_hSt:'Estado',sa_hMemo:'Nota',
+ sa_m_ship:'Solicitud → entrega',sa_m_proc:'Aprob. ens. → entrega',sa_m_recv:'Solicitud → ens. recibe',sa_cStage:'Tiempo por etapa',sa_stg0:'Solicitud → aprob. ens.',sa_stg1:'Aprob. ens. → corte recibe',sa_stg2:'Corte recibe → aprob. corte',sa_stg3:'Aprob. corte → entrega',sa_stg4:'Entrega → ens. recibe',
+ sa_hStage:'Etapa',sa_hWd:'Día',sa_hBand:'Rango',sa_hN:'Circ.',sa_barAvg:'Promedio (barra)',sa_med:'Mediana',sa_avg:'Promedio',sa_p90:'P90',sa_n:'Cant.',sa_max:'Máx.',sa_bad:'{n} registros con horas fuera de orden excluidos',sa_cDist:'Distribución del tiempo',sa_cum:'Acum.',
+ sa_distSum:'En 24 h {a} · en 3 días {b} · en 7 días {c} ({n} circ.)',sa_b0:'≤ 2 h',sa_b1:'2–4 h',sa_b2:'4–8 h',sa_b3:'8–24 h',sa_b4:'1–2 d',sa_b5:'2–3 d',sa_b6:'3–7 d',sa_b7:'> 7 d',
+ sa_cLtT:'Tendencia del tiempo',sa_byShip:'por semana de entrega',sa_byRecv:'por semana de recepción',sa_cLtLine:'Tiempo por línea (mediana)',sa_cSlow:'Los más tardados (top 10)',sa_hLead:'Tiempo',sa_hLong:'Etapa más larga',
+ sa_cOpen:'Pendientes: tiempo de espera',sa_hWait:'Espera (mediana)',sa_hWaitMax:'Máx.',sa_oldest:'Los que más esperan',sa_hEnd:'Fin',
+ sa_r_dmg:'Daño',sa_r_rew:'Retrabajo',sa_r_lot:'Lote incompleto',sa_r_bob:'Completar bobina',sa_r_plan:'Término de plan',sa_r_falt:'Faltante (otros)',sa_r_none:'Sin nota',sa_r_etc:'Otros'});
+const SA={rows:[],key:'',loaded:false,off:false,f:{pn:'',line:'',wn:'',ex:false,all:false},gran:'',lt:'ship',sort:{k:'n',d:-1},top:20,tv:new Set(),lab:{},draw:{},m:null};
+const SA_OPEN=['신청','승인','접수','가공승인'],SA_NOL='∅',SA_C1='var(--viz-1)',SA_C2='var(--viz-2)';
+const saN=v=>(Math.round((+v||0)*10)/10).toLocaleString('en-US');
+const saPct=v=>v==null||isNaN(v)?'–':(Math.round(v*10)/10).toFixed(1)+'%';
+const saTT=(k,o)=>T(k).replace(/\{(\w)\}/g,(_,x)=>o[x]??'');
+const saH=(a,b)=>{if(!a||!b)return null;const h=(new Date(b)-new Date(a))/36e5;return h<-1/60?-1:Math.max(0,h);};// 시간 차(시간). 순서가 뒤바뀐 기록은 -1(제외)
+const saQ=(v,p)=>{if(!v.length)return null;const k=(v.length-1)*p,f=Math.floor(k),c=Math.min(f+1,v.length-1);return v[f]+(v[c]-v[f])*(k-f);};
+function saStat(a){const v=a.filter(x=>x!=null&&x>=0).sort((x,y)=>x-y),n=v.length;return {n,avg:n?v.reduce((s,x)=>s+x,0)/n:null,p50:saQ(v,.5),p90:saQ(v,.9),max:n?v[n-1]:null,bad:a.filter(x=>x===-1).length,v};}
+function saDur(h){if(h==null)return '–';if(h<1)return Math.round(h*60)+T('sa_uMin');if(h<48)return (Math.round(h*10)/10).toFixed(1)+T('sa_uH');return (Math.round(h/24*10)/10).toFixed(1)+T('sa_uD');}
+const saWk=d=>{const x=new Date(d.getFullYear(),d.getMonth(),d.getDate());x.setDate(x.getDate()-((x.getDay()+6)%7));return ymd(x);};// 그 주 월요일
+const saLineKey=s=>{const u=String(s||'').toUpperCase().replace(/[\s\-_.]/g,'');const m=u.match(/^([A-Z]*?)0*(\d+)$/);return (m?m[1]+(+m[2]):u)||SA_NOL;};// L09·L-9·l-09 → 같은 라인
+const saLab=k=>k===SA_NOL?T('sa_noLine'):(SA.lab[k]||k);
+const SA_WHY=[['dmg',/DAÑ|DANA|ROTUR|ROTO|QUEBR|CORTAD|손상|파손/],['rew',/RETRAB|재작업/],['lot',/LOTE|INCOMPLET|로트/],['bob',/BOBINA|보빈/],['plan',/PLAN DE TRABAJO|T[EÉ]RMINO/],['falt',/FALTA|부족/]];
+const saWhy=s=>{const u=String(s||'').trim().toUpperCase();if(!u)return 'none';for(const [k,re] of SA_WHY)if(re.test(u))return k;return 'etc';};
+const saGt=g=>g?g.split('+').map(t=>T(TYPE_KEY[t]||t)).join(' + '):T('sa_plain');
+const saDT=s=>s?fmtT(s):'–';
+function saPrep(rows){
+  const labs={};
+  rows.forEach(r=>{
+    r._t=new Date(r.created_at);const m=toMX(r._t);r._dk=ymd(m);r._wd=m.getDay();r._hr=m.getHours();r._mo=r._dk.slice(0,7);r._wk=saWk(m);
+    r._ck=r.pn+'|'+U(r.wn);r._dead=r.status==='반려'||r.status==='취소';
+    r._lt={ship:saH(r.created_at,r.ship_at),proc:saH(r.approved_at,r.ship_at),recv:saH(r.created_at,r.recv_at)};
+    r._sg=[saH(r.created_at,r.approved_at),saH(r.approved_at,r.received_at),saH(r.received_at,r.p_approved_at),saH(r.p_approved_at,r.ship_at),saH(r.ship_at,r.recv_at)];
+    r._sw=r.ship_at?saWk(toMX(new Date(r.ship_at))):null;r._rw=r.recv_at?saWk(toMX(new Date(r.recv_at))):null;r._lk=saLineKey(r.line);
+  });
+  // 번호만 적은 라인(13)은 같은 번호의 라인(L-13)이 하나뿐일 때 합침
+  const keys=[...new Set(rows.map(r=>r._lk))],alias={};
+  keys.forEach(k=>{if(!/^\d+$/.test(k))return;const c=keys.filter(x=>new RegExp('^[A-Z]+'+k+'$').test(x));if(c.length===1)alias[k]=c[0];});
+  rows.forEach(r=>{if(alias[r._lk])r._lk=alias[r._lk];const lab=String(r.line||'').trim().toUpperCase().replace(/\s+/g,' ');if(lab&&!alias[saLineKey(r.line)])(labs[r._lk]=labs[r._lk]||{})[lab]=(labs[r._lk][lab]||0)+1;});
+  SA.lab={};for(const k in labs)SA.lab[k]=Object.entries(labs[k]).sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0]))[0][0];
+}
+async function saLoad(force){
+  const f=$('saFrom').value,t=$('saTo').value,key=f+'|'+t;
+  if(!force&&SA.loaded&&SA.key===key){saRender();return;}
+  $('saBody').classList.add('ld');if(!SA.loaded)saRender();
+  try{
+    const q=[`plant=eq.${PLANT}`];// 날짜 경계는 넉넉히 받아 온 뒤 멕시코 날짜 기준으로 다시 거름
+    if(f)q.push('created_at=gte.'+encodeURIComponent(new Date(new Date(f+'T00:00:00Z').getTime()-864e5).toISOString()));
+    if(t)q.push('created_at=lte.'+encodeURIComponent(new Date(new Date(t+'T00:00:00Z').getTime()+2*864e5).toISOString()));
+    const cols='id,req_no,pn,wn,qty,line,requester,status,created_at,approved_at,received_at,p_approved_at,ship_at,recv_at,done_at,ret_at,grp,grp_type,mat,sq,col,len,t_l,t_r,req_note,proc_note,mes_no,asm_lot';
+    const out=[];for(let off=0;;off+=1000){const d=await (await sb(`${RQ}?${q.join('&')}&select=${cols}&order=created_at.asc,id.asc&limit=1000&offset=${off}`)).json();out.push(...d);if(d.length<1000)break;}
+    SA.rows=out;SA.off=false;SA.at=Date.now();setNet(true);
+  }catch(e){console.warn(e);setNet(false);SA.off=true;if(!SA.loaded)SA.rows=REQS.map(r=>({...r}));}
+  saPrep(SA.rows);SA.key=key;SA.loaded=true;$('saBody').classList.remove('ld');saRender();
+}
+function saFillFilters(){
+  const f=$('saFrom').value,t=$('saTo').value,R=SA.rows.filter(r=>(!f||r._dk>=f)&&(!t||r._dk<=t)),F=SA.f;
+  const pns=[...new Set(R.map(r=>r.pn))].sort();if(F.pn&&!pns.includes(F.pn))pns.push(F.pn);
+  const lks=[...new Set(R.map(r=>r._lk))].sort((a,b)=>saLab(a).localeCompare(saLab(b),undefined,{numeric:true}));if(F.line&&!lks.includes(F.line))lks.push(F.line);
+  $('saPn').innerHTML=`<option value="">${esc(T('all'))}</option>`+pns.map(p=>`<option value="${esc(p)}">${esc(p)}</option>`).join('');$('saPn').value=F.pn;
+  $('saLine').innerHTML=`<option value="">${esc(T('all'))}</option>`+lks.map(k=>`<option value="${esc(k)}">${esc(saLab(k))}</option>`).join('');$('saLine').value=F.line;
+  $('saAllSt').checked=F.all;if(U($('saWn').value)!==U(F.wn))$('saWn').value=F.wn;
+}
+function saCircuits(S){
+  const m=new Map();
+  S.forEach(r=>{let o=m.get(r._ck);
+    if(!o)m.set(r._ck,o={ck:r._ck,pn:r.pn,wn:r.wn,gt:r.grp_type,grp:r.grp,mat:r.mat,sq:r.sq,col:r.col,len:r.len,tl:r.t_l,tr:r.t_r,rows:0,qty:0,reqs:new Set(),days:new Set(),lines:{},lt:[],open:0,first:r._t,last:r._t});
+    o.rows++;o.qty+=+r.qty||0;o.reqs.add(r.req_no);o.days.add(r._dk);o.lines[r._lk]=(o.lines[r._lk]||0)+1;
+    if(!r._dead){const h=r._lt[SA.lt];if(h!=null&&h>=0)o.lt.push(h);if(SA_OPEN.includes(r.status))o.open++;}
+    if(r._t<o.first)o.first=r._t;if(r._t>o.last)o.last=r._t;if(!o.mat&&r.mat){o.mat=r.mat;o.sq=r.sq;o.col=r.col;o.len=r.len;o.tl=r.t_l;o.tr=r.t_r;}if(!o.gt&&r.grp_type){o.gt=r.grp_type;o.grp=r.grp;}});
+  return [...m.values()].map(o=>{const ds=[...o.days].sort(),ln=Object.entries(o.lines).sort((a,b)=>b[1]-a[1]),st=saStat(o.lt);
+    return {...o,n:o.reqs.size,d:ds.length,gap:ds.length>1?(new Date(ds[ds.length-1])-new Date(ds[0]))/864e5/(ds.length-1):null,line:ln[0][0],lineN:ln.length,ltN:st.n,ltMed:st.p50,ltAvg:st.avg};});
+}
+function saModel(){
+  const f=$('saFrom').value,t=$('saTo').value,F=SA.f,w=U(F.wn);
+  const all=SA.rows.filter(r=>(!f||r._dk>=f)&&(!t||r._dk<=t)&&(!F.pn||r.pn===F.pn)&&(!F.line||r._lk===F.line)&&(!w||(F.ex?U(r.wn)===w:U(r.wn).includes(w))));
+  const dead=all.filter(r=>r._dead),S=F.all?all:all.filter(r=>!r._dead),V=S.filter(r=>!r._dead),M={all,dead,S,V,from:f,to:t};
+  const sum=(a,fn)=>a.reduce((x,r)=>x+fn(r),0),q=r=>+r.qty||0;
+  M.N=S.length;M.qty=sum(S,q);M.reqs=new Set(S.map(r=>r.req_no)).size;M.pnN=new Set(S.map(r=>r.pn)).size;M.lineN=new Set(S.map(r=>r._lk)).size;
+  const dm={};S.forEach(r=>{const o=dm[r._dk]=dm[r._dk]||{k:r._dk,n:0,qty:0,reqs:new Set()};o.n++;o.qty+=q(r);o.reqs.add(r.req_no);});
+  M.days=Object.values(dm).sort((a,b)=>a.k<b.k?-1:1);M.act=M.days.length;M.maxDay=M.days.reduce((a,x)=>!a||x.n>a.n?x:a,null);
+  M.wd=[1,2,3,4,5,6,0].map(d=>({d,n:0,qty:0}));S.forEach(r=>{const o=M.wd.find(x=>x.d===r._wd);o.n++;o.qty+=q(r);});
+  M.hr={};S.forEach(r=>{const o=M.hr[r._hr]=M.hr[r._hr]||{h:r._hr,n:0,qty:0};o.n++;o.qty+=q(r);});
+  const grp=(key,extra)=>{const m={};S.forEach(r=>{const k=key(r),o=m[k]=m[k]||{k,n:0,qty:0,reqs:new Set(),ck:new Set(),lt:[]};o.n++;o.qty+=q(r);o.reqs.add(r.req_no);o.ck.add(r._ck);
+      if(!r._dead){const h=r._lt[SA.lt];if(h!=null&&h>=0)o.lt.push(h);}if(extra)extra(o,r);});
+    return Object.values(m).map(o=>({...o,reqN:o.reqs.size,ckN:o.ck.size,st:saStat(o.lt)})).sort((a,b)=>b.n-a.n||String(a.k).localeCompare(String(b.k)));};
+  M.lines=grp(r=>r._lk);M.pns=grp(r=>r.pn);M.gts=grp(r=>r.grp_type||'');
+  M.whys=grp(r=>saWhy(r.req_note),(o,r)=>{const m=String(r.req_note||'').trim().toUpperCase();if(m){o.ex=o.ex||{};o.ex[m]=(o.ex[m]||0)+1;}});
+  M.circ=saCircuits(S);M.rep=M.circ.filter(c=>c.n>=2);M.repRows=sum(M.rep,c=>c.rows);
+  const byN=M.circ.map(c=>c.rows).sort((a,b)=>b-a),n20=Math.max(1,Math.round(byN.length*.2));M.par={n:n20,share:M.N?byN.slice(0,n20).reduce((a,b)=>a+b,0)/M.N*100:null};
+  M.lt={ship:saStat(V.map(r=>r._lt.ship)),proc:saStat(V.map(r=>r._lt.proc)),recv:saStat(V.map(r=>r._lt.recv))};M.cur=M.lt[SA.lt];
+  M.stg=[0,1,2,3,4].map(i=>saStat(V.map(r=>r._sg[i])));
+  M.within=h=>M.lt.ship.n?M.lt.ship.v.filter(x=>x<=h).length/M.lt.ship.n*100:null;
+  const edges=[2,4,8,24,48,72,168,Infinity];M.dist=edges.map((e,i)=>({i,hi:e,n:0}));M.cur.v.forEach(x=>{M.dist.find(b=>x<=b.hi).n++;});
+  let acc=0;M.dist.forEach(b=>{acc+=b.n;b.cum=M.cur.n?acc/M.cur.n*100:null;b.share=M.cur.n?b.n/M.cur.n*100:null;});
+  const wm={};V.forEach(r=>{const h=r._lt[SA.lt],k=SA.lt==='recv'?r._rw:r._sw;if(h==null||h<0||!k)return;(wm[k]=wm[k]||[]).push(h);});
+  /* 출고(접수)가 없던 주도 빈 칸으로 넣어 가로축이 실제 달력과 맞게 한다 → 선은 그 주에서 끊김 */
+  const wks=Object.keys(wm).sort();M.ltW=[];
+  if(wks.length){const d=new Date(wks[0]+'T12:00:00'),end=new Date(wks[wks.length-1]+'T12:00:00');for(let i=0;d<=end&&i<400;i++,d.setDate(d.getDate()+7)){const k=ymd(d);M.ltW.push({k,st:saStat(wm[k]||[])});}}
+  M.slow=V.filter(r=>r._lt[SA.lt]!=null&&r._lt[SA.lt]>=0).sort((a,b)=>b._lt[SA.lt]-a._lt[SA.lt]).slice(0,10);
+  const now=Date.now();M.wait=r=>(now-r._t)/36e5;M.open=V.filter(r=>SA_OPEN.includes(r.status));M.waitMax=M.open.length?Math.max(...M.open.map(M.wait)):null;
+  M.openSt=[...SA_OPEN,'출고'].map(s=>{const a=V.filter(r=>r.status===s);return {s,n:a.length,qty:sum(a,q),st:saStat(a.map(M.wait))};});
+  return M;
+}
+function saTrend(M){
+  const S=M.S;if(!S.length)return {g:'d',bins:[]};
+  const first=S.reduce((a,r)=>r._dk<a?r._dk:a,S[0]._dk),last=S.reduce((a,r)=>r._dk>a?r._dk:a,S[0]._dk);
+  const span=(new Date(last)-new Date(first))/864e5+1,g=SA.gran||(span<=21?'d':span<=150?'w':'m'),key=r=>g==='d'?r._dk:g==='w'?r._wk:r._mo,m={};
+  S.forEach(r=>{const o=m[key(r)]=m[key(r)]||{n:0,qty:0,reqs:new Set()};o.n++;o.qty+=+r.qty||0;o.reqs.add(r.req_no);});
+  const bins=[],end=new Date(last+'T12:00:00');let d=new Date((g==='w'?saWk(new Date(first+'T12:00:00')):g==='m'?first.slice(0,7)+'-01':first)+'T12:00:00');
+  for(let i=0;d<=end&&i<800;i++){const k=g==='m'?ymd(d).slice(0,7):ymd(d);bins.push({k,...(m[k]||{n:0,qty:0,reqs:new Set()})});
+    if(g==='d')d.setDate(d.getDate()+1);else if(g==='w')d.setDate(d.getDate()+7);else d.setMonth(d.getMonth()+1);}
+  return {g,bins};
+}
+/* 눈금: 0부터 보기 좋은 간격으로 */
+function saTicks(max,int){if(!(max>0))return [0,1];const raw=max/3,p=Math.pow(10,Math.floor(Math.log10(raw))),m=raw/p;let step=(m<=1?1:m<=2?2:m<=5?5:10)*p;if(int)step=Math.max(1,Math.round(step));
+  const out=[];for(let v=0;v<max+step-1e-9;v+=step)out.push(Math.round(v*1e6)/1e6);return out;}
+/* 말풍선 — 값은 textContent 로만 넣음 */
+function saTipShow(x,y,title,lines){const t=$('saTip');t.textContent='';const a=document.createElement('div');a.className='tt';a.textContent=title;t.appendChild(a);
+  lines.forEach(l=>{const r=document.createElement('div');r.className='tr';if(l[2]){const k=document.createElement('i');k.style.borderTopColor=l[2];r.appendChild(k);}
+    const b=document.createElement('b');b.textContent=l[0];r.appendChild(b);const s=document.createElement('span');s.textContent=l[1]||'';r.appendChild(s);t.appendChild(r);});
+  t.classList.remove('hidden');const w=t.offsetWidth,h=t.offsetHeight;let L=x+14,P=y+14;if(L+w>innerWidth-8)L=x-w-14;if(P+h>innerHeight-8)P=y-h-14;t.style.left=Math.max(8,L)+'px';t.style.top=Math.max(8,P)+'px';}
+const saTipHide=()=>$('saTip').classList.add('hidden');
+const saTipA=(title,lines)=>lines&&lines.length?` tabindex="0" data-tt="${esc(title)}" data-tl="${esc(lines.join('\n'))}"`:'';
+/* 세로 막대 (한 계열 · 한 색) — 값 표기는 가장 큰 막대만, 나머지는 눈금·말풍선·표 */
+function saColsHtml(el,items,opt={}){
+  if(!items.length){el.innerHTML=`<div class="status">–</div>`;return;}
+  const W=Math.max(100,el.clientWidth-40),n=items.length,max=Math.max(...items.map(x=>x.v),0),tk=saTicks(max,!opt.frac),top=tk[tk.length-1]||1,h=opt.h||150,fmt=opt.fmt||saN;
+  const every=Math.max(1,Math.ceil(n*(opt.lw||40)/W)),imax=items.reduce((a,x,i)=>x.v>items[a].v?i:a,0);
+  el.innerHTML=`<div class="sa-cols"><div class="sa-plot" style="height:${h}px">${tk.map(t=>`<i class="g${t===0?' base':''}" style="bottom:${t/top*100}%"><em>${esc(fmt(t))}</em></i>`).join('')}<div class="sa-slots">${items.map((x,i)=>
+    `<div class="s"${saTipA(x.tt||x.label,x.tip)}>${x.v>0?`<b style="height:${Math.max(1.5,x.v/top*100)}%"></b>`:''}${i===imax&&x.v>0?`<u style="bottom:calc(${x.v/top*100}% + 3px)">${esc(fmt(x.v))}</u>`:''}</div>`).join('')}</div></div>
+    <div class="sa-xl">${items.map((x,i)=>`<span>${i%every===0?esc(x.label):''}</span>`).join('')}</div></div>`;
+}
+/* 가로 막대 (순위) — 값은 막대 끝에 직접 표기 */
+function saHBarsHtml(el,items,opt={}){
+  if(!items.length){el.innerHTML=`<div class="status">–</div>`;return;}
+  const max=Math.max(...items.map(x=>x.v),0)||1,fmt=opt.fmt||saN;
+  el.innerHTML=items.map(x=>`<div class="sa-hb${x.f?' k':''}${x.other?' o':''}"${opt.lw?` style="grid-template-columns:minmax(64px,${opt.lw}) minmax(0,1fr)"`:''}${saTipA(x.tt||x.label,x.tip)}${x.f?` data-f="${esc(x.f)}" role="button"`:''}><span class="l${opt.nw?' nw':''}">${esc(x.label)}</span><span class="t"><b style="width:calc((100% - ${opt.pad||104}px) * ${(x.v/max).toFixed(4)})"></b><em>${esc(fmt(x.v))}</em>${x.sub?`<small>${esc(x.sub)}</small>`:''}</span></div>`).join('');
+}
+/* 선 그래프 (두 계열까지) — 범례 + 끝점 값, 십자선 말풍선 */
+function saLineHtml(el,xs,series,opt={}){
+  const n=xs.length;if(!n){el.innerHTML=`<div class="status">–</div>`;return;}
+  const W=Math.max(260,el.clientWidth),H=opt.h||200,m={l:46,r:72,t:12,b:26},pw=W-m.l-m.r,ph=H-m.t-m.b,fmt=opt.fmt||saN;
+  const vmax=Math.max(0,...series.flatMap(s=>s.vals.filter(v=>v!=null))),inD=opt.dur&&vmax>=72,tk=inD?saTicks(vmax/24,false).map(d=>d*24):saTicks(vmax,false),top=tk[tk.length-1]||1;
+  const tf=opt.dur?(h=>!h?'0':inD?saN(h/24)+T('sa_uD'):saN(h)+T('sa_uH')):fmt,X=i=>m.l+(n<2?pw/2:pw*i/(n-1)),Y=v=>m.t+ph-(v/top)*ph,every=Math.max(1,Math.ceil(n*(opt.lw||56)/pw));
+  let s=`<div class="sa-lg">${series.map(x=>`<span><i style="border-color:${x.color}"></i>${esc(x.name)}</span>`).join('')}</div><svg class="sa-svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(opt.label||'')}">`;
+  s+=tk.map(t=>`<line class="${t===0?'bl':'gl'}" x1="${m.l}" x2="${W-m.r}" y1="${Y(t).toFixed(1)}" y2="${Y(t).toFixed(1)}"/><text x="${m.l-8}" y="${(Y(t)+4).toFixed(1)}" text-anchor="end">${esc(tf(t))}</text>`).join('');
+  s+=xs.map((x,i)=>i%every===0?`<text x="${X(i).toFixed(1)}" y="${H-7}" text-anchor="middle">${esc(x)}</text>`:'').join('')+`<line class="ch" x1="0" x2="0" y1="${m.t}" y2="${m.t+ph}"/>`;
+  series.slice().reverse().forEach(se=>{let d='',pen=false;se.vals.forEach((v,i)=>{if(v==null){pen=false;return;}d+=(pen?'L':'M')+X(i).toFixed(1)+' '+Y(v).toFixed(1);pen=true;});
+    s+=`<path class="ln" d="${d}" style="stroke:${se.color}"/>`+se.vals.map((v,i)=>v==null?'':`<circle cx="${X(i).toFixed(1)}" cy="${Y(v).toFixed(1)}" r="4" style="fill:${se.color};stroke:var(--bg);stroke-width:2"/>`).join('');});
+  const ends=series.map(se=>{let i=se.vals.length-1;while(i>=0&&se.vals[i]==null)i--;return i<0?null:{i,v:se.vals[i],y:Y(se.vals[i])};}).filter(Boolean);
+  if(ends.length&&(ends.length<2||Math.abs(ends[0].y-ends[1].y)>=15))ends.forEach(e=>{s+=`<text class="v" x="${(X(e.i)+9).toFixed(1)}" y="${(e.y+4).toFixed(1)}">${esc(fmt(e.v))}</text>`;});
+  el.innerHTML=s+`</svg>`;
+  const svg=el.querySelector('svg'),ch=svg.querySelector('.ch');
+  svg.addEventListener('pointermove',ev=>{const r=svg.getBoundingClientRect(),x=(ev.clientX-r.left)*(W/r.width);let i=n<2?0:Math.round((x-m.l)/pw*(n-1));i=Math.max(0,Math.min(n-1,i));
+    ch.setAttribute('x1',X(i));ch.setAttribute('x2',X(i));ch.style.visibility='visible';
+    saTipShow(ev.clientX,ev.clientY,opt.tt?opt.tt(i):xs[i],series.map(se=>[se.vals[i]==null?'–':fmt(se.vals[i]),se.name,se.color]).concat(opt.extra?opt.extra(i):[]));});
+  svg.addEventListener('pointerleave',()=>{ch.style.visibility='hidden';saTipHide();});
+}
+const saHd=s=>{const m=/^(.+?)(\s*\([^)]*\))$/.exec(s);return m?esc(m[1])+'<span class="q6">'+esc(m[2])+'</span>':esc(s);};
+const saTbl=(head,rows,cc=[])=>`<div class="sa-tw"><table><thead><tr>${head.map((h,i)=>`<th class="${i?'num ':''}${cc[i]||''}">${saHd(h)}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr>${r.map((c,i)=>`<td class="${i?'num nw ':''}${cc[i]||''}"${(cc[i]||'').includes('e')?` title="${esc(c)}"`:''}>${esc(c)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+const saCard=(id,title,sub,cls,tools,noTv)=>`<div class="sa-card ${cls||''}"><div class="sa-ch"><h3>${esc(title)}</h3>${sub?`<span class="status">${esc(sub)}</span>`:''}<span class="sp"></span>${tools||''}${noTv?'':`<button type="button" class="sa-tvb" data-view="${id}">${esc(T(SA.tv.has(id)?'sa_cv':'sa_tv'))}</button>`}</div><div class="sa-cb" id="sa_${id}"></div></div>`;
+function saDraw(only){for(const id in SA.draw){if(only&&only!==id)continue;const el=$('sa_'+id),d=SA.draw[id];if(!el)continue;if(d.table&&SA.tv.has(id))el.innerHTML=saTbl(d.table.head,d.table.rows,d.table.cc);else d.chart(el);}}
+function saRender(){
+  const body=$('saBody');SA.draw={};saTipHide();
+  if(!SA.loaded){body.innerHTML=`<div class="empty">${esc(T('sa_load'))}</div>`;$('saNote').textContent='';return;}
+  saFillFilters();saPreMark();
+  const M=SA.m=saModel(),F=SA.f,chips=[];
+  if(F.pn)chips.push(['pn',T('sa_fPn')+' '+F.pn]);if(F.line)chips.push(['line',T('sa_fLine')+' '+saLab(F.line)]);if(F.wn)chips.push(['wn',T('sa_fWn')+' '+U(F.wn)+(F.ex?'':' *')]);
+  $('saNote').innerHTML=`<span>${esc(saTT('sa_basis',{a:M.from||'…',b:M.to||'…',n:saN(M.N)}))}</span><span>${esc(F.all?T('sa_incl'):saTT('sa_excl',{n:saN(M.dead.length)}))}</span>`
+    +(SA.off?`<span style="color:var(--danger)">${esc(T('sa_off'))}</span>`:'')+chips.map(c=>`<button type="button" class="fchip" data-clear="${c[0]}">${esc(c[1])} ✕</button>`).join('')
+    +(chips.length>1?`<button type="button" class="fchip" data-clear="*">${esc(T('sa_clear'))}</button>`:'');
+  if(!M.N){body.innerHTML=`<div class="empty">${esc(T('sa_none'))}</div>`;return;}
+  const kpi=(l,v,u,c)=>`<div class="sa-kpi"><span title="${esc(l)}">${esc(l)}</span><b>${esc(v)}${u?`<small>${esc(u)}</small>`:''}</b><em>${esc(c||'')}</em></div>`,L=M.lt.ship,P=M.lt.proc,tl=(v,l)=>v+'\t'+l;
+  let h=`<div class="sa-kpis">`
+   +kpi(T('sa_k1'),saN(M.N),T('sa_uL'),saTT('sa_k1c',{a:saN(M.reqs),b:saN(M.qty)}))
+   +kpi(T('sa_k2'),saN(M.act),T('sa_uDay'),saTT('sa_k2c',{a:saN(M.N/M.act),b:saN(M.maxDay.n),c:M.maxDay.k.slice(5)}))
+   +kpi(T('sa_k3'),saN(M.circ.length),T('sa_uKind'),saTT('sa_k3c',{a:saN(M.pnN),b:saN(M.lineN)}))
+   +kpi(T('sa_k4'),saN(M.rep.length),T('sa_uEa'),saTT('sa_k4c',{a:saPct(M.rep.length/M.circ.length*100),b:saPct(M.repRows/M.N*100)}))
+   +kpi(T('sa_k5'),saDur(L.p50),'',L.n?saTT('sa_k5c',{a:saDur(L.avg),b:saDur(L.p90),n:saN(L.n)}):T('sa_noShip'))
+   +kpi(T('sa_k6'),saDur(P.p50),'',P.n?saTT('sa_k6c',{a:saDur(P.avg),b:saDur(P.p90),n:saN(P.n)}):T('sa_noShip'))
+   +kpi(T('sa_k7'),saPct(M.within(24)),'',L.n?saTT('sa_k7c',{a:saPct(M.within(72)),b:saPct(M.within(168))}):T('sa_noShip'))
+   +kpi(T('sa_k8'),saN(M.open.length),T('sa_uL'),M.open.length?saTT('sa_k8c',{a:saDur(M.waitMax)}):'')
+   +kpi(T('sa_k9'),saN(M.dead.length),T('sa_uL'),saTT('sa_k9c',{a:saN(M.all.length),b:saPct(M.all.length?M.dead.length/M.all.length*100:0)}))+`</div>`;
+  /* ── ① 발생 빈도 ── */
+  const TR=saTrend(M),seg=(attr,cur,list)=>`<div class="seg">${list.map(([v,l])=>`<button type="button" data-${attr}="${v}" class="${v===cur?'on':''}">${esc(l)}</button>`).join('')}</div>`;
+  const binLab=b=>TR.g==='d'?b.k.slice(5):TR.g==='w'?b.k.slice(5)+'~':b.k,binTt=b=>TR.g==='d'?dlabel(b.k):TR.g==='w'?b.k+' ~ '+ymd(new Date(new Date(b.k+'T12:00:00').getTime()+6*864e5)):b.k;
+  const cntTip=o=>[tl(saN(o.n),T('sa_cnt')),tl(saPct(o.n/M.N*100),T('sa_share')),tl(saN(o.qty),T('sa_qty'))];
+  h+=`<div class="sa-sec"><h2>${esc(T('sa_s1'))}</h2><span class="status">${esc(T('sa_s1d'))}</span></div><div class="sa-grid">`
+   +saCard('trend',T('sa_cTrend'),T('sa_cnt'),'w6',seg('gran',TR.g,[['d',T('sa_gD')],['w',T('sa_gW')],['m',T('sa_gM')]]))+saCard('wd',T('sa_cWd'),T('sa_cnt'),'w3')+saCard('hr',T('sa_cHr'),T('sa_cnt'),'w3')
+   +saCard('line',T('sa_cLine'),T('sa_cnt'),'w3')+saCard('pn',T('sa_cPn'),T('sa_cnt'),'w3')+saCard('gt',T('sa_cGt'),T('sa_cnt'),'w3')+saCard('why',T('sa_cWhy'),T('sa_cnt'),'w3')+`</div>`;
+  SA.draw.trend={chart:el=>saColsHtml(el,TR.bins.map(b=>({label:binLab(b),tt:binTt(b),v:b.n,tip:[tl(saN(b.n),T('sa_cnt')),tl(saN(b.reqs.size),T('sa_reqN')),tl(saN(b.qty),T('sa_qty'))]})),{h:170,lw:TR.g==='m'?60:TR.g==='w'?50:44}),
+    table:{cc:['','','q7',''],head:[T('sa_hPeriod'),T('sa_cnt'),T('sa_reqN'),T('sa_qty')],rows:TR.bins.map(b=>[binTt(b),saN(b.n),saN(b.reqs.size),saN(b.qty)])}};
+  SA.draw.wd={chart:el=>saColsHtml(el,M.wd.map(o=>({label:WD[lang][o.d],v:o.n,tip:cntTip(o)})),{h:170,lw:26}),table:{cc:['','','','q7'],head:[T('sa_hWd'),T('sa_cnt'),T('sa_share'),T('sa_qty')],rows:M.wd.map(o=>[WD[lang][o.d],saN(o.n),saPct(o.n/M.N*100),saN(o.qty)])}};
+  const hs=Object.keys(M.hr).map(Number),h0=Math.min(7,...hs),h1=Math.max(18,...hs),hrs=[];for(let i=h0;i<=h1;i++)hrs.push(M.hr[i]||{h:i,n:0,qty:0});
+  SA.draw.hr={chart:el=>saColsHtml(el,hrs.map(o=>({label:String(o.h),tt:pad(o.h)+':00 ~ '+pad(o.h)+':59',v:o.n,tip:cntTip(o)})),{h:170,lw:22}),table:{cc:['','','','q7'],head:[T('sa_hHour'),T('sa_cnt'),T('sa_share'),T('sa_qty')],rows:hrs.map(o=>[pad(o.h)+':00',saN(o.n),saPct(o.n/M.N*100),saN(o.qty)])}};
+  const rank=(arr,lab,fk,n=10)=>{const tip=o=>[tl(saN(o.n),T('sa_cnt')),tl(saPct(o.n/M.N*100),T('sa_share')),tl(saN(o.reqN),T('sa_reqN')),tl(saN(o.qty),T('sa_qty')),tl(saN(o.ckN),T('sa_k3'))];
+    const items=arr.slice(0,n).map(o=>({label:lab(o),v:o.n,sub:saPct(o.n/M.N*100),f:fk?fk+':'+o.k:'',tip:tip(o)})),rest=arr.slice(n);
+    if(rest.length){const rn=rest.reduce((t,o)=>t+o.n,0);items.push({label:saTT('sa_etcN',{n:rest.length}),v:rn,sub:saPct(rn/M.N*100),other:1,tip:[tl(saN(rn),T('sa_cnt')),tl(saPct(rn/M.N*100),T('sa_share'))]});}return items;};
+  const rankTbl=(arr,lab,name)=>({cc:['','','','q5','q7','q5'],head:[name,T('sa_cnt'),T('sa_share'),T('sa_reqN'),T('sa_qty'),T('sa_k3')],rows:arr.map(o=>[lab(o),saN(o.n),saPct(o.n/M.N*100),saN(o.reqN),saN(o.qty),saN(o.ckN)])});
+  SA.draw.line={chart:el=>saHBarsHtml(el,rank(M.lines,o=>saLab(o.k),'line')),table:rankTbl(M.lines,o=>saLab(o.k),T('sa_fLine'))};
+  SA.draw.pn={chart:el=>saHBarsHtml(el,rank(M.pns,o=>o.k,'pn'),{lw:'46%',pad:96,nw:1}),table:rankTbl(M.pns,o=>o.k,T('sa_fPn'))};
+  SA.draw.gt={chart:el=>saHBarsHtml(el,rank(M.gts,o=>saGt(o.k),'',7),{lw:'42%',pad:96}),table:rankTbl(M.gts,o=>saGt(o.k),T('sa_cGt'))};
+  const whyEx=o=>Object.entries(o.ex||{}).sort((a,b)=>b[1]-a[1]).slice(0,3);
+  SA.draw.why={chart:el=>saHBarsHtml(el,M.whys.map(o=>({label:T('sa_r_'+o.k),v:o.n,sub:saPct(o.n/M.N*100),other:o.k==='etc'||o.k==='none',tip:[tl(saN(o.n),T('sa_cnt')),tl(saN(o.reqN),T('sa_reqN'))].concat(whyEx(o).map(e=>tl(saN(e[1]),e[0].slice(0,60))))}))),
+    table:{cc:['','','','q5','e q5'],head:[T('sa_cWhy'),T('sa_cnt'),T('sa_share'),T('sa_reqN'),T('sa_hEx')],rows:M.whys.map(o=>[T('sa_r_'+o.k),saN(o.n),saPct(o.n/M.N*100),saN(o.reqN),(whyEx(o)[0]||[''])[0].slice(0,80)])}};
+  /* ── ② 특정 회로 ── */
+  h+=`<div class="sa-sec"><h2>${esc(T('sa_s2'))}</h2><span class="status">${esc(saTT('sa_pareto',{t:saN(M.circ.length),a:saN(M.par.n),b:saPct(M.par.share)}))}</span></div><div class="sa-grid">`
+   +(F.ex&&F.wn?saCard('det',T('sa_cDet')+' — '+(F.pn?F.pn+' · ':'')+U(F.wn),saN(M.N)+T('sa_uL'),'w12','',1):'')
+   +saCard('top',T('sa_cTop'),'','w12',seg('top',String(SA.top),[['20',saTT('sa_topN',{n:20})],['50',saTT('sa_topN',{n:50})],['0',T('all')]]),1)+`</div>`;
+  SA.draw.top={chart:el=>{el.innerHTML=saCircTable(M);}};
+  if(F.ex&&F.wn)SA.draw.det={chart:el=>{const rs=M.S.slice().sort((a,b)=>b._t-a._t).slice(0,200);
+    el.innerHTML=`<div class="sa-tw"><table><thead><tr><th>${esc(T('sa_hReq'))}</th><th class="q2">${esc(T('sa_fLine'))}</th><th class="q1" style="width:13%">${esc(T('sa_hBy'))}</th><th class="num q7">${esc(T('sa_qty'))}</th><th>${esc(T('sa_hSt'))}</th><th class="q1">${esc(T('fAppr'))}</th><th class="q1">${esc(T('fRcv'))}</th><th class="q4">${esc(T('fShip'))}</th><th class="q2">${esc(T('fRecv'))}</th><th class="num">${esc(T('sa_hLead'))}</th><th class="q3" style="width:22%">${esc(T('sa_hMemo'))}</th></tr></thead><tbody>`
+      +rs.map(r=>`<tr><td class="nw"><b><span class="q6">${esc(fmtD(r.created_at).slice(0,5))}</span>${esc(fmtD(r.created_at).slice(5))}</b><span class="q6"> ${esc(fmtT(r.created_at).slice(6))}</span></td><td class="nw q2">${esc(saLab(r._lk))}</td><td class="e q1" title="${esc(r.requester||'')}">${esc(r.requester||'')}</td><td class="num q7"><b>${saN(r.qty)}</b></td><td class="nw">${stTag(r.status)}</td><td class="nw q1">${esc(saDT(r.approved_at))}</td><td class="nw q1">${esc(saDT(r.received_at))}</td><td class="nw q4">${esc(saDT(r.ship_at))}</td><td class="nw q2">${esc(saDT(r.recv_at))}</td><td class="num nw"><b>${esc(r._lt[SA.lt]!=null&&r._lt[SA.lt]>=0?saDur(r._lt[SA.lt]):'–')}</b></td><td class="e q3" title="${esc(r.req_note||'')}">${esc(r.req_note||'')}</td></tr>`).join('')+`</tbody></table></div>`;}};
+  /* ── ③ 공급 리드타임 ── */
+  const C=M.cur,mName=T('sa_m_'+SA.lt),bad=M.stg.reduce((t,s)=>t+s.bad,0)+M.lt.ship.bad;
+  h+=`<div class="sa-sec"><h2>${esc(T('sa_s3'))}</h2><span class="status">${esc(T('sa_s3d'))}</span>${seg('lt',SA.lt,[['ship',T('sa_m_ship')],['proc',T('sa_m_proc')],['recv',T('sa_m_recv')]])}${bad?`<span class="status">${esc(saTT('sa_bad',{n:saN(bad)}))}</span>`:''}</div><div class="sa-grid">`
+   +saCard('stage',T('sa_cStage'),'','w6','',1)+saCard('dist',T('sa_cDist'),mName,'w6')
+   +saCard('ltw',T('sa_cLtT'),mName+' · '+T(SA.lt==='recv'?'sa_byRecv':'sa_byShip'),'w7')+saCard('ltl',T('sa_cLtLine'),mName,'w5')
+   +saCard('slow',T('sa_cSlow'),mName,'w7','',1)+saCard('open',T('sa_cOpen'),'','w5','',1)+`</div>`;
+  SA.draw.stage={chart:el=>{const mx=Math.max(...M.stg.map(s=>s.avg||0),0)||1;
+    el.innerHTML=`<div class="sa-tw"><table class="sa-stage"><thead><tr><th>${esc(T('sa_hStage'))}</th><th class="q5">${esc(T('sa_barAvg'))}</th><th class="num">${esc(T('sa_avg'))}</th><th class="num">${esc(T('sa_med'))}</th><th class="num q4">${esc(T('sa_p90'))}</th><th class="num q3">${esc(T('sa_max'))}</th><th class="num q6">${esc(T('sa_n'))}</th></tr></thead><tbody>`
+     +M.stg.map((s,i)=>`<tr${saTipA(T('sa_stg'+i),[tl(saDur(s.avg),T('sa_avg')),tl(saDur(s.p50),T('sa_med')),tl(saDur(s.p90),T('sa_p90')),tl(saN(s.n),T('sa_n'))])}><td class="nw sn">${esc(T('sa_stg'+i))}</td><td class="bar q5">${s.n?`<b style="width:${Math.max(1,(s.avg||0)/mx*100).toFixed(1)}%"></b>`:''}</td><td class="num nw"><b>${esc(saDur(s.avg))}</b></td><td class="num nw">${esc(saDur(s.p50))}</td><td class="num nw q4">${esc(saDur(s.p90))}</td><td class="num nw q3">${esc(saDur(s.max))}</td><td class="num nw q6">${saN(s.n)}</td></tr>`).join('')
+     +`<tr class="tot"><td class="nw sn">${esc(mName)}</td><td class="q5"></td><td class="num nw">${esc(saDur(C.avg))}</td><td class="num nw">${esc(saDur(C.p50))}</td><td class="num nw q4">${esc(saDur(C.p90))}</td><td class="num nw q3">${esc(saDur(C.max))}</td><td class="num nw q6">${saN(C.n)}</td></tr></tbody></table></div>`;}};
+  const cumAt=i=>saPct(M.dist[i].cum);
+  SA.draw.dist={chart:el=>{if(!C.n){el.innerHTML=`<div class="status">${esc(T('sa_noShip'))}</div>`;return;}const box=document.createElement('div');el.innerHTML=`<p class="sa-sum">${saTT('sa_distSum',{a:'<b>'+cumAt(3)+'</b>',b:'<b>'+cumAt(5)+'</b>',c:'<b>'+cumAt(6)+'</b>',n:saN(C.n)})}</p>`;el.appendChild(box);
+      saColsHtml(box,M.dist.map(b=>({label:T('sa_b'+b.i),v:b.n,tip:[tl(saN(b.n),T('sa_cnt')),tl(saPct(b.share),T('sa_share')),tl(saPct(b.cum),T('sa_cum'))]})),{h:150,lw:64});},
+    table:{head:[T('sa_hBand'),T('sa_cnt'),T('sa_share'),T('sa_cum')],rows:M.dist.map(b=>[T('sa_b'+b.i),saN(b.n),saPct(b.share),saPct(b.cum)])}};
+  SA.draw.ltw={chart:el=>saLineHtml(el,M.ltW.map(w=>w.k.slice(5)+'~'),[{name:T('sa_med'),color:SA_C1,vals:M.ltW.map(w=>w.st.p50)},{name:T('sa_p90'),color:SA_C2,vals:M.ltW.map(w=>w.st.p90)}],
+      {fmt:saDur,dur:true,label:T('sa_cLtT'),tt:i=>M.ltW[i].k+' ~ '+ymd(new Date(new Date(M.ltW[i].k+'T12:00:00').getTime()+6*864e5)),extra:i=>[[saDur(M.ltW[i].st.avg),T('sa_avg')],[saN(M.ltW[i].st.n),T('sa_n')]]}),
+    table:{cc:['','','','q6',''],head:[T('sa_hPeriod'),T('sa_n'),T('sa_med'),T('sa_avg'),T('sa_p90')],rows:M.ltW.map(w=>[w.k+' ~',saN(w.st.n),saDur(w.st.p50),saDur(w.st.avg),saDur(w.st.p90)])}};
+  const ll=M.lines.filter(o=>o.st.n).sort((a,b)=>b.st.p50-a.st.p50);
+  SA.draw.ltl={chart:el=>saHBarsHtml(el,ll.slice(0,10).map(o=>({label:saLab(o.k),v:o.st.p50,sub:'n '+saN(o.st.n),f:'line:'+o.k,tip:[tl(saDur(o.st.p50),T('sa_med')),tl(saDur(o.st.avg),T('sa_avg')),tl(saDur(o.st.p90),T('sa_p90')),tl(saN(o.st.n),T('sa_n'))]})),{fmt:saDur,pad:128}),
+    table:{cc:['','','','q6',''],head:[T('sa_fLine'),T('sa_n'),T('sa_med'),T('sa_avg'),T('sa_p90')],rows:ll.map(o=>[saLab(o.k),saN(o.st.n),saDur(o.st.p50),saDur(o.st.avg),saDur(o.st.p90)])}};
+  SA.draw.slow={chart:el=>{const endAt=r=>SA.lt==='recv'?r.recv_at:r.ship_at;
+    el.innerHTML=M.slow.length?`<div class="sa-tw"><table><thead><tr><th class="q6">${esc(T('sa_fPn'))}</th><th>${esc(T('sa_hWn'))}</th><th class="q5">${esc(T('sa_fLine'))}</th><th class="q3">${esc(T('sa_hReq'))}</th><th class="q4">${esc(T('sa_hEnd'))}</th><th class="num">${esc(T('sa_hLead'))}</th><th style="width:27%">${esc(T('sa_hLong'))}</th></tr></thead><tbody>`
+     +M.slow.map(r=>{let bi=-1;r._sg.forEach((x,i)=>{if(x!=null&&x>=0&&(SA.lt==='recv'||i<4)&&(SA.lt!=='proc'||i>0)&&(bi<0||x>r._sg[bi]))bi=i;});
+       return `<tr><td class="nw q6">${esc(r.pn)}</td><td class="nw"><button type="button" class="sa-lnk" data-ck="${esc(r.pn+'|'+r.wn)}">${esc(r.wn)}</button><small class="sa-pn2 p6">${esc(r.pn)}</small></td><td class="nw q5">${esc(saLab(r._lk))}</td><td class="nw q3">${esc(saDT(r.created_at))}</td><td class="nw q4">${esc(saDT(endAt(r)))}</td><td class="num nw"><b>${esc(saDur(r._lt[SA.lt]))}</b></td><td>${bi<0?'':`${esc(T('sa_stg'+bi))} <b class="nw">${esc(saDur(r._sg[bi]))}</b>`}</td></tr>`;}).join('')+`</tbody></table></div>`:`<div class="status">${esc(T('sa_noShip'))}</div>`;}};
+  SA.draw.open={chart:el=>{const old=M.open.slice().sort((a,b)=>a._t-b._t).slice(0,5);
+    el.innerHTML=`<div class="sa-tw"><table><thead><tr><th>${esc(T('sa_hStage'))}</th><th class="num">${esc(T('sa_hN'))}</th><th class="num q6">${esc(T('sa_qty'))}</th><th class="num q7">${saHd(T('sa_hWait'))}</th><th class="num">${esc(T('sa_hWaitMax'))}</th></tr></thead><tbody>`
+     +M.openSt.map(o=>`<tr><td class="nw">${stTag(o.s)}</td><td class="num nw"><b>${saN(o.n)}</b></td><td class="num nw q6">${saN(o.qty)}</td><td class="num nw q7">${esc(saDur(o.st.p50))}</td><td class="num nw">${esc(saDur(o.st.max))}</td></tr>`).join('')+`</tbody></table></div>`
+     +(old.length?`<p class="sa-sum" style="margin:10px 0 4px">${esc(T('sa_oldest'))}</p><div class="sa-tw"><table><tbody>`+old.map(r=>`<tr><td class="nw q6">${esc(r.pn)}</td><td class="nw"><button type="button" class="sa-lnk" data-ck="${esc(r.pn+'|'+r.wn)}">${esc(r.wn)}</button><small class="sa-pn2 p6">${esc(r.pn)}</small></td><td class="nw q4">${esc(saLab(r._lk))}</td><td class="nw q5">${esc(r._dk.slice(5))}</td><td class="nw">${stTag(r.status)}</td><td class="num nw"><b>${esc(saDur(M.wait(r)))}</b></td></tr>`).join('')+`</tbody></table></div>`:'');}};
+  body.innerHTML=h;saDraw();
+}
+function saCircTable(M){
+  const S=SA.sort,val={n:c=>c.n*1e6+c.rows*1e3+c.qty,d:c=>c.d,gap:c=>c.gap==null?1e9:c.gap,qty:c=>c.qty,lt:c=>c.ltMed==null?-1:c.ltMed,last:c=>+c.last,open:c=>c.open}[S.k]||(c=>c.n);
+  const list=M.circ.slice().sort((a,b)=>(val(a)-val(b))*S.d||b.n-a.n||b.qty-a.qty||a.pn.localeCompare(b.pn)||a.wn.localeCompare(b.wn,undefined,{numeric:true}));
+  const rows=SA.top?list.slice(0,SA.top):list,max=Math.max(...M.circ.map(c=>c.n),1);
+  const th=(k,l,num,q)=>`<th class="s${num?' num':''}${S.k===k?' on':''}${q?' '+q:''}" data-sort="${k}" tabindex="0" role="button">${saHd(l)}${S.k===k?(S.d<0?' ▼':' ▲'):''}</th>`;
+  return `<div class="sa-tw"><table><thead><tr><th class="num q4">#</th><th class="q4">${esc(T('sa_fPn'))}</th><th>${esc(T('sa_hWn'))}</th><th class="q2" style="width:17%">${esc(T('sa_hKind'))}</th><th class="q1" style="width:15%">${esc(T('sa_hSpec'))}</th>${th('n',T('sa_hCnt'))}${th('d',T('sa_hDays'),1,'q4')}${th('gap',T('sa_hGap'),1,'q1')}${th('qty',T('sa_qty'),1,'q2')}<th class="q2">${esc(T('sa_hLine'))}</th>${th('last',T('sa_hLast'),0,'q1')}${th('lt',T('sa_hLt'),1)}${th('open',T('sa_hOpen'),1,'q2')}</tr></thead><tbody>`
+   +rows.map((c,i)=>`<tr><td class="num nw q4" style="color:var(--sub)">${i+1}</td><td class="nw q4">${esc(c.pn)}</td><td class="nw"><button type="button" class="sa-lnk" data-ck="${esc(c.pn+'|'+c.wn)}">${esc(c.wn)}</button><small class="sa-pn2 p4">${esc(c.pn)}</small></td>
+     <td class="e q2">${badge((c.gt||'').split('+').filter(Boolean),0,c.grp?c.grp.split(',').filter(w=>w!==c.wn).join(', '):'')}</td>
+     <td class="e q1">${c.mat?`${esc(c.mat)} ${esc(c.sq||'')} ${chip(c.col)} <span class="status">· ${esc(c.len||'')}</span>`:''}</td>
+     <td class="nw"><span class="sa-ib" style="width:calc(${Math.round(c.n/max*70)}px*var(--ibw,1))"></span><b>${saN(c.n)}</b></td><td class="num nw q4">${saN(c.d)}</td><td class="num nw q1">${c.gap==null?'–':esc((Math.round(c.gap*10)/10).toFixed(1)+T('sa_uD'))}</td><td class="num nw q2">${saN(c.qty)}</td>
+     <td class="nw q2">${esc(saLab(c.line))}${c.lineN>1?` <span class="status">+${c.lineN-1}</span>`:''}</td><td class="nw q1">${esc(ymd(toMX(c.last)).slice(5))}</td><td class="num nw">${c.ltMed==null?'–':esc(saDur(c.ltMed))}${c.ltN>1?` <span class="status q6">(${c.ltN})</span>`:''}</td><td class="num nw q2">${c.open?`<b style="color:var(--req)">${saN(c.open)}</b>`:'–'}</td></tr>`).join('')
+   +`</tbody></table></div>`;
+}
+/* 기간 바로가기 · 이벤트 */
+const SA_PRE={m1:d=>{d.setMonth(d.getMonth()-1);return ymd(d);},m3:d=>{d.setMonth(d.getMonth()-3);return ymd(d);},m6:d=>{d.setMonth(d.getMonth()-6);return ymd(d);},all:()=>''};
+function saPreMark(){const t=ymd(nowMX()),f=$('saFrom').value,to=$('saTo').value;[...$('saPre').children].forEach(b=>b.classList.toggle('on',to===t&&f===SA_PRE[b.dataset.p](nowMX())));}
+$('saPre').onclick=e=>{const b=e.target.closest('button');if(!b)return;$('saFrom').value=SA_PRE[b.dataset.p](nowMX());$('saTo').value=ymd(nowMX());saPreMark();saLoad();};
+['saFrom','saTo'].forEach(id=>$(id).addEventListener('change',()=>saLoad()));
+$('saPn').onchange=()=>{SA.f.pn=$('saPn').value;saRender();};
+$('saLine').onchange=()=>{SA.f.line=$('saLine').value;saRender();};
+$('saAllSt').onchange=()=>{SA.f.all=$('saAllSt').checked;saRender();};
+$('saWn').addEventListener('input',()=>{clearTimeout(SA._q);SA._q=setTimeout(()=>{SA.f.wn=$('saWn').value.trim();SA.f.ex=false;saRender();},250);});
+$('saNote').addEventListener('click',e=>{const b=e.target.closest('[data-clear]');if(!b)return;const k=b.dataset.clear;if(k==='*'||k==='pn')SA.f.pn='';if(k==='*'||k==='line')SA.f.line='';if(k==='*'||k==='wn'){SA.f.wn='';SA.f.ex=false;$('saWn').value='';}saRender();});
+$('saBody').addEventListener('click',e=>{const q=s=>e.target.closest(s);let b;
+  if(b=q('[data-view]')){const id=b.dataset.view;SA.tv.has(id)?SA.tv.delete(id):SA.tv.add(id);b.textContent=T(SA.tv.has(id)?'sa_cv':'sa_tv');saDraw(id);return;}
+  if(b=q('[data-gran]')){SA.gran=b.dataset.gran;saRender();return;}
+  if(b=q('[data-lt]')){SA.lt=b.dataset.lt;saRender();return;}
+  if(b=q('[data-top]')){SA.top=+b.dataset.top;saRender();return;}
+  if(b=q('[data-sort]')){const k=b.dataset.sort;SA.sort=SA.sort.k===k?{k,d:-SA.sort.d}:{k,d:k==='gap'?1:-1};saDraw('top');return;}
+  if(b=q('[data-ck]')){const i=b.dataset.ck.indexOf('|');SA.f.pn=b.dataset.ck.slice(0,i);SA.f.wn=b.dataset.ck.slice(i+1);SA.f.ex=true;$('saWn').value=SA.f.wn;saRender();window.scrollTo(0,0);return;}
+  if(b=q('[data-f]')){const i=b.dataset.f.indexOf(':'),k=b.dataset.f.slice(0,i),v=b.dataset.f.slice(i+1);SA.f[k]=SA.f[k]===v?'':v;saRender();return;}});
+$('saBody').addEventListener('keydown',e=>{if(e.key!=='Enter'&&e.key!==' ')return;const b=e.target.closest('[data-f],[data-sort]');if(b&&b===e.target){e.preventDefault();b.click();}});
+const saTipOf=m=>[m.dataset.tt,m.dataset.tl.split('\n').map(l=>l.split('\t'))];
+$('saBody').addEventListener('pointermove',e=>{const m=e.target.closest('[data-tt]');if(m)saTipShow(e.clientX,e.clientY,...saTipOf(m));else if(!e.target.closest('svg'))saTipHide();});
+$('saBody').addEventListener('pointerleave',saTipHide);
+$('saBody').addEventListener('focusin',e=>{const m=e.target.closest('[data-tt]');if(!m)return;const r=m.getBoundingClientRect();saTipShow(r.left+r.width/2,r.top+Math.min(r.height,28),...saTipOf(m));});
+$('saBody').addEventListener('focusout',saTipHide);
+addEventListener('resize',()=>{clearTimeout(SA._rz);SA._rz=setTimeout(()=>{if(SA.loaded&&!$('viewStat').classList.contains('hidden'))saDraw();},150);});
+$('saFrom').value=SA_PRE.m3(nowMX());$('saTo').value=ymd(nowMX());
+$('tabStat').onclick=()=>{show('Stat');saLoad(Date.now()-(SA.at||0)>60000);window.scrollTo(0,0);};// 탭을 다시 열 때 1분 넘은 자료는 새로 받음
+/* 엑셀: 화면과 같은 조건으로 요약 · 회로별 · 라인별 · 품번별 · 일별 · 리드타임 · 분석 대상 행 */
+async function saExport(){
+  if(!SA.loaded||!SA.m||!SA.m.N){toast(T('xlsxNone'));return;}
+  if(!await xlReady())return;
+  const M=saModel(),wb=new ExcelJS.Workbook();wb.creator='YURA HARNESS MÉXICO';wb.created=new Date();
+  const F=SA.f,r1=v=>v==null?'':Math.round(v*10)/10,pc=v=>v==null?'':Math.round(v*10)/1000,mName={ship:'신청→출고',proc:'조립승인→출고',recv:'신청→조립접수'}[SA.lt];
+  const sub=`PLANT ${PLANT} · 신청일 ${M.from||'…'} ~ ${M.to||'…'}${F.pn?' · 품번 '+F.pn:''}${F.line?' · 라인 '+saLab(F.line):''}${F.wn?' · 회로 '+U(F.wn):''} · ${F.all?'반려·취소 포함':'반려·취소 '+M.dead.length+'선 제외'} · 리드타임은 달력 시간(시간 단위) · 출력 ${fmtDT(new Date().toISOString())}`;
+  const sheet=(name,title,cols,rows,opt)=>xlTable(wb,name,title,sub,cols,rows,opt||{});
+  const L=M.lt.ship,P=M.lt.proc,R=M.lt.recv;
+  sheet('요약','부족회로 신청 통계 분석 — 요약',[{h:'지표',w:34,kind:'pn',v:r=>r[0]},{h:'값',w:16,a:'right',v:r=>r[1]},{h:'비고',w:60,wrap:true,v:r=>r[2]}],[
+    ['신청 건수 (선)',M.N,`신청 묶음 ${M.reqs}건 · 수량 ${M.qty}`],['신청 발생일 (일)',M.act,`일평균 ${r1(M.N/M.act)}선 · 최다 ${M.maxDay.n}선 (${M.maxDay.k})`],['회로 종류 (종)',M.circ.length,`품번 ${M.pnN}종 · 라인 ${M.lineN}개`],
+    ['반복 발생 회로 (2회 이상)',M.rep.length,`전체 회로의 ${saPct(M.rep.length/M.circ.length*100)} · 전체 건수의 ${saPct(M.repRows/M.N*100)}`],
+    ['상위 20% 회로의 건수 비중',saPct(M.par.share),`상위 ${M.par.n}종`],
+    ['공급 리드타임 중앙값 (신청→출고, 시간)',r1(L.p50),`평균 ${r1(L.avg)} · 90% 이내 ${r1(L.p90)} · 최대 ${r1(L.max)} · ${L.n}선`],['가공 구간 중앙값 (조립승인→출고, 시간)',r1(P.p50),`평균 ${r1(P.avg)} · 90% 이내 ${r1(P.p90)} · ${P.n}선`],
+    ['조립접수까지 중앙값 (신청→조립접수, 시간)',r1(R.p50),`평균 ${r1(R.avg)} · 90% 이내 ${r1(R.p90)} · ${R.n}선`],
+    ['24시간 내 공급률',saPct(M.within(24)),`3일 내 ${saPct(M.within(72))} · 7일 내 ${saPct(M.within(168))}`],['진행 중 (미출고, 선)',M.open.length,M.open.length?`최장 대기 ${r1(M.waitMax/24)}일`:''],
+    ['반려 · 취소 (선)',M.dead.length,`전체 신청 ${M.all.length}선의 ${saPct(M.all.length?M.dead.length/M.all.length*100:0)}`]]);
+  const circ=M.circ.slice().sort((a,b)=>b.n-a.n||b.rows-a.rows||b.qty-a.qty||a.pn.localeCompare(b.pn)||a.wn.localeCompare(b.wn,undefined,{numeric:true}));circ.forEach((c,i)=>c.__n=i+1);
+  sheet(`회로별 (${circ.length})`,`회로별 발생 빈도 — ${circ.length}종`,[{h:'순위',w:6,a:'center',v:c=>c.__n},{h:'품번',w:17,kind:'pn',v:c=>c.pn},{h:'선번',w:11,kind:'pn',a:'center',v:c=>c.wn},{h:'구분',w:12,a:'center',v:c=>c.gt?saGtKo(c.gt):'일반'},{h:'함께 만드는 선',w:20,wrap:true,v:c=>c.grp},
+    {h:'재질',w:9,a:'center',v:c=>c.mat},{h:'SQ',w:6,a:'center',v:c=>c.sq},{h:'색상',w:7,a:'center',v:c=>c.col},{h:'길이',w:8,a:'right',v:c=>c.len},{h:'좌단자',w:16,v:c=>c.tl},{h:'우단자',w:16,v:c=>c.tr},
+    {h:'신청 횟수',w:9,kind:'qty',fmt:'#,##0',v:c=>c.n},{h:'발생일수',w:9,fmt:'#,##0',v:c=>c.d},{h:'평균 간격(일)',w:11,fmt:'0.0',v:c=>c.gap==null?'':r1(c.gap)},{h:'수량',w:8,fmt:'#,##0',v:c=>c.qty},{h:'주요 라인',w:10,a:'center',v:c=>saLab(c.line)},{h:'라인 수',w:7,fmt:'#,##0',v:c=>c.lineN},
+    {h:'최초 신청',w:11,a:'center',v:c=>ymd(toMX(c.first))},{h:'최근 신청',w:11,a:'center',v:c=>ymd(toMX(c.last))},{h:`리드타임 중앙값(시간) ${mName}`,w:16,fmt:'#,##0.0',v:c=>r1(c.ltMed)},{h:'리드타임 평균(시간)',w:13,fmt:'#,##0.0',v:c=>r1(c.ltAvg)},{h:'리드타임 건수',w:10,fmt:'#,##0',v:c=>c.ltN},{h:'진행 중',w:8,fmt:'#,##0',v:c=>c.open}],circ,{xSplit:3});
+  const grpCols=name=>[{h:name,w:22,kind:'pn',v:o=>o.__l},{h:'건수(선)',w:10,kind:'qty',fmt:'#,##0',v:o=>o.n},{h:'비중',w:8,fmt:'0.0%',v:o=>pc(o.n/M.N*100)},{h:'신청 묶음',w:10,fmt:'#,##0',v:o=>o.reqN},{h:'수량',w:9,fmt:'#,##0',v:o=>o.qty},{h:'회로 종류',w:10,fmt:'#,##0',v:o=>o.ckN},
+    {h:`리드타임 건수 (${mName})`,w:14,fmt:'#,##0',v:o=>o.st.n},{h:'중앙값(시간)',w:12,fmt:'#,##0.0',v:o=>r1(o.st.p50)},{h:'평균(시간)',w:11,fmt:'#,##0.0',v:o=>r1(o.st.avg)},{h:'90% 이내(시간)',w:13,fmt:'#,##0.0',v:o=>r1(o.st.p90)}];
+  const lab=(a,f)=>a.map(o=>({...o,__l:f(o)}));
+  sheet('라인별','라인별 발생 빈도 · 리드타임',grpCols('라인'),lab(M.lines,o=>saLab(o.k)));
+  sheet('품번별','품번별 발생 빈도 · 리드타임',grpCols('품번'),lab(M.pns,o=>o.k));
+  sheet('선 구분별','선 구분별 발생 빈도 · 리드타임',grpCols('구분'),lab(M.gts,o=>o.k?saGtKo(o.k):'일반'));
+  sheet('신청 사유','신청 사유 (메모 키워드 기준 분류)',grpCols('사유').slice(0,6).concat([{h:'대표 메모',w:60,wrap:true,v:o=>Object.entries(o.ex||{}).sort((a,b)=>b[1]-a[1]).slice(0,3).map(e=>`${e[0]} (${e[1]})`).join(' / ')}]),lab(M.whys,o=>KO['sa_r_'+o.k]));
+  sheet('일별','일별 신청 추이',[{h:'신청일',w:12,a:'center',kind:'pn',v:d=>d.k},{h:'요일',w:6,a:'center',v:d=>WD.ko[new Date(d.k+'T12:00:00').getDay()]},{h:'건수(선)',w:10,kind:'qty',fmt:'#,##0',v:d=>d.n},{h:'신청 묶음',w:10,fmt:'#,##0',v:d=>d.reqs.size},{h:'수량',w:9,fmt:'#,##0',v:d=>d.qty}],M.days);
+  const hrs=Object.values(M.hr).sort((a,b)=>a.h-b.h);
+  sheet('요일 · 시간대','요일별 · 시간대별 발생 빈도',[{h:'구분',w:10,a:'center',v:o=>o.t},{h:'요일 / 시',w:12,a:'center',kind:'pn',v:o=>o.l},{h:'건수(선)',w:10,kind:'qty',fmt:'#,##0',v:o=>o.n},{h:'비중',w:8,fmt:'0.0%',v:o=>pc(o.n/M.N*100)},{h:'수량',w:9,fmt:'#,##0',v:o=>o.qty}],
+    M.wd.map(o=>({t:'요일',l:WD.ko[o.d],n:o.n,qty:o.qty})).concat(hrs.map(o=>({t:'시간대',l:pad(o.h)+':00',n:o.n,qty:o.qty}))));
+  sheet('리드타임 단계','단계별 소요시간 (시간)',[{h:'단계',w:24,kind:'pn',v:s=>s.__l},{h:'건수',w:9,fmt:'#,##0',v:s=>s.n},{h:'평균',w:10,kind:'qty',fmt:'#,##0.0',v:s=>r1(s.avg)},{h:'중앙값',w:10,fmt:'#,##0.0',v:s=>r1(s.p50)},{h:'90% 이내',w:10,fmt:'#,##0.0',v:s=>r1(s.p90)},{h:'최대',w:10,fmt:'#,##0.0',v:s=>r1(s.max)},{h:'제외(시각 순서 오류)',w:16,fmt:'#,##0',v:s=>s.bad}],
+    M.stg.map((s,i)=>({...s,__l:KO['sa_stg'+i]})).concat([{...L,__l:'전체: 신청 → 출고'},{...P,__l:'가공 구간: 조립승인 → 출고'},{...R,__l:'신청 → 조립접수'}]));
+  sheet('리드타임 분포',`리드타임 분포 — ${mName}`,[{h:'구간',w:14,kind:'pn',v:b=>KO['sa_b'+b.i]},{h:'건수(선)',w:10,kind:'qty',fmt:'#,##0',v:b=>b.n},{h:'비중',w:9,fmt:'0.0%',v:b=>pc(b.share)},{h:'누적',w:9,fmt:'0.0%',v:b=>pc(b.cum)}],M.dist);
+  sheet('리드타임 추이',`주별 리드타임 — ${mName} (${SA.lt==='recv'?'조립접수':'출고'} 주 기준, 시간)`,[{h:'주 시작일',w:12,a:'center',kind:'pn',v:w=>w.k},{h:'건수',w:9,fmt:'#,##0',v:w=>w.st.n},{h:'중앙값',w:10,kind:'qty',fmt:'#,##0.0',v:w=>r1(w.st.p50)},{h:'평균',w:10,fmt:'#,##0.0',v:w=>r1(w.st.avg)},{h:'90% 이내',w:10,fmt:'#,##0.0',v:w=>r1(w.st.p90)}],M.ltW);
+  const hv=x=>x==null||x<0?'':r1(x),rows=M.S.slice().sort((a,b)=>a._t-b._t);rows.forEach((r,i)=>r.__n=i+1);
+  sheet(`분석 대상 (${rows.length})`,`분석 대상 신청 내역 — ${rows.length}선`,[{h:'No.',w:6,a:'center',v:r=>r.__n},{h:'신청일시',w:16,a:'center',v:r=>fmtDT(r.created_at)},{h:'요청번호',w:21,a:'center',v:r=>r.req_no},{h:'라인(통일)',w:10,a:'center',v:r=>saLab(r._lk)},{h:'라인(입력값)',w:11,a:'center',v:r=>r.line},{h:'신청자',w:14,v:r=>r.requester},
+    {h:'품번',w:17,kind:'pn',v:r=>r.pn},{h:'선번',w:11,kind:'pn',a:'center',v:r=>r.wn},{h:'구분',w:11,a:'center',v:r=>r.grp_type?saGtKo(r.grp_type):'일반'},{h:'수량',w:8,kind:'qty',fmt:'#,##0',v:r=>Number(r.qty)||0},{h:'상태',w:13,kind:'status',v:r=>stKo(r)},
+    {h:'메모',w:30,wrap:true,v:r=>r.req_note},{h:'사유 분류',w:13,a:'center',v:r=>KO['sa_r_'+saWhy(r.req_note)]},{h:'조립승인',w:15,a:'center',v:r=>fmtDT(r.approved_at)},{h:'가공접수',w:15,a:'center',v:r=>fmtDT(r.received_at)},{h:'가공승인',w:15,a:'center',v:r=>fmtDT(r.p_approved_at)},{h:'출고',w:15,a:'center',v:r=>fmtDT(r.ship_at)},{h:'조립접수',w:15,a:'center',v:r=>fmtDT(r.recv_at)},
+    {h:'신청→출고(시간)',w:13,fmt:'#,##0.0',v:r=>hv(r._lt.ship)},{h:'조립승인→출고(시간)',w:15,fmt:'#,##0.0',v:r=>hv(r._lt.proc)},{h:'신청→조립접수(시간)',w:15,fmt:'#,##0.0',v:r=>hv(r._lt.recv)},
+    {h:'신청→조립승인',w:12,fmt:'#,##0.0',v:r=>hv(r._sg[0])},{h:'조립승인→가공접수',w:14,fmt:'#,##0.0',v:r=>hv(r._sg[1])},{h:'가공접수→가공승인',w:14,fmt:'#,##0.0',v:r=>hv(r._sg[2])},{h:'가공승인→출고',w:12,fmt:'#,##0.0',v:r=>hv(r._sg[3])},{h:'출고→조립접수',w:12,fmt:'#,##0.0',v:r=>hv(r._sg[4])}],rows,{xSplit:8});
+  await xlSave(wb,`부족회로_통계분석_P${PLANT}_${ymd(nowMX())}.xlsx`);toast(T('xlsxSaved'));
+}
+const saGtKo=g=>g.split('+').map(t=>KO[TYPE_KEY[t]]||t).join('+');
+$('saXlsx').onclick=saExport;
 
 (async()=>{
   lang=LS.get('lang','ko');
