@@ -89,6 +89,21 @@ tr.g td:first-child{box-shadow:inset 3px 0 0 var(--gc,transparent)}
 .pick input[type=checkbox]{pointer-events:none;accent-color:var(--accent);width:16px;height:16px}
 .pick .scroll{max-height:calc(100vh - 330px);min-height:260px}
 .legend{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.lgq{display:flex;gap:14px;align-items:end;justify-content:space-between;flex-wrap:wrap;min-width:0}
+.wqrow{display:flex;gap:6px;margin-top:3px}.wqrow input{width:170px;text-transform:uppercase;padding:7px 9px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink)}
+.mbox.wq{width:min(1280px,100%);max-height:92vh;display:flex;flex-direction:column}
+.wqhead{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px}.wqhead h3{margin:0;flex:1;min-width:200px}
+.mbox.wq .wqhead input,.mbox.wq .wqhead select{display:inline-block;width:auto;margin:0;padding:7px 10px;font-size:14px;letter-spacing:0;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink)}
+.mbox.wq .wqhead input{width:150px;text-transform:uppercase}.mbox.wq .wqhead label{display:inline-flex;gap:6px;align-items:center;font-size:13px;color:var(--ink)}.mbox.wq .wqhead label input{width:auto;padding:0}
+.wqbody th,.wqbody td{padding:6px 7px}
+.wqk{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-bottom:10px}.wqk div{border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:var(--bg)}
+.wqk span{display:block;font-size:12px;color:var(--sub)}.wqk b{font-size:20px}.wqk small{font-size:12px;color:var(--sub);font-weight:400;margin-left:4px}
+.wqbody{overflow:auto;border:1px solid var(--line);border-radius:8px;flex:1;min-height:120px}
+.wqbody tr.d td{background:#1d2328;font-weight:700;border-top:2px solid var(--line);cursor:pointer}.wqbody tr.d td:first-child{color:var(--gold)}
+.wqbody tr.r td{font-size:12.5px;color:var(--ink)}.wqbody tr.r td:first-child{padding-left:22px;color:var(--sub)}
+.wqbody td.z{color:var(--sub);font-weight:400}.wqbody td.w{color:var(--req)}.wqbody td.g{color:var(--ok)}.wqbody td.b{color:var(--danger)}
+.wqbody td small{color:var(--sub);font-weight:400}
+@media (max-width:900px){.wqk{grid-template-columns:repeat(3,1fr)}}
 .direct .lotf{grid-column:1/-1}
 .direct{display:grid;grid-template-columns:1.4fr 1fr 70px auto;gap:8px;align-items:end;padding:12px 14px;border-bottom:1px solid var(--line)}
 .cart .scroll{max-height:calc(100vh - 470px);min-height:160px}
@@ -365,9 +380,12 @@ textarea#lotBox{width:100%;min-height:160px;padding:10px;border:1px solid var(--
       <label class="f"><span data-i="requester">신청자</span><input id="aName" autocomplete="off"></label>
       <label class="f"><span data-i="pn">품번</span><select id="aPn"></select></label>
       <label class="f"><span data-i="defQty">기본 부족수량</span><input id="aDefQty" inputmode="numeric" value="1" autocomplete="off"></label>
+      <div class="lgq">
       <div class="legend">
         <span class="status" data-i="legend">함께 선택되는 선:</span>
         <span class="gb dbl" data-i="gDbl">쌍압착</span><span class="gb bind" data-i="gBind">결속</span><span class="gb tw" data-i="gTw">트위스트</span><span class="gb sh" data-i="gSh">쉴드</span>
+      </div>
+      <label class="f wq"><span data-i="wqLbl">선번 신청이력 조회</span><span class="wqrow"><input id="wqIn" autocomplete="off" placeholder="AA300"><button type="button" class="btn pri" id="wqBtn" data-i="wqBtn">조회</button></span></label>
       </div>
     </div>
   </div>
@@ -636,6 +654,18 @@ textarea#lotBox{width:100%;min-height:160px;padding:10px;border:1px solid var(--
     <textarea id="rwAdjBox" spellcheck="false" placeholder="재고번호	와이어	와이어명	길이	좌단자	우단자	수량	조정코드	조정자	조정일	조정시간"></textarea>
     <div class="status" id="rwAdjInfo" style="margin-top:6px;min-height:18px"></div>
     <div class="mbtns"><button class="btn" id="rwAdjClear" data-i="cartClear">비우기</button><button class="btn" id="rwAdjClose" data-i="close">닫기</button><button class="btn pri" id="rwAdjSave" data-i="rwAdjSave">조정 추가 · 갱신 저장</button></div>
+  </div>
+</div>
+<div class="modal hidden" id="wqModal" role="dialog" aria-modal="true" aria-labelledby="wqT">
+  <div class="mbox wq">
+    <div class="wqhead"><h3 id="wqT"></h3>
+      <input id="wqIn2" autocomplete="off" placeholder="AA300"><button type="button" class="btn pri" id="wqBtn2" data-i="wqBtn">조회</button>
+      <select id="wqPn"></select>
+      <label><input type="checkbox" id="wqDet" checked><span data-i="wqDet">건별 상세</span></label>
+      <button type="button" class="btn" id="wqClose" data-i="close">닫기</button></div>
+    <div class="wqk" id="wqK"></div>
+    <div class="wqbody"><table id="wqTbl"></table></div>
+    <div class="status" id="wqNote" style="margin-top:8px"></div>
   </div>
 </div>
 <div class="modal hidden" id="pinModal" role="dialog" aria-modal="true" aria-labelledby="pinTitle">
@@ -1503,6 +1533,69 @@ $('mXlsx').onclick=async()=>{
   await xlSave(wb,`서브리스트_P${PLANT}_${ymd(nowMX())}.xlsx`);toast(T('xlsxSaved'));
 };
 
+/* ---------- 선번 신청이력 조회 (신청일자별 신청 대비 접수) ---------- */
+Object.assign(KO,{wqLbl:'선번 신청이력 조회',wqBtn:'조회',wqDet:'건별 상세',wqTitle:'선번 신청이력',wqNeed:'선번을 입력하세요.',wqNone:'이 선번으로 신청한 내역이 없습니다.',wqAllPn:'전체 품번',wqOff:'서버 연결이 안 되어 최근 내역만 표시합니다.',
+ wqDate:'신청일',wqReq:'신청',wqRcv:'가공접수',wqShip:'출고',wqRecv:'조립접수',wqRej:'반려·취소',wqWait:'가공 미접수',wqRate:'조립접수율',wqCnt:'건',wqTot:'합계',
+ wqPnH:'품번',wqNo:'신청번호',wqLine:'라인',wqBy:'신청자',wqSt:'상태',wqNoteT:'수량 기준 · 가공접수 = 가공생산에서 접수한 수량 / 조립접수 = 출고 후 조립에서 선재를 받은 수량 / 조립접수율 = 조립접수 ÷ (신청 − 반려·취소). 함께 만드는 선으로 같이 신청된 건도 포함합니다. 날짜 행을 누르면 건별 상세를 접거나 펼칩니다.'});
+Object.assign(ES,{wqLbl:'Historial por No. de cable',wqBtn:'Buscar',wqDet:'Detalle',wqTitle:'Historial de solicitudes',wqNeed:'Escriba el No. de cable.',wqNone:'No hay solicitudes para este cable.',wqAllPn:'Todos los No. de parte',wqOff:'Sin conexión: solo se muestran los registros recientes.',
+ wqDate:'Fecha de solicitud',wqReq:'Solicitado',wqRcv:'Recibido (Corte)',wqShip:'Entregado',wqRecv:'Recibido (Ensamble)',wqRej:'Rechazo·Cancel.',wqWait:'Pend. en Corte',wqRate:'% recibido Ens.',wqCnt:'sol.',wqTot:'Total',
+ wqPnH:'No. de parte',wqNo:'No. solicitud',wqLine:'Línea',wqBy:'Solicitante',wqSt:'Estado',wqNoteT:'Por cantidad · Recibido (Corte) = cantidad aceptada por Corte / Recibido (Ensamble) = cable recibido por Ensamble tras la entrega / % = Recibido Ens. ÷ (Solicitado − Rechazo·Cancel.). Incluye solicitudes donde el cable va junto con otro. Toque la fila de fecha para plegar o desplegar el detalle.'});
+const WQ={q:'',rows:[],shut:new Set(),off:false};
+const wqHit=(r,q)=>U(r.wn)===q||String(r.grp||'').split(',').some(x=>U(x)===q);
+async function wqSearch(v){
+  const q=U(v).replace(/[,()"*\\%]/g,'');if(!q){toast(T('wqNeed'));return;}
+  WQ.q=q;WQ.shut.clear();$('wqIn').value=$('wqIn2').value=q;setStat(T('loading')||'…');
+  try{
+    const out=[],PAGE=1000,e=encodeURIComponent(q);
+    for(let off=0;;off+=PAGE){
+      const d=await (await sb(`${RQ}?plant=eq.${PLANT}&or=(wn.ilike.${e},grp.ilike.*${e}*)&order=created_at.desc,id.asc&limit=${PAGE}&offset=${off}`)).json();
+      out.push(...d);if(d.length<PAGE)break;
+    }
+    WQ.rows=out.filter(r=>wqHit(r,q));WQ.off=false;setNet(true);
+  }catch(err){console.warn(err);setNet(false);WQ.rows=REQS.filter(r=>wqHit(r,q));WQ.off=true;}
+  const pns=[...new Set(WQ.rows.map(r=>r.pn).filter(Boolean))].sort();
+  $('wqPn').innerHTML=`<option value="">${esc(T('wqAllPn'))} (${pns.length})</option>`+pns.map(p=>`<option>${esc(p)}</option>`).join('');
+  const cur=$('aPn').value;if(pns.length>1&&pns.includes(cur))$('wqPn').value='';
+  $('wqModal').classList.remove('hidden');wqRender();
+}
+function wqAgg(rows){
+  const a={n:0,req:0,rcv:0,ship:0,recv:0,rej:0,wait:0};
+  rows.forEach(r=>{const q=+r.qty||0,dead=r.status==='반려'||r.status==='취소';a.n++;a.req+=q;
+    if(dead)a.rej+=q;else{if(r.received_at)a.rcv+=q;else a.wait+=q;if(r.ship_at)a.ship+=q;if(r.recv_at)a.recv+=q;}});
+  a.rate=a.req-a.rej>0?a.recv/(a.req-a.rej)*100:null;return a;
+}
+function wqRender(){
+  if($('wqModal').classList.contains('hidden'))return;
+  const pn=$('wqPn').value,rows=WQ.rows.filter(r=>!pn||r.pn===pn),det=$('wqDet').checked,t=wqAgg(rows),N=v=>v.toLocaleString('en-US');
+  $('wqT').innerHTML=`${esc(T('wqTitle'))} — <span style="color:var(--gold)">${esc(WQ.q)}</span>`;
+  const rt=a=>a.rate==null?'–':(Math.round(a.rate*10)/10)+'%';
+  $('wqK').innerHTML=[[T('wqReq'),N(t.req),`${N(t.n)} ${T('wqCnt')}`],[T('wqRcv'),N(t.rcv)],[T('wqShip'),N(t.ship)],[T('wqRecv'),N(t.recv)],[T('wqRej'),N(t.rej)],[T('wqRate'),rt(t),t.wait?`${T('wqWait')} ${N(t.wait)}`:'']]
+    .map(k=>`<div><span>${esc(k[0])}</span><b>${k[1]}</b>${k[2]?`<small>${esc(k[2])}</small>`:''}</div>`).join('');
+  const days=[],m={};rows.forEach(r=>{const k=dkey(r.created_at);if(!m[k]){m[k]={k,items:[]};days.push(m[k]);}m[k].items.push(r);});
+  days.sort((x,y)=>x.k<y.k?1:-1);
+  const c=(v,cls)=>`<td class="num ${v?cls:'z'}">${v?N(v):'–'}</td>`;
+  const at=(s,by)=>s?`${fmtT(s)}${by?` <small>${esc(by)}</small>`:''}`:'<span style="color:var(--sub)">–</span>';
+  $('wqTbl').innerHTML=`<thead><tr><th>${esc(T('wqDate'))} / ${esc(T('wqNo'))}</th><th>${esc(T('wqPnH'))}</th><th>${esc(T('wqLine'))} · ${esc(T('wqBy'))}</th><th class="num">${esc(T('wqReq'))}</th><th class="num">${esc(T('wqRcv'))}</th><th class="num">${esc(T('wqShip'))}</th><th class="num">${esc(T('wqRecv'))}</th><th class="num">${esc(T('wqRej'))}</th><th class="num">${esc(T('wqWait'))}</th><th class="num">${esc(T('wqRate'))}</th><th>${esc(T('wqSt'))}</th></tr></thead><tbody>`
+   +(days.length?days.map(d=>{const a=wqAgg(d.items),open=det&&!WQ.shut.has(d.k);
+      return `<tr class="d" data-k="${d.k}"><td>${open?'▾':'▸'} ${d.k}</td><td><small>${[...new Set(d.items.map(r=>r.pn))].length>1?[...new Set(d.items.map(r=>r.pn))].length+' P/N':esc(d.items[0].pn||'')}</small></td><td><small>${N(a.n)} ${esc(T('wqCnt'))}</small></td>
+        <td class="num">${N(a.req)}</td>${c(a.rcv,'')}${c(a.ship,'')}${c(a.recv,'g')}${c(a.rej,'b')}${c(a.wait,'w')}<td class="num ${a.rate==null?'z':a.rate>=100?'g':'w'}">${rt(a)}</td><td></td></tr>`
+       +(open?d.items.map(r=>{const q=+r.qty||0,dead=r.status==='반려'||r.status==='취소',also=U(r.wn)!==WQ.q;
+          return `<tr class="r"><td>${esc(r.req_no||'')} <small>${fmtT(r.created_at).slice(6)}</small></td><td>${esc(r.pn||'')}${also?` <small>(${esc(r.wn)})</small>`:''}</td><td>${esc(r.line||'')} <small>${esc(r.requester||'')}</small></td>
+            <td class="num">${N(q)}</td><td class="num">${dead?'–':at(r.received_at,r.received_by)}</td><td class="num">${dead?'–':at(r.ship_at,r.ship_by)}${r.mes_no?` <small>${esc(r.mes_no)}</small>`:''}</td><td class="num">${dead?'–':at(r.recv_at,r.recv_by)}</td>
+            <td class="num ${dead?'b':'z'}">${dead?N(q):'–'}</td><td class="num ${!dead&&!r.received_at?'w':'z'}">${!dead&&!r.received_at?N(q):'–'}</td><td></td><td>${stTag(r.status)}</td></tr>`}).join(''):'')}).join('')
+    +`<tr class="d" style="cursor:default"><td>${esc(T('wqTot'))}</td><td></td><td><small>${N(t.n)} ${esc(T('wqCnt'))}</small></td><td class="num">${N(t.req)}</td>${c(t.rcv,'')}${c(t.ship,'')}${c(t.recv,'g')}${c(t.rej,'b')}${c(t.wait,'w')}<td class="num">${rt(t)}</td><td></td></tr>`
+    :`<tr><td colspan="11" style="text-align:center;padding:28px;color:var(--sub)">${esc(T('wqNone'))}</td></tr>`)+'</tbody>';
+  $('wqNote').textContent=(WQ.off?T('wqOff')+' · ':'')+T('wqNoteT');
+}
+$('wqBtn').onclick=()=>wqSearch($('wqIn').value);$('wqBtn2').onclick=()=>wqSearch($('wqIn2').value);
+$('wqIn').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();wqSearch($('wqIn').value);}};
+$('wqIn2').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();wqSearch($('wqIn2').value);}};
+$('wqPn').onchange=wqRender;$('wqDet').onchange=()=>{WQ.shut.clear();wqRender();};
+$('wqTbl').onclick=e=>{const tr=e.target.closest('tr.d[data-k]');if(!tr||!$('wqDet').checked)return;const k=tr.dataset.k;WQ.shut.has(k)?WQ.shut.delete(k):WQ.shut.add(k);wqRender();};
+$('wqClose').onclick=()=>$('wqModal').classList.add('hidden');
+$('wqModal').onkeydown=e=>{if(e.key==='Escape')$('wqModal').classList.add('hidden');};
+$('wqModal').onclick=e=>{if(e.target===$('wqModal'))$('wqModal').classList.add('hidden');};
+
 /* ---------- REWORK 삭제회로 관리 ---------- */
 const RWI='rework_wire_in', RWO='rework_wire_out', RWA='rework_wire_adj';
 const RW={ins:[],outs:[],adjs:[],st:'',sel:new Set(),loaded:false,upd:null,open:new Set(),openInit:false,appr:{}};
@@ -1806,7 +1899,7 @@ function show(v){['Asm','Proc','Master','Rework'].forEach(k=>{$('view'+k).classL
 $('tabAsm').onclick=()=>{show('Asm');loadReqs();if(!TOUCH)$('scanIn').focus();};$('tabProc').onclick=()=>{show('Proc');loadReqs();};$('tabMaster').onclick=()=>show('Master');
 $('reloadBtn').onclick=()=>{loadMaster();loadReqs();loadLots();if(RW.loaded)loadRework();};
 $('langBtn').onclick=()=>{lang=lang==='ko'?'es':'ko';LS.set('lang',lang);applyLang();};
-function renderAll(){renderPick();renderCart();renderRecent();renderProc();renderRework();}
+function renderAll(){wqRender();renderPick();renderCart();renderRecent();renderProc();renderRework();}
 
 (async()=>{
   lang=LS.get('lang','ko');
