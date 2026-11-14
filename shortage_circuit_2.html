@@ -89,7 +89,7 @@ tr.g td:first-child{box-shadow:inset 3px 0 0 var(--gc,transparent)}
 .pick input[type=checkbox]{pointer-events:none;accent-color:var(--accent);width:16px;height:16px}
 .pick .scroll{max-height:calc(100vh - 330px);min-height:260px}
 .legend{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
-.lgq{display:flex;gap:14px;align-items:end;justify-content:space-between;flex-wrap:wrap;min-width:0}
+.lgq{display:flex;gap:14px;align-items:end;justify-content:flex-end;flex-wrap:wrap;min-width:0}
 .wqrow{display:flex;gap:6px;margin-top:3px}.wqrow input{width:170px;text-transform:uppercase;padding:7px 9px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink)}
 .mbox.wq{width:min(1280px,100%);max-height:92vh;display:flex;flex-direction:column}
 .wqhead{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px}.wqhead h3{margin:0;flex:1;min-width:200px}
@@ -257,6 +257,51 @@ textarea#lotBox{width:100%;min-height:160px;padding:10px;border:1px solid var(--
 @media (max-width:1000px){.rw-paste{grid-template-columns:1fr}}
 .rw-paste textarea{width:100%;min-height:150px;padding:10px;border:1px solid var(--line);border-radius:6px;background:var(--bg);font:12px/1.4 Consolas,"D2Coding",monospace;white-space:pre;overflow:auto}
 .rw-paste h2 small{font-weight:400;color:var(--sub);font-size:12px;margin-left:6px}
+/* ── 화면 분리: 조립 신청 / 조립 이력 · 접수 / 가공생산 ── */
+.tabs{flex-wrap:wrap}
+@media (max-width:2050px){header h1 small{display:none}}
+@media (max-width:1720px){.tabs button{padding:7px 11px}.tabs button.rw-tab{margin-left:6px}a.brand{font-size:14px;letter-spacing:.06em;padding-right:12px}header{gap:10px;padding-left:16px;padding-right:16px}}
+.pick .ph .legend{margin-left:6px}
+@media (max-width:1050px){.asm-top .lgq{grid-column:1/-1;justify-content:flex-start}.asm-top .lgq label.wq{flex:1 1 auto}.asm-top .wqrow input{flex:1 1 auto;min-width:0;width:auto}}
+.saved{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;border:1px solid #2b4a36;background:#14231a;border-radius:6px;padding:8px 10px;font-size:13px;color:var(--ok)}
+.saved .btn{color:var(--ink)}
+/* 신청 화면: 한 화면에 맞춤 (PC · 화면 높이가 충분할 때) */
+@media (min-width:1051px) and (min-height:860px){
+  #viewAsm:not(.hidden){display:flex;flex-direction:column;height:calc(100vh - var(--hh,66px) - 36px)}
+  #viewAsm .asm{flex:1 1 auto;min-height:0;grid-template-rows:minmax(0,1fr);align-items:stretch}
+  #viewAsm .pick,#viewAsm .cart{display:flex;flex-direction:column;min-height:0}
+  #viewAsm .cart{overflow:auto}
+  #viewAsm .pick>.scroll{flex:1 1 auto;max-height:none;min-height:0}
+  #viewAsm .cart>.scroll{flex:1 1 auto;max-height:none;min-height:120px}
+}
+/* 이력 화면: 조회 조건 → 상태 → 처리 */
+.hbar{display:flex;flex-wrap:wrap;gap:10px 12px;align-items:end;padding:12px 14px;border-bottom:1px solid var(--line)}
+.hbar label.f{min-width:130px}
+.hbar label.f.hq{flex:1 1 260px;max-width:480px}
+.hbar label.f.hq>input{padding:9px 12px;font-size:15px;border-color:#3d4a54}
+.hbar .fx{font-size:12px;color:var(--sub)}
+.hbar .fx .seg{display:flex;margin-top:3px}
+.hbar .fx .seg button{padding:7px 13px;white-space:nowrap}
+.hbar .chk{display:flex;gap:6px;align-items:center;font-size:13px;color:var(--ink);padding-bottom:8px;white-space:nowrap;cursor:pointer}
+.hbar .chk input{accent-color:var(--accent);width:16px;height:16px}
+.hbar .chk.off{color:var(--sub)}
+.hchips{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;padding:10px 14px;border-bottom:1px solid var(--line)}
+.hchips .hnote{margin-left:auto;font-size:12px}
+.stchips button.todo b{color:var(--req)}
+.stchips button.on.todo b{color:inherit}
+.act{min-height:60px}
+.act label.f.inl{display:inline-flex;align-items:center;gap:8px;min-width:0;white-space:nowrap}
+.act label.f.inl>input{display:inline-block;width:130px;margin-top:0}
+.act .ahint{font-size:13px;padding-left:10px;border-left:1px solid var(--line)}
+.act .agrp.lotbox{gap:0}
+#viewHist tbody tr.it,#viewProc tbody tr.it{cursor:pointer}
+#viewHist tbody tr.it:hover,#viewProc tbody tr.it:hover{background:var(--hit)}
+#viewHist tbody tr.it.sel,#viewProc tbody tr.it.sel{background:#173341}
+#viewHist input[type=checkbox],#viewProc input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px}
+@media (min-width:900px) and (min-height:640px){
+  #viewHist .hist,#viewProc .hist{display:flex;flex-direction:column;max-height:calc(100vh - var(--hh,66px) - 36px)}
+  #viewHist .hist>.scroll,#viewProc .hist>.scroll{flex:1 1 auto;min-height:0;max-height:none}
+}
 </style>
 
 <!-- ═══ 포털 공통 (yh-common-v2): 제목 서체 · 닫기 버튼 · 최소 글자 크기 ═══ -->
@@ -358,11 +403,12 @@ textarea#lotBox{width:100%;min-height:160px;padding:10px;border:1px solid var(--
 <body>
 <header>
   <a class="brand" href="./" title="YURA HARNESS MÉXICO">YURA HARNESS MÉXICO</a>
-  <h1 data-i="title">부족회로 신청<small data-i="sub">조립 신청·승인 → 가공 접수·승인·출고 → 조립 접수</small></h1>
+  <h1 data-i="title" title="조립 신청·승인 → 가공 접수·승인·출고 → 조립 접수 / Ensamble solicita y aprueba → Corte recibe, aprueba y entrega → Ensamble confirma">부족회로 신청<small data-i="sub">조립 신청·승인 → 가공 접수·승인·출고 → 조립 접수</small></h1>
   <span class="plant">PLANT 2 · 라하트</span>
   <nav class="tabs">
-    <button id="tabAsm" class="on"><span data-i="tAsm">조립생산</span><span class="cnt" id="apprCnt" title="팀장 승인대기"></span><span class="cnt" id="asmCnt" style="background:var(--ok);color:#06210f"></span></button>
-    <button id="tabProc"><span data-i="tProc">가공생산</span><span class="cnt" id="newCnt"></span><span class="cnt" id="retCnt" title="반납 확인 대기" style="background:#E07A3F;color:#2a1003"></span></button>
+    <button id="tabAsm" class="on"><span data-i="tAsm">조립 신청</span></button>
+    <button id="tabHist"><span data-i="tHist">조립 이력 · 접수</span><span class="cnt" id="apprCnt" title="팀장 승인대기 / Por aprobar"></span><span class="cnt" id="asmCnt" title="선재 접수대기 / Por recibir" style="background:var(--ok);color:#06210f"></span></button>
+    <button id="tabProc"><span data-i="tProc">가공생산</span><span class="cnt" id="newCnt" title="가공 접수 대기 / Por recibir"></span><span class="cnt" id="retCnt" title="반납 확인 대기 / Devolución por confirmar" style="background:#E07A3F;color:#2a1003"></span></button>
     <button id="tabRework" class="rw-tab"><span class="rw-ico">🔁</span><span data-i="rwBtn">REWORK 삭제회로 관리</span></button>
     <button id="tabMaster"><span data-i="tMaster">서브리스트</span></button>
   </nav>
@@ -381,10 +427,6 @@ textarea#lotBox{width:100%;min-height:160px;padding:10px;border:1px solid var(--
       <label class="f"><span data-i="pn">품번</span><select id="aPn"></select></label>
       <label class="f"><span data-i="defQty">기본 부족수량</span><input id="aDefQty" inputmode="numeric" value="1" autocomplete="off"></label>
       <div class="lgq">
-      <div class="legend">
-        <span class="status" data-i="legend">함께 선택되는 선:</span>
-        <span class="gb dbl" data-i="gDbl">쌍압착</span><span class="gb bind" data-i="gBind">결속</span><span class="gb tw" data-i="gTw">트위스트</span><span class="gb sh" data-i="gSh">쉴드</span>
-      </div>
       <label class="f wq"><span data-i="wqLbl">선번 신청이력 조회</span><span class="wqrow"><input id="wqIn" autocomplete="off" placeholder="AA300"><button type="button" class="btn pri" id="wqBtn" data-i="wqBtn">조회</button></span></label>
       </div>
     </div>
@@ -396,6 +438,10 @@ textarea#lotBox{width:100%;min-height:160px;padding:10px;border:1px solid var(--
         <h2 data-i="pickTitle">회로 선택</h2>
         <input id="aSearch" placeholder="선번 · 단자 · 색상 검색" autocomplete="off" style="padding:6px 9px;border:1px solid var(--line);border-radius:6px;background:var(--bg);min-width:200px">
         <div class="seg" id="aOnly"><button data-v="" class="on" data-i="onlyAll">전체</button><button data-v="g" data-i="onlyG">그룹선만</button><button data-v="s" data-i="onlySel">선택만</button></div>
+        <div class="legend">
+          <span class="status" data-i="legend">함께 선택되는 선:</span>
+          <span class="gb dbl" data-i="gDbl">쌍압착</span><span class="gb bind" data-i="gBind">결속</span><span class="gb tw" data-i="gTw">트위스트</span><span class="gb sh" data-i="gSh">쉴드</span>
+        </div>
         <span class="grow"></span>
         <span class="status" id="pickInfo"></span>
       </div>
@@ -436,26 +482,33 @@ textarea#lotBox{width:100%;min-height:160px;padding:10px;border:1px solid var(--
         <div class="cart-sum"><span><b id="cartN">0</b> <span data-i="lines">선</span> · <span data-i="total">합계</span> <b id="cartQ">0</b></span></div>
         <textarea id="aNote" data-ph="notePh" placeholder="메모 (선택) — 예) 오후 2시까지 필요"></textarea>
         <button class="btn pri" id="aSave" data-i="save">신청 저장</button>
+        <div class="saved hidden" id="aSaved"></div>
       </div>
     </div>
   </div>
 
-  <div class="panel hist">
-    <div class="ph"><h2 data-i="histAsm">신청 · 출고 · 조립접수 이력</h2><div class="stchips" id="haChips"></div></div>
-    <div class="proc-bar">
+</section>
+
+<!-- ============ 조립 이력 · 접수 ============ -->
+<section id="viewHist" class="hidden">
+  <div class="panel hist" style="margin-top:0">
+    <div class="hbar">
+      <label class="f hq"><span data-i="search">검색</span><input id="haQ" data-ph="qPh" placeholder="품번 · 선번 · 라인 · LOT" autocomplete="off"></label>
+      <button type="button" class="btn" id="haWq" title="선번 하나의 전체 기간 신청 대비 접수 집계 / Resumen por cable (todo el periodo)" data-i="wqOpen">선번별 집계</button>
+      <div class="f fx"><span data-i="period">기간</span><div class="seg" id="haPre"><button type="button" data-p="d0" data-i="pToday">오늘</button><button type="button" data-p="d7" data-i="pWeek">1주</button><button type="button" data-p="m1" data-i="pMonth">1개월</button><button type="button" data-p="m3" data-i="pMonth3">3개월</button></div></div>
       <label class="f"><span data-i="from">시작일</span><input type="date" id="haFrom"></label>
       <label class="f"><span data-i="to">종료일</span><input type="date" id="haTo"></label>
-      <label class="f"><span data-i="search">검색</span><input id="haQ" data-ph="qPh" placeholder="품번 · 선번 · 라인 · LOT" autocomplete="off"></label>
-      <label class="chk status" style="display:flex;gap:6px;align-items:center;align-self:center;margin-top:16px"><input type="checkbox" id="haMine" checked><span data-i="mineOnly">내 라인만</span></label>
-      <span class="status" style="flex:1;align-self:center" data-i="rangeNote">진행 중(완료·반려·취소 전)은 기간과 관계없이 모두 표시</span>
+      <label class="chk" id="haMineW"><input type="checkbox" id="haMine" checked><span id="haMineL">내 라인만</span></label>
     </div>
-    <div class="act">
+    <div class="hchips"><div class="stchips" id="haChips"></div><span class="status hnote" data-i="rangeNote">진행 중(완료·반려·취소 전)은 기간과 관계없이 모두 표시</span></div>
+    <div class="act" id="haAct">
       <span class="selinfo" id="haSel">0</span>
       <label class="f inl"><span data-i="asmWorker">처리자 (팀장·확인자)</span><input id="haName" autocomplete="off"></label>
+      <span class="status ahint" id="haHint"></span>
       <span class="agrp"><button class="btn pri" id="haAppr" data-i="aAppr">🔒 팀장 승인</button><button class="btn" id="haApprUndo" data-i="aApprUndo">🔒 승인 취소</button><button class="btn warn" id="haReject" data-i="aReject">🔒 반려</button></span>
       <span class="agrp"><button class="btn ok" id="haRecv" data-i="aRecv">선재 접수 확인</button><button class="btn" id="haRecvUndo" data-i="aRecvUndo">접수 취소</button></span>
       <span class="agrp"><button class="btn warn" id="haRet" data-i="aRet">↩ 가공 반납</button><button class="btn" id="haRetUndo" data-i="aRetUndo">반납 취소</button></span>
-      <button class="btn warn" id="haCancel" data-i="aCancel">신청 취소</button>
+      <span class="agrp"><button class="btn warn" id="haCancel" data-i="aCancel">신청 취소</button></span>
       <span style="flex:1"></span><button class="btn ok" id="haXlsx" data-i="xlsx">📗 엑셀 저장</button><button class="btn sm lock" id="haPinChg" data-i="pinChg">🔒 팀장 PIN 변경</button>
     </div>
     <div class="scroll">
@@ -471,20 +524,22 @@ textarea#lotBox{width:100%;min-height:160px;padding:10px;border:1px solid var(--
 <!-- ============ 가공생산 ============ -->
 <section id="viewProc" class="hidden">
   <div class="panel hist" style="margin-top:0">
-    <div class="ph"><h2 data-i="histProc">신청 · 출고 · 조립접수 이력</h2><div class="stchips" id="hpChips"></div></div>
-    <div class="proc-bar">
+    <div class="hbar">
+      <label class="f hq"><span data-i="search">검색</span><input id="hpQ" data-ph="qPh" placeholder="품번 · 선번 · 라인 · LOT" autocomplete="off"></label>
+      <button type="button" class="btn" id="hpWq" title="선번 하나의 전체 기간 신청 대비 접수 집계 / Resumen por cable (todo el periodo)" data-i="wqOpen">선번별 집계</button>
+      <div class="f fx"><span data-i="period">기간</span><div class="seg" id="hpPre"><button type="button" data-p="d0" data-i="pToday">오늘</button><button type="button" data-p="d7" data-i="pWeek">1주</button><button type="button" data-p="m1" data-i="pMonth">1개월</button><button type="button" data-p="m3" data-i="pMonth3">3개월</button></div></div>
       <label class="f"><span data-i="from">시작일</span><input type="date" id="hpFrom"></label>
       <label class="f"><span data-i="to">종료일</span><input type="date" id="hpTo"></label>
-      <label class="f"><span data-i="search">검색</span><input id="hpQ" data-ph="qPh" placeholder="품번 · 선번 · 라인 · LOT" autocomplete="off"></label>
-      <label class="f"><span data-i="worker">처리자</span><input id="hpName" autocomplete="off"></label>
-      <span class="status" style="flex:1;align-self:center" data-i="rangeNote">진행 중(완료·반려·취소 전)은 기간과 관계없이 모두 표시</span>
     </div>
-    <div class="act">
+    <div class="hchips"><div class="stchips" id="hpChips"></div><span class="status hnote" data-i="rangeNote">진행 중(완료·반려·취소 전)은 기간과 관계없이 모두 표시</span></div>
+    <div class="act" id="hpAct">
       <span class="selinfo" id="hpSel">0</span>
+      <label class="f inl"><span data-i="worker">처리자</span><input id="hpName" autocomplete="off"></label>
+      <span class="status ahint" id="hpHint"></span>
       <span class="agrp"><button class="btn pri" id="hpRecv" data-i="pRecv">접수</button><button class="btn pri" id="hpAppr" data-i="pAppr">🔒 접수 승인</button></span>
-      <span class="lotbox"><input id="hpLot" data-ph="lotPh" placeholder="투입 MES LOT" autocomplete="off"><button class="btn ok" id="hpShip" data-i="pShip">완료 / 출고</button></span>
-      <button class="btn warn" id="hpReject" data-i="reject">반려</button><button class="btn" id="hpRejectUndo" data-i="rejectUndo">반려 취소</button>
-      <button class="btn" id="hpUndo" data-i="undo">한 단계 되돌리기</button>
+      <span class="agrp lotbox"><input id="hpLot" data-ph="lotPh" placeholder="투입 MES LOT" autocomplete="off"><button class="btn ok" id="hpShip" data-i="pShip">완료 / 출고</button></span>
+      <span class="agrp"><button class="btn warn" id="hpReject" data-i="reject">반려</button><button class="btn" id="hpRejectUndo" data-i="rejectUndo">반려 취소</button></span>
+      <span class="agrp"><button class="btn" id="hpUndo" data-i="undo">한 단계 되돌리기</button></span>
       <span class="agrp"><button class="btn ok" id="hpRetOk" data-i="pRetOk">↩ 반납 확인</button><button class="btn" id="hpRetOkUndo" data-i="pRetOkUndo">반납확인 취소</button></span>
       <span style="flex:1"></span>
       <button class="btn" id="hpCopy" data-i="copyMes">MES 입력용 복사</button>
@@ -657,7 +712,7 @@ textarea#lotBox{width:100%;min-height:160px;padding:10px;border:1px solid var(--
   </div>
 </div>
 <div class="modal hidden" id="wqModal" role="dialog" aria-modal="true" aria-labelledby="wqT">
-  <div class="mbox wq">
+  <div class="mbox wq" id="wqBox" tabindex="-1" style="outline:none">
     <div class="wqhead"><h3 id="wqT"></h3>
       <input id="wqIn2" autocomplete="off" placeholder="AA300"><button type="button" class="btn pri" id="wqBtn2" data-i="wqBtn">조회</button>
       <select id="wqPn"></select>
@@ -1015,8 +1070,8 @@ $('scanIn').addEventListener('keydown',e=>{if(e.key==='Enter'||e.key==='Tab'){co
 document.addEventListener('keydown',e=>{
   if(e.key!=='!'||e.ctrlKey||e.altKey||e.metaKey)return;
   const a=document.activeElement;if(a&&(a.tagName==='TEXTAREA'||(a.tagName==='INPUT'&&!['checkbox','radio','button'].includes(a.type))||a.tagName==='SELECT'))return;
-  if($('viewAsm').classList.contains('hidden'))return;
-  e.preventDefault();$('scanIn').value='!';$('scanIn').focus();
+  const tgt=['viewAsm','viewHist','viewProc'].map((v,i)=>$(v).classList.contains('hidden')?null:['scanIn','haQ','hpQ'][i]).find(Boolean);if(!tgt)return;
+  e.preventDefault();$(tgt).value='!';$(tgt).focus();
 });
 
 /* 핸드폰 카메라 스캔 — zxing-cpp(WASM) · 지원 시 기기 내장 BarcodeDetector 병행 */
@@ -1171,7 +1226,7 @@ async function saveReq(){
     grp:c.members.length?c.members.join(','):null,grp_type:c.types.length?c.types.join('+'):null,in_master:c.inMaster,asm_lot:c.lot||null,qty:parseInt(c.qty,10),line,requester:name,req_note:note||null}));
   $('aSave').disabled=true;setStat(T('saving'));
   try{await sb(RQ,{method:'POST',body:JSON.stringify(rows),headers:{Prefer:'return=minimal'}});setNet(true);
-    toast(`${T('savedAppr')} (${rows.length})`);cart=[];$('aNote').value='';$('dLot').value='';scanCtx=null;renderCart();renderPick();await loadReqs();}
+    toast(`${T('savedAppr')} (${rows.length})`);savedNote(rows);cart=[];$('aNote').value='';$('dLot').value='';scanCtx=null;renderCart();renderPick();await loadReqs();}
   catch(e){console.error(e);setNet(false);alert(T('saveErr')+'\n'+e.message);}
   finally{$('aSave').disabled=!cart.length;}
 }
@@ -1214,7 +1269,7 @@ async function run(jobs){// jobs: [[ids,fromSt,body],...]
 }
 
 /* ---------- 이력 (조립·가공 공통) ---------- */
-const H={ha:{st:'',sel:new Set(),open:new Set()},hp:{st:'승인',sel:new Set(),open:new Set()}};
+const H={ha:{st:'',sel:new Set(),open:new Set(),shut:new Set()},hp:{st:'승인',sel:new Set(),open:new Set(),shut:new Set()}};
 function histRows(p){
   const a=$(p+'From').value?new Date($(p+'From').value+'T00:00:00'):null,b=$(p+'To').value?new Date($(p+'To').value+'T23:59:59.999'):null;
   const q=U($(p+'Q').value),line=$('aLine').value.trim(),mine=p==='ha'&&$('haMine').checked&&line;
@@ -1239,16 +1294,27 @@ function flow(r){
 const WD={ko:['일','월','화','수','목','금','토'],es:['dom','lun','mar','mié','jue','vie','sáb']};
 const dkey=s=>ymd(toMX(new Date(s)));
 const dlabel=k=>{const d=new Date(k+'T12:00:00');return `${k} (${WD[lang][d.getDay()]})`;};
-const CHIPS={ha:ST,hp:ST.filter(s=>s!=='신청')};
+const CHIPS={ha:ST,hp:ST.filter(s=>s!=='신청')};// 엑셀 시트 구분용(상태별)
+/* 화면 칩: 조립 이력은 단계별 묶음, 가공은 상태별(작업 대기열) */
+const CG={ha:[['wait',['신청']],['proc',['승인','접수','가공승인']],['ship',['출고']],['done',['수령']],['rej',['반려','취소']],['ret',['반납','반납확인']]],
+          hp:ST.filter(s=>s!=='신청').map(s=>[s,[s]])};
+const CG_TODO={ha:['wait','ship'],hp:['승인','접수','가공승인','반납']};// 처리할 것이 있는 칩(건수 강조)
+const cgSts=(p,k)=>{const c=k?CG[p].find(x=>x[0]===k):null;return c?c[1]:null;};
+const cgLabel=(p,k)=>!k?T('stAll'):p==='ha'?T('cg_'+k):T('st'+(ST.indexOf(k)+1));
+const stOn=(p,r)=>{const a=cgSts(p,H[p].st);return !a||a.includes(r.status);};
+function actHint(p){const k=H[p].st,key=!k?'hh_def':p==='ha'?'hh_ha_'+k:'hh_hp_'+(ST.indexOf(k)+1),t=T(key);return t===key?T('hh_def'):t;}
+const actSet=(id,on)=>{const e=$(id);e.disabled=!on;e.classList.toggle('hidden',!on);};
 function renderHist(p){
-  const S=H[p],base=histRows(p),cnt={};base.forEach(r=>cnt[r.status]=(cnt[r.status]||0)+1);
-  $(p+'Chips').innerHTML=['',...CHIPS[p]].map(s=>`<button data-s="${s}" class="${s===S.st?'on':''}">${esc(s?T('st'+(ST.indexOf(s)+1)):T('stAll'))}<b>${s?(cnt[s]||0):base.length}</b></button>`).join('');
-  const rows=base.filter(r=>!S.st||r.status===S.st);
+  const S=H[p],base=histRows(p),cnt={},ln0=$('aLine').value.trim();base.forEach(r=>cnt[r.status]=(cnt[r.status]||0)+1);
+  $(p+'Chips').innerHTML=[['',null],...CG[p]].map(([k,a])=>{const n=a?a.reduce((t,x)=>t+(cnt[x]||0),0):base.length;
+    return `<button data-s="${k}" class="${k===S.st?'on':''}${n&&CG_TODO[p].includes(k)?' todo':''}">${esc(cgLabel(p,k))}<b>${n}</b></button>`;}).join('');
+  const rows=base.filter(r=>stOn(p,r));
   const vis=new Set(rows.map(r=>r.id));[...S.sel].forEach(id=>{if(!vis.has(id))S.sel.delete(id);});
   const groups=[],m={};
   rows.slice().sort((x,y)=>x.created_at<y.created_at?-1:x.created_at>y.created_at?1:x.id-y.id)
     .forEach(r=>{if(!m[r.req_no]){m[r.req_no]={no:r.req_no,items:[]};groups.push(m[r.req_no]);}m[r.req_no].items.push(r);});
-  if(!(S.st&&isOpen({status:S.st})))groups.reverse();// 진행 중은 오래된 것부터, 그 외는 최근부터
+  const chipSts=cgSts(p,S.st);
+  if(!(chipSts&&chipSts.every(x=>OPEN.includes(x))))groups.reverse();// 진행 중은 오래된 것부터, 그 외는 최근부터
   const days=[];let cur=null;groups.forEach(g=>{const k=dkey(g.items[0].created_at);if(!cur||cur.k!==k){cur={k,gs:[]};days.push(cur);}cur.gs.push(g);});
   if(p==='hp'&&(S.st==='접수'||S.st==='가공승인')){// 가공 접수·승인 시: 부족수량 오름차순(같이 만드는 선은 붙여서)
     const gk=r=>r.pn+'|'+(r.grp?r.grp.split(',').map(x=>x.trim()).sort().join(','):r.wn);
@@ -1258,9 +1324,9 @@ function renderHist(p){
       g.items.sort((a,b)=>mq[gk(a)]-mq[gk(b)]||ord.get(gk(a))-ord.get(gk(b))||a.qty-b.qty||a.id-b.id);});
     days.forEach(d=>d.gs.sort((a,b)=>gq(a)-gq(b)));
   }
-  const today=ymd(nowMX()),auto=!!$(p+'Q').value.trim();// 검색 중일 때만 모두 펼침
+  const today=ymd(nowMX()),auto=!!$(p+'Q').value.trim()||!!S.st;// 검색 중이거나 상태 칩을 고르면 모두 펼침(날짜 줄을 누르면 접기/펼치기)
   $(p+'Body').innerHTML=days.map(d=>{const its=d.gs.flatMap(g=>g.items),dOn=its.every(r=>S.sel.has(r.id));
-    const fold=d.k!==today&&!auto&&!S.open.has(d.k),nOpen=its.filter(isOpen).length;
+    const fold=S.shut.has(d.k)||(d.k!==today&&!auto&&!S.open.has(d.k)),nOpen=its.filter(isOpen).length;
     return `<tr class="dt${fold?' fold':''}" data-dk="${d.k}"><td><input type="checkbox" data-day="${d.k}" ${dOn?'checked':''} aria-label="${d.k}"></td><td colspan="6"><span class="car">▸</span><span class="dd">${esc(dlabel(d.k))}</span>${d.k===today?` <span class="today">${esc(T('today'))}</span>`:''}<span class="ds">${d.gs.length}${esc(T('reqCnt'))} · ${its.length}${esc(T('groupOf'))} · ${esc(T('qty'))} ${its.reduce((t,r)=>t+r.qty,0).toLocaleString()}</span>${nOpen&&d.k!==today?`<span class="dopen">${esc(T('inProg'))} ${nOpen}</span>`:''}<button class="btn sm rqx" data-dayx="${d.k}" type="button" title="${esc(T('xlsxDay'))}">📗 Excel</button></td></tr>`+
     (fold?'':d.gs.map(g=>{const h=g.items[0],allOn=g.items.every(r=>S.sel.has(r.id)),sum=g.items.reduce((t,r)=>t+r.qty,0);
     return `<tr class="rq"><td><input type="checkbox" data-req="${esc(g.no)}" ${allOn?'checked':''} aria-label="${esc(g.no)}"></td><td colspan="6"><b>${fmtT(h.created_at).slice(6)}</b> · ${esc(T('line'))} <b>${esc(h.line||'-')}</b> · ${esc(T('reqBy'))} <b>${esc(h.requester||'')}</b> · ${g.items.length}${esc(T('groupOf'))} / ${sum.toLocaleString()}${(()=>{const L=[...new Set(g.items.map(r=>r.asm_lot).filter(Boolean))];return ' · '+esc(T('origLot'))+' '+(L.length?L.map(x=>`<span class="olot">${esc(x)}</span>`).join(' '):'<span class="olot none">—</span>');})()}${h.req_note?' · '+esc(T('note'))+': <b>'+esc(h.req_note)+'</b>':''} <span style="opacity:.5">${esc(g.no)}</span></td></tr>`+
@@ -1272,13 +1338,18 @@ function renderHist(p){
   $(p+'All').checked=rows.length>0&&rows.every(r=>S.sel.has(r.id));
   const sr=REQS.filter(r=>S.sel.has(r.id)),has=s=>sr.some(r=>s.includes(r.status));
   $(p+'Sel').textContent=`${sr.length} ${T('sel')} · ${sr.reduce((t,r)=>t+r.qty,0).toLocaleString()}`;
+  // 처리 버튼: 선택한 행의 상태에 맞는 것만 표시
   if(p==='hp'){
-    $('hpRecv').disabled=!has(['승인']);$('hpAppr').disabled=!has(['접수']);$('hpShip').disabled=!has(['가공승인']);
-    $('hpReject').disabled=!has(['승인','접수','가공승인']);$('hpRejectUndo').disabled=!has(['반려']);$('hpUndo').disabled=!has(['접수','가공승인','출고']);$('hpRetOk').disabled=!has(['반납']);$('hpRetOkUndo').disabled=!has(['반납확인']);
+    actSet('hpRecv',has(['승인']));actSet('hpAppr',has(['접수']));actSet('hpShip',has(['가공승인']));
+    actSet('hpReject',has(['승인','접수','가공승인']));actSet('hpRejectUndo',has(['반려']));actSet('hpUndo',has(['접수','가공승인','출고']));actSet('hpRetOk',has(['반납']));actSet('hpRetOkUndo',has(['반납확인']));
   }else{
-    $('haAppr').disabled=!has(['신청']);$('haApprUndo').disabled=!has(['승인']);$('haReject').disabled=!has(['신청']);
-    $('haRecv').disabled=!has(['출고']);$('haRecvUndo').disabled=!has(['수령']);$('haRet').disabled=!has(['수령']);$('haRetUndo').disabled=!has(['반납']);$('haCancel').disabled=!has(['신청','승인','접수','가공승인']);
+    actSet('haAppr',has(['신청']));actSet('haApprUndo',has(['승인']));actSet('haReject',has(['신청']));
+    actSet('haRecv',has(['출고']));actSet('haRecvUndo',has(['수령']));actSet('haRet',has(['수령']));actSet('haRetUndo',has(['반납']));actSet('haCancel',has(['신청','승인','접수','가공승인']));
+    const mw=$('haMineW');$('haMine').disabled=!ln0;mw.classList.toggle('off',!ln0);$('haMineL').textContent=T('mineOnly')+' · '+(ln0||T('noLine'));
   }
+  let anyAct=false;$(p+'Act').querySelectorAll('.agrp').forEach(g=>{const on=[...g.querySelectorAll('button')].some(b=>!b.classList.contains('hidden'));g.classList.toggle('hidden',!on);anyAct=anyAct||on;});
+  $(p+'Hint').textContent=anyAct?'':actHint(p);$(p+'Hint').classList.toggle('hidden',anyAct);
+  preMark(p);
   // 탭 배지: 조립=팀장 승인대기·접수대기(출고), 가공=가공접수 대기(조립승인)
   const ln=$('aLine').value.trim(),myLine=r=>!ln||!$('haMine').checked||!r.line||U(r.line)===U(ln);
   const nAp=REQS.filter(r=>r.status==='신청'&&myLine(r)).length,nA=REQS.filter(r=>r.status==='출고'&&myLine(r)).length,nP=REQS.filter(r=>r.status==='승인').length;
@@ -1286,20 +1357,20 @@ function renderHist(p){
 }
 const renderRecent=()=>renderHist('ha'),renderProc=()=>renderHist('hp');
 ['ha','hp'].forEach(p=>{
-  $(p+'Chips').onclick=e=>{const b=e.target.closest('button');if(!b)return;H[p].st=b.dataset.s;H[p].sel.clear();renderHist(p);};
+  $(p+'Chips').onclick=e=>{const b=e.target.closest('button');if(!b)return;H[p].st=b.dataset.s;H[p].sel.clear();H[p].open.clear();H[p].shut.clear();renderHist(p);};
   [p+'From',p+'To'].forEach(id=>$(id).addEventListener('change',()=>loadReqs()));
   $(p+'Q').addEventListener('input',()=>renderHist(p));
   $(p+'Body').addEventListener('click',e=>{const S=H[p];
     const bx=e.target.closest('button[data-dayx]');if(bx){e.preventDefault();e.stopPropagation();exportHistXlsx(p,bx.dataset.dayx);return;}
     const dt=e.target.closest('tr.dt');
-    if(dt&&!e.target.closest('input')){const k=dt.dataset.dk,today=ymd(nowMX());
-      if(k!==today&&!$(p+'Q').value.trim()){S.open.has(k)?S.open.delete(k):S.open.add(k);renderHist(p);}return;}
+    if(dt&&!e.target.closest('input')){const k=dt.dataset.dk;
+      if(dt.classList.contains('fold')){S.open.add(k);S.shut.delete(k);}else{S.shut.add(k);S.open.delete(k);}renderHist(p);return;}
     const dc=e.target.closest('input[data-day]');
-    if(dc){const ids=histRows(p).filter(r=>dkey(r.created_at)===dc.dataset.day&&(!S.st||r.status===S.st)).map(r=>r.id);ids.forEach(i=>dc.checked?S.sel.add(i):S.sel.delete(i));renderHist(p);return;}
+    if(dc){const ids=histRows(p).filter(r=>dkey(r.created_at)===dc.dataset.day&&stOn(p,r)).map(r=>r.id);ids.forEach(i=>dc.checked?S.sel.add(i):S.sel.delete(i));renderHist(p);return;}
     const rq=e.target.closest('input[data-req]');
-    if(rq){const ids=histRows(p).filter(r=>r.req_no===rq.dataset.req&&(!S.st||r.status===S.st)).map(r=>r.id);ids.forEach(i=>rq.checked?S.sel.add(i):S.sel.delete(i));renderHist(p);return;}
+    if(rq){const ids=histRows(p).filter(r=>r.req_no===rq.dataset.req&&stOn(p,r)).map(r=>r.id);ids.forEach(i=>rq.checked?S.sel.add(i):S.sel.delete(i));renderHist(p);return;}
     const tr=e.target.closest('tr.it');if(!tr)return;const id=+tr.dataset.id;S.sel.has(id)?S.sel.delete(id):S.sel.add(id);renderHist(p);});
-  $(p+'All').onchange=()=>{const S=H[p],rows=histRows(p).filter(r=>!S.st||r.status===S.st);if($(p+'All').checked)rows.forEach(r=>S.sel.add(r.id));else S.sel.clear();renderHist(p);};
+  $(p+'All').onchange=()=>{const S=H[p],rows=histRows(p).filter(r=>stOn(p,r));if($(p+'All').checked)rows.forEach(r=>S.sel.add(r.id));else S.sel.clear();renderHist(p);};
 });
 $('haMine').onchange=renderRecent;
 $('hpName').onchange=()=>LS.set('pName',$('hpName').value.trim());
@@ -1390,7 +1461,7 @@ $('hpUndo').onclick=async()=>{
 
 $('hpRetOk').onclick=()=>{const w=need('hpName','needWorker');if(w)run([[selOf('hp',['반납']),['반납'],{status:'반납확인',ret_ok_at:now(),ret_ok_by:w}]]);};
 $('hpRetOkUndo').onclick=()=>run([[selOf('hp',['반납확인']),['반납확인'],{status:'반납',ret_ok_at:null,ret_ok_by:null}]]);
-function exportRows(p){const S=H[p],s=REQS.filter(r=>S.sel.has(r.id));return s.length?s:histRows(p).filter(r=>!S.st||r.status===S.st);}
+function exportRows(p){const S=H[p],s=REQS.filter(r=>S.sel.has(r.id));return s.length?s:histRows(p).filter(r=>stOn(p,r));}
 $('hpCopy').onclick=async()=>{
   const rows=exportRows('hp');const txt=['품번\t선번\t수량'].concat(rows.map(r=>`${r.pn}\t${r.wn}\t${r.qty}`)).join('\n');
   try{await navigator.clipboard.writeText(txt);}catch(e){const ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();try{document.execCommand('copy')}catch(_){}ta.remove();}
@@ -1489,14 +1560,14 @@ function reqCols(){return [
 async function exportHistXlsx(p,day){
   if(!await xlReady())return;
   const S=H[p],sel=day?[]:REQS.filter(r=>S.sel.has(r.id));
-  let base=histRows(p);if(day)base=base.filter(r=>dkey(r.created_at)===day&&(!S.st||r.status===S.st));
+  let base=histRows(p);if(day)base=base.filter(r=>dkey(r.created_at)===day&&stOn(p,r));
   const srcRows=sel.length?sel:base;
   if(!srcRows.length){toast(T('xlsxNone'));return;}
   const sortRows=a=>a.slice().sort((x,y)=>new Date(y.created_at)-new Date(x.created_at)||String(x.pn).localeCompare(String(y.pn))||String(x.wn).localeCompare(String(y.wn)));
   const wb=new ExcelJS.Workbook();wb.creator='YURA HARNESS MÉXICO';wb.created=new Date();
   const plant=`PLANT ${PLANT}`,who=p==='ha'?'조립생산':'가공생산',when=fmtDT(now());
   const range=day?dlabel(day):`${$(p+'From').value||'…'} ~ ${$(p+'To').value||'…'}`,q=$(p+'Q').value.trim();
-  const sub=`${plant} · ${who} · ${day?'신청일 ':'기간 '}${range}${day&&S.st?` · ${stKo({status:S.st})}`:''}${q?` · 검색 "${q}"`:''}${sel.length?` · 선택 ${sel.length}건`:''} · 출력 ${when}`;
+  const sub=`${plant} · ${who} · ${day?'신청일 ':'기간 '}${range}${day&&S.st?` · ${cgLabel(p,S.st)}`:''}${q?` · 검색 "${q}"`:''}${sel.length?` · 선택 ${sel.length}건`:''} · 출력 ${when}`;
   const cols=reqCols();const num=cols[1];num.v=(r)=>r.__n;
   const withNo=a=>{a.forEach((r,i)=>r.__n=i+1);return a;};
   const sheets=sel.length?[[T('shSel'),srcRows]]:[[T('shAll'),srcRows],...CHIPS[p].map(st=>[stKo({status:st}),srcRows.filter(r=>r.status===st)]).filter(x=>x[1].length)];
@@ -1556,7 +1627,7 @@ async function wqSearch(v){
   const pns=[...new Set(WQ.rows.map(r=>r.pn).filter(Boolean))].sort();
   $('wqPn').innerHTML=`<option value="">${esc(T('wqAllPn'))} (${pns.length})</option>`+pns.map(p=>`<option>${esc(p)}</option>`).join('');
   const cur=$('aPn').value;if(pns.length>1&&pns.includes(cur))$('wqPn').value='';
-  $('wqModal').classList.remove('hidden');wqRender();
+  $('wqModal').classList.remove('hidden');wqRender();$('wqBox').focus();
 }
 function wqAgg(rows){
   const a={n:0,req:0,rcv:0,ship:0,recv:0,rej:0,wait:0};
@@ -1584,7 +1655,7 @@ function wqRender(){
             <td class="num">${N(q)}</td><td class="num">${dead?'–':at(r.received_at,r.received_by)}</td><td class="num">${dead?'–':at(r.ship_at,r.ship_by)}${r.mes_no?` <small>${esc(r.mes_no)}</small>`:''}</td><td class="num">${dead?'–':at(r.recv_at,r.recv_by)}</td>
             <td class="num ${dead?'b':'z'}">${dead?N(q):'–'}</td><td class="num ${!dead&&!r.received_at?'w':'z'}">${!dead&&!r.received_at?N(q):'–'}</td><td></td><td>${stTag(r.status)}</td></tr>`}).join(''):'')}).join('')
     +`<tr class="d" style="cursor:default"><td>${esc(T('wqTot'))}</td><td></td><td><small>${N(t.n)} ${esc(T('wqCnt'))}</small></td><td class="num">${N(t.req)}</td>${c(t.rcv,'')}${c(t.ship,'')}${c(t.recv,'g')}${c(t.rej,'b')}${c(t.wait,'w')}<td class="num">${rt(t)}</td><td></td></tr>`
-    :`<tr><td colspan="11" style="text-align:center;padding:28px;color:var(--sub)">${esc(T('wqNone'))}</td></tr>`)+'</tbody>';
+    :`<tr><td colspan="11" style="text-align:center;padding:28px;color:var(--sub)">${esc(T(WQ.q?'wqNone':'wqNeed'))}</td></tr>`)+'</tbody>';
   $('wqNote').textContent=(WQ.off?T('wqOff')+' · ':'')+T('wqNoteT');
 }
 $('wqBtn').onclick=()=>wqSearch($('wqIn').value);$('wqBtn2').onclick=()=>wqSearch($('wqIn2').value);
@@ -1895,11 +1966,56 @@ $('tabRework').onclick=()=>{show('Rework');if(!RW.loaded)loadRework();};
 $('rwBack').onclick=()=>{show('Proc');loadReqs();};
 
 /* ---------- 탭 ---------- */
-function show(v){['Asm','Proc','Master','Rework'].forEach(k=>{$('view'+k).classList.toggle('hidden',k!==v);const t=$('tab'+k);if(t)t.classList.toggle('on',k===v);});LS.set('tab'+PLANT,v);}
-$('tabAsm').onclick=()=>{show('Asm');loadReqs();if(!TOUCH)$('scanIn').focus();};$('tabProc').onclick=()=>{show('Proc');loadReqs();};$('tabMaster').onclick=()=>show('Master');
+function show(v){['Asm','Hist','Proc','Master','Rework'].forEach(k=>{$('view'+k).classList.toggle('hidden',k!==v);const t=$('tab'+k);if(t)t.classList.toggle('on',k===v);});LS.set('tab'+PLANT,v);}
+/* 배지를 누르면 그 대기 목록으로 바로 이동 */
+function goHist(p,st){const S=H[p];if(st!=null&&S.st!==st){S.st=st;S.sel.clear();S.open.clear();S.shut.clear();}show(p==='ha'?'Hist':'Proc');renderHist(p);loadReqs();window.scrollTo(0,0);}
+$('tabAsm').onclick=()=>{show('Asm');loadReqs();if(!TOUCH)$('scanIn').focus();};
+$('tabHist').onclick=e=>{const c=e.target.closest('.cnt');goHist('ha',c?(c.id==='apprCnt'?'wait':'ship'):null);};
+$('tabProc').onclick=e=>{const c=e.target.closest('.cnt');goHist('hp',c?(c.id==='newCnt'?'승인':'반납'):null);};
+$('tabMaster').onclick=()=>show('Master');
 $('reloadBtn').onclick=()=>{loadMaster();loadReqs();loadLots();if(RW.loaded)loadRework();};
 $('langBtn').onclick=()=>{lang=lang==='ko'?'es':'ko';LS.set('lang',lang);applyLang();};
-function renderAll(){wqRender();renderPick();renderCart();renderRecent();renderProc();renderRework();}
+function renderAll(){wqRender();renderPick();renderCart();renderSaved();renderRecent();renderProc();renderRework();}
+
+/* ---------- 화면 분리 · 이력 조회 보조 ---------- */
+Object.assign(KO,{mineOnly:'내 라인만',noLine:'라인 미입력',cg_wait:'승인대기',cg_proc:'가공 진행 중',cg_ship:'출고 · 접수대기',cg_done:'접수완료',cg_rej:'반려 · 취소',cg_ret:'반납',
+ savedDone:'신청 저장 완료',savedGo:'이력에서 보기 →',
+ hh_def:'처리할 행을 체크하면 처리 버튼이 나타납니다.',
+ hh_ha_wait:'승인할 행을 체크 → 「팀장 승인」 (팀장 PIN)',hh_ha_proc:'가공에서 처리 중입니다 — 취소하려면 행 체크 → 「신청 취소」',hh_ha_ship:'받은 선재의 행을 체크 → 「선재 접수 확인」',
+ hh_ha_done:'접수가 끝난 건입니다 — 가공으로 돌려보내려면 행 체크 → 「가공 반납」',hh_ha_rej:'반려 · 취소된 건입니다.',hh_ha_ret:'가공으로 반납한 건입니다 — 가공에서 「반납 확인」하면 끝납니다.',
+ hh_hp_2:'접수할 행을 체크 → 「접수」',hh_hp_3:'승인할 행을 체크 → 「접수 승인」 (팀장 PIN)',hh_hp_4:'출고할 행을 체크 → 투입 MES LOT 입력 → 「완료 / 출고」',
+ hh_hp_5:'출고한 건입니다 — 조립의 선재 접수 확인을 기다리는 중',hh_hp_6:'조립 접수까지 끝난 건입니다.',hh_hp_7:'반려한 건입니다 — 되돌리려면 행 체크 → 「반려 취소」',
+ hh_hp_8:'조립에서 취소한 건입니다.',hh_hp_9:'조립에서 반납한 선재입니다 — 행 체크 → 「반납 확인」',hh_hp_10:'반납 확인까지 끝난 건입니다.'});
+Object.assign(ES,{tAsm:'Solicitar',tHist:'Historial · Recibir',period:'Periodo',pToday:'Hoy',pWeek:'1 sem.',pMonth:'1 mes',pMonth3:'3 meses',wqOpen:'Resumen por cable',
+ noLine:'sin línea',cg_wait:'Por aprobar',cg_proc:'En proceso (Corte)',cg_ship:'Entregado · por recibir',cg_done:'Recibido',cg_rej:'Rechazado · Cancelado',cg_ret:'Devolución',
+ savedDone:'Solicitud guardada',savedGo:'Ver en historial →',
+ hh_def:'Marque renglones para ver las acciones disponibles.',
+ hh_ha_wait:'Marque los renglones a aprobar → «Aprobar (jefe)» (PIN del jefe)',hh_ha_proc:'En proceso en Corte — para cancelar, marque → «Cancelar solicitud»',hh_ha_ship:'Marque el cable recibido → «Confirmar recepción de cable»',
+ hh_ha_done:'Ya recibido — para regresarlo a Corte, marque → «Devolver a corte»',hh_ha_rej:'Solicitudes rechazadas o canceladas.',hh_ha_ret:'Devuelto a Corte — termina cuando Corte confirma la devolución.',
+ hh_hp_2:'Marque los renglones a recibir → «Recibir»',hh_hp_3:'Marque los renglones a aprobar → «Aprobar recepción» (PIN del jefe)',hh_hp_4:'Marque los renglones a entregar → capture el LOT MES → «Completar / entregar»',
+ hh_hp_5:'Entregado — en espera de que Ensamble confirme la recepción',hh_hp_6:'Recibido por Ensamble: terminado.',hh_hp_7:'Rechazado — para deshacer, marque → «Deshacer rechazo»',
+ hh_hp_8:'Cancelado por Ensamble.',hh_hp_9:'Cable devuelto por Ensamble — marque → «Confirmar devolución»',hh_hp_10:'Devolución confirmada: terminado.'});
+/* 기간 바로가기 */
+const PRE={d0:d=>d,d7:d=>{d.setDate(d.getDate()-7);return d;},m1:d=>{d.setMonth(d.getMonth()-1);return d;},m3:d=>{d.setMonth(d.getMonth()-3);return d;}};
+function preMark(p){const t=ymd(nowMX()),f=$(p+'From').value,to=$(p+'To').value;[...$(p+'Pre').children].forEach(b=>b.classList.toggle('on',to===t&&f===ymd(PRE[b.dataset.p](nowMX()))));}
+['ha','hp'].forEach(p=>{
+  $(p+'Pre').onclick=e=>{const b=e.target.closest('button');if(!b)return;$(p+'From').value=ymd(PRE[b.dataset.p](nowMX()));$(p+'To').value=ymd(nowMX());preMark(p);loadReqs();};
+  $(p+'Wq').onclick=()=>wqOpen($(p+'Q').value);
+  // 검색칸에 바코드를 스캔하면 선번으로 바꿔서 검색
+  $(p+'Q').addEventListener('keydown',e=>{if(e.key!=='Enter')return;const v=$(p+'Q').value;if(!isScan(v))return;const sc=parseScan(v);if(!sc)return;e.preventDefault();$(p+'Q').value=sc.wn;renderHist(p);});
+});
+$('hpLot').addEventListener('keydown',e=>{if(e.key==='Enter'&&!$('hpShip').disabled){e.preventDefault();$('hpShip').click();}});
+/* 선번별 집계 창: 선번이 없으면 빈 창을 열어 입력받음 */
+function wqOpen(v){if(U(v))return wqSearch(v);WQ.q='';WQ.rows=[];WQ.off=false;$('wqIn2').value='';$('wqPn').innerHTML='';$('wqModal').classList.remove('hidden');wqRender();$('wqIn2').focus();}
+/* 신청 저장 후 확인 (이력은 다른 화면이므로 여기서 바로 확인) */
+let SAVED=null;
+function savedNote(rows){SAVED={n:rows.length,q:rows.reduce((t,r)=>t+(+r.qty||0),0),at:new Date().toISOString()};renderSaved();}
+function renderSaved(){const e=$('aSaved');e.classList.toggle('hidden',!SAVED);if(!SAVED)return;
+  e.innerHTML=`<span>✔ ${esc(T('savedDone'))} · ${fmtT(SAVED.at).slice(6)} · ${SAVED.n}${esc(T('groupOf'))} / ${esc(T('total'))} ${SAVED.q.toLocaleString()}</span><button type="button" class="btn sm">${esc(T('savedGo'))}</button>`;}
+$('aSaved').onclick=e=>{if(!e.target.closest('button'))return;$('haQ').value='';goHist('ha','');};
+/* 머리글 높이 → 화면 높이에 맞춘 목록 크기 */
+(()=>{const h=document.querySelector('header'),set=()=>document.documentElement.style.setProperty('--hh',h.offsetHeight+'px');set();
+  if(window.ResizeObserver)new ResizeObserver(set).observe(h);addEventListener('resize',set);})();
 
 (async()=>{
   lang=LS.get('lang','ko');
