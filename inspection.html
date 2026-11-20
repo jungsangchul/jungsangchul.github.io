@@ -30,7 +30,6 @@ input,select,textarea{color-scheme:dark}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
 
 /* ── 헤더 (포털 공통) ── */
-.top{position:sticky;top:0;z-index:100}
 header{background:linear-gradient(180deg,#141414 0%,#0e0e0e 100%);border-bottom:1px solid var(--line2);box-shadow:0 1px 0 rgba(255,255,255,.03),0 8px 24px rgba(0,0,0,.35)}
 header::before{content:'';display:block;height:2px;background:linear-gradient(90deg,var(--ac) 0%,var(--orange) 45%,var(--purple) 100%);opacity:.9}
 .bar{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 32px}
@@ -513,10 +512,6 @@ table.cfg input{width:17px;height:17px}
 .lg .tt{flex:1;min-width:0;font-weight:600;color:#fff;line-height:1.35}
 .lg .tt small{display:block;font-weight:400;color:var(--mute);font-size:12.5px}
 .lg .rt{flex:none;display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:12.5px;color:var(--ink2)}
-.stick{position:sticky;z-index:20;background:rgba(10,10,10,.96);backdrop-filter:blur(6px);border:1px solid var(--line2);border-radius:var(--r);padding:8px 10px;margin-bottom:8px;display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center}
-.stick .ch{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--ink2);max-width:100%}
-.stick .ch b{flex:none;width:22px;height:22px;border-radius:50%;background:var(--ac-soft);color:var(--ac);font-family:var(--code);font-size:14px;display:inline-flex;align-items:center;justify-content:center}
-.stick .ch span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:260px}
 /* 점검 그리드 */
 .ig{border:1px solid var(--line2);border-radius:var(--r);background:var(--panel);overflow:hidden}
 .ig-r{display:flex;align-items:center;gap:10px;padding:7px 12px;border-bottom:1px solid var(--line);flex-wrap:wrap}
@@ -593,67 +588,208 @@ header button.who:hover{border-color:#555}
 .wd label:has(input:checked){background:var(--ac-soft);border-color:rgba(201,168,76,.5);color:var(--ac)}
 .wd input{display:none}
 .lg .rt{flex-wrap:wrap;justify-content:flex-end}
-/* 항목별 점검 */
+/* 항목 목록 (접이식 패널) */
 .lg .li.pick{cursor:pointer}.lg .li.pick:hover{border-color:#555}
 .lg .li.sel{border-color:var(--ac);background:rgba(201,168,76,.10);box-shadow:inset 3px 0 0 var(--ac)}
 .lg .pg{font-family:var(--mono);font-size:12.5px;white-space:nowrap;color:var(--ink2)}
 .lg .pg.done{color:var(--grn)}.lg .pg b{color:#ff8f8f}
-.stick .ch{cursor:pointer;padding:4px 10px 4px 4px;border-radius:999px;border:1px solid transparent}
-.stick .ch:hover{border-color:var(--line2)}
-.stick .ch.on{border-color:var(--ac);background:rgba(201,168,76,.14);color:#fff}
-.stick .ch.fin b{background:var(--grnbg);color:var(--grn)}
-.stick .ch.bad b{background:rgba(224,92,92,.22);color:#ff8f8f}
-#in-one{scroll-margin-top:190px}
-.one-h{display:flex;align-items:center;gap:14px;padding:14px 16px;border:1px solid rgba(201,168,76,.45);border-radius:var(--r);background:linear-gradient(180deg,rgba(201,168,76,.10),rgba(201,168,76,.03));margin-bottom:12px;flex-wrap:wrap}
-.one-h .no{flex:none;width:46px;height:46px;border-radius:50%;background:var(--ac);color:#0a0a0a;font-family:var(--code);font-size:26px;font-weight:700;display:flex;align-items:center;justify-content:center}
-.one-h .tt{flex:1;min-width:220px;font-size:20px;font-weight:700;color:#fff;line-height:1.35}
-.one-h .tt small{display:block;font-size:15px;font-weight:400;color:var(--ink2);margin-top:3px}
-.one-h .nav{display:flex;align-items:center;gap:8px;flex:none}
-.one-h .nav span{font-family:var(--mono);font-size:13px;color:var(--mute);min-width:52px;text-align:center}
-.one-ph{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
-.one-ph.single{grid-template-columns:1fr}
-.one-ph .phz{padding:12px}
-.one-ph .pi{display:flex;gap:10px;flex-wrap:wrap}
-.one-ph .pi img{height:300px;max-width:100%;object-fit:contain;border-radius:8px;background:#000;cursor:zoom-in;display:block;flex:1 1 220px;min-width:0}
-@media(max-width:900px){.one-ph{grid-template-columns:1fr}.one-ph .pi img{height:220px}.one-h .tt{font-size:17px}}
-.one-s{display:flex;align-items:center;gap:8px 16px;flex-wrap:wrap;margin-bottom:10px;font-family:var(--mono);font-size:13.5px;color:var(--ink2)}
-.one-s b{font-family:var(--code);font-size:22px;color:#fff;margin-left:4px}
-.one-s .g b{color:var(--grn)}.one-s .r b{color:#ff8f8f}
-.one-s .bar{flex:1;min-width:120px;height:10px;border-radius:5px;background:#0d0d0d;border:1px solid var(--line);overflow:hidden;display:flex}
-.one-s .bar i{display:block;height:100%}
-.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
-@media(max-width:700px){.tiles{grid-template-columns:repeat(auto-fill,minmax(104px,1fr))}}
-.tl{border:1px solid var(--line2);border-radius:9px;background:#0d0d0d;overflow:hidden;display:flex;flex-direction:column}
-.tl .tb{height:64px;background:none;border:0;display:flex;align-items:center;justify-content:space-between;gap:6px;padding:0 12px;color:#fff;width:100%}
-.tl .tb span{font-family:var(--code);font-size:22px;font-weight:700;line-height:1.05;text-align:left;overflow-wrap:break-word;min-width:0}
-.tl .tb u{text-decoration:none;font-size:30px;font-weight:700;color:var(--dim);flex:none;width:34px;text-align:center}
-.tl .tw{height:28px;border:0;border-top:1px solid var(--line);background:rgba(255,255,255,.03);color:var(--ink2);font-size:12.5px;padding:0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%;text-align:left}
-.tl .tw.none{color:var(--amb)}
-.tl.ok{background:var(--grnbg);border-color:rgba(76,175,125,.65)}.tl.ok .tb u{color:var(--grn)}
-.tl.ng{background:rgba(224,92,92,.22);border-color:var(--red)}.tl.ng .tb u{color:#ff8f8f}
-.tl.na{background:#1c1c1c}.tl.na .tb span{color:var(--mute)}
-.tl.ro{opacity:.5}.tl.ro .tb{cursor:not-allowed}
-.tl .tn{padding:9px 12px 4px;font-family:var(--code);font-size:22px;font-weight:700;color:#fff;line-height:1.05;overflow-wrap:break-word}
-.tl .tn.long{font-size:14px;line-height:1.15;font-family:var(--body)}
-.tl .tc{display:flex;gap:8px;padding:4px 10px 10px;justify-content:space-between}
-.tl .c{flex:1;max-width:46px;aspect-ratio:1;border-radius:50%;border:2px solid var(--line2);background:#0a0a0a;color:var(--dim);font-size:18px;font-weight:700;line-height:1;padding:0;display:flex;align-items:center;justify-content:center;transition:transform .08s}
-.tl .c:active{transform:scale(.9)}
-.tl .c.ok:hover{border-color:rgba(76,175,125,.7);color:var(--grn)}.tl .c.ng:hover{border-color:var(--red);color:#ff8f8f}.tl .c.na:hover{border-color:#888;color:#ccc}
-.tl .c.ok.on{background:#3f9a6c;border-color:#5fd39a;color:#fff}
-.tl .c.ng.on{background:#e05c5c;border-color:#ff9a9a;color:#fff}
-.tl .c.na.on{background:#666;border-color:#aaa;color:#fff}
-.tl.ro .c{cursor:not-allowed}
-.one-lg{display:flex;gap:6px 16px;flex-wrap:wrap;align-items:center;margin-bottom:10px;font-size:13px;color:var(--ink2)}
-.one-lg i{display:inline-flex;width:22px;height:22px;border-radius:50%;align-items:center;justify-content:center;font-style:normal;font-weight:700;font-size:13px;color:#fff;margin-right:6px}
-@media(max-width:700px){.tiles{grid-template-columns:repeat(auto-fill,minmax(112px,1fr))!important}.tl .tn{font-size:18px;padding:8px 8px 3px}.tl .tn.long{font-size:12.5px}.tl .tc{gap:5px;padding:4px 7px 8px}.tl .c{font-size:15px}}
-.tl .tb span.long{font-size:14px;line-height:1.15;font-family:var(--body)}
-.tl .tb u:empty{display:none}
-@media(max-width:700px){.tl .tb{padding:0 8px;height:56px}.tl .tb span{font-size:18px;white-space:nowrap}.tl .tb span.long{font-size:12.5px;white-space:normal}.tl .tb u{font-size:24px;width:24px}}
-.one-ng{margin-top:12px;border:1px solid rgba(224,92,92,.4);border-radius:var(--r);padding:10px 12px;background:rgba(224,92,92,.05)}
-.one-ng h4{margin:0 0 8px;color:#ff8f8f;font-size:13.5px}
-.one-ng .r{display:flex;gap:10px;align-items:center;margin-bottom:6px}
-.one-ng .r b{flex:none;width:92px;font-family:var(--code);font-size:18px;color:#fff}
-.one-ng .r input{flex:1;height:36px;min-width:0}
+
+/* ══ 점검 입력 화면 v2 ══
+   조건 한 줄 · 오늘 진행 한 줄 · 고정 항목 바(번호/필터/일괄 준수/다음) · 조밀한 호기 타일 · 사진 옆 패널 */
+.top{display:contents}                       /* 제목 줄은 스크롤되고 탭 줄만 고정 → 점검 영역을 넓게 */
+nav.tabs{position:sticky;top:0;z-index:100}
+body.tab-in main{padding-top:14px}
+/* ① 조건 */
+.ix-head{display:flex;align-items:center;gap:8px 10px;flex-wrap:wrap;margin-bottom:10px}
+.ix-head h2{margin:0 2px 0 0;font-family:'IBM Plex Sans KR','Noto Sans KR',sans-serif;font-size:18px;font-weight:700;color:var(--ink);white-space:nowrap}
+.ix-head .fs-pl{margin-right:6px;white-space:nowrap}
+.ix-head .dnav{flex-wrap:nowrap}
+.ix-head .dnav input[type=date]{width:160px}
+.ix-head select{min-width:170px;max-width:250px}
+.ix-head .btn b{font-family:var(--code);font-size:17px;line-height:1;color:var(--ac);margin:0 4px 0 2px}
+.ix-head .btn i{font-style:normal;font-size:12px;opacity:.75}
+.ix-head .btn svg,.ix-act .btn svg{width:17px;height:17px;vertical-align:-3px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.ix-head .btn.on{border-color:rgba(201,168,76,.5);color:var(--ac)}
+.ix-list .row.hd{align-items:center;margin-bottom:10px}
+/* ② 오늘 진행 · 찾기 · 보기 방식 */
+.ix-day{display:flex;align-items:center;gap:8px 12px;flex-wrap:wrap;margin-bottom:10px;padding:6px 12px;min-height:50px;border:1px solid var(--line2);border-radius:var(--r);background:linear-gradient(180deg,#171717,#131313)}
+.ix-kpi{display:flex;align-items:center;gap:4px 18px;flex-wrap:wrap;min-width:0}
+.ix-kpi .k{display:inline-flex;align-items:baseline;gap:7px;white-space:nowrap;background:none;border:0;padding:0;color:var(--ink2)}
+.ix-kpi .k i{font-style:normal;font-size:13px;font-weight:600;color:var(--ink2)}
+.ix-kpi .k b{font-family:var(--code);font-size:25px;line-height:1;font-weight:700;color:#fff}
+.ix-kpi .k small{font-family:var(--mono);font-size:12.5px;color:var(--mute)}
+.ix-kpi .k.g b{color:var(--grn)}.ix-kpi .k.r b{color:#ff8f8f}.ix-kpi .k.a b{color:var(--amb)}.ix-kpi .k.z b{color:var(--dim)}
+.ix-kpi button.k{cursor:pointer;padding:5px 9px;margin:-5px -9px;border-radius:6px}
+.ix-kpi button.k:hover{background:rgba(224,168,74,.12)}
+.ix-pbar{display:flex;flex:none;align-self:center;width:150px;height:8px;border-radius:4px;background:#0a0a0a;border:1px solid var(--line2);overflow:hidden}
+.ix-pbar i{display:block;height:100%}
+.ix-q{flex:1 1 120px;max-width:210px;min-width:0;height:36px}
+.ix-day .seg{height:36px}.ix-day .seg button{padding:0 13px;font-size:13px}
+.ix-day .btn{height:36px}
+.ix-help{flex:none;width:36px;height:36px;border-radius:50%;border:1px solid var(--line2);background:none;color:var(--mute);font-weight:700;font-size:15px;padding:0}
+.ix-help:hover,.ix-help.on{color:var(--ac);border-color:rgba(201,168,76,.5)}
+#in-hint{margin:-2px 2px 10px}
+/* ③ 고정 항목 바 */
+.ix-bar{position:sticky;top:var(--stk,0px);z-index:40;display:flex;align-items:center;gap:8px 14px;flex-wrap:wrap;margin-bottom:8px;padding:8px 12px;border:1px solid rgba(201,168,76,.45);border-radius:var(--r);background:linear-gradient(180deg,#1e1b12,#16140e);transition:box-shadow .15s}
+.ix-bar.stuck{border-top-left-radius:0;border-top-right-radius:0;box-shadow:0 12px 26px rgba(0,0,0,.6)}
+.ix-pls{display:flex;gap:7px;align-items:center;flex:none;max-width:100%;overflow-x:auto;scrollbar-width:none;padding:4px}
+.ix-pls::-webkit-scrollbar,.ix-f::-webkit-scrollbar{display:none}
+/* 항목 번호 = 진행 도넛 (녹 준수 · 적 미준수 · 회 미대상 · 어두움 미입력) */
+.ix-pl{--a:0;--b:0;--c:0;position:relative;flex:none;width:36px;height:36px;border-radius:50%;border:0;padding:0;background:conic-gradient(#3f9a6c calc(var(--a)*1%),#e05c5c 0 calc(var(--b)*1%),#6a6a6a 0 calc(var(--c)*1%),#303030 0);display:flex;align-items:center;justify-content:center}
+.ix-pl::before{content:'';position:absolute;inset:3px;border-radius:50%;background:#111}
+.ix-pl b{position:relative;font-family:var(--code);font-size:18px;font-weight:700;line-height:1;color:var(--ink2)}
+.ix-pl:hover b{color:#fff}
+.ix-pl.fin b{color:var(--grn)}
+.ix-pl.bad::after{content:'';position:absolute;top:-2px;right:-2px;width:11px;height:11px;border-radius:50%;background:#e05c5c;border:2px solid #17150e}
+.ix-pl.on{box-shadow:0 0 0 2px #17150e,0 0 0 4px var(--ac)}
+.ix-pl.on::before{background:var(--ac)}
+.ix-pl.on b{color:#0a0a0a}
+.ix-pl.ro{opacity:.5}
+.ix-tt{flex:1 1 380px;min-width:0}
+.ix-tt b{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden;font-size:17px;line-height:1.3;font-weight:700;color:#fff;word-break:keep-all;overflow-wrap:anywhere}
+.ix-tt small{display:block;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:12.5px;color:var(--ink2)}
+.ix-r2{display:flex;align-items:center;gap:8px 14px;flex:0 1 auto;min-width:0;max-width:100%;margin-left:auto}
+/* 빠른 필터 (건수 = 이 항목 진행 상황) */
+.ix-f{display:flex;gap:5px;align-items:center;flex:0 1 auto;min-width:0;overflow-x:auto;scrollbar-width:none}
+.ix-f button{flex:none;height:32px;padding:0 10px;border-radius:999px;border:1px solid var(--line2);background:rgba(255,255,255,.03);color:var(--ink2);font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.ix-f button b{font-family:var(--code);font-size:17px;font-weight:700;line-height:1;color:#fff}
+.ix-f button:hover{border-color:#5a5a5a;color:#fff}
+.ix-f button.ng b{color:#ff8f8f}.ix-f button.nw b{color:var(--amb)}
+.ix-f button.z b{color:var(--dim)}
+.ix-f button.on{background:rgba(201,168,76,.16);border-color:rgba(201,168,76,.65);color:var(--ac2)}
+.ix-act{display:flex;gap:6px;align-items:center;flex:none}
+.ix-act:empty{display:none}
+.ix-act .nv{width:40px;padding:0;font-size:19px;line-height:1}
+.ix-act .go{min-width:214px;padding:0 14px}
+.ix-act .go b{font-family:var(--code);font-size:19px;line-height:1;margin:0 2px}
+.ix-act .tag{display:inline-flex;align-items:center;justify-content:center;height:40px;min-width:214px;padding:0 14px;margin:0;font-size:13.5px}
+/* 전체 표 보기: 고정 바 = 항목 번호 범례 */
+.ix-bar.legend .ix-tt,.ix-bar.legend .ix-act{display:none}
+.ix-bar.legend .ix-pls{flex:1 1 300px;flex-wrap:wrap;overflow:visible;gap:2px 6px;padding:0}
+.ix-ch{display:inline-flex;align-items:center;gap:6px;max-width:100%;padding:3px 10px 3px 3px;border-radius:999px;border:1px solid transparent;background:none;color:var(--ink2);font-size:13px}
+.ix-ch:hover{border-color:var(--line2);color:#fff}
+.ix-ch b{flex:none;width:22px;height:22px;border-radius:50%;background:var(--ac-soft);color:var(--ac);font-family:var(--code);font-size:14px;display:inline-flex;align-items:center;justify-content:center}
+.ix-ch span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:260px}
+.ix-ch.fin b{background:var(--grnbg);color:var(--grn)}.ix-ch.bad b{background:rgba(224,92,92,.22);color:#ff8f8f}
+/* ④ 작업 영역: 호기 타일 + 사진 옆 패널 */
+.ix-side{display:none}
+.ix-work.side{display:grid;grid-template-columns:minmax(0,1fr) clamp(300px,22vw,400px);gap:12px;align-items:start}
+.ix-work.side .ix-side{display:flex;flex-direction:column;gap:8px;position:sticky;top:calc(var(--stk,0px) + var(--barh,64px) + 8px);max-height:calc(100vh - var(--stk,0px) - var(--barh,64px) - 20px);overflow:auto}
+.ix-side .phz{padding:8px}
+.ix-side .phh{margin-bottom:6px;font-size:13px}
+.ix-side .pi{display:grid;gap:6px}
+.ix-side .pi.two{grid-template-columns:1fr 1fr}
+.ix-side .pi img{display:block;width:100%;max-height:300px;object-fit:contain;background:#000;border-radius:6px;cursor:zoom-in}
+.ix-side .mini{text-align:center}
+.ix-noph{border:1px dashed var(--line2);border-radius:var(--r);padding:18px 14px;text-align:center;color:var(--mute);font-size:13px;line-height:1.7}
+.ix-noph .btn{margin-top:8px}
+.ix-empty{grid-column:1/-1;padding:24px;text-align:center}
+.ix-main{min-width:0}
+/* 다른 항목에서 –(미대상)으로 체크한 호기를 이 항목에도 한 번에 */
+.ix-na{display:flex;align-items:center;gap:6px 8px;flex-wrap:wrap;margin-bottom:8px;padding:6px 8px 6px 12px;border:1px dashed #5c5c5c;border-radius:8px;background:#151515;font-size:13.5px;color:var(--ink2)}
+.ix-na span{flex:1 1 240px;min-width:0}
+.ix-na b{color:#fff}
+.ix-na small{margin-left:6px;font-family:var(--code);font-size:15px;color:var(--mute)}
+.ix-na .x{width:30px;padding:0;font-size:17px;line-height:1}
+.ix-na .btn.sec:not(.x){border-color:rgba(201,168,76,.5);color:var(--ac2)}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(116px,1fr));gap:6px}
+.tiles.wide{grid-template-columns:repeat(auto-fill,minmax(250px,1fr))}
+.tl{display:flex;flex-direction:column;min-width:0;border:1px solid var(--line2);border-radius:8px;background:#0d0d0d;user-select:none;-webkit-user-select:none;scroll-margin:calc(var(--stk,0px) + var(--barh,64px) + 12px) 0 84px}
+.tl .c,.tl .wk,.ix-pl,.ix-f button,.ix-act .btn{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.tl .th{min-width:0;padding:5px 8px 0}
+.tl .tn{display:block;font-family:var(--code);font-size:21px;font-weight:700;line-height:22px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tl .tn.long{font-family:var(--body);font-size:13px}
+.tl .wk{display:block;width:100%;height:17px;padding:0;border:0;background:none;text-align:left;font-size:12px;line-height:17px;color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tl .wk:hover{color:var(--ac2);text-decoration:underline}
+.tl .wk.none{color:#b08a45}
+.tl .tc{display:flex;gap:1px;padding:1px 5px 4px}
+.tl .c{flex:1;min-width:0;max-width:46px;height:34px;padding:0;border:0;background:none;display:flex;align-items:center;justify-content:center}
+.tl .c i{display:flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:50%;border:2px solid #363636;background:#0a0a0a;color:#7a7a7a;font-style:normal;font-size:15px;font-weight:700;line-height:1;transition:transform .08s}
+.tl .c:active i{transform:scale(.88)}
+.tl .c.ok:hover i{border-color:rgba(76,175,125,.8);color:var(--grn)}
+.tl .c.ng:hover i{border-color:var(--red);color:#ff8f8f}
+.tl .c.na:hover i{border-color:#888;color:#ccc}
+.tl .c.ok.on i{background:#3f9a6c;border-color:#5fd39a;color:#fff}
+.tl .c.ng.on i{background:#e05c5c;border-color:#ff9a9a;color:#fff}
+.tl .c.na.on i{background:#666;border-color:#aaa;color:#fff}
+.tl.ok{background:rgba(76,175,125,.13);border-color:rgba(76,175,125,.6)}
+.tl.ng{background:rgba(224,92,92,.20);border-color:var(--red)}
+.tl.na{background:#1b1b1b;border-color:#3a3a3a}.tl.na .tn{color:var(--mute)}
+.tl.ro{opacity:.55}.tl.ro .c{cursor:not-allowed}
+.tl .tm{display:block;width:calc(100% - 10px);height:28px;margin:0 5px 5px;padding:0 7px;font-size:12.5px;border-color:rgba(224,92,92,.55);background:#150c0c}
+.tl .tm{user-select:text;-webkit-user-select:text}
+.tl .tm::placeholder{color:#a87474}
+.tl .tm.exp{position:relative;z-index:6;background:#1c1010;box-shadow:0 10px 24px rgba(0,0,0,.75),0 0 0 4px rgba(224,92,92,.18)}
+/* 터치 화면(태블릿): 타일·동그라미를 크게 */
+@media(pointer:coarse){
+  .tiles{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+  .tl .th{padding:7px 10px 0}.tl .tn{font-size:24px;line-height:26px}
+  .tl .wk{height:24px;line-height:24px;font-size:13px}
+  .tl .tc{padding:2px 6px 6px}.tl .c{height:48px}.tl .c i{width:44px;height:44px;font-size:19px}
+  .tl .tm{height:38px;font-size:16px}
+  .ix-pl{width:40px;height:40px}.ix-f button{height:36px}
+}
+/* 좁은 화면: 사진은 타일 위 가로 띠 (누르면 크게) */
+@media(max-width:1099px){
+  .ix-work.side{display:flex;flex-direction:column;align-items:stretch;gap:8px}
+  .ix-work.side .ix-side{order:-1;position:static;max-height:none;flex-direction:row;overflow-x:auto;overflow-y:hidden}
+  .ix-side .phz{flex:none}
+  .ix-side .pi,.ix-side .pi.two{display:flex}
+  .ix-side .pi img{width:auto;height:150px;max-height:none;max-width:78vw}
+  .ix-side.empty,.ix-side .mini{display:none!important}
+}
+@media(max-width:1560px){.ix-f .lb{display:none}}
+@media(max-width:1900px){html[lang="es"] .ix-f .lb{display:none}}
+/* 휴대폰: 탭 줄도 스크롤 · 호기 타일 2열(큰 동그라미) · 일괄 준수/다음은 화면 아래 고정 */
+@media(max-width:760px){
+  nav.tabs{position:static}
+  body.tab-in main{padding-bottom:120px}
+  .ix-head h2,.ix-head .fs-pl,.ix-head .sp,.ix-head .lb{display:none}
+  .ix-head .dnav{flex:1 1 100%}
+  .ix-head .dnav input[type=date]{flex:1;width:auto;min-width:0}
+  .ix-head select{flex:1;min-width:0}
+  .ix-head .btn{padding:0 11px}
+  .ix-day{padding:8px 10px}
+  .ix-day .sp{display:none}
+  .ix-kpi{flex:1 1 100%;gap:4px 14px}
+  .ix-kpi .k b{font-size:22px}
+  .ix-pbar{flex:1;width:auto;min-width:50px}
+  .ix-q{flex:1 1 90px;max-width:none;font-size:16px}
+  .ix-bar{padding:7px 10px;gap:5px 10px}
+  .ix-bar.legend{position:static}                /* 전체 표: 범례가 길어 고정하지 않음 */
+  .ix-pls{flex:1 1 100%;padding:4px 2px}
+  .ix-pl{width:40px;height:40px}.ix-pl b{font-size:19px}
+  .ix-tt{flex:1 1 100%}
+  .ix-tt b{font-size:15.5px;-webkit-line-clamp:2}
+  .ix-tt small{display:none}
+  .ix-r2{flex:1 1 100%;margin:0}
+  .ix-f{flex:1 1 100%}
+  .ix-f button{height:34px}
+  .ix-act{position:fixed;left:0;right:0;bottom:0;z-index:60;gap:8px;padding:8px 10px calc(8px + env(safe-area-inset-bottom));background:rgba(12,12,12,.97);border-top:1px solid var(--line2);box-shadow:0 -10px 24px rgba(0,0,0,.55)}
+  .ix-act .nv{width:48px;height:48px;flex:none}
+  .ix-act .go,.ix-act .tag{flex:1;min-width:0;height:48px;font-size:15px}
+  .toast{bottom:84px}
+  .ix-side .pi img{height:110px}
+  .tiles{grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:6px}
+  .tiles.wide{grid-template-columns:1fr}
+  .tl .th{display:flex;align-items:baseline;gap:8px;padding:7px 10px 0}
+  .tl .tn{flex:none;font-size:24px;line-height:26px}
+  .tl .tn.long{font-size:13px;line-height:1.15;white-space:normal;max-width:92px}
+  .tl .wk{flex:1;min-width:0;height:26px;line-height:26px;font-size:13px;text-align:right}
+  .tl .tc{justify-content:space-between;padding:3px 8px 8px}
+  .tl .c{max-width:none;height:46px}
+  .tl .c i{width:42px;height:42px;font-size:18px}
+  .tl .tm{width:calc(100% - 16px);height:40px;margin:0 8px 8px;font-size:16px}
+}
+/* 작업자 선택 창: 지금 지정하는 호기를 크게 */
+.w-mc{display:inline-block;margin-right:8px;font-family:var(--code);font-size:24px;line-height:1;color:var(--ac2);vertical-align:-2px}
+.w-mc.flash{animation:wflash .5s ease-out}
+@keyframes wflash{0%{color:#fff;transform:scale(1.3)}100%{color:var(--ac2);transform:none}}
+#w-last{margin:-2px 2px 8px;color:var(--grn);font-size:13px}
+#w-last:empty{display:none}
+.toast{align-items:center;gap:12px;cursor:pointer}
+.toast button{flex:none;height:28px;padding:0 12px;border-radius:999px;border:1px solid rgba(201,168,76,.6);background:rgba(201,168,76,.14);color:var(--ac2);font-weight:700;font-size:13px}
+@media(prefers-reduced-motion:reduce){.w-mc.flash{animation:none}.tl .c i{transition:none}}
 #mdl-lb{padding:10px;cursor:zoom-out}
 #mdl-lb img{max-width:98vw;max-height:94vh;border-radius:8px;box-shadow:0 10px 60px #000;display:block;margin:auto}
 #ph-body img{cursor:zoom-in}
@@ -710,38 +846,43 @@ table.fit td:nth-child(2){white-space:normal}
 <main>
 <!-- ═══ ① 점검 입력 ═══ -->
 <section class="tab on" id="t-in">
-  <div class="fs-head2"><h2 data-t="in_title">일별 현장점검 입력</h2><span class="fs-pl" id="pl-in"></span><span class="s">Daily floor inspection · by machine</span><span class="sp"></span><span class="savest" id="savest"></span></div>
-  <div class="card">
-    <div class="row">
-      <label class="f"><span data-t="date">점검일</span>
-        <span class="dnav"><button class="btn sec" onclick="dayMove(-1)">‹</button><input type="date" id="in-d"><button class="btn sec" onclick="dayMove(1)">›</button><button class="btn sec" style="width:auto;padding:0 12px;font-size:13.5px" onclick="daySet(today())" data-t="today">오늘</button></span></label>
-      <label class="f"><span data-t="shift">근무조</span><span class="seg" id="in-sh"><button data-v="D" class="on"></button><button data-v="N"></button></span></label>
-      <label class="f" style="min-width:200px"><span data-t="team_sel">점검 팀</span><select id="in-team" onchange="teamSet(this.value)"></select></label>
-      <span class="sp"></span>
-      <button class="btn" onclick="itOpen()" data-t="it_add">＋ 점검항목 추가</button>
-    </div>
+  <!-- 조건: 점검일 · 근무조 · 점검 팀 -->
+  <div class="ix-head">
+    <h2 data-t="in_title">일별 현장점검 입력</h2><span class="fs-pl" id="pl-in"></span>
+    <span class="dnav"><button class="btn sec" id="in-prev" onclick="dayMove(-1)">‹</button><input type="date" id="in-d"><button class="btn sec" id="in-next" onclick="dayMove(1)">›</button><button class="btn sec" style="width:auto;padding:0 12px;font-size:13.5px" onclick="daySet(today())" data-t="today">오늘</button></span>
+    <span class="seg" id="in-sh"><button data-v="D" class="on"></button><button data-v="N"></button></span>
+    <select id="in-team" onchange="teamSet(this.value)"></select>
+    <span class="sp"></span>
+    <button class="btn sec" id="in-list-btn" onclick="listToggle()"></button>
+    <button class="btn sec" id="in-add" onclick="itOpen()" data-t="it_add">＋ 점검항목 추가</button>
   </div>
-  <div class="card">
-    <h3 data-t="in_items">오늘의 점검항목 (지시사항)</h3>
+  <!-- 오늘의 점검항목 전체 목록 (접이식 · 수정/종료/사진) -->
+  <div class="card ix-list" id="in-list" style="display:none">
+    <div class="row hd"><h3 data-t="in_items" style="flex:1">오늘의 점검항목 (지시사항)</h3><label class="chkl" style="padding:0"><input type="checkbox" id="in-all" onchange="inRender()"><span data-t="in_all">다른 팀 항목도 보기 (읽기 전용)</span></label></div>
     <div class="lg" id="in-items"></div>
   </div>
-  <div class="kpis" id="in-kpi"></div>
-  <div class="card" style="padding-bottom:12px">
-    <div class="row" style="margin-bottom:10px">
-      <label class="f" style="flex:1;min-width:150px;max-width:260px"><span data-t="mc_find">호기 찾기</span><input id="in-q" placeholder="A01…" oninput="inBody()"></label>
-      <label class="chkl"><input type="checkbox" id="in-ng" onchange="inBody()"><span data-t="only_ng">미준수 호기만</span></label>
-      <label class="chkl"><input type="checkbox" id="in-todo" onchange="inBody()"><span data-t="only_todo">미입력 호기만</span></label>
-      <label class="chkl"><input type="checkbox" id="in-all" onchange="inRender()"><span data-t="in_all">다른 팀 항목도 보기 (읽기 전용)</span></label>
-      <span class="sp"></span>
-      <span class="seg" id="in-view"><button data-v="item"></button><button data-v="grid"></button></span>
-      <button class="btn sec" id="in-fill" onclick="fillAllOk()" data-t="fill_ok">미입력 전부 「준수」 처리</button>
-    </div>
-    <div class="hint" id="in-hint" style="margin-bottom:10px"></div>
-    <div class="banner" id="in-banner"><span id="in-banner-t"></span><button class="btn" onclick="meOpen()" data-t="me_pick">점검자 선택</button></div>
-    <div class="stick" id="in-stick"></div>
-    <div id="in-one"></div>
-    <div class="ig" id="in-grid"></div>
+  <div class="banner" id="in-banner"><span id="in-banner-t"></span><button class="btn" onclick="meOpen()" data-t="me_pick">점검자 선택</button></div>
+  <!-- 오늘 진행 · 호기 찾기 · 보기 방식 -->
+  <div class="ix-day">
+    <div class="ix-kpi" id="in-kpi"></div>
+    <span class="savest" id="savest"></span>
+    <span class="sp"></span>
+    <input id="in-q" class="ix-q" autocomplete="off" oninput="qSet()">
+    <button class="btn sec" id="in-fill" onclick="fillAllOk()" data-t="fill_ok">미입력 전부 「준수」 처리</button>
+    <span class="seg" id="in-view"><button data-v="item"></button><button data-v="grid"></button></span>
+    <button type="button" class="ix-help" id="in-help" onclick="helpToggle()">?</button>
   </div>
+  <div class="hint" id="in-hint" style="display:none"></div>
+  <!-- 고정 바: 항목 번호 · 선택한 항목 · 빠른 필터 · 일괄 준수 / 다음 항목 -->
+  <div class="ix-bar" id="in-bar">
+    <div class="ix-pls" id="in-pls"></div>
+    <div class="ix-tt" id="in-tt"></div>
+    <div class="ix-r2"><div class="ix-f" id="in-f"></div><div class="ix-act" id="in-act"></div></div>
+  </div>
+  <!-- 항목별 점검: 호기 타일 + 모범/안 좋은 사례 사진 -->
+  <div class="ix-work" id="in-one"><div class="ix-main"><div class="ix-na" id="one-na" style="display:none"></div><div class="tiles" id="one-t"></div></div><aside class="ix-side" id="one-ph"></aside></div>
+  <!-- 전체 표 -->
+  <div class="ig" id="in-grid"></div>
 </section>
 
 <!-- ═══ ② 개인별 이행 통계 ═══ -->
@@ -829,6 +970,8 @@ table.fit td:nth-child(2){white-space:normal}
       <label class="chkl" style="padding:0"><input type="checkbox" id="w-all" onchange="wRender()"><span data-t="w_all">전체 팀</span></label>
       <button class="btn red" onclick="wPick(null)" data-t="w_clear">지정 해제</button>
     </div>
+    <label class="chkl" style="padding:0 2px 8px"><input type="checkbox" id="w-seq"><span data-t="w_seq">지정하면 다음 미지정 호기로 바로 넘어가기 (연속 지정)</span></label>
+    <div id="w-last"></div>
     <div class="plist" id="w-list"></div>
   </div>
 </div></div>
@@ -922,7 +1065,7 @@ const T={
  who:['점검자','Inspector'],
  tab_in:['점검 입력','Registro'],tab_st:['개인별 이행 통계','Estadística por operador'],tab_it:['점검항목 관리','Puntos de inspección'],tab_cf:['호기 · 등급 설정','Máquinas · grados'],
  in_title:['일별 현장점검 입력','Registro diario de inspección'],date:['점검일','Fecha'],today:['오늘','Hoy'],shift:['근무조','Turno'],
- it_add:['＋ 점검항목 추가','＋ Agregar punto'],in_items:['오늘의 점검항목 (지시사항)','Puntos de inspección del día (instrucciones)'],
+ it_add:['＋<span class="lb"> 점검항목 추가</span>','＋<span class="lb"> Agregar punto</span>'],in_items:['오늘의 점검항목 (지시사항)','Puntos de inspección del día (instrucciones)'],
  mc_find:['호기 찾기','Buscar máquina'],only_ng:['미준수 호기만','Solo con incumplimiento'],only_todo:['미입력 호기만','Solo pendientes'],fill_ok:['미입력 전부 「준수」 처리','Marcar pendientes como «Cumple»'],
  in_hint:['칸을 누를 때마다 <b>○ 준수 → ✕ 미준수 → – 해당없음 → 빈칸</b> 순으로 바뀌고 <b>자동 저장</b>됩니다. 작업자는 사번으로 검색해 지정하며, 오늘 지정한 작업자는 다음 날에도 그대로 불러옵니다. 미준수가 있으면 그 호기 아래에 내용을 적을 수 있습니다.',
   'Cada toque cambia <b>○ Cumple → ✕ No cumple → – N/A → vacío</b> y se <b>guarda automáticamente</b>. El operador se asigna buscando por número de empleado; el asignado hoy se carga también al día siguiente. Si hay incumplimiento, puede anotar el detalle debajo de la máquina.'],
@@ -936,12 +1079,12 @@ const T={
  cf_grade_hint:['이행률 = 준수 ÷ (준수 + 미준수) — 「해당없음」은 제외합니다. 기간 내 점검 건수가 최소 건수보다 적으면 <b>평가보류</b>로 표시합니다. 통계 탭에서 <b>연간</b>을 선택하면 급여 인상 심사 기간의 개인별 이행률·등급을 한 번에 보고 엑셀로 받을 수 있습니다.',
   'Tasa = Cumple ÷ (Cumple + No cumple); «N/A» se excluye. Con menos registros que el mínimo se muestra <b>pendiente</b>. En la pestaña de estadística elija <b>Anual</b> para ver y descargar la tasa y el grado por operador del periodo de revisión salarial.'],
  cf_mc:['팀별 점검 대상 (호기 · 라인) · 기본 작업자','Objetos de inspección por equipo · operador predeterminado'],cf_newmc:['점검 대상 추가 (여러 개는 쉼표·줄바꿈)','Agregar objetos (separe con coma)'],cf_copy:['가공생산팀 호기 가져오기','Copiar máquinas de Maquinado'],add:['추가','Agregar'],cf_imp:['부산물 관리 호기 불러오기','Importar máquinas de Subproductos'],cf_showoff:['점검 제외 대상 포함','Incluir excluidos'],
- w_all:['전체 팀','Todos los equipos'],w_clear:['지정 해제','Quitar'],
+ w_all:['전체 팀','Todos los equipos'],w_clear:['지정 해제','Quitar'],w_seq:['지정하면 다음 미지정 호기로 바로 넘어가기 (연속 지정)','Al asignar, pasar a la siguiente máquina sin operador'],
  it_ko:['점검항목 (한국어)','Punto (coreano)'],it_es:['점검항목 (Español)','Punto (español)'],it_scope:['대상 (비우면 관련팀 대상 전체)','Objetos (vacío = todos los del equipo)'],it_from:['적용 시작일','Inicio'],it_to:['적용 종료일','Fin'],it_1day:['하루만','Solo un día'],it_cont:['계속 적용','Continuo'],it_ord:['순서','Orden'],
  it_mhint:['대상 호기 예: <b>A</b> = A01~A46 전체, <b>A, P</b> = A·P 호기, <b>J01, J02</b> = 해당 호기만. 점검 대상은 <b>관련팀에 설정된 대상 목록</b>(「호기 · 등급 설정」 탭) 안에서 적용됩니다. 한국어·스페인어 중 하나만 입력해도 됩니다.','Ejemplo de máquinas: <b>A</b> = todas las A01~A46, <b>A, P</b> = máquinas A y P, <b>J01, J02</b> = solo esas. Se aplica dentro de la <b>lista de objetos del equipo responsable</b> (pestaña «Máquinas · grados»). Puede escribir solo en un idioma.'],
  cancel:['취소','Cancelar'],save:['저장','Guardar'],
- in_hint2:['위에서 <b>점검항목을 선택</b>하면 그 항목의 모범사례 · 안 좋은 사례 사진과 호기 타일이 나옵니다. 호기마다 있는 <b>동그라미 3개(○ 준수 · ✕ 미준수 · – 미대상)</b> 중 하나를 누르면 바로 선택되고 <b>자동 저장</b>됩니다 (같은 동그라미를 다시 누르면 취소). 타일 아래 이름 칸을 누르면 작업자(사번)를 지정합니다. 사진을 누르면 크게 보입니다.',
-  'Elija un <b>punto de inspección</b> arriba: verá sus fotos de buen / mal ejemplo y un mosaico de máquinas. Cada máquina tiene <b>3 círculos (○ Cumple · ✕ No cumple · – No aplica)</b>: toque uno para elegirlo y se <b>guarda automáticamente</b> (tóquelo de nuevo para quitarlo). Toque el nombre bajo la máquina para asignar al operador. Toque la foto para ampliarla.'],
+ in_hint2:['<b>① 위 번호</b>로 점검항목을 고릅니다 (PC는 ← → 키). <b>②</b> 호기마다 <b>○ 준수 · ✕ 미준수 · – 미대상</b> 중 하나를 누르면 바로 <b>자동 저장</b>됩니다 (같은 동그라미를 다시 누르면 취소). <b>③</b> 미준수 · 미대상인 호기만 먼저 체크한 뒤 <b>「미입력 전부 준수」</b>를 누르고 <b>「다음 항목」</b>으로 넘어가면 가장 빠릅니다. ✕를 누르면 그 호기 칸에 바로 내용을 적을 수 있고, 호기 아래 이름을 누르면 작업자(사번)를 지정합니다. 가동하지 않는 호기는 <b>–</b> 로 체크해 두면 다음 항목부터는 <b>「이 항목도 미대상으로」</b> 버튼으로 한 번에 처리됩니다. 사진은 누르면 크게 보입니다.',
+  '<b>① Elija el punto</b> con los números de arriba (en PC, teclas ← →). <b>②</b> En cada máquina toque <b>○ Cumple · ✕ No cumple · – No aplica</b>: se <b>guarda automáticamente</b> (tóquelo de nuevo para quitarlo). <b>③</b> Lo más rápido: marque primero solo las máquinas con ✕ / –, luego pulse <b>«Pendientes: Cumple»</b> y pase al <b>«Siguiente punto»</b>. Al marcar ✕ puede escribir el detalle en la misma casilla; toque el nombre bajo la máquina para asignar al operador. Si una máquina no trabaja, márquela con <b>–</b>: en los puntos siguientes podrá aplicarlo de una vez con <b>«Marcar también aquí»</b>. Toque la foto para ampliarla.'],
  ph_good:['○ 모범사례 (이렇게 합니다)','○ Buen ejemplo (así se hace)'],ph_bad:['✕ 안 좋은 사례 (이러면 미준수)','✕ Mal ejemplo (así no cumple)'],ph_add:['＋ 사진','＋ Foto'],ph_hint:['화면을 캡처(복사)한 뒤 <b>모범사례 / 안 좋은 사례 칸을 클릭하고 Ctrl+V</b> 로 바로 붙여넣을 수 있습니다. 이미지 파일을 칸에 끌어다 놓거나 「＋ 사진」으로 선택해도 됩니다.','Capture (copie) la pantalla, <b>haga clic en el recuadro de buen / mal ejemplo y pulse Ctrl+V</b> para pegar. También puede arrastrar un archivo de imagen o usar «＋ Foto».'],
  team:['관련팀','Equipo responsable'],team_sel:['점검 팀','Equipo'],in_all:['다른 팀 항목도 보기 (읽기 전용)','Ver puntos de otros equipos (solo lectura)'],me_pick:['점검자 선택','Elegir inspector'],
  it_cyc:['점검 주기','Frecuencia'],it_wd:['점검 요일','Días de la semana'],it_md:['점검일 (매월, 쉼표로 여러 날)','Días del mes (separe con coma)'],
@@ -963,13 +1106,16 @@ function applyLang(){
   document.querySelectorAll('#st-mode button').forEach(b=>b.textContent=mm[b.dataset.v]);
   const sv=$('st-sh').value;$('st-sh').innerHTML=`<option value="">${L('전체','Todos')}</option><option value="D">${SHN('D')}</option><option value="N">${SHN('N')}</option>`;$('st-sh').value=sv;
   $('w-q').placeholder=L('사번 또는 이름 입력','No. de empleado o nombre');
+  $('in-q').placeholder=L('호기 · 작업자 찾기','Buscar máquina / operador');
+  [['in-prev',L('전날','Día anterior')],['in-next',L('다음 날','Día siguiente')],['in-d',L('점검일','Fecha')],['in-sh',L('근무조','Turno')],['in-team',L('점검 팀','Equipo')],['in-q',L('호기 · 작업자 찾기','Buscar máquina / operador')],['in-help',L('사용 방법','Cómo usar')]].forEach(([id,t])=>{$(id).title=t;$(id).setAttribute('aria-label',t)});
   const tv=$('st-team').value;$('st-team').innerHTML=`<option value="">${L('전체','Todos')}</option>`+teamList().map(t=>`<option value="${esc(t)}">${esc(teamName(t))}</option>`).join('');$('st-team').value=tv;
   renderAll();
 }
 document.querySelectorAll('.lang button').forEach(b=>b.onclick=()=>{curLang=b.dataset.l;try{localStorage.setItem('insp_lang',curLang)}catch(e){}applyLang()});
 
 /* ── UI helpers ── */
-function toast(m,err){const t=$('toast');t.textContent=m;t.className='toast'+(err?' err':'');t.style.display='block';clearTimeout(t._t);t._t=setTimeout(()=>t.style.display='none',err?4500:2400)}
+function toast(m,err,act){const t=$('toast');t.textContent=m;if(act){const b=document.createElement('button');b.type='button';b.textContent=act.label;b.onclick=()=>{t.style.display='none';act.fn()};t.appendChild(b)}
+  t.className='toast'+(err?' err':'');t.style.display='flex';t.onclick=e=>{if(e.target===t)t.style.display='none'};clearTimeout(t._t);t._t=setTimeout(()=>t.style.display='none',act?4500:err?4500:2400)}
 function load(on){$('load').style.display=on?'flex':'none'}
 function mdlOpen(id){$(id).classList.add('on')}
 function mdlClose(id){$(id).classList.remove('on')}
@@ -1088,14 +1234,14 @@ async function saveMc(mc,patch){
 /* ══════════ ① 점검 입력 ══════════ */
 async function loadDay(){
   const rows=await sbGet(`insp_check?plant=eq.${PLANT}&d=eq.${D}&shift=eq.${SH}&select=item_id,mc,emp_id,status,memo`);
-  CH={};WK={};RM={};const has={};
+  CH={};WK={};RM={};UNDO=null;NAX.clear();const has={};
   rows.forEach(r=>{CH[r.item_id+'|'+r.mc]={status:r.status,memo:r.memo||''};has[r.mc]=1;if(r.emp_id&&!WK[r.mc])WK[r.mc]=r.emp_id;if(r.memo&&!RM[r.mc])RM[r.mc]=r.memo});
   mcsOf(null).forEach(m=>{if(!has[m.mc])WK[m.mc]=defW(m.mc)});
 }
 async function daySet(d){
   if(!d)return;await flush();
   if(dirty.size){toast(L('저장되지 않은 내용이 있습니다. 잠시 후 다시 시도하세요.','Hay cambios sin guardar. Intente de nuevo.'),true);$('in-d').value=D;return}
-  D=d;$('in-d').value=D;load(true);
+  D=d;FILT='';$('in-d').value=D;load(true);
   try{await loadDay()}catch(e){toast(errMsg(e),true)}
   load(false);inRender();
 }
@@ -1103,10 +1249,10 @@ function dayMove(n){daySet(addDays(D,n))}
 $('in-d').addEventListener('change',e=>daySet(e.target.value));
 document.querySelectorAll('#in-sh button').forEach(b=>b.onclick=async()=>{
   await flush();if(dirty.size)return;
-  SH=b.dataset.v;document.querySelectorAll('#in-sh button').forEach(x=>x.classList.toggle('on',x===b));
+  SH=b.dataset.v;FILT='';document.querySelectorAll('#in-sh button').forEach(x=>x.classList.toggle('on',x===b));
   load(true);try{await loadDay()}catch(e){toast(errMsg(e),true)}load(false);inRender();
 });
-function inRender(){teamSel();meRender();inBanner();selFix();inItems();inKpi();inStick();inBody()}
+function inRender(){teamSel();meRender();inBanner();selFix();inItems();inKpi();inBar();inBody()}
 function inBanner(){
   const b=$('in-banner'),its=viewItems(),mine=its.filter(canItem).length;
   if(!ME){b.classList.add('on');$('in-banner-t').textContent=L('점검자를 선택해야 점검을 입력할 수 있습니다. 지금은 읽기 전용입니다.','Elija un inspector para registrar. Ahora está en solo lectura.')}
@@ -1114,8 +1260,14 @@ function inBanner(){
   else if(dayItems(D).length&&!mine){b.classList.add('on');$('in-banner-t').textContent=L('오늘은 내 팀('+myTeams().map(teamName).join(', ')+')에 해당하는 점검항목이 없습니다.','Hoy no hay puntos para mi equipo ('+myTeams().map(teamName).join(', ')+').')}
   else b.classList.remove('on');
 }
+/* 오늘의 점검항목 전체 목록 — 접이식 패널 (항목 수정 · 종료 · 사진 보기는 여기서) */
+let LIST=false;try{LIST=localStorage.getItem('insp_list')==='1'}catch(e){}
+function listToggle(){LIST=!LIST;try{localStorage.setItem('insp_list',LIST?'1':'0')}catch(e){}inItems();stkFix()}
 function inItems(){
-  const its=viewItems(),no=itemNo();
+  const its=viewItems(),no=itemNo(),lb=$('in-list-btn');
+  lb.innerHTML=`${ICO.list}<span class="lb"> ${L('점검항목','Puntos')}</span> <b>${its.length}</b><i>${LIST?'▲':'▼'}</i>`;
+  lb.classList.toggle('on',LIST);lb.title=L('오늘의 점검항목 전체 목록 (수정 · 종료)','Lista de puntos del día (editar · finalizar)');
+  $('in-list').style.display=LIST?'':'none';if(!LIST)return;
   $('in-items').innerHTML=its.length?its.map(it=>{
     const o=itOther(it),one=it.d_to&&it.d_to===it.d_from;
     const st=itStat(it);
@@ -1129,22 +1281,33 @@ function dayStat(){
   ms.forEach(m=>{let any=false;its.forEach(it=>{if(!applies(it,m.mc))return;any=true;tot++;const c=CH[it.id+'|'+m.mc];if(c){if(c.status==='ok')ok++;else if(c.status==='ng')ng++;else if(c.status==='na')na++}});if(any&&!WK[m.mc])nw++});
   return{tot,ok,ng,na,nw,done:ok+ng+na,mc:ms.length};
 }
+/* 점검 진행 — 한 줄 요약 (선택한 날짜 · 근무조) */
 function inKpi(){
-  const s=dayStat(),r=s.ok+s.ng?s.ok/(s.ok+s.ng)*100:null;
-  $('in-kpi').innerHTML=`
-   <div class="kpi"><span>${L('점검 진행','Avance')}</span><b>${num(s.done)}<small style="font-size:16px;color:var(--mute)"> / ${num(s.tot)}</small></b></div>
-   <div class="kpi g"><span>${L('준수','Cumple')}</span><b>${num(s.ok)}</b></div>
-   <div class="kpi r"><span>${L('미준수','No cumple')}</span><b>${num(s.ng)}</b></div>
-   <div class="kpi ${r==null?'':r>=S.grade.A?'g':r>=S.grade.C?'a':'r'}"><span>${L('이행률','Tasa')}</span><b>${pct(r)}</b></div>
-   <div class="kpi ${s.nw?'a':''}"><span>${L('작업자 미지정','Sin operador')}</span><b>${num(s.nw)}<small style="font-size:16px;color:var(--mute)"> / ${num(s.mc)} ${L('호기','máq.')}</small></b></div>`;
+  const s=dayStat(),r=s.ok+s.ng?s.ok/(s.ok+s.ng)*100:null,p=v=>s.tot?v/s.tot*100:0,fin=s.tot>0&&s.done>=s.tot;
+  $('in-kpi').innerHTML=`<span class="k"><i>${L('점검 진행','Avance')}</i><b>${num(s.done)}</b><small>/ ${num(s.tot)}</small></span>
+   <span class="ix-pbar" title="${pct(p(s.done))}"><i style="width:${p(s.ok)}%;background:#3f9a6c"></i><i style="width:${p(s.ng)}%;background:#e05c5c"></i><i style="width:${p(s.na)}%;background:#666"></i></span>
+   ${fin?`<span class="tag ok" style="margin:0">✓ ${L('점검 완료','Completo')}</span>`:''}
+   <span class="k g${s.ok?'':' z'}"><i>○ ${L('준수','Cumple')}</i><b>${num(s.ok)}</b></span>
+   <span class="k r${s.ng?'':' z'}"><i>✕ ${L('미준수','No cumple')}</i><b>${num(s.ng)}</b></span>
+   <span class="k ${r==null?'z':r>=S.grade.A?'g':r>=S.grade.C?'a':'r'}"><i>${L('이행률','Tasa')}</i><b>${pct(r)}</b></span>
+   ${s.nw?`<button type="button" class="k a" onclick="filtSet('nw');toWork(true)" title="${L('작업자가 지정되지 않은 호기만 보기','Ver solo las máquinas sin operador')}"><i>${L('작업자 미지정','Sin operador')}</i><b>${num(s.nw)}</b><small>/ ${num(s.mc)}</small></button>`:''}`;
 }
-/* ══ 항목별 점검: 항목 선택 → 사진 크게 → 호기 타일 ══ */
+/* ══ 항목별 점검: 번호로 항목 선택 → 호기마다 ○ ✕ – ══ */
+let FILT='';            // 빠른 필터: '' 전체 · todo 미입력 · ng 미준수 · na 미대상 · nw 작업자 미지정
+let UNDO=null;          // 방금 한 일괄 처리(전부 준수 · 미대상 가져오기) 되돌리기
+const NAX=new Set();    // 미대상 가져오기 안내를 닫은 항목 (날짜·근무조가 바뀌면 초기화)
+const ICO={list:'<svg viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01"/></svg>',undo:'<svg viewBox="0 0 24 24"><path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg>'};
+const finePtr=()=>!(window.matchMedia&&matchMedia('(pointer:coarse)').matches);
 function itStat(it){let ok=0,ng=0,na=0,tot=0;viewMcs().forEach(m=>{if(!applies(it,m.mc))return;tot++;const c=CH[it.id+'|'+m.mc];if(c){if(c.status==='ok')ok++;else if(c.status==='ng')ng++;else if(c.status==='na')na++}});return{ok,ng,na,tot,done:ok+ng+na,todo:tot-ok-ng-na}}
 function selFix(){const its=viewItems();if(its.some(i=>i.id===SEL))return;const c=its.filter(canItem);SEL=((c.find(i=>itStat(i).todo>0)||c[0]||its[0])||{}).id||null}
+/* 지금 항목 다음으로, 아직 미입력이 남아 있는 내 항목 */
+function nextTodo(){const its=viewItems(),i=its.findIndex(x=>x.id===SEL);for(let n=1;n<its.length;n++){const x=its[(i+n)%its.length];if(canItem(x)&&itStat(x).todo>0)return x}return null}
 function selItem(id,ev){
   if(ev&&ev.target.closest('button,.phb'))return;
   if(VIEW!=='item'){VIEW='item';try{localStorage.setItem('insp_view',VIEW)}catch(e){}}
-  SEL=id;inItems();inStick();inBody();$('in-one').scrollIntoView({block:'start',behavior:'smooth'});
+  if(SEL!==id&&(FILT==='ng'||FILT==='na'))FILT='';
+  if(SEL!==id&&$('toast').querySelector('button'))$('toast').style.display='none';
+  SEL=id;if(LIST)inItems();inBar();inBody();toWork(!!ev||window.innerWidth<=760);   // 휴대폰에서는 고른 항목의 호기로 바로 이동
 }
 function selMove(n){const its=viewItems(),i=its.findIndex(x=>x.id===SEL);if(its[i+n])selItem(its[i+n].id)}
 function inBody(){
@@ -1152,63 +1315,173 @@ function inBody(){
   document.querySelectorAll('#in-view button').forEach(b=>b.classList.toggle('on',b.dataset.v===VIEW));
   $('in-one').style.display=item?'':'none';$('in-grid').style.display=item?'none':'';$('in-fill').style.display=item?'none':'';
   $('in-hint').innerHTML=T[item?'in_hint2':'in_hint'][curLang==='es'?1:0];
+  inFilt();
   if(item)inOne();else inGrid();
 }
+function qSet(){if(VIEW==='item')oneTiles();else inGrid()}
+function helpToggle(){const h=$('in-hint'),on=h.style.display==='none';h.style.display=on?'':'none';$('in-help').classList.toggle('on',on);stkFix()}
 const PHF={};
 function inOne(){
-  const box=$('in-one'),its=viewItems(),it=its.find(x=>x.id===SEL);
-  if(!it){box.innerHTML=`<div class="hint" style="padding:22px;text-align:center">${L('표시할 점검항목이 없습니다.','No hay puntos de inspección para mostrar.')}</div>`;return}
-  const i=its.indexOf(it),o=itOther(it),g=phOf(it.id,'good'),b=phOf(it.id,'bad');
-  const col=(list,cls,ttl)=>list.length?`<div class="phz ${cls}"><div class="phh"><span>${ttl}</span></div><div class="pi">${list.map(p=>`<img data-pid="${p.id}" src="${(PHF[p.id]||p.thumb)}" alt="">`).join('')}</div></div>`:'';
-  box.innerHTML=`<div class="one-h"><span class="no">${itemNo()[it.id]}</span><div class="tt">${esc(itTitle(it))}${o?`<small>${esc(o)}</small>`:''}</div>
-     <div class="nav"><button class="btn sec" ${i>0?'':'disabled'} onclick="selMove(-1)">‹ ${L('이전','Ant.')}</button><span>${i+1} / ${its.length}</span><button class="btn" ${i<its.length-1?'':'disabled'} onclick="selMove(1)">${L('다음 항목','Siguiente')} ›</button></div></div>
-    ${g.length||b.length?`<div class="one-ph${g.length&&b.length?'':' single'}">${col(g,'',T.ph_good[curLang==='es'?1:0])}${col(b,'bad',T.ph_bad[curLang==='es'?1:0])}</div>`:''}
-    <div class="one-s" id="one-s"></div>
-    <div class="one-lg"><span><i style="background:#3f9a6c">○</i>${L('준수','Cumple')}</span><span><i style="background:#e05c5c">✕</i>${L('미준수','No cumple')}</span><span><i style="background:#666">–</i>${L('미대상 (해당없음)','No aplica')}</span><span style="color:var(--mute)">${L('· 동그라미를 눌러 선택, 같은 것을 다시 누르면 취소','· toque un círculo para elegir; tóquelo de nuevo para quitar')}</span></div>
-    <div class="tiles" id="one-t"></div><div id="one-ng"></div>`;
+  const w=$('in-one'),side=$('one-ph'),its=viewItems(),it=its.find(x=>x.id===SEL);
+  /* 오늘 항목 중 사진이 하나라도 있으면 옆 패널을 계속 둔다 → 항목을 넘겨도 호기 타일 자리가 바뀌지 않음 */
+  w.classList.toggle('side',!!it&&its.some(x=>S.ph.some(p=>p.item_id===x.id)));
+  naRender();
+  if(!it){side.innerHTML='';oneTiles();return}
+  const g=phOf(it.id,'good'),b=phOf(it.id,'bad'),tot=g.length+b.length;
+  const col=(list,cls,ttl)=>list.length?`<div class="phz ${cls}"><div class="phh"><span>${ttl}</span></div><div class="pi${list.length>1&&tot>2?' two':''}">${list.map(p=>`<img data-pid="${p.id}" src="${(PHF[p.id]||p.thumb)}" alt="">`).join('')}</div></div>`:'';
+  side.classList.toggle('empty',!tot);
+  side.innerHTML=tot?col(g,'',T.ph_good[curLang==='es'?1:0])+col(b,'bad',T.ph_bad[curLang==='es'?1:0])+`<div class="mini">${L('사진을 누르면 크게 보입니다','Toque la foto para ampliarla')}</div>`
+   :`<div class="ix-noph">${L('이 항목에는 등록된 사진이 없습니다.','Este punto no tiene fotos.')}${canItem(it)?`<br><button class="btn sec sm" onclick="itOpen(${it.id})">${L('＋ 모범 · 안 좋은 사례 사진 등록','＋ Agregar fotos de ejemplo')}</button>`:''}</div>`;
   oneTiles();
-  if((g.length||b.length)&&[...g,...b].some(p=>!PHF[p.id]))sbGet(`insp_item_photo?item_id=eq.${it.id}&select=id,data`).then(rows=>{rows.forEach(r=>{PHF[r.id]=r.data;const im=box.querySelector(`img[data-pid="${r.id}"]`);if(im)im.src=r.data})}).catch(()=>{});
+  if(tot&&[...g,...b].some(p=>!PHF[p.id]))sbGet(`insp_item_photo?item_id=eq.${it.id}&select=id,data`).then(rows=>{rows.forEach(r=>{PHF[r.id]=r.data;const im=side.querySelector(`img[data-pid="${r.id}"]`);if(im)im.src=r.data})}).catch(()=>{});
 }
+function tileHtml(it,mc,can){
+  const c=CH[it.id+'|'+mc],s=c?c.status:'',w=WK[mc],sn=STN(),m=esc(mc);
+  return `<div class="tl ${s}${can?'':' ro'}" data-mc="${m}"><div class="th"><span class="tn${mc.length>6?' long':''}">${m}</span><button type="button" class="wk${w?'':' none'}" data-w="1" title="${w?esc(w+' · '+empLabel(w)):L('작업자 지정 (사번)','Asignar operador')}">${w?esc(empName(w)):L('＋ 작업자','＋ Operador')}</button></div><div class="tc">${['ok','ng','na'].map(x=>`<button type="button" class="c ${x}${s===x?' on':''}" data-s="${x}" title="${m} · ${sn[x]}" aria-pressed="${s===x}"><i>${SYM[x]}</i></button>`).join('')}</div>${s==='ng'?`<input class="tm" data-ngm="${m}" ${can?'':'disabled'} maxlength="300" value="${esc(c.memo||'')}" placeholder="${L('미준수 내용 · 조치','Detalle / acción')}">`:''}</div>`;
+}
+/* 타일 전체 다시 그리기 — 항목·필터·찾기를 바꿀 때만. 체크할 때는 그 타일만 바꿔서(tileUp) 타일이 움직이지 않게 한다 */
 function oneTiles(){
-  if(VIEW!=='item'||!$('one-t'))return;
-  const it=viewItems().find(x=>x.id===SEL);if(!it)return;
-  const can=canItem(it),q=norm($('in-q').value.trim()),fNg=$('in-ng').checked,fTodo=$('in-todo').checked,st=itStat(it);
-  const ms=viewMcs().filter(m=>applies(it,m.mc));
-  $('one-s').innerHTML=`<span class="g">○ ${L('준수','Cumple')}<b>${st.ok}</b></span><span class="r">✕ ${L('미준수','No cumple')}<b>${st.ng}</b></span><span>– N/A<b>${st.na}</b></span><span>${L('미입력','Pendiente')}<b>${st.todo}</b></span>
-    <span class="bar"><i style="width:${st.tot?st.ok/st.tot*100:0}%;background:#3f9a6c"></i><i style="width:${st.tot?st.ng/st.tot*100:0}%;background:#e05c5c"></i><i style="width:${st.tot?st.na/st.tot*100:0}%;background:#444"></i></span>
-    ${can&&st.todo?`<button class="btn" onclick="oneFill()">○ ${L('미입력 '+st.todo+'대 전부 준수','Marcar '+st.todo+' pendientes como Cumple')}</button>`:''}${st.tot&&!st.todo?`<span class="tag ok" style="margin:0">${L('점검 완료','Completo')}</span>`:''}`;
-  const show=ms.filter(m=>{const c=CH[it.id+'|'+m.mc],s=c?c.status:'';if(q&&!(norm(m.mc).includes(q)||norm(WK[m.mc]||'').includes(q)||norm(empLabel(WK[m.mc])).includes(q)))return false;if(fNg||fTodo)return(fNg&&s==='ng')||(fTodo&&!s);return true});
-  $('one-t').innerHTML=show.map(m=>{const c=CH[it.id+'|'+m.mc],s=c?c.status:'',w=WK[m.mc];
-    const sn=STN();
-    return `<div class="tl ${s}${can?'':' ro'}" data-mc="${esc(m.mc)}"><div class="tn${m.mc.length>6?' long':''}">${esc(m.mc)}</div><div class="tc">${['ok','ng','na'].map(x=>`<button class="c ${x}${s===x?' on':''}" data-s="${x}" title="${sn[x]}">${SYM[x]}</button>`).join('')}</div><button class="tw${w?'':' none'}" data-w="1" title="${w?esc(w+' · '+empLabel(w)):''}">${w?esc(empName(w)):L('＋ 작업자','＋ Operador')}</button></div>`}).join('')
-    ||`<div class="hint" style="padding:18px;grid-column:1/-1;text-align:center">${ms.length?L('해당하는 호기가 없습니다.','Sin máquinas.'):L('이 항목의 점검 대상(호기)이 없습니다. 「호기 · 등급 설정」 탭에서 관련팀의 점검 대상을 추가하세요.','Este punto no tiene objetos de inspección. Agréguelos en «Máquinas · grados».')}</div>`;
-  const ngs=ms.filter(m=>(CH[it.id+'|'+m.mc]||{}).status==='ng');
-  $('one-ng').innerHTML=ngs.length?`<div class="one-ng"><h4>✕ ${L('미준수 내용 · 조치사항','Detalle del incumplimiento / acción')} (${ngs.length})</h4>${ngs.map(m=>`<div class="r"><b>${esc(m.mc)}</b><input data-ngm="${esc(m.mc)}" ${can?'':'disabled'} maxlength="300" value="${esc((CH[it.id+'|'+m.mc].memo)||'')}" placeholder="${esc(WK[m.mc]?empName(WK[m.mc])+' — ':'')}${L('미준수 내용 입력','detalle')}"></div>`).join('')}</div>`:'';
+  const box=$('one-t');if(VIEW!=='item'||!box)return;
+  const it=viewItems().find(x=>x.id===SEL),msg=t=>`<div class="hint ix-empty">${t}</div>`;
+  if(!it){box.className='tiles';box.innerHTML=msg(dayItems(D).length?L('표시할 점검항목이 없습니다.','No hay puntos de inspección para mostrar.'):L('이 날짜(주기)에 해당하는 점검항목이 없습니다. 「＋ 점검항목 추가」로 지시사항을 등록하세요.','No hay puntos de inspección para esta fecha. Regístrelos con «＋ Agregar punto».'));return}
+  const can=canItem(it),q=norm($('in-q').value.trim()),ms=viewMcs().filter(m=>applies(it,m.mc));
+  const show=ms.filter(m=>{const c=CH[it.id+'|'+m.mc],s=c?c.status:'',w=WK[m.mc];
+    if(q&&!(norm(m.mc).includes(q)||norm(w||'').includes(q)||norm(empLabel(w)).includes(q)))return false;
+    return FILT==='todo'?!s:FILT==='ng'?s==='ng':FILT==='na'?s==='na':FILT==='nw'?!w:true});
+  box.className='tiles'+(FILT==='ng'?' wide':'');
+  box.innerHTML=show.map(m=>tileHtml(it,m.mc,can)).join('')||msg(!ms.length?L('이 항목의 점검 대상(호기)이 없습니다. 「호기 · 등급 설정」 탭에서 관련팀의 점검 대상을 추가하세요.','Este punto no tiene objetos de inspección. Agréguelos en «Máquinas · grados».')
+    :q?L('찾는 호기가 없습니다.','Sin resultados.')
+    :FILT==='todo'?L('✓ 미입력 호기가 없습니다 — 이 항목은 점검을 마쳤습니다.','✓ Sin pendientes: este punto está completo.')
+    :FILT==='ng'?L('미준수 호기가 없습니다.','Sin incumplimientos.')
+    :FILT==='na'?L('미대상 호기가 없습니다.','Sin «No aplica».')
+    :L('모든 호기에 작업자가 지정되어 있습니다.','Todas las máquinas tienen operador.'));
 }
-function oneAfter(){oneTiles();inKpi();inItems();inStick()}
+function tileUp(mc){
+  const box=$('one-t');if(VIEW!=='item'||!box)return null;
+  const it=viewItems().find(x=>x.id===SEL),el=it&&[...box.children].find(x=>x.dataset.mc===mc);if(!el)return null;
+  const t=document.createElement('div');t.innerHTML=tileHtml(it,mc,canItem(it));const n=t.firstElementChild;el.replaceWith(n);return n;
+}
+function oneMeta(){inKpi();inBar();if(LIST)inItems()}        // 진행 숫자만 갱신 (타일은 그대로)
 function oneFill(){
-  const it=viewItems().find(x=>x.id===SEL);if(!it||!canItem(it))return;let n=0;
-  viewMcs().forEach(m=>{const k=it.id+'|'+m.mc;if(applies(it,m.mc)&&!CH[k]){CH[k]={status:'ok'};mark(k);n++}});
-  oneAfter();toast(L(`${n}건 준수 처리`,`${n} marcados como Cumple`));
+  const it=viewItems().find(x=>x.id===SEL);if(!it||!canItem(it))return;const keys=[];
+  viewMcs().forEach(m=>{const k=it.id+'|'+m.mc;if(applies(it,m.mc)&&!CH[k]){CH[k]={status:'ok'};mark(k);keys.push(k)}});
+  if(!keys.length)return;
+  UNDO={keys,st:'ok',id:it.id,d:D,sh:SH};naRender();oneTiles();oneMeta();
+  toast(L(`${keys.length}대 준수 처리`,`${keys.length} marcadas como Cumple`),false,{label:L('되돌리기','Deshacer'),fn:fillUndo});
+}
+function fillUndo(){
+  const u=UNDO;UNDO=null;if(!u||u.d!==D||u.sh!==SH)return;let n=0;
+  u.keys.forEach(k=>{if(CH[k]&&CH[k].status===u.st){delete CH[k];mark(k);n++}});
+  naRender();oneTiles();oneMeta();toast(L(`${n}대 되돌렸습니다`,`${n} revertidas`));
+}
+/* 다른 항목에서 –(미대상)으로 체크한 호기(가동하지 않는 호기 등)를 이 항목에도 한 번에 미대상 처리 */
+function naList(it){
+  if(!it||!canItem(it))return[];const ot=viewItems().filter(x=>x.id!==it.id);
+  return viewMcs().filter(m=>applies(it,m.mc)&&!CH[it.id+'|'+m.mc]&&ot.some(x=>(CH[x.id+'|'+m.mc]||{}).status==='na')).map(m=>m.mc);
+}
+function naRender(){
+  const box=$('one-na'),it=VIEW==='item'?viewItems().find(x=>x.id===SEL):null,l=it&&!NAX.has(it.id)?naList(it):[];
+  box.style.display=l.length?'':'none';if(!l.length){box.innerHTML='';return}
+  const cl=L('닫기','Cerrar');
+  box.innerHTML=`<span>${L(`다른 항목에서 <b>– 미대상</b>으로 체크한 호기 <b>${l.length}대</b>`,`<b>${l.length}</b> máquinas marcadas <b>– No aplica</b> en otros puntos`)}<small>${esc(l.slice(0,6).join(', '))}${l.length>6?' …':''}</small></span><button type="button" class="btn sec sm" onclick="naApply()">${L('이 항목도 미대상으로','Marcar también aquí')}</button><button type="button" class="btn sec sm x" onclick="NAX.add(SEL);naRender()" title="${cl}" aria-label="${cl}">×</button>`;
+}
+function naApply(){
+  const it=viewItems().find(x=>x.id===SEL),l=naList(it);if(!l.length)return;
+  const keys=l.map(mc=>{const k=it.id+'|'+mc;CH[k]={status:'na'};mark(k);return k});
+  UNDO={keys,st:'na',id:it.id,d:D,sh:SH};naRender();oneTiles();oneMeta();
+  toast(L(`${keys.length}대 미대상 처리`,`${keys.length} marcadas como No aplica`),false,{label:L('되돌리기','Deshacer'),fn:fillUndo});
 }
 $('in-one').addEventListener('click',e=>{
-  const im=e.target.closest('.one-ph img');if(im){lbOpen(im.src);return}
+  const im=e.target.closest('.ix-side img');if(im){lbOpen(im.src);return}
   const tl=e.target.closest('.tl');if(!tl)return;const mc=tl.dataset.mc,it=viewItems().find(x=>x.id===SEL);if(!it)return;
+  const wb=e.target.closest('[data-w]'),cb=e.target.closest('[data-s]');if(!wb&&!cb)return;
   if(!canItem(it)){toast(ME?L('다른 팀 점검항목은 입력할 수 없습니다.','No puede registrar puntos de otro equipo.'):L('먼저 점검자를 선택하세요.','Elija primero un inspector.'),true);return}
-  if(e.target.closest('[data-w]')){wOpen({type:'day',mc,team:TEAM||mcOwner(mc)});return}
-  const cb=e.target.closest('[data-s]');if(!cb)return;
-  const k=it.id+'|'+mc,cur=CH[k]?CH[k].status:'',nx=cb.dataset.s===cur?'':cb.dataset.s;if(nx)CH[k]={status:nx,memo:nx==='ng'?(CH[k]&&CH[k].memo)||'':''};else delete CH[k];mark(k);oneAfter();
+  if(wb){wOpen({type:'day',mc,team:TEAM||mcOwner(mc)});return}
+  const k=it.id+'|'+mc,cur=CH[k]?CH[k].status:'',nx=cb.dataset.s===cur?'':cb.dataset.s,had=document.activeElement===cb;
+  if(nx)CH[k]={status:nx,memo:nx==='ng'?(CH[k]&&CH[k].memo)||'':''};else delete CH[k];
+  mark(k);const n=tileUp(mc);oneMeta();if(!n)return;
+  if(nx==='ng'&&finePtr()){const m=n.querySelector('.tm');if(m)m.focus({preventScroll:true})}   // PC: ✕를 누르면 바로 내용 입력
+  else if(had){const b=n.querySelector('[data-s="'+cb.dataset.s+'"]');if(b)b.focus({preventScroll:true})}   // 키보드 사용 시 초점 유지
 });
-$('in-one').addEventListener('change',e=>{const mc=e.target.dataset.ngm;if(!mc)return;const k=SEL+'|'+mc;if(CH[k]){CH[k].memo=e.target.value.trim();mark(k)}});
+$('in-one').addEventListener('input',e=>{const mc=e.target.dataset.ngm;if(!mc)return;const k=SEL+'|'+mc;if(CH[k]&&CH[k].status==='ng'){CH[k].memo=e.target.value.trim();mark(k)}});
+$('in-one').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.dataset.ngm)e.target.blur()});
+/* 미준수 내용: 입력하는 동안만 칸을 넓게 펼친다 (타일 자리는 그대로) */
+$('in-one').addEventListener('focusin',e=>{
+  const m=e.target;if(!m.dataset||!m.dataset.ngm)return;
+  const box=$('one-t').getBoundingClientRect(),r=m.getBoundingClientRect(),w=Math.min(340,box.width-10);if(w<r.width+24)return;
+  const left=Math.max(box.left,Math.min(r.left,box.right-w));
+  m.style.marginLeft=((parseFloat(getComputedStyle(m).marginLeft)||0)+left-r.left)+'px';m.style.width=w+'px';m.classList.add('exp');
+});
+$('in-one').addEventListener('focusout',e=>{const m=e.target;if(m.classList&&m.classList.contains('exp')){m.classList.remove('exp');m.style.width=m.style.marginLeft='';m.title=m.value}});
 document.querySelectorAll('#in-view button').forEach(b=>b.onclick=()=>{VIEW=b.dataset.v;try{localStorage.setItem('insp_view',VIEW)}catch(e){}inRender()});
 function lbOpen(src){$('lb-img').src=src;mdlOpen('mdl-lb')}
 $('ph-body').addEventListener('click',e=>{if(e.target.tagName==='IMG')lbOpen(e.target.src)});
-function inStick(){
-  const its=viewItems(),e=$('in-stick'),no=itemNo();
-  e.style.display=its.length?'flex':'none';
-  e.style.top=($('top').offsetHeight+6)+'px';
-  e.innerHTML=its.map(it=>{const st=itStat(it);return `<span class="ch${VIEW==='item'&&SEL===it.id?' on':''}${st.ng?' bad':st.tot&&!st.todo?' fin':''}" onclick="selItem(${it.id})" title="${esc(itTitle(it))} · ${st.done}/${st.tot}"><b>${no[it.id]}</b><span>${esc(itTitle(it))}</span></span>`}).join('');
+/* ── 빠른 필터 (건수 = 진행 상황) ── */
+function filtCounts(){
+  const its=viewItems();
+  if(VIEW==='item'){const it=its.find(x=>x.id===SEL);if(!it)return null;const st=itStat(it);let nw=0;viewMcs().forEach(m=>{if(applies(it,m.mc)&&!WK[m.mc])nw++});return{all:st.tot,todo:st.todo,ng:st.ng,na:st.na,nw}}
+  if(!its.length)return null;const ed=its.filter(canItem);let all=0,todo=0,ng=0,nw=0;
+  viewMcs().forEach(m=>{const ap=its.filter(it=>applies(it,m.mc));if(!ap.length)return;all++;if(!WK[m.mc])nw++;
+    if(ap.some(it=>(CH[it.id+'|'+m.mc]||{}).status==='ng'))ng++;
+    if(ed.some(it=>applies(it,m.mc)&&!CH[it.id+'|'+m.mc]))todo++});
+  return{all,todo,ng,nw};
 }
+function inFilt(){
+  const e=$('in-f');if(FILT==='na'&&VIEW!=='item')FILT='';
+  const c=filtCounts();if(!c){e.innerHTML='';return}
+  const chip=(f,lab,n,tip)=>`<button type="button" class="${f}${FILT===f?' on':''}${n?'':' z'}" data-f="${f}" title="${tip}">${lab}<b>${n}</b></button>`;
+  e.innerHTML=chip('',L('전체','Todas'),c.all,L('전체 호기','Todas las máquinas'))
+   +chip('todo',L('미입력','Pend.'),c.todo,L('아직 체크하지 않은 호기만','Solo sin registrar'))
+   +chip('ng',`✕<span class="lb"> ${L('미준수','No cumple')}</span>`,c.ng,L('미준수 호기만 (내용 입력 · 확인)','Solo «No cumple» (ver / escribir detalle)'))
+   +(VIEW==='item'?chip('na',`–<span class="lb"> ${L('미대상','No aplica')}</span>`,c.na,L('미대상(해당없음) 호기만','Solo «No aplica»')):'')
+   +chip('nw',L('작업자 미지정','Sin operador'),c.nw,L('작업자가 지정되지 않은 호기만','Solo sin operador'));
+}
+function filtSet(f){FILT=f||'';inFilt();qSet()}
+$('in-f').addEventListener('click',e=>{const b=e.target.closest('button');if(b)filtSet(FILT===b.dataset.f?'':b.dataset.f)});
+/* ── 고정 항목 바 ── */
+let STK=0;
+function stkFix(){
+  const n=$('nav'),b=$('in-bar'),r=document.documentElement.style;
+  STK=getComputedStyle(n).position==='sticky'?n.offsetHeight:0;
+  r.setProperty('--stk',STK+'px');r.setProperty('--barh',(b.offsetHeight||64)+'px');stuckChk();return STK;
+}
+function stuckChk(){const b=$('in-bar');if(b.offsetParent===null)return;b.classList.toggle('stuck',window.scrollY>0&&b.getBoundingClientRect().top<=STK+1)}
+/* 고정 바 바로 아래에 호기가 오도록 맞춤 — 이미 그보다 위를 보고 있으면 그대로 둔다 (force: 목록에서 골랐을 때는 내려감) */
+function toWork(force){
+  const st=stkFix(),b=$('in-bar'),w=$(VIEW==='item'?'in-one':'in-grid');if(b.offsetParent===null)return;
+  const y=Math.max(0,Math.round(w.getBoundingClientRect().top+window.scrollY-st-b.offsetHeight-8));
+  if(force||window.scrollY>y)window.scrollTo({top:y,behavior:window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});
+}
+function inBar(){
+  const its=viewItems(),bar=$('in-bar'),no=itemNo(),item=VIEW==='item';
+  bar.style.display=its.length?'':'none';bar.classList.toggle('legend',!item);
+  if(!its.length){inFilt();stkFix();return}
+  if(!item){   // 전체 표: 번호 ↔ 항목 범례
+    $('in-pls').innerHTML=its.map(it=>{const st=itStat(it);return `<button type="button" class="ix-ch${st.ng?' bad':st.tot&&!st.todo?' fin':''}" onclick="selItem(${it.id})" title="${esc(itTitle(it))} · ${st.done}/${st.tot}"><b>${no[it.id]}</b><span>${esc(itTitle(it))}</span></button>`}).join('');
+    $('in-tt').innerHTML=$('in-act').innerHTML='';inFilt();stkFix();return}
+  const it=its.find(x=>x.id===SEL)||its[0],i=its.indexOf(it),st=itStat(it),can=canItem(it),o=itOther(it),t=itTitle(it);
+  $('in-pls').innerHTML=its.map(x=>{const s=itStat(x),p=v=>s.tot?Math.round(v/s.tot*1000)/10:0,tip=`${no[x.id]}. ${itTitle(x)} · ${s.done}/${s.tot}${s.ng?' · ✕ '+s.ng:''}`;
+    return `<button type="button" class="ix-pl${x.id===it.id?' on':''}${s.tot&&!s.todo?' fin':''}${s.ng?' bad':''}${canItem(x)||!ME?'':' ro'}" style="--a:${p(s.ok)};--b:${p(s.ok+s.ng)};--c:${p(s.done)}" onclick="selItem(${x.id})" title="${esc(tip)}" aria-label="${esc(tip)}"${x.id===it.id?' aria-current="true"':''}><b>${no[x.id]}</b></button>`}).join('');
+  $('in-tt').innerHTML=`<b>${esc(t)}</b>${o?`<small>${esc(o)}</small>`:''}`;$('in-tt').title=t+(o?'\n'+o:'');
+  const nx=nextTodo();let mid;
+  if(!ME)mid=`<button type="button" class="btn go" onclick="meOpen()">${L('점검자 선택','Elegir inspector')}</button>`;
+  else if(!can)mid=`<span class="tag none">${L('읽기 전용 · 다른 팀 항목','Solo lectura · otro equipo')}</span>`;
+  else if(st.todo)mid=`<button type="button" class="btn go" onclick="oneFill()" title="${L('아직 체크하지 않은 호기를 모두 ○ 준수로','Marca como «Cumple» todas las máquinas sin registrar')}">○ ${L(`미입력 <b>${st.todo}</b>대 전부 준수`,`Pendientes (<b>${st.todo}</b>): Cumple`)}</button>`;
+  else if(nx)mid=`<button type="button" class="btn go" onclick="selItem(${nx.id})">${L('다음 항목','Siguiente punto')} <b>${no[nx.id]}</b> ›</button>`;
+  else mid=`<span class="tag ok">✓ ${L('전 항목 점검 완료','Todos los puntos completos')}</span>`;
+  const pv=L('이전 항목 (←)','Punto anterior (←)'),nt=L('다음 항목 (→)','Punto siguiente (→)'),ud=L('방금 한 일괄 처리 되돌리기','Deshacer la última marca en bloque');
+  const un=UNDO&&UNDO.id===it.id&&UNDO.d===D&&UNDO.sh===SH?`<button type="button" class="btn sec nv un" onclick="fillUndo()" title="${ud}" aria-label="${ud}">${ICO.undo}</button>`:'';
+  $('in-act').innerHTML=`${un}<button type="button" class="btn sec nv" ${i>0?'':'disabled'} onclick="selMove(-1)" title="${pv}" aria-label="${pv}">‹</button>${mid}<button type="button" class="btn sec nv" ${i<its.length-1?'':'disabled'} onclick="selMove(1)" title="${nt}" aria-label="${nt}">›</button>`;
+  inFilt();stkFix();
+}
+/* PC: ← → 로 이전 / 다음 항목 */
+document.addEventListener('keydown',e=>{
+  if(e.altKey||e.ctrlKey||e.metaKey||(e.key!=='ArrowLeft'&&e.key!=='ArrowRight'))return;
+  const a=document.activeElement;if(a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))return;
+  if(!$('t-in').classList.contains('on')||VIEW!=='item'||document.querySelector('.mdl.on'))return;
+  e.preventDefault();selMove(e.key==='ArrowLeft'?-1:1);
+});
+window.addEventListener('scroll',stuckChk,{passive:true});
 function rowHtml(m,its){
   const mc=m.mc,w=WK[mc];let ng=0,todo=0;
   const no=rowHtml.no||itemNo();
@@ -1224,12 +1497,12 @@ function rowHtml(m,its){
   </div>`;
 }
 function inGrid(){
-  const its=viewItems(),q=norm($('in-q').value.trim()),fNg=$('in-ng').checked,fTodo=$('in-todo').checked;rowHtml.no=itemNo();
+  const its=viewItems(),q=norm($('in-q').value.trim());rowHtml.no=itemNo();
   if(!its.length){$('in-grid').innerHTML=`<div class="hint" style="padding:22px;text-align:center">${L('표시할 점검항목이 없습니다.','No hay puntos de inspección para mostrar.')}</div>`;return}
   const ms=viewMcs().filter(m=>its.some(it=>applies(it,m.mc))&&(!q||norm(m.mc).includes(q)||norm(WK[m.mc]||'').includes(q)||norm(empLabel(WK[m.mc])).includes(q)));
   let html=ms.map(m=>rowHtml(m,its)).join('');
   const box=$('in-grid');box.innerHTML=html||`<div class="hint" style="padding:22px;text-align:center">${viewMcs().length?L('해당하는 점검 대상이 없습니다.','Sin objetos de inspección.'):L('등록된 점검 대상(호기)이 없습니다. 「호기 · 등급 설정」 탭에서 팀별 점검 대상을 추가하세요.','No hay objetos de inspección. Agréguelos por equipo en «Máquinas · grados».')}</div>`;
-  if(fNg||fTodo)box.querySelectorAll('.ig-r').forEach(r=>{const show=(fNg&&+r.dataset.ng>0)||(fTodo&&+r.dataset.todo>0);r.style.display=show?'':'none'});
+  if(FILT)box.querySelectorAll('.ig-r').forEach(r=>{const show=FILT==='ng'?+r.dataset.ng>0:FILT==='todo'?+r.dataset.todo>0:FILT==='nw'?r.classList.contains('nw'):true;r.style.display=show?'':'none'});
 }
 function rowRefresh(mc){
   const r=[...$('in-grid').querySelectorAll('.ig-r')].find(x=>x.dataset.mc===mc);if(!r)return;
@@ -1241,10 +1514,10 @@ const NEXT={'':'ok',ok:'ng',ng:'na',na:''};
 $('in-grid').addEventListener('click',e=>{
   const row=e.target.closest('.ig-r');if(!row)return;const mc=row.dataset.mc;
   const cb=e.target.closest('.cb');
-  if(cb&&cb.dataset.i){const k=cb.dataset.i+'|'+mc,cur=CH[k]?CH[k].status:'',nx=NEXT[cur];if(nx)CH[k]={status:nx};else delete CH[k];mark(k);rowRefresh(mc);inKpi();return}
+  if(cb&&cb.dataset.i){const k=cb.dataset.i+'|'+mc,cur=CH[k]?CH[k].status:'',nx=NEXT[cur];if(nx)CH[k]={status:nx};else delete CH[k];mark(k);rowRefresh(mc);oneMeta();return}
   if(e.target.closest('.cb.ro')){toast(ME?L('다른 팀 점검항목은 입력할 수 없습니다.','No puede registrar puntos de otro equipo.'):L('먼저 점검자를 선택하세요.','Elija primero un inspector.'),true);return}
   if(e.target.closest('[data-w]')){if(!ME){toast(L('먼저 점검자를 선택하세요.','Elija primero un inspector.'),true);return}wOpen({type:'day',mc,team:TEAM||mcOwner(mc)});return}
-  if(e.target.closest('[data-rowok]')){dayItems(D).filter(canItem).forEach(it=>{const k=it.id+'|'+mc;if(applies(it,mc)&&!CH[k]){CH[k]={status:'ok'};mark(k)}});rowRefresh(mc);inKpi()}
+  if(e.target.closest('[data-rowok]')){dayItems(D).filter(canItem).forEach(it=>{const k=it.id+'|'+mc;if(applies(it,mc)&&!CH[k]){CH[k]={status:'ok'};mark(k)}});rowRefresh(mc);oneMeta()}
 });
 $('in-grid').addEventListener('change',e=>{
   if(!e.target.dataset.memo)return;const mc=e.target.closest('.ig-r').dataset.mc;RM[mc]=e.target.value.trim();
@@ -1279,9 +1552,11 @@ window.addEventListener('beforeunload',e=>{if(dirty.size){flush();e.preventDefau
 
 /* ── 작업자 선택 (사번) ── */
 let WCTX=null;
-function wOpen(ctx){
-  WCTX=ctx;$('w-ttl').textContent=ctx.type==='me'||ctx.type==='insp'?ctx.mc:ctx.mc+' · '+L('작업자 선택','Seleccionar operador')+(ctx.type==='def'?' ('+L('기본','predet.')+' · '+SHN(ctx.shift)+')':' ('+SHN(SH)+')');
+function wOpen(ctx,seq){
+  WCTX=ctx;const byMc=ctx.type==='day'||ctx.type==='def';
+  $('w-ttl').innerHTML=byMc?`<span class="w-mc${seq?' flash':''}">${esc(ctx.mc)}</span>${L('작업자 선택','Seleccionar operador')}${ctx.type==='def'?' ('+L('기본','predet.')+' · '+SHN(ctx.shift)+')':' ('+SHN(SH)+')'}`:esc(ctx.mc);
   $('w-all').closest('label').style.display=ctx.type==='me'?'none':'';$('w-all').checked=ctx.type==='insp';
+  $('w-seq').closest('label').style.display=byMc?'':'none';if(!seq)$('w-last').textContent='';
   $('w-q').value='';wRender();mdlOpen('mdl-w');setTimeout(()=>$('w-q').focus(),50);
 }
 function wRender(){
@@ -1292,7 +1567,10 @@ function wRender(){
     :S.emps.filter(e=>e.active!==false&&(all||(isMaq(WCTX&&WCTX.team)?/maquinado/i.test(e.team||''):e.team===WCTX.team)));
   if(q)list=list.filter(e=>norm(e.employee_id).includes(q)||norm(e.name).includes(q)||norm(e.name_ko).includes(q));
   const tot=list.length;list=list.slice(0,120);
-  $('w-list').innerHTML=list.map(e=>`<div class="p" data-id="${esc(e.employee_id)}"><span class="id">${esc(e.employee_id)}</span><span class="nm">${esc(e.name)}${e.employee_id===cur?' ✓':''}<small>${e.name_ko&&e.name_ko!==e.name?esc(e.name_ko)+' · ':''}${esc(e.team||'')}</small></span></div>`).join('')
+  /* 이미 다른 호기에 지정된 사람은 그 호기를 옆에 표시 (중복 지정 방지) */
+  const used={},put=(id,mc)=>{if(id&&mc!==WCTX.mc)(used[id]=used[id]||[]).push(mc)};
+  if(ty==='day')Object.keys(WK).forEach(mc=>put(WK[mc],mc));else if(ty==='def')teamMcs(WCTX.team).forEach(m=>put(defW(m.mc,WCTX.shift),m.mc));
+  $('w-list').innerHTML=list.map(e=>`<div class="p" data-id="${esc(e.employee_id)}"><span class="id">${esc(e.employee_id)}</span><span class="nm">${esc(e.name)}${e.employee_id===cur?' ✓':''}<small>${e.name_ko&&e.name_ko!==e.name?esc(e.name_ko)+' · ':''}${esc(e.team||'')}</small></span>${used[e.employee_id]?`<span class="tag care" style="margin:0" title="${L('이미 지정된 호기','Ya asignado a')}">${esc(used[e.employee_id].slice(0,3).join(' · '))}${used[e.employee_id].length>3?' +'+(used[e.employee_id].length-3):''}</span>`:''}</div>`).join('')
     +(tot>list.length?`<div class="hint" style="padding:10px 12px">… ${tot-list.length} ${L('명 더 있음 — 사번·이름으로 검색하세요','más — busque por No. o nombre')}</div>`:'')
     ||`<div class="hint" style="padding:16px">${L('검색 결과가 없습니다. 「전체 팀」을 켜 보세요.','Sin resultados. Active «Todos los equipos».')}</div>`;
 }
@@ -1302,17 +1580,34 @@ async function wPick(id){
   const c=WCTX;if(!c)return;mdlClose('mdl-w');
   if(c.type==='me'){await flush();ME=id||'';try{localStorage.setItem('insp_me_'+PLANT,ME)}catch(e){}inRender();return}
   if(c.type==='insp'){if(id)ciSave(id);return}
+  const seq=!!id&&$('w-seq').checked;
   try{
     if(c.type==='day'){
       WK[c.mc]=id;Object.keys(CH).forEach(k=>{if(k.slice(k.indexOf('|')+1)===c.mc)mark(k)});
-      rowRefresh(c.mc);oneTiles();inKpi();
+      rowRefresh(c.mc);tileUp(c.mc);oneMeta();
+      if(seq)wSeq(c,id);
       if(D===today())await saveMc(c.mc,SH==='N'?{emp_n:id}:{emp_d:id});
     }else{
       await saveMc(c.mc,c.shift==='N'?{emp_n:id}:{emp_d:id});
       if(c.shift===SH&&!Object.keys(CH).some(k=>k.slice(k.indexOf('|')+1)===c.mc))WK[c.mc]=id;
       cfRender();inBody();inKpi();
+      if(seq)wSeq(c,id);
     }
   }catch(e){toast(errMsg(e),true)}
+}
+/* 연속 지정: 방금 지정한 호기 다음의 「작업자 미지정」 호기로 창을 바로 다시 연다 */
+function wNext(c){
+  let ms;
+  if(c.type==='day'){const its=viewItems(),it=VIEW==='item'?its.find(x=>x.id===SEL):null;ms=viewMcs().filter(m=>it?applies(it,m.mc):its.some(x=>applies(x,m.mc))).map(m=>m.mc)}
+  else ms=teamMcs(CFT).filter(m=>m.on).map(m=>m.mc);
+  const i=ms.indexOf(c.mc),has=mc=>c.type==='day'?WK[mc]:defW(mc,c.shift);
+  for(let n=1;n<=ms.length;n++){const mc=ms[(i+n)%ms.length];if(!has(mc))return c.type==='day'?{type:'day',mc,team:TEAM||mcOwner(mc)}:{type:'def',mc,shift:c.shift,team:CFT}}
+  return null;
+}
+function wSeq(c,id){
+  const nx=wNext(c);
+  if(!nx){toast(L('모든 호기에 작업자를 지정했습니다.','Todas las máquinas tienen operador.'));return}
+  wOpen(nx,true);$('w-last').textContent='✓ '+c.mc+' → '+empName(id);
 }
 
 /* ══════════ ③ 점검항목 관리 ══════════ */
@@ -1690,10 +1985,15 @@ function renderAll(){inRender();itRender();cfRender();if($('t-st').classList.con
 document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>{
   document.querySelectorAll('#nav button').forEach(x=>x.classList.toggle('on',x===b));
   document.querySelectorAll('main .tab').forEach(s=>s.classList.toggle('on',s.id==='t-'+b.dataset.tab));
-  if(b.dataset.tab==='st')stLoad();if(b.dataset.tab==='in')inStick();window.scrollTo(0,0);
+  document.body.classList.toggle('tab-in',b.dataset.tab==='in');
+  if(b.dataset.tab==='st')stLoad();window.scrollTo(0,0);if(b.dataset.tab==='in')stkFix();
 });
-window.addEventListener('resize',()=>{$('in-stick').style.top=($('top').offsetHeight+6)+'px'});
+window.addEventListener('resize',stkFix);
+if(window.ResizeObserver)new ResizeObserver(()=>stkFix()).observe($('in-bar'));
+try{$('w-seq').checked=localStorage.getItem('insp_seq')==='1'}catch(e){}
+$('w-seq').addEventListener('change',e=>{try{localStorage.setItem('insp_seq',e.target.checked?'1':'0')}catch(_){}});
 (async function init(){
+  document.body.classList.add('tab-in');
   $('in-d').value=D;$('st-m').value=D.slice(0,7);$('st-f').value=D.slice(0,8)+'01';$('st-t').value=D;$('st-y').value=D.slice(0,4);
   if(new Date().getHours()>=18){SH='N';document.querySelectorAll('#in-sh button').forEach(x=>x.classList.toggle('on',x.dataset.v==='N'))}
   applyLang();load(true);
