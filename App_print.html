@@ -297,6 +297,80 @@
     html,body{background:#fff !important}
     .topbar,.wrap{display:none !important}
   }
+  /* ═══ v2.9 JOINT 명판 출력 ═══ */
+  .jp-open{margin-left:auto;flex-shrink:0;height:26px;padding:0 13px;border-radius:999px;border:1px solid rgba(201,168,76,.45);background:rgba(201,168,76,.10);color:#e2c46a;font-family:var(--font);font-size:12.5px;font-weight:700;letter-spacing:0;text-transform:none;line-height:1;cursor:pointer;white-space:nowrap;transition:background .15s,border-color .15s,color .15s}
+  .jp-open:hover{background:rgba(201,168,76,.2);border-color:#c9a84c;color:#fff}
+  #jointModal{position:fixed;inset:0;background:rgba(0,0,0,.74);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);z-index:900;display:none;align-items:center;justify-content:center;padding:16px}
+  .jpbox{background:#0f0f0f;border:1px solid #2a2a2a;color:#d0d0d0;border-radius:14px;width:min(1120px,96vw);height:min(780px,94vh);display:flex;flex-direction:column;padding:18px 20px;box-shadow:0 24px 60px rgba(0,0,0,.6);animation:pop .22s ease}
+  .jpbox.busy{cursor:progress}
+  .jpbox.busy .jp-cols{pointer-events:none;opacity:.6}
+  .jpbox .ph{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+  .jpbox h3{font-size:16.5px;font-weight:800;color:#fafafa;letter-spacing:-.02em}
+  .jp-src{font-family:var(--mono);font-size:12px;letter-spacing:.06em;color:#999}
+  .jp-src b{color:#e2c46a}
+  .jp-cols{display:flex;gap:18px;flex:1;min-height:0}
+  .jp-left{flex:1;min-width:0;min-height:0;display:flex;flex-direction:column;gap:10px;overflow-y:auto;padding-right:2px}
+  .jp-left>*{flex-shrink:0}
+  .jp-left::-webkit-scrollbar,.jp-tblwrap::-webkit-scrollbar{width:10px}
+  .jp-left::-webkit-scrollbar-thumb,.jp-tblwrap::-webkit-scrollbar-thumb{background:#333;border-radius:8px;border:2px solid transparent;background-clip:content-box}
+  .jp-right{flex:none;width:292px;display:flex;flex-direction:column;gap:10px}
+  .jp-sec{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#c9a84c}
+  .jp-form{display:flex;gap:8px}
+  .jp-form input,.jp-listhead input,#jpPasteArea,.jp-copies input{background:#0d0d0d;border:1px solid #2a2a2a;color:#f0f0f0;border-radius:8px;font-family:var(--mono);font-size:14px;padding:10px 12px;transition:border-color .15s,box-shadow .15s}
+  .jp-form input:focus,.jp-listhead input:focus,#jpPasteArea:focus,.jp-copies input:focus{outline:none;border-color:#c9a84c;box-shadow:0 0 0 4px rgba(201,168,76,.14)}
+  #jpNo{width:132px;flex:none}
+  #jpLink{flex:1;min-width:0}
+  .jp-form button,.jp-listhead button,.jp-pastebtns button{padding:0 16px;font-size:13.5px;font-weight:700;border:none;border-radius:8px;cursor:pointer;white-space:nowrap;min-height:40px}
+  .jp-pastebtns button:disabled{opacity:.45;cursor:not-allowed}
+  .jp-msg{font-size:12.5px;min-height:19px;color:#ef9a9a;white-space:pre-line;margin-top:-4px}
+  .jp-msg.ok{color:#4caf7d}
+  .jp-paste{border:1px solid #2a2a2a;border-radius:10px;background:#0c0c0c}
+  .jp-paste summary{padding:10px 12px;font-size:13px;font-weight:600;color:#c8c8c8;cursor:pointer;user-select:none}
+  .jp-paste summary:hover{color:#fff}
+  .jp-paste[open] summary{border-bottom:1px solid #2a2a2a}
+  .jp-pastebody{padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+  .jp-pastebody .pguide{margin:0}
+  .jp-pastebody .ppv{margin:0;max-height:150px}
+  .jp-pastebody .ppv table{margin-top:6px}
+  .jp-pastebody .ppv td+td{text-align:left}
+  .ppv .warn{color:#e0a84a;font-weight:600;white-space:pre-line;margin-top:4px}
+  #jpPasteArea{width:100%;height:96px;font-size:12.5px;resize:vertical}
+  .jp-pastebtns{display:flex;align-items:center;gap:10px;justify-content:space-between;flex-wrap:wrap}
+  .jp-replace{display:flex;align-items:center;gap:7px;font-size:12.5px;color:#c8c8c8;cursor:pointer}
+  .jp-replace input{accent-color:#c9a84c;width:15px;height:15px}
+  .jp-listhead{display:flex;gap:8px}
+  .jp-listhead input{flex:1;min-width:0;font-family:inherit}
+  .jp-left>.jp-tblwrap{flex:1 1 150px;min-height:150px;max-height:none}
+  .jp-tblwrap td.no{font-weight:700;color:#fafafa;white-space:nowrap;font-size:14px}
+  .jp-tblwrap tr.foc td.no{color:#e2c46a}
+  .jp-tblwrap td.lk{text-align:left;word-break:break-all;line-height:1.5}
+  .jp-tblwrap td.act{white-space:nowrap}
+  .jp-ib{width:28px;height:28px;border-radius:999px;background:transparent;border:1px solid #333;color:#aaa;cursor:pointer;font-size:13px;line-height:1;padding:0}
+  .jp-ib:hover{border-color:#c9a84c;color:#e2c46a}
+  .jp-ib.del{border-color:rgba(224,92,92,.45);color:#ef9a9a}
+  .jp-ib.del:hover{background:rgba(224,92,92,.12)}
+  .jp-empty{padding:30px 12px!important;text-align:center!important;color:#777!important;font-family:var(--font)!important;line-height:1.7;cursor:default}
+  .jp-retry{margin-top:10px;padding:8px 18px;border-radius:8px;cursor:pointer;font-weight:700}
+  .jp-pv{padding:12px;max-height:none;align-items:center;min-height:216px}
+  .jp-info{font-size:12.5px;color:#999;line-height:1.6}
+  .jp-copies{display:flex;align-items:center;gap:8px;font-size:13px;color:#c8c8c8}
+  .jp-copies input{width:66px;text-align:center;padding:7px 8px}
+  .jp-print{width:100%;margin:0}
+  .jp-printall{padding:12px;font-size:14px;font-weight:700;border-radius:8px;cursor:pointer}
+  .jp-right button:disabled{opacity:.4;cursor:not-allowed;filter:none}
+  @media(max-width:820px){.jpbox{height:auto;max-height:94vh;overflow:auto;padding:14px}.jp-cols{flex-direction:column;flex:none}.jp-right{width:auto}.jp-tblwrap{flex:none;max-height:300px}.system-bar{flex-wrap:wrap}.system-bar>span:last-child{white-space:normal;flex-shrink:1;min-width:0}.jp-open{margin-left:0}}
+  /* JOINT 명판 (60×50mm, 흑백) — 점선 = 재단선, 실선 = 명판 테두리 */
+  .jplate{display:block;flex:none;background:#fff;letter-spacing:0;word-spacing:0;text-transform:none;font-style:normal;font-kerning:auto;font-variant-ligatures:none;text-rendering:geometricPrecision;page-break-inside:avoid;break-inside:avoid}
+  .jplate .jcut{fill:#fff;stroke:#64748b;stroke-width:.3;stroke-dasharray:1 .8}
+  .jplate .jfrm{fill:none;stroke:#000;stroke-width:.5}
+  .jplate text{fill:#000;white-space:pre}
+  #jpPrintArea{display:none}
+  @media print{
+    #jointModal{display:none !important}
+    body.print-joint #printArea{display:none !important}
+    body.print-joint #jpPrintArea{display:block;position:absolute;left:0;top:0;width:100%}
+    body.print-joint #jpPrintArea,body.print-joint #jpPrintArea *{visibility:visible}
+  }
 </style>
 
 <!-- ═══ 포털 공통 (yh-common-v2): 제목 서체 · 닫기 버튼 · 최소 글자 크기 ═══ -->
@@ -414,7 +488,7 @@
     <button class="upbtn lang" id="langBtn" onclick="toggleLang()">🌐 Español</button>
   </div>
  </div>
- <div class="system-bar"><span>Mold Location Label Print / 금형 지정장소 라벨</span><span class="ver">v2.8 · LETTER · <span id="dataSrc">-</span> · <span data-i18n="total">총</span> <span id="totalCnt">-</span></span></div>
+ <div class="system-bar"><span>Mold Location Label Print / 금형 지정장소 라벨</span><button type="button" class="jp-open" onclick="openJoint()" data-i18n="jpOpen">🔗 JOINT 명판 출력</button><span class="ver">v2.9 · LETTER · <span id="dataSrc">-</span> · <span data-i18n="total">총</span> <span id="totalCnt">-</span></span></div>
 </div>
 
 <div class="wrap">
@@ -599,7 +673,64 @@
   </div>
 </div>
 
+<!-- JOINT 명판 출력 -->
+<div id="jointModal" class="jp-modal">
+  <div class="jpbox">
+    <div class="ph">
+      <h3 data-i18n="jpTitle">🔗 JOINT 명판 출력</h3>
+      <span class="jp-src" id="jpSrc"></span>
+      <button class="pclose" onclick="closeJoint()" title="ESC">✕</button>
+    </div>
+    <div class="jp-cols">
+      <div class="jp-left">
+        <div class="jp-sec" data-i18n="jpSecMaster">마스터 등록 (번호 · J_LINK)</div>
+        <div class="jp-form">
+          <input type="text" id="jpNo" data-i18n-ph="jpNoPh" placeholder="번호 (예: 001)" autocomplete="off" maxlength="20">
+          <input type="text" id="jpLink" data-i18n-ph="jpLinkPh" placeholder="J_LINK (예: AK501,DK812)" autocomplete="off">
+          <button type="button" class="btn-add" id="jpSaveBtn" onclick="jpSaveOne()">등록</button>
+          <button type="button" class="btn-gray" id="jpCancelBtn" onclick="jpCancelEdit()" style="display:none" data-i18n="btnCancel">취소</button>
+        </div>
+        <div class="jp-msg" id="jpFormMsg"></div>
+        <details class="jp-paste" id="jpPasteBox">
+          <summary data-i18n="jpPasteSum">📋 엑셀에서 여러 줄 붙여넣기</summary>
+          <div class="jp-pastebody">
+            <div class="pguide" data-i18n-html="jpPasteGuide"></div>
+            <textarea id="jpPasteArea" data-i18n-ph="jpPastePh" oninput="jpPreviewPaste()" spellcheck="false"></textarea>
+            <div id="jpPasteMsg" class="ppv"></div>
+            <div class="jp-pastebtns">
+              <label class="jp-replace"><input type="checkbox" id="jpReplaceAll" onchange="jpPreviewPaste()"> <span data-i18n="jpReplaceAll">기존 마스터를 모두 지우고 이 목록으로 교체</span></label>
+              <button type="button" class="btn-add" id="jpPasteApply" onclick="jpApplyPaste()" disabled data-i18n="jpPasteApply">✔ 일괄 등록</button>
+            </div>
+          </div>
+        </details>
+        <div class="jp-listhead">
+          <input type="text" id="jpSearch" data-i18n-ph="jpSearchPh" placeholder="검색: 번호 / 선번" oninput="jpRenderAll()" autocomplete="off">
+          <button type="button" class="btn-gray" onclick="jpDelSelected()" data-i18n="jpDelSel">선택 삭제</button>
+        </div>
+        <div class="listtbl-wrap jp-tblwrap">
+          <table class="listtbl">
+            <thead><tr>
+              <th style="width:34px"><input type="checkbox" id="jpChkAll" onclick="jpToggleAll(this)"></th>
+              <th style="width:112px" data-i18n="jpThNo">번호</th><th style="text-align:left">J_LINK</th><th style="width:86px"></th>
+            </tr></thead>
+            <tbody id="jpListBody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="jp-right">
+        <div class="jp-sec" data-i18n="jpSecPv">미리보기 (실제 크기 60×50mm)</div>
+        <div class="pv-wrap jp-pv"><div id="jpPvBox"></div></div>
+        <div class="jp-info" id="jpInfo"></div>
+        <label class="jp-copies"><span data-i18n="jpCopies">명판마다</span><input type="number" id="jpCopies" min="1" max="20" step="1" value="1"><span data-i18n="jpCopiesUnit">장씩 인쇄</span></label>
+        <button type="button" class="printbtn jp-print" id="jpPrintSel" onclick="jpPrint(true)"></button>
+        <button type="button" class="btn-gray jp-printall" id="jpPrintAll" onclick="jpPrint(false)"></button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div id="printArea"></div>
+<div id="jpPrintArea"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
@@ -652,7 +783,35 @@ ko: {
   modeTitle:'서버 반영 방식 선택', modeMergeB:'➕ 추가 / 수정', modeMergeS:'기존 데이터 유지 · 같은 바코드는 수정, 새 바코드는 추가',
   modeReplaceB:'🔄 전체 교체', modeReplaceS:'서버의 기존 데이터를 모두 지우고 새 리스트로 대체',
   mergeDone:(a,u)=>`✔ 반영 완료\n신규 추가: ${a}건\n기존 수정: ${u}건\n(나머지 기존 데이터는 유지됨)`,
-  btnDownload:'⬇ 엑셀 다운로드', dlEmpty:'다운로드할 데이터가 없습니다.'
+  btnDownload:'⬇ 엑셀 다운로드', dlEmpty:'다운로드할 데이터가 없습니다.',
+  /* JOINT 명판 */
+  jpOpen:'🔗 JOINT 명판 출력', jpTitle:'🔗 JOINT 명판 출력', jpSecMaster:'마스터 등록 (번호 · J_LINK)',
+  jpNoPh:'번호 (예: 001)', jpLinkPh:'J_LINK (예: AK501,DK812)', jpSave:'등록', jpSaveEdit:'수정 저장',
+  jpPasteSum:'📋 엑셀에서 여러 줄 붙여넣기',
+  jpPasteGuide:'엑셀에서 <b>번호 · J_LINK</b> 두 열을 복사(Ctrl+C)해 아래에 붙여넣으세요 (Ctrl+V).<br>· 이미 있는 번호는 J_LINK만 바뀌고, 없는 번호는 새로 추가됩니다.',
+  jpPastePh:'001\tAK501,DK812\n002\tAA501,DK812,YA401',
+  jpReplaceAll:'기존 마스터를 모두 지우고 이 목록으로 교체', jpPasteApply:'✔ 일괄 등록',
+  jpPasteOk:(n,a,u,s)=>`✔ ${n}건 인식 — 신규 ${a} · 수정 ${u} · 변경 없음 ${s}`,
+  jpPasteOkReplace:(n,m)=>`✔ ${n}건 인식 — 기존 ${m}건을 이 목록으로 교체합니다`,
+  jpPasteBad:'❌ 번호 · J_LINK를 읽을 수 없는 줄이 있습니다 (줄 번호: 내용)',
+  jpPasteDup:'❌ 붙여넣은 내용에 같은 번호가 두 번 이상 있습니다',
+  jpPasteTwin:'⚠ 같은 J_LINK가 여러 번호에 들어갑니다:',
+  jpPasteDone:(c,d)=>`✔ 반영 완료 — 등록·수정 ${c}건` + (d ? ` · 삭제 ${d}건` : ''),
+  jpSearchPh:'검색: 번호 / 선번', jpDelSel:'선택 삭제', jpThNo:'번호',
+  jpSecPv:'미리보기 (실제 크기 60×50mm)',
+  jpInfo:(p,c,r)=>`LETTER 한 장에 ${p}장 (${c}열 × ${r}줄)`,
+  jpCopies:'명판마다', jpCopiesUnit:'장씩 인쇄',
+  jpPrintSel:n=>`🖨️ 선택 ${n}개 인쇄`, jpPrintAll:n=>`전체 ${n}개 인쇄`,
+  jpEmpty:'등록된 JOINT 명판이 없습니다. 위에서 번호와 J_LINK를 입력해 등록하세요.', jpNoMatch:'검색 결과가 없습니다.',
+  jpLoading:'불러오는 중…', jpLoadErr:m=>`⚠ 불러오기 실패: ${m}`, jpSaveErr:m=>`⚠ 서버 반영 실패: ${m}\n서버의 현재 내용을 다시 불러옵니다.`,
+  jpNeedNo:'번호를 입력하세요.', jpNeedLink:'J_LINK를 입력하세요.', jpNoComma:'번호에는 쉼표(,)를 쓸 수 없습니다.',
+  jpDupNo:n=>`번호 ${n}은(는) 이미 등록되어 있습니다.`, jpSame:n=>`번호 ${n}은(는) 이미 같은 내용으로 등록되어 있습니다.`,
+  jpSaved:n=>`✔ 번호 ${n} 저장`, jpEditing:n=>`번호 ${n} 수정 중 — 고친 뒤 [수정 저장]`,
+  jpConfirmOverwrite:(n,a,b)=>`번호 ${n}은(는) 이미 있습니다. J_LINK를 바꿀까요?\n\n기존: ${a}\n변경: ${b}`,
+  jpConfirmTwin:(n,l)=>`같은 J_LINK(${l})가 번호 ${n}에 이미 있습니다.\n그래도 등록할까요?`,
+  jpConfirmDel:n=>`번호 ${n} 명판을 마스터에서 삭제할까요?`, jpConfirmDelSel:n=>`선택한 ${n}개를 마스터에서 삭제할까요?`,
+  jpConfirmReplace:(m,n)=>`기존 JOINT 명판 마스터 ${m}건을 붙여넣은 ${n}건으로 교체합니다.\n목록에 없는 번호는 삭제됩니다. 계속할까요?`,
+  jpNoSel:'선택한 명판이 없습니다.', jpEdit:'수정', jpDel:'삭제'
 },
 es: {
   title:'🏷️ Etiquetas de Ubicación de Moldes', facBadge:'🏭 Planta 1', total:'Total', btnUpload:'📂 Subir lista de moldes', btnPaste:'📋 Pegar datos', btnRefresh:'↻ Actualizar',
@@ -694,7 +853,35 @@ es: {
   modeTitle:'Seleccione el modo de actualización', modeMergeB:'➕ Agregar / Modificar', modeMergeS:'Mantiene los datos existentes · mismo barcode se modifica, nuevo barcode se agrega',
   modeReplaceB:'🔄 Reemplazar todo', modeReplaceS:'Borra todos los datos del servidor y los sustituye por la nueva lista',
   mergeDone:(a,u)=>`✔ Actualización completa\nAgregados: ${a}\nModificados: ${u}\n(El resto de los datos existentes se mantiene)`,
-  btnDownload:'⬇ Descargar Excel', dlEmpty:'No hay datos para descargar.'
+  btnDownload:'⬇ Descargar Excel', dlEmpty:'No hay datos para descargar.',
+  /* Placas JOINT */
+  jpOpen:'🔗 Placas JOINT', jpTitle:'🔗 Impresión de placas JOINT', jpSecMaster:'Registro maestro (número · J_LINK)',
+  jpNoPh:'Número (ej.: 001)', jpLinkPh:'J_LINK (ej.: AK501,DK812)', jpSave:'Registrar', jpSaveEdit:'Guardar cambio',
+  jpPasteSum:'📋 Pegar varias filas desde Excel',
+  jpPasteGuide:'Copie en Excel las dos columnas <b>número · J_LINK</b> (Ctrl+C) y péguelas abajo (Ctrl+V).<br>· Si el número ya existe solo cambia su J_LINK; si no existe, se agrega.',
+  jpPastePh:'001\tAK501,DK812\n002\tAA501,DK812,YA401',
+  jpReplaceAll:'Borrar todo el maestro y reemplazarlo por esta lista', jpPasteApply:'✔ Registrar todo',
+  jpPasteOk:(n,a,u,s)=>`✔ ${n} filas reconocidas — nuevas ${a} · modificadas ${u} · sin cambio ${s}`,
+  jpPasteOkReplace:(n,m)=>`✔ ${n} filas reconocidas — reemplazarán los ${m} registros actuales`,
+  jpPasteBad:'❌ Hay filas donde no se puede leer número · J_LINK (fila: contenido)',
+  jpPasteDup:'❌ El mismo número aparece más de una vez en los datos pegados',
+  jpPasteTwin:'⚠ El mismo J_LINK queda en varios números:',
+  jpPasteDone:(c,d)=>`✔ Actualizado — registradas/modificadas ${c}` + (d ? ` · borradas ${d}` : ''),
+  jpSearchPh:'Buscar: número / circuito', jpDelSel:'Borrar seleccionadas', jpThNo:'Número',
+  jpSecPv:'Vista previa (tamaño real 60×50mm)',
+  jpInfo:(p,c,r)=>`${p} placas por hoja CARTA (${c} col × ${r} fil)`,
+  jpCopies:'Copias por placa:', jpCopiesUnit:'',
+  jpPrintSel:n=>`🖨️ Imprimir seleccionadas (${n})`, jpPrintAll:n=>`Imprimir todas (${n})`,
+  jpEmpty:'No hay placas JOINT registradas. Ingrese arriba el número y el J_LINK para registrar.', jpNoMatch:'Sin resultados.',
+  jpLoading:'Cargando…', jpLoadErr:m=>`⚠ Error al cargar: ${m}`, jpSaveErr:m=>`⚠ Error al actualizar el servidor: ${m}\nSe recargará el contenido actual del servidor.`,
+  jpNeedNo:'Ingrese el número.', jpNeedLink:'Ingrese el J_LINK.', jpNoComma:'El número no puede contener comas (,).',
+  jpDupNo:n=>`El número ${n} ya está registrado.`, jpSame:n=>`El número ${n} ya está registrado con el mismo contenido.`,
+  jpSaved:n=>`✔ Número ${n} guardado`, jpEditing:n=>`Editando el número ${n} — corrija y presione [Guardar cambio]`,
+  jpConfirmOverwrite:(n,a,b)=>`El número ${n} ya existe. ¿Cambiar su J_LINK?\n\nActual: ${a}\nNuevo: ${b}`,
+  jpConfirmTwin:(n,l)=>`El mismo J_LINK (${l}) ya está en el número ${n}.\n¿Registrar de todos modos?`,
+  jpConfirmDel:n=>`¿Borrar del maestro la placa número ${n}?`, jpConfirmDelSel:n=>`¿Borrar del maestro las ${n} placas seleccionadas?`,
+  jpConfirmReplace:(m,n)=>`Se reemplazarán los ${m} registros del maestro JOINT por las ${n} filas pegadas.\nLos números que no estén en la lista se borrarán. ¿Continuar?`,
+  jpNoSel:'No hay placas seleccionadas.', jpEdit:'Editar', jpDel:'Borrar'
 }
 };
 let LANG = 'ko';
@@ -712,6 +899,7 @@ function applyLang(){
   document.getElementById('selCount').textContent = T('selCount')(selSet.size);
   renderQueue();
   if(lastSrcTime) document.getElementById('dataSrc').textContent = T('srcLabel')(lastSrcTime);
+  if(typeof jpApplyLang === 'function') jpApplyLang();
 }
 function toggleLang(){
   LANG = (LANG === 'ko') ? 'es' : 'ko';
@@ -1271,9 +1459,413 @@ function doPrint(){
     alert(T('sizeOver'));
     return;
   }
+  document.body.classList.remove('print-joint');   // 인쇄 대상 = 금형 라벨
   window.print();
 }
 renderPreview();
+</script>
+<script>
+/* ================= JOINT 명판 출력 (v2.9) =================
+   마스터 : Supabase joint_nameplates (plant, plate_no, j_link) — 번호 → J_LINK(선번 목록, 쉼표 구분)
+   명판   : 가로 60 × 세로 50mm, 흑백. 위 칸 = 번호(칸에 꽉 차게), 아래 칸 = J_LINK(개수에 맞춰 줄·글자 크기 자동)
+   인쇄   : LETTER 한 장에 3열 × 5줄 = 15장 */
+const JP_TABLE = 'joint_nameplates', JP_PLANT = 1;
+const JP_W = 60, JP_H = 50;                        // 명판 크기 (mm)
+const JP_TOP = 18.5;                               // 위 칸(번호) 안쪽 높이 (mm) — 나머지가 아래 칸(J_LINK)
+const JP_FONT_NO   = "'Arial Black',Arial,'Helvetica Neue',Helvetica,sans-serif";   // 번호: 아주 굵은 글씨
+const JP_FONT_LINK = "Consolas,'Lucida Console','Courier New',monospace";           // 선번: 고정폭 (0/O, 1/I 구분이 쉬움)
+const JP_LINK_OK = 6.5, JP_LINK_MAX = 8;           // 선번 글자 크기(mm): OK 이상이 되면 줄을 더 나누지 않음 / MAX = 상한
+
+let jpRows = [];           // 마스터 [{no, link}] 번호순
+let jpSel = new Set();     // 선택한 번호
+let jpFocus = null;        // 미리보기에 보여줄 번호
+let jpEditing = null;      // 수정 중인 번호 (없으면 null)
+let jpPasteRows = null;    // 붙여넣기 해석 결과
+let jpState = 'idle';      // idle | loading | error
+let jpErr = '';
+
+const jpEl = id => document.getElementById(id);
+function jpEsc(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function jpNormNo(s){ return String(s == null ? '' : s).replace(/\s+/g, ' ').trim().toUpperCase(); }
+/* J_LINK 정리: 대문자, 쉼표·공백·줄바꿈 등 어떤 구분이든 쉼표 하나로 → 'AK501,DK812' */
+function jpNormLink(s){ return String(s == null ? '' : s).toUpperCase().split(/[\s,，、;；]+/).filter(Boolean).join(','); }
+function jpLinkKey(link){ return link.split(',').sort().join(','); }   // 순서만 다른 J_LINK는 같은 묶음으로 봄
+function jpCmp(a, b){ return a.no.localeCompare(b.no, 'en', {numeric:true}) || (a.no < b.no ? -1 : a.no > b.no ? 1 : 0); }
+
+/* ---------- 서버 (Supabase REST) ---------- */
+async function jpCheck(res){
+  if(res.ok) return;
+  let t = ''; try{ t = (await res.text()).slice(0, 160); }catch(e){}
+  throw new Error('HTTP ' + res.status + (t ? ' ' + t : ''));
+}
+async function jpFetchAll(){
+  const rows = [], PAGE = 1000;
+  for(let from = 0; ; from += PAGE){
+    const res = await fetch(`${SUPA_URL}/rest/v1/${JP_TABLE}?select=plate_no,j_link&plant=eq.${JP_PLANT}&order=plate_no.asc&limit=${PAGE}&offset=${from}`, { headers: SB_HEADERS });
+    await jpCheck(res);
+    const chunk = await res.json();
+    chunk.forEach(r => rows.push({ no: r.plate_no, link: r.j_link || '' }));
+    if(chunk.length < PAGE) break;
+  }
+  return rows.sort(jpCmp);
+}
+async function jpUpsert(list){
+  for(let i = 0; i < list.length; i += 500){
+    const body = list.slice(i, i + 500).map(r => ({ plant: JP_PLANT, plate_no: r.no, j_link: r.link, updated_at: new Date().toISOString() }));
+    await jpCheck(await fetch(`${SUPA_URL}/rest/v1/${JP_TABLE}?on_conflict=plant,plate_no`, {
+      method: 'POST', headers: Object.assign({}, SB_HEADERS, {'Prefer': 'resolution=merge-duplicates,return=minimal'}), body: JSON.stringify(body) }));
+  }
+}
+async function jpDelete(nos){
+  for(let i = 0; i < nos.length; i += 50){
+    const inList = nos.slice(i, i + 50).map(n => '"' + String(n).replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '"').join(',');
+    await jpCheck(await fetch(`${SUPA_URL}/rest/v1/${JP_TABLE}?plant=eq.${JP_PLANT}&plate_no=in.(${encodeURIComponent(inList)})`, {
+      method: 'DELETE', headers: Object.assign({}, SB_HEADERS, {'Prefer': 'return=minimal'}) }));
+  }
+}
+/* 쓰기 작업 공통: 진행 중 표시 + 실패하면 알리고 서버 상태를 다시 읽음 */
+async function jpRun(fn){
+  const box = document.querySelector('.jpbox');
+  box.classList.add('busy');
+  try{ await fn(); return true; }
+  catch(e){ alert(T('jpSaveErr')(e.message)); jpLoad(); return false; }
+  finally{ box.classList.remove('busy'); }
+}
+
+/* ---------- 창 열기/닫기 · 불러오기 ---------- */
+function jpIsOpen(){ return jpEl('jointModal').style.display === 'flex'; }
+function openJoint(){
+  jpEl('jointModal').style.display = 'flex';
+  jpLoad();
+  setTimeout(() => jpEl('jpNo').focus(), 60);
+}
+function closeJoint(){ jpEl('jointModal').style.display = 'none'; }
+async function jpLoad(){
+  jpState = 'loading'; jpRenderAll();
+  try{
+    jpRows = await jpFetchAll();
+    jpState = 'idle';
+    const have = new Set(jpRows.map(r => r.no));
+    jpSel.forEach(n => { if(!have.has(n)) jpSel.delete(n); });
+    if(jpFocus !== null && !have.has(jpFocus)) jpFocus = null;
+  }catch(e){ jpState = 'error'; jpErr = e.message; }
+  jpRenderAll();
+}
+
+/* ---------- 목록 ---------- */
+function jpMatch(r, q){ return !q || r.no.includes(q) || r.link.includes(q); }
+function jpQuery(){ return jpEl('jpSearch').value.trim().toUpperCase(); }
+function jpRenderList(){
+  const tb = jpEl('jpListBody'), q = jpQuery();
+  const note = html => `<tr><td colspan="4" class="jp-empty">${html}</td></tr>`;
+  let shown = 0, shownSel = 0;
+  if(jpState === 'loading') tb.innerHTML = note(jpEsc(T('jpLoading')));
+  else if(jpState === 'error') tb.innerHTML = note(jpEsc(T('jpLoadErr')(jpErr)) + `<br><button class="btn-gray jp-retry" onclick="jpLoad()">${jpEsc(T('btnRetry'))}</button>`);
+  else if(!jpRows.length) tb.innerHTML = note(jpEsc(T('jpEmpty')));
+  else {
+    let html = '';
+    jpRows.forEach((r, i) => {
+      if(!jpMatch(r, q)) return;
+      const on = jpSel.has(r.no);
+      shown++; if(on) shownSel++;
+      html += `<tr class="${on ? 'sel' : ''}${r.no === jpFocus ? ' foc' : ''}" onclick="jpRowClick(${i})">`
+        + `<td><input type="checkbox" ${on ? 'checked' : ''} onclick="event.stopPropagation();jpRowClick(${i})"></td>`
+        + `<td class="no">${jpEsc(r.no)}</td><td class="lk">${jpEsc(r.link)}</td>`
+        + `<td class="act"><button type="button" class="jp-ib" title="${jpEsc(T('jpEdit'))}" onclick="event.stopPropagation();jpEdit(${i})">✎</button> `
+        + `<button type="button" class="jp-ib del" title="${jpEsc(T('jpDel'))}" onclick="event.stopPropagation();jpDelOne(${i})">✕</button></td></tr>`;
+    });
+    tb.innerHTML = html || note(jpEsc(T('jpNoMatch')));
+  }
+  jpEl('jpChkAll').checked = shown > 0 && shown === shownSel;
+}
+function jpRenderSide(){
+  const cols = Math.max(1, Math.floor(AREA_W / JP_W)), lines = Math.max(1, Math.floor(AREA_H / JP_H));
+  jpEl('jpInfo').textContent = T('jpInfo')(cols * lines, cols, lines);
+  const nSel = jpRows.filter(r => jpSel.has(r.no)).length;
+  const bSel = jpEl('jpPrintSel'), bAll = jpEl('jpPrintAll');
+  bSel.textContent = T('jpPrintSel')(nSel); bSel.disabled = nSel === 0;
+  bAll.textContent = T('jpPrintAll')(jpRows.length); bAll.disabled = jpRows.length === 0;
+  jpEl('jpSrc').innerHTML = jpState === 'loading' ? jpEsc(T('jpLoading')) : 'Supabase · ' + jpEsc(T('total')) + ' <b>' + jpRows.length + '</b>';
+  jpRenderPreview();
+}
+function jpRenderAll(){ jpRenderList(); jpRenderSide(); }
+function jpRowClick(i){
+  const r = jpRows[i]; if(!r) return;
+  if(jpSel.has(r.no)) jpSel.delete(r.no); else jpSel.add(r.no);
+  jpFocus = r.no;
+  jpRenderAll();
+}
+function jpToggleAll(cb){
+  const q = jpQuery();
+  jpRows.forEach(r => { if(jpMatch(r, q)){ if(cb.checked) jpSel.add(r.no); else jpSel.delete(r.no); } });
+  jpRenderAll();
+}
+function jpScrollToFocus(){ const tr = jpEl('jpListBody').querySelector('tr.foc'); if(tr && tr.scrollIntoView) tr.scrollIntoView({block:'nearest'}); }
+
+/* ---------- 한 건 등록 · 수정 · 삭제 ---------- */
+function jpMsg(text, ok){ const el = jpEl('jpFormMsg'); el.textContent = text || ''; el.className = 'jp-msg' + (ok ? ' ok' : ''); }
+function jpClearForm(){
+  jpEditing = null;
+  jpEl('jpNo').value = ''; jpEl('jpLink').value = '';
+  jpEl('jpSaveBtn').textContent = T('jpSave'); jpEl('jpCancelBtn').style.display = 'none';
+}
+async function jpSaveOne(){
+  const no = jpNormNo(jpEl('jpNo').value), link = jpNormLink(jpEl('jpLink').value);
+  if(!no){ jpMsg(T('jpNeedNo')); jpEl('jpNo').focus(); return; }
+  if(no.includes(',')){ jpMsg(T('jpNoComma')); jpEl('jpNo').focus(); return; }
+  if(!link){ jpMsg(T('jpNeedLink')); jpEl('jpLink').focus(); return; }
+  const old = jpEditing, renaming = old !== null && no !== old;
+  const ex = jpRows.find(r => r.no === no);
+  if(ex && renaming){ jpMsg(T('jpDupNo')(no)); jpEl('jpNo').focus(); return; }
+  if(ex && old === null){
+    if(ex.link === link){ jpFocus = no; jpClearForm(); jpMsg(T('jpSame')(no), true); jpRenderAll(); jpScrollToFocus(); jpEl('jpNo').focus(); return; }
+    if(!confirm(T('jpConfirmOverwrite')(no, ex.link, link))) return;
+  }
+  const twin = jpRows.find(r => r.no !== no && r.no !== old && jpLinkKey(r.link) === jpLinkKey(link));
+  if(twin && !confirm(T('jpConfirmTwin')(twin.no, link))) return;
+  const ok = await jpRun(async () => {
+    await jpUpsert([{no, link}]);
+    if(renaming) await jpDelete([old]);
+  });
+  if(!ok) return;
+  jpRows = jpRows.filter(r => r.no !== no && !(renaming && r.no === old));
+  jpRows.push({no, link}); jpRows.sort(jpCmp);
+  if(renaming && jpSel.has(old)){ jpSel.delete(old); jpSel.add(no); }
+  jpFocus = no;
+  jpClearForm(); jpMsg(T('jpSaved')(no), true);
+  jpRenderAll(); jpScrollToFocus();
+  jpEl('jpNo').focus();
+}
+function jpEdit(i){
+  const r = jpRows[i]; if(!r) return;
+  jpEditing = r.no; jpFocus = r.no;
+  jpEl('jpNo').value = r.no; jpEl('jpLink').value = r.link;
+  jpEl('jpSaveBtn').textContent = T('jpSaveEdit'); jpEl('jpCancelBtn').style.display = '';
+  jpMsg(T('jpEditing')(r.no), true);
+  jpRenderAll();
+  jpEl('jpLink').focus();
+}
+function jpCancelEdit(){ jpClearForm(); jpMsg(''); jpRenderAll(); jpEl('jpNo').focus(); }
+function jpForget(nos){
+  const gone = new Set(nos);
+  jpRows = jpRows.filter(r => !gone.has(r.no));
+  nos.forEach(n => jpSel.delete(n));
+  if(gone.has(jpFocus)) jpFocus = null;
+  if(gone.has(jpEditing)){ jpClearForm(); jpMsg(''); }
+  jpRenderAll();
+}
+async function jpDelOne(i){
+  const r = jpRows[i];
+  if(!r || !confirm(T('jpConfirmDel')(r.no))) return;
+  if(await jpRun(() => jpDelete([r.no]))) jpForget([r.no]);
+}
+async function jpDelSelected(){
+  const nos = jpRows.filter(r => jpSel.has(r.no)).map(r => r.no);
+  if(!nos.length){ alert(T('jpNoSel')); return; }
+  if(!confirm(T('jpConfirmDelSel')(nos.length))) return;
+  if(await jpRun(() => jpDelete(nos))) jpForget(nos);
+}
+
+/* ---------- 엑셀 붙여넣기 (번호 · J_LINK 두 열) ---------- */
+/* 제목 줄(번호 / J_LINK)이 있으면 그 열 위치를 따르고(앞에 # 같은 다른 열이 있어도 됨), 없으면 앞에서부터 두 칸을 번호 · J_LINK로 봄 */
+function jpParsePaste(text){
+  const rows = [], bad = [], count = new Map();
+  const isNoHead = c => /^(번호|NO\.?|N[UÚ]M(ERO)?\.?)$/i.test(c), isLinkHead = c => /^J[\s_-]?LINK$/i.test(c);
+  let noCol = -1, linkCol = -1;
+  text.replace(/\r/g, '').split('\n').forEach((line, idx) => {
+    if(!line.trim()) return;
+    const raw = line.split('\t').map(c => c.trim().replace(/^"(.*)"$/, '$1').trim());
+    if(raw.some(isNoHead) || raw.some(isLinkHead)){                      // 제목 줄 → 열 위치 기억
+      const n = raw.findIndex(isNoHead), l = raw.findIndex(isLinkHead);
+      linkCol = l >= 0 ? l : n + 1;
+      noCol = n >= 0 ? n : Math.max(0, linkCol - 1);
+      return;
+    }
+    let cells;
+    if(noCol >= 0 && raw.length > 1) cells = [raw[noCol] || '', raw[linkCol] || ''];
+    else {
+      cells = raw.filter(c => c !== '');
+      if(cells.length < 2){ const m = line.trim().match(/^(\S+)\s+(\S.*)$/); if(m) cells = [m[1], m[2]]; }   // 탭 없이 '001 AK501,DK812'
+    }
+    const no = jpNormNo(cells[0]), link = jpNormLink(cells[1]);
+    if(!no || !link || no.includes(',')){ bad.push((idx + 1) + ': ' + line.trim().replace(/\t+/g, ' | ').slice(0, 50)); return; }
+    count.set(no, (count.get(no) || 0) + 1);
+    rows.push({no, link});
+  });
+  const dups = [...count].filter(([k, v]) => v > 1).map(([k, v]) => k + ' ×' + v);
+  return {rows, bad, dups};
+}
+function jpPreviewPaste(){
+  const box = jpEl('jpPasteMsg'), btn = jpEl('jpPasteApply'), text = jpEl('jpPasteArea').value;
+  jpPasteRows = null; btn.disabled = true;
+  if(!text.trim()){ box.innerHTML = ''; return; }
+  const p = jpParsePaste(text), errs = [];
+  if(p.bad.length) errs.push(T('jpPasteBad') + '\n  ' + p.bad.slice(0, 8).join('\n  ') + (p.bad.length > 8 ? '\n  …' : ''));
+  if(p.dups.length) errs.push(T('jpPasteDup') + '\n  ' + p.dups.slice(0, 12).join(', ') + (p.dups.length > 12 ? ' …' : ''));
+  if(!errs.length && !p.rows.length) errs.push(T('errNoRows'));
+  if(errs.length){ box.innerHTML = `<div class="err">${jpEsc(errs.join('\n\n'))}</div>`; return; }
+  const replace = jpEl('jpReplaceAll').checked;
+  const cur = new Map(jpRows.map(r => [r.no, r.link]));
+  let add = 0, upd = 0, same = 0;
+  p.rows.forEach(r => { if(!cur.has(r.no)) add++; else if(cur.get(r.no) !== r.link) upd++; else same++; });
+  /* 같은 J_LINK가 서로 다른 번호에 들어가는지 (막지는 않고 알려만 줌) */
+  const after = new Map(replace ? [] : cur); p.rows.forEach(r => after.set(r.no, r.link));
+  const byKey = new Map(); after.forEach((link, no) => { const k = jpLinkKey(link); byKey.set(k, (byKey.get(k) || []).concat(no)); });
+  const pasted = new Set(p.rows.map(r => r.no));
+  const twins = [...byKey.values()].filter(g => g.length > 1 && g.some(n => pasted.has(n))).map(g => g.join(' = '));
+  jpPasteRows = p.rows;
+  box.innerHTML = `<div class="ok">${jpEsc(replace ? T('jpPasteOkReplace')(p.rows.length, jpRows.length) : T('jpPasteOk')(p.rows.length, add, upd, same))}</div>`
+    + (twins.length ? `<div class="warn">${jpEsc(T('jpPasteTwin') + ' ' + twins.slice(0, 6).join(' / ') + (twins.length > 6 ? ' …' : ''))}</div>` : '')
+    /* 어떻게 읽었는지 앞 3건을 보여줌 (열이 밀려 읽혔으면 여기서 바로 보임) */
+    + `<table><tr><th>${jpEsc(T('jpThNo'))}</th><th>J_LINK</th></tr>`
+    + p.rows.slice(0, 3).map(r => `<tr><td><b>${jpEsc(r.no)}</b></td><td>${jpEsc(r.link)}</td></tr>`).join('')
+    + (p.rows.length > 3 ? '<tr><td>…</td><td>…</td></tr>' : '') + '</table>';
+  btn.disabled = false;
+}
+async function jpApplyPaste(){
+  if(!jpPasteRows || !jpPasteRows.length) return;
+  const rows = jpPasteRows, replace = jpEl('jpReplaceAll').checked;
+  if(replace && !confirm(T('jpConfirmReplace')(jpRows.length, rows.length))) return;
+  const cur = new Map(jpRows.map(r => [r.no, r.link])), keep = new Set(rows.map(r => r.no));
+  const changed = rows.filter(r => cur.get(r.no) !== r.link);
+  const drop = replace ? jpRows.filter(r => !keep.has(r.no)).map(r => r.no) : [];
+  const ok = await jpRun(async () => {
+    if(changed.length) await jpUpsert(changed);      // 먼저 넣고
+    if(drop.length) await jpDelete(drop);            // 전체 교체일 때만, 새 목록에 없는 번호를 지움
+  });
+  if(!ok) return;
+  jpEl('jpPasteArea').value = ''; jpEl('jpReplaceAll').checked = false; jpEl('jpPasteBox').open = false;
+  jpPasteRows = null; jpEl('jpPasteApply').disabled = true; jpEl('jpPasteMsg').innerHTML = '';
+  jpMsg(T('jpPasteDone')(changed.length, drop.length), true);
+  await jpLoad();
+}
+
+/* ---------- 명판 그리기 (SVG, 단위 mm) ---------- */
+/* 글자의 실제 획(잉크) 크기를 em 단위로 잼 — 화면·인쇄에 실제로 쓰이는 글꼴 기준이라 PC마다 글꼴이 달라도 칸에 맞음 */
+let jpCtx = null;
+const jpMCache = new Map();
+function jpMeasure(text, family, weight){
+  const key = weight + '\n' + family + '\n' + text;
+  let m = jpMCache.get(key);
+  if(!m){
+    if(!jpCtx) jpCtx = document.createElement('canvas').getContext('2d');
+    const R = 1200;     // 아주 큰 크기로 잼 — 작은 크기에서는 글꼴 힌팅 때문에 높이가 1~2% 작게 재져 인쇄 결과와 어긋남
+    jpCtx.font = weight + ' ' + R + 'px ' + family;
+    const t = jpCtx.measureText(text);
+    m = (t.actualBoundingBoxAscent === undefined)
+      ? { l: 0, r: t.width / R, a: .74, d: .16, w: t.width / R }
+      : { l: t.actualBoundingBoxLeft / R, r: t.actualBoundingBoxRight / R, a: t.actualBoundingBoxAscent / R, d: t.actualBoundingBoxDescent / R, w: t.width / R };
+    jpMCache.set(key, m);
+  }
+  return m;
+}
+if(document.fonts && document.fonts.addEventListener) document.fonts.addEventListener('loadingdone', () => { jpMCache.clear(); if(jpIsOpen()) jpRenderPreview(); });
+
+/* 아래 칸 배치: 선번을 한 줄에 k개씩 표처럼 줄 맞춰 놓음.
+   글자가 충분히 크게(JP_LINK_OK) 나오는 범위에서 줄 수가 가장 적은 배치를 고르고, 그게 안 되면 글자가 가장 크게 나오는 배치를 고름 */
+function jpLinkLayout(items, boxW, boxH){
+  const n = items.length;
+  const toks = items.map((t, i) => t + (i < n - 1 ? ',' : ''));
+  const tm = toks.map(t => jpMeasure(t, JP_FONT_LINK, 700));
+  const cap = jpMeasure('H', JP_FONT_LINK, 700).a || .64;            // 대문자 높이
+  const all = jpMeasure(toks.join(''), JP_FONT_LINK, 700);
+  const over = Math.max(all.d, all.a - cap, 0);                      // 쉼표 꼬리처럼 대문자 높이 밖으로 나가는 만큼
+  const pitch = cap * 1.5;                                           // 줄 간격
+  let best = null, pick = null;
+  for(let k = n; k >= 1; k--){
+    const L = Math.ceil(n / k), colX = [0];
+    for(let c = 0; c < k; c++){ let w = 0; for(let i = c; i < n; i += k) w = Math.max(w, tm[i].w); colX.push(colX[c] + w); }
+    let inkL = Infinity, inkR = -Infinity;
+    tm.forEach((m, i) => { const x = colX[i % k]; inkL = Math.min(inkL, x - m.l); inkR = Math.max(inkR, x + m.r); });
+    const f = Math.min(boxW / Math.max(inkR - inkL, .01), boxH / (cap + (L - 1) * pitch + 2 * over), JP_LINK_MAX);
+    const cand = { k, L, colX, inkL, inkR, f };
+    if(!best || f > best.f + 1e-9) best = cand;
+    if(!pick && f >= JP_LINK_OK) pick = cand;
+  }
+  return Object.assign(pick || best, { toks, cap, pitch });
+}
+function jpPlateSVG(row){
+  const n2 = v => Math.round(v * 100) / 100;
+  const bw = .5, inset = 1.5;                               // 테두리 굵기, 재단선에서 테두리까지
+  const x0 = inset + bw, x1 = JP_W - inset - bw;            // 안쪽 좌우
+  const yT0 = inset + bw, yT1 = yT0 + JP_TOP;               // 위 칸(번호)
+  const yB0 = yT1 + bw, yB1 = JP_H - inset - bw;            // 아래 칸(J_LINK)
+  const cx = JP_W / 2;
+  let txt = '';
+  /* 위 칸: 번호를 가로·세로 중 먼저 닿는 쪽까지 키워 칸에 꽉 채움 */
+  const no = String(row.no == null ? '' : row.no).trim();
+  if(no){
+    const m = jpMeasure(no, JP_FONT_NO, 900);
+    const E = Math.min((x1 - x0 - 4.4) / Math.max(m.l + m.r, .01), (JP_TOP - 3.2) / Math.max(m.a + m.d, .01));
+    txt += `<text x="${n2(cx - (m.r - m.l) * E / 2)}" y="${n2((yT0 + yT1) / 2 + (m.a - m.d) * E / 2)}" font-size="${n2(E)}" style="font-family:${JP_FONT_NO};font-weight:900">${jpEsc(no)}</text>`;
+  }
+  /* 아래 칸: J_LINK */
+  const items = String(row.link == null ? '' : row.link).split(',').map(s => s.trim()).filter(Boolean);
+  if(items.length){
+    const g = jpLinkLayout(items, x1 - x0 - 4, yB1 - yB0 - 4.4);
+    const left = cx - (g.inkL + g.inkR) * g.f / 2;
+    const base0 = (yB0 + yB1) / 2 - (g.cap + (g.L - 1) * g.pitch) * g.f / 2 + g.cap * g.f;
+    g.toks.forEach((t, i) => {
+      txt += `<text x="${n2(left + g.colX[i % g.k] * g.f)}" y="${n2(base0 + Math.floor(i / g.k) * g.pitch * g.f)}" font-size="${n2(g.f)}" style="font-family:${JP_FONT_LINK};font-weight:700">${jpEsc(t)}</text>`;
+    });
+  }
+  return `<svg class="jplate" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${JP_W} ${JP_H}" width="${JP_W}mm" height="${JP_H}mm">`
+    + `<rect class="jcut" x=".15" y=".15" width="${n2(JP_W - .3)}" height="${n2(JP_H - .3)}"/>`
+    + `<rect class="jfrm" x="${n2(inset + bw / 2)}" y="${n2(inset + bw / 2)}" width="${n2(JP_W - 2 * inset - bw)}" height="${n2(JP_H - 2 * inset - bw)}"/>`
+    + `<line class="jfrm" x1="${inset}" y1="${n2(yT1 + bw / 2)}" x2="${n2(JP_W - inset)}" y2="${n2(yT1 + bw / 2)}"/>`
+    + txt + '</svg>';
+}
+/* 미리보기: 입력 중인 내용이 있으면 그것, 없으면 마지막으로 누른 명판 */
+function jpRenderPreview(){
+  const no = jpNormNo(jpEl('jpNo').value), link = jpNormLink(jpEl('jpLink').value);
+  const row = (no || link) ? {no, link}
+    : (jpRows.find(r => r.no === jpFocus) || jpRows.find(r => jpSel.has(r.no)) || jpRows[0] || {no: '001', link: 'AK501,DK812'});
+  jpEl('jpPvBox').innerHTML = jpPlateSVG(row);
+}
+
+/* ---------- 인쇄 (LETTER, 3열 × 5줄) ---------- */
+function jpBuildPrint(rows){
+  const copies = Math.min(20, Math.max(1, parseInt(jpEl('jpCopies').value, 10) || 1));
+  const cols = Math.max(1, Math.floor(AREA_W / JP_W)), per = cols * Math.max(1, Math.floor(AREA_H / JP_H));
+  const flat = [];
+  rows.forEach(r => { for(let i = 0; i < copies; i++) flat.push(r); });
+  let html = '';
+  for(let p = 0; p < flat.length; p += per){
+    const end = Math.min(p + per, flat.length);
+    html += `<div class="sheet-flow"${end < flat.length ? ' style="page-break-after:always"' : ''}>`;
+    for(let i = p; i < end; i += cols) html += '<div class="prow">' + flat.slice(i, Math.min(i + cols, end)).map(jpPlateSVG).join('') + '</div>';
+    html += '</div>';
+  }
+  jpEl('jpPrintArea').innerHTML = html;
+  return flat.length;
+}
+function jpPrint(onlySel){
+  const rows = onlySel ? jpRows.filter(r => jpSel.has(r.no)) : jpRows.slice();
+  if(!rows.length){ alert(T('jpNoSel')); return; }
+  jpBuildPrint(rows);
+  document.body.classList.add('print-joint');     // 인쇄 대상 = 명판 (금형 라벨 영역은 숨김)
+  window.print();
+}
+/* JOINT 창을 띄운 채 Ctrl+P를 누르면 명판(선택한 것, 없으면 전체)을 인쇄 */
+window.addEventListener('beforeprint', () => {
+  if(!jpIsOpen() || document.body.classList.contains('print-joint') || !jpRows.length) return;
+  const sel = jpRows.filter(r => jpSel.has(r.no));
+  jpBuildPrint(sel.length ? sel : jpRows);
+  document.body.classList.add('print-joint');
+});
+window.addEventListener('afterprint', () => document.body.classList.remove('print-joint'));
+
+/* ---------- 입력 · 언어 ---------- */
+jpEl('jpNo').addEventListener('keydown', e => { if(e.key === 'Enter'){ e.preventDefault(); jpEl('jpLink').focus(); } });
+jpEl('jpLink').addEventListener('keydown', e => { if(e.key === 'Enter'){ e.preventDefault(); jpSaveOne(); } });
+['jpNo', 'jpLink'].forEach(id => jpEl(id).addEventListener('input', jpRenderPreview));
+document.addEventListener('keydown', e => { if(e.key === 'Escape' && jpIsOpen()) closeJoint(); });
+function jpApplyLang(){
+  jpEl('jpSaveBtn').textContent = T(jpEditing !== null ? 'jpSaveEdit' : 'jpSave');
+  jpRenderAll();
+  if(jpEl('jpPasteArea').value.trim()) jpPreviewPaste();
+}
+jpApplyLang();
 </script>
 </body>
 </html>
