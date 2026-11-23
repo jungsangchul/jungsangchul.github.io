@@ -1880,6 +1880,7 @@ tbody tr:hover{background:#1b1b1b!important}
     <button class="ba" style="background:#2a4a6a" onclick="closeQrAbs()" data-ko="닫기" data-es="Cerrar">닫기</button>
   </div>
   <div style="font-size:12px;color:#8a8a8a;margin-top:8px;line-height:1.5" data-ko="TRESS 출근 기록이 없는 직원을 불러옵니다. 연차·출장·교육 등 실제 사유가 있으면 코드를 바꾸거나 체크를 해제한 뒤 등록하세요. (기본 코드: 8 결근) · 이미 결근/연차 등록된 날은 자동 제외됩니다." data-es="Carga empleados sin registro de entrada QR. Ajuste el código o desmarque antes de registrar. (Predeterminado: 8 Ausente)">TRESS 출근 기록이 없는 직원을 불러옵니다. 연차·출장·교육 등 실제 사유가 있으면 코드를 바꾸거나 체크를 해제한 뒤 등록하세요. (기본 코드: 8 결근) · 이미 결근/연차 등록된 날은 자동 제외됩니다.</div>
+  <div style="font-size:12px;color:#8a8a8a;margin-top:6px;line-height:1.5" data-ko="주야 교대(11/23~): 그날 출근은 주간 타각과 야간조의 저녁 타각으로 판정합니다. 야간조의 새벽 퇴근 타각은 그날 출근으로 세지 않으며, 야간조 타각이 반영되기 전에는 야간조를 체크 해제 상태로 따로 보여줍니다." data-es="Turnos día/noche (desde 23/11): la asistencia del día se determina por las checadas del turno día y la entrada vespertina del turno noche. La salida de madrugada del turno noche no cuenta como asistencia de ese día; mientras no se reflejen las checadas nocturnas, el turno noche aparece aparte y sin marcar.">주야 교대(11/23~): 그날 출근은 주간 타각과 야간조의 저녁 타각으로 판정합니다. 야간조의 새벽 퇴근 타각은 그날 출근으로 세지 않으며, 야간조 타각이 반영되기 전에는 야간조를 체크 해제 상태로 따로 보여줍니다.</div>
 </div>
 </div>
 
@@ -4563,6 +4564,16 @@ function qraDayBoundsISO(d){
   var off=QRA_TZ*3600*1000;
   return { start:new Date(base-off).toISOString(), end:new Date(base+86400000-off).toISOString() };
 }
+/* ── [v20261123] 주야 교대 = 일 단위 출근 기준 (출근율 현황 대시보드 v7.42·v7.43과 같은 규칙) ──
+   · since 날짜부터: 그날 '출근'으로 치는 타각 = 06:00 이후의 출근(in) 타각 또는 12:00 이후 타각
+     (야간조의 새벽 퇴근 타각은 전날 근무분 → 그날 출근으로 세지 않음)
+   · 야간조 = 근태관리에서 그날 야간으로 지정된 직원 + 직전 출근일이 야간 출근이었던 직원(RPC att_night_roster)
+   · 야간조 타각이 아직 반영되지 않았으면(저녁 출근 타각이 없거나, 그날 마지막 타각이 nightDataFrom 이전 = 야간조 출근 중에 뽑은 자료)
+     야간조는 체크 해제 상태로 따로 표시
+   · since 이전 날짜는 기존 그대로(그날 기록이 하나라도 있으면 출근) */
+var QRA_SHIFT={ since:'2026-11-23', arriveFrom:'16:30', exitBefore:'06:00', nightDataFrom:'17:55', rosterRpc:'att_night_roster' };
+function qraShiftOn(d){ return !!(QRA_SHIFT.since && d && d>=QRA_SHIFT.since); }
+function qraHm(iso){ var t=new Date(new Date(iso).getTime()+QRA_TZ*3600*1000); return fmt2(t.getUTCHours())+':'+fmt2(t.getUTCMinutes()); }
 function openQrAbs(){
   var el=document.getElementById('qra-date');
   if(!el.value) el.value = todayStr();
@@ -4586,7 +4597,11 @@ async function loadQrAbsCandidates(){
   if(isNonWorkingDay(d)&&!isExtraWorkDay(d)){ st.style.color='#d89050'; st.textContent='🏖️ '+d+' 은(는) 휴무일입니다. (주말/공휴일) — 결근 대상 아님'; return; }
   if(isExtraWorkDay(d)){ st.style.color='#c88030'; st.textContent='⚙️ '+d+' 은(는) 특근일입니다 — 불참자를 결근으로 등록하면 특근 참여율에 반영됩니다.'; }
   st.style.color='#8a8a8a'; st.textContent='TRESS 출근 기록 불러오는 중…';
+  var isEs=(currentLang==='es');
+  var shiftMode=qraShiftOn(d);          // [v20261123] 주야 교대 = 일 단위 출근 기준
   var present=new Set();
+  var punches={};                       // 사번 → [{type,hm}] (주야 교대 적용일부터 사용)
+  var nightSet=new Set();               // 야간 명단: 직전 출근일이 야간 출근이었던 사번 등 (att_night_roster)
   try{
     var sb=getSB();
     if(!sb){ st.style.color='#e05c5c'; st.textContent='Supabase 연결 안 됨'; return; }
@@ -4594,14 +4609,42 @@ async function loadQrAbsCandidates(){
     // [수정] Supabase 는 한 번에 최대 1000행만 반환 → TRESS 출·퇴근 기록(하루 1,500행+)이 잘려 출근자가 결근 후보로 잡히던 문제. 1000행씩 끝까지 조회.
     var PAGE=1000, from=0;
     while(true){
-      var res=await sb.from('attendance_records').select('employee_id').gte('created_at', b.start).lt('created_at', b.end).order('id',{ascending:true}).range(from, from+PAGE-1);
+      var res=await sb.from('attendance_records').select('employee_id,type,created_at').gte('created_at', b.start).lt('created_at', b.end).order('id',{ascending:true}).range(from, from+PAGE-1);
       if(res.error){ st.style.color='#e05c5c'; st.textContent='조회 실패: '+res.error.message; return; }
       var rows=res.data||[];
-      rows.forEach(function(r){ if(r.employee_id) present.add(String(r.employee_id).toUpperCase()); });
+      rows.forEach(function(r){
+        if(!r.employee_id) return;
+        var k=String(r.employee_id).toUpperCase();
+        if(!shiftMode){ present.add(k); return; }                  // 적용일 이전: 기존대로 그날 기록이 있으면 출근
+        (punches[k]=punches[k]||[]).push({type:r.type, hm:qraHm(r.created_at)});
+      });
       if(rows.length<PAGE) break;
       from+=PAGE;
     }
+    if(shiftMode && QRA_SHIFT.rosterRpc){
+      try{
+        var rr=await sb.rpc(QRA_SHIFT.rosterRpc,{p_date:d, p_since:QRA_SHIFT.since, p_arrive:QRA_SHIFT.arriveFrom, p_exit:QRA_SHIFT.exitBefore});
+        if(!rr.error) (rr.data||[]).forEach(function(x){ if(x&&x.employee_id) nightSet.add(String(x.employee_id).toUpperCase()); });
+      }catch(_e){}
+    }
   }catch(e){ st.style.color='#e05c5c'; st.textContent='조회 오류: '+(e&&e.message||e); return; }
+  // [v20261123] 일 단위 출근 판정: 06:00 이후의 출근(in) 타각 또는 12:00 이후 타각이 있어야 그날 출근 (야간조의 새벽 퇴근 타각 제외)
+  var nightIn=0, maxHm='';              // 그날 저녁 출근 타각(첫 출근성 타각이 arriveFrom 이후) 인원 · 그날 마지막 타각 시각 — 공장 전체 기준
+  var nightByNo={};                     // 근태관리에서 그날 야간으로 지정된 사번
+  if(shiftMode){
+    (DB.employees||[]).forEach(function(e){ if(e.empno && getShiftOnDate(e,d)==='야간') nightByNo[String(e.empno).toUpperCase()]=1; });
+    Object.keys(punches).forEach(function(k){
+      punches[k].forEach(function(p){ if(p.hm>maxHm) maxHm=p.hm; });
+      var night=!!nightByNo[k]||nightSet.has(k);
+      var arr=punches[k].filter(function(p){ return p.hm>='12:00' || (p.type==='in' && (p.hm>=QRA_SHIFT.exitBefore || !night)); });
+      if(!arr.length) return;                                      // 새벽 퇴근 타각뿐 → 그날 출근 아님
+      present.add(k);
+      var first=arr.reduce(function(m,p){ return p.hm<m?p.hm:m; },'99:99');
+      if(first>=QRA_SHIFT.arriveFrom) nightIn++;
+    });
+  }
+  var nightPending=shiftMode && !(nightIn>0 && maxHm>=QRA_SHIFT.nightDataFrom);   // 야간조 타각 반영 전 (저녁 타각이 없거나 자료가 야간조 출근 도중까지만 있음)
+  var isNightEmp=function(e){ var k=String(e.empno).toUpperCase(); return shiftMode && (!!nightByNo[k]||nightSet.has(k)); };
   var alreadyAbs=new Set(DB.absences.filter(function(a){return a.date===d;}).map(function(a){return a.empId;}));
   var cands=(DB.employees||[]).filter(function(e){
     if(!e.empno || !/^M0/i.test(e.empno)) return false;      // QR 사번(M0..)만
@@ -4612,27 +4655,52 @@ async function loadQrAbsCandidates(){
     if(present.has(String(e.empno).toUpperCase())) return false; // 출근 찍음
     if(alreadyAbs.has(e.id)) return false;                   // 이미 등록됨
     return true;
-  }).sort(function(a,b){ return (a.name||'').localeCompare(b.name||''); });
+  }).sort(function(a,b){ var na=isNightEmp(a)?1:0, nb=isNightEmp(b)?1:0; return (na-nb) || (a.name||'').localeCompare(b.name||''); });   // 주간 먼저
   _qraCands=cands;
   if(!cands.length){
     st.style.color='#3f9a6a';
     st.textContent='✅ 미출근(결근 후보) 인원이 없습니다. (출근 '+present.size+'명 확인)';
     return;
   }
+  var nCnt=cands.filter(isNightEmp).length, dCnt=cands.length-nCnt;
   st.style.color='#d89050';
-  st.textContent='⚠️ 미출근 후보 '+cands.length+'명 · 출근 확인 '+present.size+'명 — 검토 후 등록하세요.';
+  if(!shiftMode) st.textContent='⚠️ 미출근 후보 '+cands.length+'명 · 출근 확인 '+present.size+'명 — 검토 후 등록하세요.';
+  else st.textContent = isEs
+    ? ('⚠️ '+cands.length+' sin checada (día '+dCnt+' · noche '+nCnt+') · '+present.size+' con asistencia — revise antes de registrar.'+(nightPending&&nCnt?' Turno noche aún sin reflejar: queda sin marcar.':''))
+    : ('⚠️ 미출근 후보 '+cands.length+'명 (주간 '+dCnt+' · 야간 '+nCnt+') · 출근 확인 '+present.size+'명 — 검토 후 등록하세요.'+(nightPending&&nCnt?' 야간조는 타각 반영 전이라 체크를 해제했습니다.':''));
   var codeOpts=getAbsCodes().map(function(c){ return '<option value="'+c.no+'"'+(c.no===8?' selected':'')+'>'+c.no+'. '+c.ko+'</option>'; }).join('');
-  list.innerHTML=cands.map(function(e){
-    return '<label style="display:flex;align-items:center;gap:8px;padding:7px 8px;border-bottom:1px solid #14263f;cursor:pointer">'
-      +'<input type="checkbox" class="qra-ck" data-id="'+e.id+'" checked style="width:16px;height:16px;flex:none">'
+  var hdr=function(txt,color){ return '<div style="padding:6px 8px;font-size:12px;font-weight:800;line-height:1.45;color:'+color+';background:#141414;border-bottom:1px solid #262626;position:sticky;top:0;z-index:1">'+txt+'</div>'; };
+  var html='', dayHdr=false, nightHdr=false;
+  /* 야간조를 아직 알 수 없는 날(주야 교대 첫날 등: 야간 명단 0명 + 근태관리 야간 지정 0명) — 야간조가 주간 결근 후보에 섞여 나오므로 안내 */
+  if(shiftMode && nightSet.size===0 && !Object.keys(nightByNo).length){
+    html+='<div style="padding:7px 8px;font-size:12px;font-weight:700;line-height:1.5;color:#e0a84a;background:#1c1608;border-bottom:1px solid #3a2e10">'
+      +(isEs?'ℹ️ Aún no hay lista del turno noche (inicio de turnos). Marque como «야간/Noche» a quienes trabajan de noche en la lista de empleados y vuelva a cargar — mientras tanto aparecen mezclados como ausentes del turno día.'
+            :'ℹ️ 야간조 명단이 아직 없습니다(주야 교대 시작 직후). 야간 근무자는 직원목록에서 「야간」으로 지정한 뒤 다시 불러오세요 — 지정 전에는 야간조도 주간 결근 후보에 섞여 나옵니다.')+'</div>';
+  }
+  cands.forEach(function(e){
+    var night=isNightEmp(e), pend=night&&nightPending;
+    if(shiftMode && !night && !dayHdr){ html+=hdr(isEs?('☀️ Turno día · '+dCnt):('☀️ 주간조 '+dCnt+'명'),'#c9a84c'); dayHdr=true; }
+    if(shiftMode && night && !nightHdr){
+      html+=hdr(nightPending
+        ? (isEs?('🌙 Turno noche · '+nCnt+' — checadas nocturnas aún sin reflejar'+(maxHm?' (última checada '+maxHm+')':'')+': sin marcar. Vuelva a cargar después de pegar TRESS (tras las 18:00).')
+               :('🌙 야간조 '+nCnt+'명 — 야간 타각 반영 전'+(maxHm?'(마지막 타각 '+maxHm+')':'')+'이라 체크 해제. 18시 이후 TRESS 반영 뒤 다시 불러오세요.'))
+        : (isEs?('🌙 Turno noche · '+nCnt+' (entradas vespertinas: '+nightIn+' · datos hasta '+maxHm+')')
+               :('🌙 야간조 '+nCnt+'명 (저녁 출근 타각 '+nightIn+'명 반영 · 마지막 타각 '+maxHm+')')),'#a5b4fc');
+      nightHdr=true;
+    }
+    html+='<label style="display:flex;align-items:center;gap:8px;padding:7px 8px;border-bottom:1px solid #14263f;cursor:pointer'+(pend?';opacity:.75':'')+'">'
+      +'<input type="checkbox" class="qra-ck" data-id="'+e.id+'"'+(pend?' data-pend="1"':' checked')+' style="width:16px;height:16px;flex:none">'
       +'<span style="flex:1;min-width:0"><span style="font-weight:700;color:#dbe8f5">'+qraEsc(e.name||'')+'</span>'
+      +(night?'<span style="display:inline-block;font-size:12px;font-weight:800;color:#a5b4fc;border:1px solid rgba(129,140,248,.45);border-radius:6px;padding:0 5px;margin-left:6px">'+(isEs?'Noche':'야간')+'</span>':'')
       +'<span style="font-size:10.5px;color:#8a8a8a;display:block">'+qraEsc(e.empno||'')+' · '+qraEsc(e.processName||e.processType||'')+'</span></span>'
       +'<select class="qra-code fs" data-id="'+e.id+'" style="width:130px;flex:none">'+codeOpts+'</select>'
       +'</label>';
-  }).join('');
+  });
+  list.innerHTML=html;
   list.style.display='block'; selbar.style.display='flex'; commit.disabled=false;
 }
-function qraSetAll(v){ document.querySelectorAll('#qra-list .qra-ck').forEach(function(c){ c.checked=v; }); }
+/* 전체선택은 「타각 반영 전」 야간조(data-pend)를 건너뜀 — 필요하면 개별로 체크 */
+function qraSetAll(v){ document.querySelectorAll('#qra-list .qra-ck').forEach(function(c){ c.checked = v ? !c.getAttribute('data-pend') : false; }); }
 function qraEsc(s){ return String(s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
 function commitQrAbs(){
   var d=document.getElementById('qra-date').value;
