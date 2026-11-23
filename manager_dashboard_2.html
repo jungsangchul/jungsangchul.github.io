@@ -72,6 +72,10 @@
     background:#e7f7ee;color:#15a34a;padding:3px 9px;border-radius:999px;letter-spacing:.2px}
   .kpi.teal .kpi-rate{background:#e4f6f2;color:#0d8276}
   .kpi-split{margin-top:9px;font-size:12px;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+  .kpi-split .ks{display:flex;align-items:baseline;gap:5px;line-height:1.6}
+  .kpi-split .ks .kl{min-width:30px}
+  .kpi-split .ks .kr{margin-left:auto;font-weight:900;color:#15a34a}
+  .kpi-split .ks .kr.pend{font-weight:700;color:var(--muted)}
   /* v7.15: 클릭 가능한 KPI 카드 */
   .kpi[data-view]{cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent}
   .kpi.violet .kpi-ic{background:#f1ecfd;color:#7c3aed}
@@ -364,6 +368,9 @@
   .kpi.teal .kpi-rate{border-color:rgba(111,184,221,.4);color:#6fb8dd}
   .kpi-split{color:#8a8a8a;font-weight:500;font-size:12px}
   .kpi-split b{font-family:var(--mono);font-weight:700;color:#e6e6e6}
+  .kpi-split .ks .ko{font-family:var(--mono);color:#777}
+  .kpi-split .ks .kr{font-family:var(--mono);font-weight:700;color:#4caf7d}
+  .kpi-split .ks .kr.pend{font-family:inherit;font-weight:500;color:#8a8a8a}
   .kpi.sel{border-color:var(--gold);box-shadow:0 0 0 1px rgba(201,168,76,.35),0 0 24px rgba(201,168,76,.12)}
 
   .tabs{background:transparent;padding:0;gap:6px;box-shadow:none;border-radius:0}
@@ -896,6 +903,7 @@
     <div class="kpi red" data-view="absent" onclick="kpiClick('absent')">
       <div class="kpi-top"><span class="kpi-ic"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="17" y1="8" x2="22" y2="13"/><line x1="22" y1="8" x2="17" y2="13"/></svg></span><span class="l" id="kl5">미출근</span></div>
       <div class="kpi-bot"><span class="v" id="kAbsent">–</span><span class="unit"></span></div>
+      <div class="kpi-split" id="kAbsSplit" style="display:none"></div>
     </div>
     <div class="kpi amber" data-view="noout" onclick="kpiClick('noout')">
       <div class="kpi-top"><span class="kpi-ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="13"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></span><span class="l" id="kl7">퇴근 미타각</span></div>
@@ -1325,8 +1333,10 @@ const CONFIG = {
   /* ✅ 주야 교대 = 일 단위 출근 기준 (v7.42) — 공장별 적용 시작일(since)과 야간조 출근 시간대. 두 대시보드 파일에 같은 rules 유지
      · since 날짜부터: 그날 첫 타각이 arriveFrom 이후면 야간조 출근 → 그날 출근으로 집계 (1공장 야간조 17:30~18:00 출근)
      · 야간조의 다음날 새벽 타각은 전날 퇴근으로 붙이고 다음날 출근으로 세지 않음 (exitBefore 이전에 찍힌 '출근' 타각 포함)
-     · since:null = 미적용 (기존 NIGHT.from 18:00 기준 그대로) */
-  SHIFT: { plant:"2", rules:{ "1":{ since:"2026-11-23", arriveFrom:"16:30", exitBefore:"06:00" },
+     · since:null = 미적용 (기존 NIGHT.from 18:00 기준 그대로)
+     · rosterRpc (v7.43 조별 출근율): 그날 타각이 없는 사람의 조를 정하는 야간 명단 RPC
+       — 직전 출근일이 야간 출근이었던 사번 + 가공 근태관리에서 야간으로 지정한 사번. null = 조회 안 함 */
+  SHIFT: { plant:"2", rosterRpc:null, rules:{ "1":{ since:"2026-11-23", arriveFrom:"16:30", exitBefore:"06:00" },
                               "2":{ since:null,         arriveFrom:"16:00", exitBefore:"05:30" } } },
   /* ✅ TRESS 부서(Dpto) → 2공장 직원 마스터 팀명 (미등록 직원 자동 등록 시 사용). 기존 직원의 팀명은 바뀌지 않음 */
   TRESS_TEAMS: {   /* 2026-10-22 직원 마스터 팀명을 TRESS 부서명으로 통일 → 그대로 매핑 */
@@ -1354,7 +1364,7 @@ const CONFIG = {
 const I18N={
   ko:{ title:"출근율 현황 · Torreón", date:"날짜", plant:"장소", all:"전체", refresh:"새로고침", auto:"자동(30s)",
     kTotal:"재직 총원", kIn:"출근", kLate:"지각", kPresent:"현재 재실", kOut:"퇴근 완료", kAbsent:"미출근", kMeal:"식사 신청",
-    kNoout:"퇴근 미타각", kEarly:"조퇴", kDayS:"주간", kNightS:"야간", kpiHint:"💡 아래 카드를 누르면 하단에서 세부 명단을 조회할 수 있습니다",
+    kNoout:"퇴근 미타각", kEarly:"조퇴", kDayS:"주간", kNightS:"야간", kPend:"반영 전", colShift:"근무조", kpiHint:"💡 아래 카드를 누르면 하단에서 세부 명단을 조회할 수 있습니다",
     tabAtt:"출석 현황", tabAbsent:"미출근", tabLate:"지각 인원", tabMeal:"식사 신청", tabNoout:"퇴근 미타각", tabEarly:"조퇴",
     barPlant:"장소별 인원", barTeam:"팀별 인원", excel:"Excel 내보내기", empty:"데이터 없음",
     colId:"사번", colName:"이름", colTeam:"팀", colPlant:"장소", colIn:"출근", colOut:"퇴근", colState:"상태", colWork:"근태", colPhoto:"사진", colTime:"신청시각",
@@ -1400,7 +1410,7 @@ const I18N={
     trFail:"반영 실패 — Supabase에 tress_import / tress_import_2 함수가 있는지 확인" },
   es:{ title:"Tablero de asistencia · Torreón", date:"Fecha", plant:"Lugar", all:"Todas", refresh:"Actualizar", auto:"Auto(30s)",
     kTotal:"Total activos", kIn:"Entradas", kLate:"Tardes", kPresent:"Presentes", kOut:"Salidas", kAbsent:"Ausentes", kMeal:"Comidas",
-    kNoout:"Sin salida", kEarly:"Salida anticipada", kDayS:"Día", kNightS:"Noche", kpiHint:"💡 Toque una tarjeta para ver la lista detallada abajo",
+    kNoout:"Sin salida", kEarly:"Salida anticipada", kDayS:"Día", kNightS:"Noche", kPend:"pend.", colShift:"Turno", kpiHint:"💡 Toque una tarjeta para ver la lista detallada abajo",
     tabAtt:"Asistencia", tabAbsent:"Ausentes", tabLate:"Tardanzas", tabMeal:"Comidas", tabNoout:"Sin salida", tabEarly:"Salida anticipada",
     barPlant:"Por lugar", barTeam:"Por equipo", excel:"Exportar Excel", empty:"Sin datos",
     colId:"N° emp.", colName:"Nombre", colTeam:"Equipo", colPlant:"Lugar", colIn:"Entrada", colOut:"Salida", colState:"Estado", colWork:"Puntualidad", colPhoto:"Foto", colTime:"Hora",
@@ -1460,7 +1470,7 @@ const $=id=>document.getElementById(id);
 const REST=p=>CONFIG.SUPABASE_URL+"/rest/v1/"+p;
 const HEADERS={"apikey":CONFIG.SUPABASE_ANON,"Authorization":"Bearer "+CONFIG.SUPABASE_ANON};
 const JSON_HEADERS=Object.assign({},HEADERS,{"Content-Type":"application/json","Prefer":"return=minimal"});
-let state={employees:[],att:[],meal:[],tab:"att",autoTimer:null};
+let state={employees:[],att:[],meal:[],tab:"att",autoTimer:null,nightSet:new Set()};
 let view={att:[],absent:[],meal:[],noout:[],early:[],late:[],present:[],out:[],total:[]};
 let sortKey=null,sortDir=1;
 
@@ -1627,6 +1637,18 @@ async function withPrevNightCtx(att,date){
   }
   return prev.filter(x=>!isTestId(x.employee_id)).concat(att);   // 시간순 유지 (전날 → 당일)
 }
+/* v7.43 조별 출근율용 야간 명단: 조회일에 타각이 없는 사람을 주간/야간으로 나누는 기준 (5분 캐시, TRESS 반영 시 새로 읽음) */
+let nightRoster={date:null,set:new Set(),at:0};
+async function loadNightRoster(date){
+  const rpc=(CONFIG.SHIFT||{}).rosterRpc, R=shiftRule();
+  if(!rpc||!shiftOn(date)) return new Set();
+  if(nightRoster.date===date&&Date.now()-nightRoster.at<300000) return nightRoster.set;
+  const res=await fetch(REST("rpc/"+rpc),{method:"POST",headers:Object.assign({},HEADERS,{"Content-Type":"application/json"}),
+    body:JSON.stringify({p_date:date,p_since:R.since,p_arrive:R.arriveFrom||"18:00",p_exit:R.exitBefore||"06:00"})});
+  if(!res.ok) throw new Error(await res.text());
+  const rows=await res.json(); const set=new Set((Array.isArray(rows)?rows:[]).map(r=>r.employee_id));
+  nightRoster={date,set,at:Date.now()}; return set;
+}
 
 /* ---------- 로드 ---------- */
 async function getJson1(url){ const r=await fetch(url,{headers:HEADERS}); if(!r.ok) throw new Error(await r.text()); return r.json(); }
@@ -1647,20 +1669,21 @@ async function refresh(){
   const date=$("fDate").value||todayDate(); const {start,end}=dayBounds(date);
   $("updated").textContent=t("loading");
   try{
-    const [emp,att,meal]=await Promise.all([
+    const [emp,att,meal,nset]=await Promise.all([
       getJson(REST(`${CONFIG.T_EMPLOYEES}?active=eq.true&select=employee_id,name,team,factory,hire_date&limit=5000`))
         .catch(()=>getJson(REST(`${CONFIG.T_EMPLOYEES}?active=eq.true&select=employee_id,name,team,factory&limit=5000`)).catch(()=>[])),
       getJson(REST(`${CONFIG.T_RECORDS}?created_at=gte.${start}&created_at=lt.${new Date(new Date(end).getTime()+hmToMin(nightCfg().outUntil||"12:00")*60000).toISOString()}&select=id,employee_id,name,type,factory,flag,created_at&order=created_at.asc&limit=20000`)),
-      getJson(REST(`${CONFIG.T_MEALS}?meal_date=eq.${date}&status=eq.applied&select=employee_id,name,factory,created_at&order=created_at.asc&limit=20000`))
+      getJson(REST(`${CONFIG.T_MEALS}?meal_date=eq.${date}&status=eq.applied&select=employee_id,name,factory,created_at&order=created_at.asc&limit=20000`)),
+      loadNightRoster(date).catch(e=>{ console.warn("nightRoster",e); return new Set(); })   // v7.43
     ]);
     const noTest=arr=>Array.isArray(arr)?arr.filter(x=>!isTestId(x.employee_id)):[];
     // ✅ 조회 날짜 기준 입사일이 지난 직원만 재직 총원/미출근 집계에 포함 (입사일 미입력자는 포함)
     const hiredBy=e=>!e.hire_date || String(e.hire_date).slice(0,10)<=date;
     let attAll=noTest(att);
     try{ attAll=await withPrevNightCtx(attAll,date); }catch(e){ console.warn("withPrevNightCtx",e); }   // v7.42: 전날 야간조 문맥 (필요할 때만 추가 조회)
-    state.employees=noTest(emp).filter(hiredBy); state.att=attAll; state.meal=noTest(meal);
+    state.employees=noTest(emp).filter(hiredBy); state.att=attAll; state.meal=noTest(meal); state.nightSet=nset||new Set();
     compute();
-    $("updated").textContent=t("updated")+new Date().toLocaleTimeString(lang==="ko"?"ko-KR":"es-MX")+" · v7.42";
+    $("updated").textContent=t("updated")+new Date().toLocaleTimeString(lang==="ko"?"ko-KR":"es-MX")+" · v7.43";
   }catch(e){ $("updated").textContent=t("queryErr"); console.error(e); }
 }
 
@@ -1690,12 +1713,14 @@ function compute(){
     return { employee_id:g.employee_id, name:g.name||g.employee_id, factory:g.fac, team:empTeam[g.employee_id]||"",
       status:(g.last==="out"?"out":"in"),
       inTime:inSrc?hhmm(inSrc):"", outTime:g.outAt?hhmm(g.outAt):"",
-      noIn:g.inMin==null, late, early, night:!!g.night, photoId:g.inId||g.anyId||null };
+      noIn:g.inMin==null, late, early, night:!!g.night, shift:g.night?"N":"D", photoId:g.inId||g.anyId||null };
   }).filter(r=>passTeam(r.team));
 
   view.absent=state.employees.filter(e=>passFactory(e)).filter(e=>!presentIds.has(e.employee_id))
-    .map(e=>({employee_id:e.employee_id,name:e.name||e.employee_id,factory:e.factory,team:e.team||""}))
+    .map(e=>({employee_id:e.employee_id,name:e.name||e.employee_id,factory:e.factory,team:e.team||"",
+              shift:(shiftOn(viewDate)&&state.nightSet&&state.nightSet.has(e.employee_id))?"N":"D"}))   // v7.43: 타각 없는 사람은 야간 명단으로 조 분류
     .filter(r=>passTeam(r.team));
+  if(shiftOn(viewDate)) view.absent.sort((a,b)=>a.shift===b.shift?0:(a.shift==="D"?-1:1));   // 주간 미출근 먼저
 
   view.meal=state.meal.filter(m=>passFactory(m))
     .map(m=>({employee_id:m.employee_id,name:m.name||m.employee_id,factory:m.factory,team:empTeam[m.employee_id]||"",time:hhmm(m.created_at)}))
@@ -1713,9 +1738,6 @@ function compute(){
   view.total=view.att.concat(view.absent.map(e=>({employee_id:e.employee_id,name:e.name,factory:e.factory,team:e.team,status:"absent",inTime:"",outTime:"",noIn:true,late:false,early:false,photoId:null})));
 
   $("kIn").textContent=view.att.length;
-  /* v7.42 일 단위 출근 기준: 출근 = 그날 주간 출근 + 그날 야간 출근(저녁 타각) */
-  { const nN=view.att.filter(r=>r.night).length, nD=view.att.length-nN, el=$("kInSplit");
-    if(el){ if(shiftOn(viewDate)||nN>0){ el.innerHTML=`${t("kDayS")} <b>${nD}</b> · ${t("kNightS")} <b>${nN}</b>`; el.style.display=""; } else el.style.display="none"; } }
   $("kLate").textContent=view.att.filter(r=>r.late).length;
   $("kPresent").textContent=view.att.filter(r=>r.status==="in").length;
   $("kOut").textContent=view.att.filter(r=>r.status==="out").length;
@@ -1731,6 +1753,23 @@ function compute(){
   const setRate=(id,n)=>{ const el=$(id); if(loaded&&total>0){ el.textContent=pct(n); el.style.display=""; } else el.style.display="none"; };
   setRate("rIn", view.att.length);
   setRate("rMeal", view.meal.length);
+  /* v7.42 일 단위 출근 기준: 출근 = 그날 주간 출근 + 그날 야간 출근(저녁 타각)
+     v7.43 조별 출근율 (주야 교대 적용일부터): 주간·야간을 따로 계산
+       · 그날 타각이 있으면 그 타각의 조, 없으면 야간 명단(state.nightSet)에 있으면 야간·아니면 주간
+       · 야간 타각이 아직 하나도 없으면 「반영 전」 (야간조 출근 전이거나 그날 저녁 TRESS 미반영) */
+  { const sm=shiftOn(viewDate), nN=view.att.filter(r=>r.night).length, nD=view.att.length-nN;
+    const aN=sm?view.absent.filter(r=>r.shift==="N").length:0, aD=view.absent.length-aN;
+    const el=$("kInSplit"), ea=$("kAbsSplit");
+    const pc=(n,tot)=>tot>0?Math.round(n/tot*100)+"%":"–";
+    if(el){
+      if(sm&&loaded){
+        const row=(lab,n,tot,pend)=>`<div class="ks"><span class="kl">${lab}</span><b>${n}</b><span class="ko">/ ${tot}</span><span class="kr${pend?" pend":""}">${pend?t("kPend"):pc(n,tot)}</span></div>`;
+        el.innerHTML=row(t("kDayS"),nD,nD+aD,false)+row(t("kNightS"),nN,nN+aN,nN===0&&aN>0); el.style.display="";
+      } else if(sm||nN>0){ el.innerHTML=`${t("kDayS")} <b>${nD}</b> · ${t("kNightS")} <b>${nN}</b>`; el.style.display=""; }
+      else el.style.display="none";
+    }
+    if(ea){ if(sm&&loaded){ ea.innerHTML=`${t("kDayS")} <b>${aD}</b> · ${t("kNightS")} <b>${aN}</b>`; ea.style.display=""; } else ea.style.display="none"; }
+  }
   render();
   try{ rateAutoSave(); }catch(_){ }   // 출근율 누적 자동 저장
 }
@@ -1754,7 +1793,7 @@ function COLS(){
   const T=I18N[lang];
   return {
     att:[["employee_id",T.colId],["name",T.colName],["team",T.colTeam],["factory",T.colPlant],["inTime",T.colIn],["outTime",T.colOut],["status",T.colState],["work",T.colWork],["__photo",T.colPhoto]],
-    absent:[["employee_id",T.colId],["name",T.colName],["team",T.colTeam],["factory",T.colPlant]],
+    absent:[["employee_id",T.colId],["name",T.colName],["team",T.colTeam],["factory",T.colPlant],...(shiftOn($("fDate").value||todayDate())?[["shift",T.colShift]]:[])],
     meal:[["employee_id",T.colId],["name",T.colName],["team",T.colTeam],["factory",T.colPlant],["time",T.colTime]],
     noout:[["employee_id",T.colId],["name",T.colName],["team",T.colTeam],["factory",T.colPlant],["inTime",T.colIn],["work",T.colWork],["__photo",T.colPhoto],["__checkout",T.colAction]],
     early:[["employee_id",T.colId],["name",T.colName],["team",T.colTeam],["factory",T.colPlant],["inTime",T.colIn],["outTime",T.colOut],["work",T.colWork],["__photo",T.colPhoto]],
@@ -1806,6 +1845,7 @@ function renderTable(){
     if(f==="__checkout") return `<td><button class="act-btn" onclick="markLeft('${r.employee_id}',this)">${t("btnCheckout")}</button></td>`;
     if(f==="status") return r.status==="in"?`<td><span class="pill in">${t("present")}</span></td>`:r.status==="absent"?`<td><span class="pill late">${t("kAbsent")}</span></td>`:`<td><span class="pill out">${t("left")}</span></td>`;
     if(f==="work") return `<td>${workPill(r)}</td>`;
+    if(f==="shift") return r.shift==="N"?`<td><span class="pill night">${t("kNightS")}</span></td>`:`<td>${t("kDayS")}</td>`;
     if(f==="factory") return `<td>${escapeHtml(plantName(r.factory))}</td>`;
     if(f==="team") return `<td>${r.team&&String(r.team).trim()?escapeHtml(r.team):"–"}</td>`;
     return `<td>${escapeHtml(r[f]!=null?String(r[f]):"")}</td>`;
@@ -2203,6 +2243,7 @@ async function submitTress(){
     }
     $("trProg").innerHTML=plants.map(p=>`<div><b>${escapeHtml(plantLbl(p))}</b> · ${escapeHtml(T.trDone(done[p]))}</div>`).join("");
     if(($("fDate").value||todayDate())!==date) $("fDate").value=date;
+    nightRoster.at=0;   // v7.43: 반영 후 야간 명단 새로 읽기
     await refresh();
     $("trText").value=""; tressRows=[]; tressAbsent=[]; tressDeptOn={}; renderTress();
   }catch(e){ if(!/reg/.test(String(e&&e.message))) $("trProg").textContent=T.trFail; }
@@ -2958,6 +2999,7 @@ function exportXlsx(){
       if(c[0]==="status") return r.status==="in"?t("present"):r.status==="absent"?t("kAbsent"):t("left");
       if(c[0]==="work") return r.status==="absent"?"":r.late&&r.early?(t("late")+"·"+t("early")):r.late?t("late"):r.early?t("early"):t("normal");
       if(c[0]==="factory") return plantName(r.factory);
+      if(c[0]==="shift") return r.shift==="N"?t("kNightS"):t("kDayS");
       return v==null?"":v;
     }));
   }
