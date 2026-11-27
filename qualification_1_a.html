@@ -546,6 +546,7 @@ async function sbLoadAll() {
       // Supabase 데이터로 완전 교체 후 sort_order 정렬
       students = stus.map(s=>({name:s.name, empId:s.emp_id||'', process:s.process||'', processEs:s.process_es||'', hireDate:s.hire_date||'', _sbId:s.id, sort_order:s.sort_order}));
       students.sort((a,b)=>(a.sort_order||0)-(b.sort_order||0));
+      students.forEach(s=>_stuMarkSaved(s,s.sort_order)); /* ✅ 변경분만 저장: 서버 기준값 기록 */
       // 로컬 미동기화 항목 중 Supabase에 없는 것만 추가 후 저장
       localUnsaved.forEach(ls=>{
         const dup=students.find(s=>s.name===ls.name&&s.empId===ls.empId);
@@ -681,9 +682,32 @@ async function sbSaveStudent(s, idx) {
   // ✅ 같은 응시자에 대한 동시 저장(디바운스+일괄저장+로드 겹침) 직렬화 — _sbId 확정 전 이중 POST 방지
   if(_stuSaving.has(s)){ try{await _stuSaving.get(s);}catch(e){} }
   const p=_sbSaveStudentInner(s, idx); _stuSaving.set(s,p);
-  try{ await p; } finally { if(_stuSaving.get(s)===p)_stuSaving.delete(s); }
+  try{ await p; _stuMarkSaved(s,idx); } finally { if(_stuSaving.get(s)===p)_stuSaving.delete(s); }
 }
 const _stuSaving=new WeakMap();
+// ✅ 변경분만 저장 — 전체 명단(수백 명)을 동시에 PATCH 하다 브라우저가 요청을 버려 'Failed to fetch' 나던 문제
+const _stuSaved=new WeakMap();
+function _stuSig(s){return JSON.stringify([String(s.name||'').trim(),String(s.empId||'').trim(),s.process||'',s.processEs||'',normalizeDate(s.hireDate)||'']);}
+function _stuMarkSaved(s,idx){ if(s&&s._sbId) _stuSaved.set(s,{sig:_stuSig(s),order:idx}); }
+function _stuIsDirty(s,idx){ const v=_stuSaved.get(s); return !s._sbId||!v||v.sig!==_stuSig(s)||v.order!==idx; }
+async function sbSaveStudentsChanged(list){
+  const todo=list.map(s=>({s,idx:students.indexOf(s)})).filter(o=>_stuIsDirty(o.s,o.idx));
+  const failed=[]; let pos=0, done=0;
+  async function worker(){
+    while(pos<todo.length){
+      const o=todo[pos++]; let err=null;
+      for(let t=0;t<3;t++){
+        try{ await sbSaveStudent(o.s,o.idx); err=null; break; }
+        catch(e){ err=e; if(/^HTTP 4/.test(String(e&&e.message||''))) break; await new Promise(r=>setTimeout(r,700*(t+1))); }
+      }
+      if(err) failed.push({s:o.s,err});
+      done++;
+      if(todo.length>30&&done%25===0&&typeof _showSaveToast==='function') _showSaveToast(`💾 ${done} / ${todo.length}`);
+    }
+  }
+  await Promise.all(Array.from({length:Math.min(6,todo.length)},()=>worker())); // 동시 6건 제한 + 네트워크 오류 3회 재시도
+  return {total:list.length,changed:todo.length,saved:todo.length-failed.length,failed};
+}
 async function _sbSaveStudentInner(s, idx) {
   if(typeof s.empId==='string') s.empId=s.empId.trim();
   if(typeof s.name==='string') s.name=s.name.trim();
@@ -5674,7 +5698,7 @@ async function flushAllStudentSync(){
   Object.keys(_stuSaveTimers).forEach(k=>clearTimeout(_stuSaveTimers[k]));
   const valid=students.filter(s=>s.name||s.empId);
   if(!valid.length) return;
-  await Promise.all(valid.map(s=>sbSaveStudent(s,students.indexOf(s)).catch(()=>{})));
+  await sbSaveStudentsChanged(valid);
 }
 function addStudentRow(){
   students.push({name:'',empId:'',process:'',processEs:'',hireDate:''});
@@ -7102,8 +7126,10 @@ async function saveStudentsToSupabase(){
   const valid = students.filter(s=>s.name||s.empId);
   if(!valid.length){alert('저장할 응시자가 없습니다.');return;}
   try{
-    await Promise.all(valid.map(s=>sbSaveStudent(s, students.indexOf(s))));
-    _showSaveToast(`✅ Supabase 저장 완료 — 응시자 ${valid.length}명`);
+    const _r=await sbSaveStudentsChanged(valid);
+    if(_r.failed.length){ const _f=_r.failed[0]; throw new Error(`${_r.failed.length}명 저장 안 됨 / ${_r.failed.length} sin guardar (${_f.s.empId||''} ${_f.s.name||''}: ${_f.err.message})\n다시 💾 저장을 누르면 남은 인원만 저장됩니다.`); }
+    if(!_r.changed){ _showSaveToast('✅ 변경된 내용 없음 — 이미 저장됨 / Sin cambios'); return; }
+    _showSaveToast(`✅ 저장 완료 — 변경 ${_r.saved}명 (전체 ${valid.length}명)`);
     _sbCacheTime=0; await sbLoadAllCached(true);
   }catch(e){
     alert('저장 실패: '+e.message);
