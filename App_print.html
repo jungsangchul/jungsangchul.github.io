@@ -123,6 +123,7 @@
   .searchrow{display:flex;gap:8px;margin-bottom:12px;}
   .searchrow input{flex:1;padding:11px 13px;font-size:14.5px;border:1.5px solid var(--border-strong);border-radius:var(--r-sm);background:var(--surface-2);transition:.15s;}
   .searchrow .exA{display:flex;align-items:center;gap:6px;white-space:nowrap;font-size:13px;font-weight:700;color:var(--text,#334155);cursor:pointer;padding:0 10px;border:1.5px solid var(--border-strong);border-radius:var(--r-sm);background:var(--surface-2);}
+  .searchrow .mcsel{flex:none;width:118px;padding:0 8px;font-size:13px;font-weight:700;border:1.5px solid var(--border-strong);border-radius:var(--r-sm);background:var(--surface-2);color:var(--text,#334155);cursor:pointer;}
   .searchrow .exA input{flex:none;width:16px;height:16px;padding:0;}
   .searchrow input:focus{outline:none;border-color:var(--primary);background:#fff;box-shadow:0 0 0 4px var(--primary-050);}
   .listtbl-wrap{max-height:520px;overflow:auto;border:1px solid var(--border);border-radius:var(--r-md);}
@@ -253,6 +254,8 @@
   .btn-gray,.pclose,.mode-cancel{background:#1b1b1b!important;color:#c8c8c8!important;border:1px solid #2a2a2a!important;border-radius:8px}
   .btn-gray:hover,.pclose:hover,.mode-cancel:hover{border-color:#555!important;color:#fff!important}
   .searchrow .exA{border-color:#2a2a2a;color:#c8c8c8;border-radius:8px;background:#0d0d0d}
+  .searchrow .mcsel{border-color:#2a2a2a;color:#c8c8c8;border-radius:8px;background:#0d0d0d}
+  .searchrow .mcsel.on{border-color:#c9a84c;color:#e6c869}
   .listtbl-wrap{border-color:#2a2a2a;border-radius:10px}
   table.listtbl th{background:#0f0f0f;color:#777;font-family:var(--mono);font-size:12px;letter-spacing:.1em;font-weight:400;border-bottom-color:#2a2a2a}
   table.listtbl td{border-bottom-color:#1e1e1e;color:#d8d8d8;font-family:var(--mono);font-size:12.5px}
@@ -488,7 +491,7 @@
     <button class="upbtn lang" id="langBtn" onclick="toggleLang()">🌐 Español</button>
   </div>
  </div>
- <div class="system-bar"><span>Mold Location Label Print / 금형 지정장소 라벨</span><button type="button" class="jp-open" onclick="openJoint()" data-i18n="jpOpen">🔗 JOINT 명판 출력</button><span class="ver">v2.9 · LETTER · <span id="dataSrc">-</span> · <span data-i18n="total">총</span> <span id="totalCnt">-</span></span></div>
+ <div class="system-bar"><span>Mold Location Label Print / 금형 지정장소 라벨</span><button type="button" class="jp-open" onclick="openJoint()" data-i18n="jpOpen">🔗 JOINT 명판 출력</button><span class="ver">v2.10 · LETTER · <span id="dataSrc">-</span> · <span data-i18n="total">총</span> <span id="totalCnt">-</span></span></div>
 </div>
 
 <div class="wrap">
@@ -511,6 +514,7 @@
     <div class="tabbody" id="bodyList" style="display:none">
       <div class="searchrow">
         <input type="text" id="searchInput" data-i18n-ph="searchPh" placeholder="검색" oninput="renderList()">
+        <select id="mcSel" class="mcsel" onchange="renderList()"></select>
         <label class="exA"><input type="checkbox" id="optExA" onchange="renderList()"> <span data-i18n="optExA">A~ · Mtto. 제외</span></label>
       </div>
       <div class="listtbl-wrap">
@@ -757,7 +761,7 @@ ko: {
   confirmClearQ:'출력 대기 목록을 모두 삭제할까요?',
   optPresetLbl:'프리셋', presetCustom:'직접 설정', presetM:'보통 (2열×5행/장)', presetL:'크게 (2열×4행/장)', presetS:'작게 (3열×7행/장)', presetXL:'특대 (1열×4행/장)',
   optW:'네모 가로', optH:'네모 세로', optBorder:'테두리 굵기', optF1:'지정장소 크기', optB1:'지정장소 굵기', optF2:'금형코드 크기', optB2:'금형코드 굵기',
-  wNormal:'보통', wBold:'굵게', wXBold:'매우 굵게', optStore:'보관장소 표시', optExA:'A~ · Mtto. 제외', pvTitle:'미리보기 (실제 크기)',
+  wNormal:'보통', wBold:'굵게', wXBold:'매우 굵게', optStore:'보관장소 표시', optExA:'A~ · Mtto. 제외', mcAll:'호기 전체', pvTitle:'미리보기 (실제 크기)',
   grpA:A_GROUP_LABEL, grpB:'기타 호기', grpTipA:'지정장소 호기가 ' + A_GROUP_LABEL + '인 금형', grpTipB:'그 외 호기의 금형 (AP·AJ·P·J·SP·SJ, Mtto. 등)',
   btnPrint:'🖨️ 인쇄 (LETTER)', noLabels:'출력할 라벨이 없습니다.', sizeOver:'라벨 크기가 LETTER 인쇄영역(196×259mm)을 초과합니다.',
   connecting:'서버에서 금형 리스트를 불러오는 중...', srcLabel:t=>`Supabase (${t} 기준)`,
@@ -827,7 +831,7 @@ es: {
   confirmClearQ:'¿Borrar toda la lista de impresión?',
   optPresetLbl:'Preajuste', presetCustom:'Personalizado', presetM:'Normal (2col×5fil/hoja)', presetL:'Grande (2col×4fil/hoja)', presetS:'Chico (3col×7fil/hoja)', presetXL:'Extra grande (1col×4fil/hoja)',
   optW:'Ancho del cuadro', optH:'Alto del cuadro', optBorder:'Grosor del borde', optF1:'Tamaño ubicación', optB1:'Grosor ubicación', optF2:'Tamaño código', optB2:'Grosor código',
-  wNormal:'Normal', wBold:'Negrita', wXBold:'Extra negrita', optStore:'Mostrar almacén', optExA:'Excluir A~ · Mtto.', pvTitle:'Vista previa (tamaño real)',
+  wNormal:'Normal', wBold:'Negrita', wXBold:'Extra negrita', optStore:'Mostrar almacén', optExA:'Excluir A~ · Mtto.', mcAll:'Todas máq.', pvTitle:'Vista previa (tamaño real)',
   grpA:A_GROUP_LABEL, grpB:'Otras máquinas', grpTipA:'Moldes ubicados en las máquinas ' + A_GROUP_LABEL, grpTipB:'Moldes de las demás ubicaciones (AP·AJ·P·J·SP·SJ, Mtto., etc.)',
   btnPrint:'🖨️ Imprimir (CARTA)', noLabels:'No hay etiquetas para imprimir.', sizeOver:'El tamaño de la etiqueta excede el área de impresión CARTA (196×259mm).',
   connecting:'Cargando la lista de moldes del servidor...', srcLabel:t=>`Supabase (al ${t})`,
@@ -1247,10 +1251,33 @@ function doScan(){
 }
 
 /* ---------- 리스트 ---------- */
+/* v2.10 지정호기 선택: 지정장소 'P01-05' 의 '-' 앞부분(P01)이 정확히 같은 금형만 표시 (SP01·AP01 은 제외됨) */
+function mcOf(m){
+  const l = String((m && m.loc) || '').trim().toUpperCase();
+  const i = l.indexOf('-');
+  return i > 0 ? l.slice(0, i).trim() : '';
+}
+let mcSig = null;
+function syncMcSel(){
+  const sel = document.getElementById('mcSel');
+  const list = [...new Set(MOLDS.map(mcOf).filter(Boolean))]
+    .sort((a,b) => a.localeCompare(b, 'en', {numeric:true}));
+  const sig = LANG + '|' + list.join(',');
+  if(sig !== mcSig){
+    const cur = sel.value;
+    sel.innerHTML = `<option value="">${T('mcAll')}</option>` + list.map(k => `<option value="${k}">${k}</option>`).join('');
+    sel.value = list.includes(cur) ? cur : '';
+    mcSig = sig;
+  }
+  sel.classList.toggle('on', !!sel.value);
+  return sel.value;
+}
 function filtered(){
   const q = document.getElementById('searchInput').value.trim().toUpperCase();
   const exA = document.getElementById('optExA').checked;
-  const base = exA ? MOLDS.filter(m => !/^(A|MTTO)/i.test((m.loc||'').trim())) : MOLDS;
+  const mc = syncMcSel();
+  let base = exA ? MOLDS.filter(m => !/^(A|MTTO)/i.test((m.loc||'').trim())) : MOLDS;
+  if(mc) base = base.filter(m => mcOf(m) === mc);
   if(!q) return base;
   return base.filter(m =>
     m.bc.toUpperCase().includes(q) || m.code.toUpperCase().includes(q) ||
